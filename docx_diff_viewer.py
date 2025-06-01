@@ -34,7 +34,7 @@ def convert_docx_to_html(docx_path, output_html_path, lua_filter_path):
     cmd = [
         "pandoc",
         docx_path,
-        "--to=html",
+        "--to=json",
         "--track-changes=all",
         f"--lua-filter={lua_filter_path}",
         f"-o{output_html_path}"
@@ -72,7 +72,7 @@ def generate_diff_html(original_docx, modified_docx, output_html):
         html_output_lines.append('</head>')
         html_output_lines.append('<body>')
         html_output_lines.append('<div class="diff-header"><h1>Diferenças do Documento</h1></div>')
-        html_output_lines.append('<pre>') # Use <pre> para preservar espaços e quebras de linha
+        html_output_lines.append('<pre>')
 
         for line in diff_result:
             if line.startswith('  '): # Linha inalterada
@@ -101,7 +101,7 @@ def generate_diff_html(original_docx, modified_docx, output_html):
 
 
 if __name__ == "__main__":
-    import sys # <-- AQUI ESTÁ A IMPORTAÇÃO FALTANDO
+    import sys
     if len(sys.argv) != 4:
         print("Uso: python docx_diff_viewer.py <original.docx> <modificado.docx> <saida.html>")
         sys.exit(1)
