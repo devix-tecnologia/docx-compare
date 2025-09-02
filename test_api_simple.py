@@ -23,10 +23,10 @@ def test_health():
 def test_compare():
     """Testa o endpoint de comparação com UUIDs de exemplo"""
     try:
-        # UUIDs de exemplo (substitua pelos reais do seu Directus)
+        # UUIDs reais do Directus
         data = {
-            "original_file_id": "550e8400-e29b-41d4-a716-446655440000",
-            "modified_file_id": "550e8400-e29b-41d4-a716-446655440001"
+            "original_file_id": "9512120c-93b9-4503-93cc-3c0cb492e664",
+            "modified_file_id": "1CjYes_ficb6NFphrLziseNXCACiyQRF"
         }
         
         response = requests.post(
