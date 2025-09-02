@@ -1,90 +1,226 @@
-# Comparador de Documentos DOCX
+# 📄 Comparador de Documentos DOCX
 
----
+Sistema para comparação de documentos DOCX com interface CLI e API REST, integrado com Directus CMS.
 
-Este projeto oferece uma solução eficaz para **comparar duas versões de um documento `.docx`** e visualizar as diferenças, incluindo alterações de texto e comentários, em um único arquivo HTML. Ele combina o poder do **Pandoc**, um **filtro Lua personalizado** e um script Python que usa o `difflib` para comparar as saídas HTML.
+## 🚀 Funcionalidades
 
-## Funcionalidades
+- **CLI**: Comparação local de arquivos DOCX
+- **API REST**: Endpoint HTTP para comparação via Directus
+- **HTML Responsivo**: Visualização profissional das diferenças
+- **Integração Directus**: Download automático de arquivos por UUID
+- **Limpeza Automática**: Remove tags HTML desnecessárias
 
-* Compara dois arquivos `.docx` (original e modificado).
-* Destaca **adições** (verde) e **remoções** (vermelho) de texto no HTML de saída.
-* Inclui **comentários** inseridos no Word, exibindo o autor, data e conteúdo do comentário diretamente ao lado do texto comentado no HTML.
-* Gera um arquivo HTML único e estilizado para fácil visualização em qualquer navegador.
+## 📋 Pré-requisitos
 
-## Como Funciona
+- Python 3.8+
+- Pandoc
+- Arquivo Lua filter: `comments_html_filter_direct.lua`
 
-A solução opera em três etapas principais, orquestradas pelo script Python `docx_diff_viewer.py`:
+### Instalação do Pandoc
 
-1.  **Conversão de DOCX para HTML (com filtro Lua):**
-    * Para cada arquivo `.docx` de entrada, o script Python chama o **Pandoc**.
-    * O Pandoc processa o `.docx` e aplica um **filtro Lua** (`comments_html_filter_direct.lua`). Este filtro é crucial; ele identifica os comentários do Word e **injeta suas informações (quem, quando, o quê)** diretamente no HTML como texto visível, formatado com classes CSS específicas.
-    * O resultado são dois arquivos HTML temporários, um para o documento original e outro para o modificado, ambos contendo os comentários.
+```bash
+# macOS
+brew install pandoc
 
-2.  **Comparação Textual dos HTMLs:**
-    * O script Python lê as duas saídas HTML temporárias (do original e do modificado) linha por linha.
-    * Utilizando a biblioteca padrão `difflib` do Python, ele compara o conteúdo dessas linhas HTML.
-    * As diferenças (linhas adicionadas ou removidas) são identificadas.
+# Ubuntu/Debian
+sudo apt-get install pandoc
 
-3.  **Geração do HTML Final de Diferenças:**
-    * Com base no resultado da comparação do `difflib`, o script constrói um novo arquivo HTML.
-    * Ele envolve as linhas adicionadas em tags `<span>` com a classe `added` e as linhas removidas com a classe `removed`.
-    * O **CSS embutido** no script Python (`style.css` foi integrado nele) é aplicado para colorir essas tags, tornando as alterações visualmente claras.
-    * O resultado é um arquivo `diff_output.html` que pode ser aberto em qualquer navegador para revisão.
+# Windows
+# Baixe de: https://pandoc.org/installing.html
+```
 
-## Pré-requisitos
+## 🔧 Instalação
 
-Para executar este projeto, você precisará ter o seguinte instalado em seu sistema:
+```bash
+# 1. Clone o repositório
+git clone <repository-url>
+cd docx-compare
 
-* **Pandoc:** Ferramenta universal de conversão de documentos.
-    * Instruções de instalação: [Pandoc Installation](https://pandoc.org/installing.html)
-* **Python 3:** Linguagem de programação para o script principal.
-    * Instruções de instalação: [Python.org](https://www.python.org/downloads/)
+# 2. Instale as dependências Python
+pip install -r requirements.txt
 
-## Configuração e Instalação
+# 3. Configure as variáveis de ambiente
+cp .env.example .env
+# Edite o .env com suas configurações do Directus
+```
 
-Recomendamos o uso de um **ambiente virtual (venv)** para gerenciar as dependências do Python, garantindo que o projeto não interfira com outras instalações de Python em seu sistema.
+## 🎯 Uso
 
-1.  **Navegue até o diretório do projeto:**
-    ```bash
-    cd /caminho/para/o/seu/projeto/docx-compare
-    ```
+### CLI - Comparação Local
 
-2.  **Crie e ative seu ambiente virtual:**
-    ```bash
-    python3 -m venv venv
-    source venv/bin/activate  # No macOS/Linux
-    # ou
-    .\venv\Scripts\activate    # No Windows
-    ```
+```bash
+python docx_diff_viewer.py original.docx modificado.docx resultado.html
+```
 
-    *Nota: Certifique-se de que os arquivos `comments_html_filter_direct.lua` e `docx_diff_viewer.py` já estão no diretório do seu projeto. Não há um `requirements.txt` para este projeto, pois as dependências são mínimas e já nativas do Python.*
+**Exemplo:**
+```bash
+python docx_diff_viewer.py documentos/doc-rafael-original.docx documentos/doc-rafael-alterado.docx resultado.html
+```
 
-## Como Executar
+### API REST - Integração com Directus
 
-Para comparar dois documentos `.docx` e gerar o HTML de diferenças:
+#### 1. Configurar o .env
 
-1.  **Ative seu ambiente virtual** (se ainda não estiver ativo):
-    ```bash
-    source venv/bin/activate  # No macOS/Linux
-    # ou
-    .\venv\Scripts\activate    # No Windows
-    ```
+```env
+# Configurações do Directus
+DIRECTUS_BASE_URL=https://your-directus-instance.com
+DIRECTUS_TOKEN=your-directus-token-here
 
-2.  **Execute o script Python:**
-    ```bash
-    python docx_diff_viewer.py <caminho_para_original.docx> <caminho_para_modificado.docx> <caminho_para_saida.html>
-    ```
+# Configurações da API
+FLASK_HOST=0.0.0.0
+FLASK_PORT=5002
+FLASK_DEBUG=True
 
-    **Exemplo:**
+# Diretórios
+RESULTS_DIR=results
+```
 
-    ```bash
-    python docx_diff_viewer.py documentos/relatorio_v1.docx documentos/relatorio_v2.docx resultado_comparacao.html
-    ```
+#### 2. Executar a API
 
-    Após a execução, um arquivo HTML (por exemplo, `resultado_comparacao.html`) será gerado no diretório especificado. Abra-o em seu navegador web preferido para visualizar as diferenças e os comentários.
+```bash
+python api_simple.py
+```
 
-3.  **Desativar o ambiente virtual (ao terminar):**
-    Quando você finalizar suas tarefas com o projeto e quiser retornar ao seu ambiente Python padrão, execute:
-    ```bash
-    deactivate
-    ```
+A API estará disponível em `http://localhost:5002`
+
+#### 3. Endpoints Disponíveis
+
+| Endpoint | Método | Descrição |
+|----------|--------|-----------|
+| `/health` | GET | Verificação de saúde da API |
+| `/compare` | POST | Comparar dois documentos DOCX |
+| `/results/<filename>` | GET | Servir arquivo HTML de resultado |
+
+#### 4. Exemplo de Uso da API
+
+**Verificar saúde:**
+```bash
+curl http://localhost:5002/health
+```
+
+**Comparar documentos:**
+```bash
+curl -X POST http://localhost:5002/compare \
+  -H "Content-Type: application/json" \
+  -d '{
+    "original_file_id": "550e8400-e29b-41d4-a716-446655440000",
+    "modified_file_id": "550e8400-e29b-41d4-a716-446655440001"
+  }'
+```
+
+**Resposta da comparação:**
+```json
+{
+  "success": true,
+  "result_url": "http://localhost:5002/results/comparison_abc123.html",
+  "result_filename": "comparison_abc123.html",
+  "timestamp": "2025-09-02T14:15:30"
+}
+```
+
+## 🧪 Testes
+
+```bash
+# Testar a API
+python test_api_simple.py
+```
+
+## 🏗️ Arquitetura da API
+
+A API segue um fluxo simples e eficiente:
+
+1. **📥 Receber Request**: Endpoint `/compare` recebe UUIDs dos arquivos
+2. **⬇️ Download**: Baixa arquivos do Directus usando os UUIDs
+3. **💾 Salvar**: Salva arquivos temporariamente no disco
+4. **🔄 Processar**: Executa `docx_diff_viewer.py` para gerar comparação
+5. **📊 Retornar**: Retorna URL do arquivo HTML gerado
+6. **🗑️ Limpar**: Remove arquivos temporários automaticamente
+
+## 📁 Estrutura do Projeto
+
+```
+docx-compare/
+├── 📄 README.md                    # Este arquivo
+├── 🐍 docx_diff_viewer.py          # CLI principal
+├── 🌐 api_simple.py                # API REST
+├── 🧪 test_api_simple.py           # Testes da API
+├── 🔧 requirements.txt             # Dependências Python
+├── ⚙️ .env.example                 # Exemplo de configuração
+├── 🎨 comments_html_filter_direct.lua  # Filtro Pandoc
+├── 📁 documentos/                  # Documentos de exemplo
+├── 📁 results/                     # Resultados HTML gerados
+└── 📋 API_DOCUMENTATION.md         # Documentação detalhada da API
+```
+
+## 🎨 Características do HTML Gerado
+
+- **Design Responsivo**: Adapta-se a diferentes tamanhos de tela
+- **Estatísticas**: Contadores de adições, remoções e modificações
+- **Cores Intuitivas**: 
+  - 🟢 Verde para adições
+  - 🔴 Vermelho para remoções
+  - 🟡 Amarelo para modificações
+- **Tipografia Limpa**: Fonte moderna e legível
+- **Estrutura Clara**: Cabeçalho, estatísticas e conteúdo organizados
+
+## 🔒 Segurança
+
+- Validação de nomes de arquivos para prevenir path traversal
+- Limpeza automática de arquivos temporários
+- Validação de entrada nos endpoints da API
+- Tratamento de erros robusto
+
+## 🚀 Deploy em Produção
+
+Para produção, considere:
+
+1. **Servidor WSGI**: Use Gunicorn ou uWSGI em vez do servidor de desenvolvimento Flask
+2. **Proxy Reverso**: Configure Nginx na frente da aplicação
+3. **HTTPS**: Configure certificados SSL/TLS
+4. **Monitoramento**: Implemente logs e métricas
+5. **Rate Limiting**: Adicione limitação de taxa para prevenir abuso
+
+**Exemplo com Gunicorn:**
+```bash
+pip install gunicorn
+gunicorn -w 4 -b 0.0.0.0:5002 api_simple:app
+```
+
+## 🐛 Solução de Problemas
+
+### Erro: "Pandoc not found"
+```bash
+# Instale o Pandoc
+brew install pandoc  # macOS
+sudo apt-get install pandoc  # Ubuntu
+```
+
+### Erro: "Filtro Lua não encontrado"
+- Verifique se `comments_html_filter_direct.lua` está no diretório raiz
+- Confirme o caminho no arquivo `.env`
+
+### Erro: "Connection refused" na API
+- Verifique se a API está rodando: `python api_simple.py`
+- Confirme a porta no arquivo `.env`
+- Verifique se a porta não está ocupada: `lsof -i :5002`
+
+### Erro: "Directus authentication failed"
+- Verifique `DIRECTUS_BASE_URL` e `DIRECTUS_TOKEN` no `.env`
+- Confirme se o token tem permissões para acessar arquivos
+- Teste a conexão: `curl -H "Authorization: Bearer $TOKEN" $DIRECTUS_URL/files`
+
+## 📖 Documentação Adicional
+
+Para mais detalhes sobre a API, consulte [API_DOCUMENTATION.md](API_DOCUMENTATION.md).
+
+## 🤝 Contribuição
+
+1. Fork o repositório
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
