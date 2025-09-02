@@ -34,7 +34,7 @@ def convert_docx_to_html(docx_path, output_html_path, lua_filter_path):
     cmd = [
         "pandoc",
         docx_path,
-        "--to=json",
+        "--to=html",
         "--track-changes=all",
         f"--lua-filter={lua_filter_path}",
         f"-o{output_html_path}"
