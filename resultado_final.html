@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comparação de Documentos</title>
+<style>
+body { 
+    font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif; 
+    line-height: 1.6; 
+    margin: 20px auto; 
+    max-width: 1200px; 
+    background-color: #f8f9fa; 
+    color: #343a40; 
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
+    padding: 30px; 
+    border-radius: 8px; 
+}
+h1, h2, h3, h4, h5, h6 { 
+    color: #212529; 
+    margin-top: 1.5em; 
+    margin-bottom: 0.5em; 
+}
+.diff-header { 
+    background-color: #e9ecef; 
+    padding: 15px 20px; 
+    border-bottom: 1px solid #dee2e6; 
+    margin: -30px -30px 20px -30px; 
+    border-top-left-radius: 8px; 
+    border-top-right-radius: 8px; 
+    font-size: 1.2em; 
+    color: #495057; 
+    text-align: center; 
+}
+.diff-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    margin-top: 20px;
+}
+.added { 
+    background-color: #d4edda; 
+    color: #155724; 
+    font-weight: bold; 
+    padding: 8px 12px; 
+    border-radius: 4px; 
+    text-decoration: none;
+    border-left: 4px solid #28a745;
+    margin: 8px 0;
+    display: block;
+}
+.removed { 
+    background-color: #f8d7da; 
+    color: #721c24; 
+    text-decoration: line-through; 
+    padding: 8px 12px; 
+    border-radius: 4px;
+    border-left: 4px solid #dc3545;
+    margin: 8px 0;
+    display: block;
+}
+.changed-old { 
+    background-color: #fff3cd; 
+    color: #856404; 
+    text-decoration: line-through; 
+    padding: 0.1em 0.3em; 
+    border-radius: 3px; 
+}
+.changed-new { 
+    background-color: #fff3cd; 
+    color: #856404; 
+    font-weight: bold; 
+    padding: 0.1em 0.3em; 
+    border-radius: 3px; 
+}
+.commented-text-container { 
+    border-bottom: 2px dotted #007bff; 
+    cursor: help; 
+    position: relative; 
+    display: inline-block; 
+}
+.inserted-comment-info { 
+    font-family: monospace; 
+    font-size: 0.8em; 
+    color: #6c757d; 
+    margin-left: 0.5em; 
+    padding: 0.2em 0.5em; 
+    border-left: 3px solid #17a2b8; 
+    background-color: #eaf6f9; 
+    border-radius: 4px; 
+    white-space: normal; 
+    display: inline-block; 
+}
+.inserted-comment-info strong { 
+    color: #0056b3; 
+    font-weight: bold; 
+}
+.inserted-comment-info em { 
+    font-style: italic; 
+    color: #495057; 
+}
+p { margin-bottom: 1em; }
+ul, ol { margin-left: 20px; margin-bottom: 1em; }
+table { width: 100%; border-collapse: collapse; margin-bottom: 1em; }
+th, td { border: 1px solid #dee2e6; padding: 8px; text-align: left; }
+th { background-color: #e9ecef; }
+a { color: #007bff; text-decoration: none; }
+a:hover { text-decoration: underline; }
+.diff-stats {
+    background-color: #e3f2fd;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    font-size: 0.9em;
+}
+.diff-stats .added-count { color: #2e7d32; }
+.diff-stats .removed-count { color: #c62828; }
+</style>
+</head>
+<body>
+<div class="diff-header">
+<h1>Comparação de Documentos</h1>
+<p><strong>Original:</strong> doc-rafael-original.docx | <strong>Modificado:</strong> doc-rafael-alterado.docx</p>
+</div>
+<div class="diff-stats">
+<strong>Estatísticas:</strong> <span class="added-count">+8 adições</span> | <span class="removed-count">-8 remoções</span>
+</div>
+<div class="diff-content">
+<p>QUADRO DE ITENS PREENCHÍVEIS</p>
+<p>• O presente CONTRATO tem por objeto a prestação de serviços de
+inserir “Serviços” a serem prestados em inserir.</p>
+<p>• Fazem parte do CONTRATO os seguintes anexos:</p>
+<p class="removed">Anexo I. [Planilha de Quantidades e Preços];</p>
+<p class="added">Anexo I. Planilha;</p>
+<p>Anexo II. [Descrição de Escopo Técnico];</p>
+<p>Anexo VI. [Termo de Proteção de dados];</p>
+<p>Anexo VII. [Proposta Técnica];</p>
+<p>• As Faturas emitidas serão entregues pela CONTRATADA conforme
+abaixo:</p>
+<p>• Nota Fiscal Eletrônica:</p>
+<p>Central de Notas</p>
+<p class="removed">( ) Em caso de prestação de serviços para a unidades da Samarco em
+Minas Gerais centralnfservico.mg@samarco.com</p>
+<p class="added">( x ) Em caso de prestação de serviços para a unidades da Samarco em
+Minas Gerais centralnfservico.mg@samarco.com</p>
+<p>[( ) Em caso de prestação de serviços para a unidades da Samarco no
+Espírito Santo:</p>
+<p>centralnfservico.es@samarco.com</p>
+<p>• A forma de pagamento do CONTRATO será realizada conforme prazo
+definido no CABEÇALHO, observadas as disposições a seguir:</p>
+<p class="removed">( ) Conforme definido nos Critérios de Medição incluídos no Anexo II
+– Descrição de Escopo Técnico</p>
+<p class="added">( x ) Conforme definido nos Critérios de Medição incluídos no Anexo
+II – Descrição de Escopo Técnico</p>
+<p>( ) Outro [descrever]</p>
+<p>• Aplicam-se as seguintes condições especiais:</p>
+<p class="removed">( ) Não aplicável</p>
+<p class="added">( x ) Não aplicável</p>
+<p>( ) Inserir aqui todas as condições especiais (ex.: adiantamento,
+fornecimento de diesel, faturamento direto etc.)</p>
+<p>• Se aplicável, prazo para mobilização de profissionais:</p>
+<p class="removed">( ) Após a solicitação formal da CONTRATANTE, a CONTRATADA deverá
+mobilizar seus profissionais designados para assistência técnica,
+supervisão ou outras atividades relacionadas ao objeto do CONTRATO no
+prazo máximo de [NÚMERO DE DIAS] [NÚMERO DE DIAS POR EXTENSO] dias
+úteis. Durante esse período, a CONTRATANTE deverá fornecer todas as
+informações necessárias para o planejamento e organização da
+mobilização.</p>
+<p class="added">( x ) Após a solicitação formal da CONTRATANTE, a CONTRATADA deverá
+mobilizar seus profissionais designados para assistência técnica,
+supervisão ou outras atividades relacionadas ao objeto do CONTRATO no
+prazo máximo de [NÚMERO DE DIAS] [NÚMERO DE DIAS POR EXTENSO] dias
+úteis. Durante esse período, a CONTRATANTE deverá fornecer todas as
+informações necessárias para o planejamento e organização da
+mobilização.</p>
+<p>CONDIÇÕES GERAIS</p>
+<p>• DEFINIÇÕES</p>
+<p>• Independente de remissão expressa, todos os termos referidos em
+letras maiúsculas e sem negrito neste CONTRATO têm os significados
+atribuídos no QUADRO DE ITENS PREENCHÍVEIS, e/ou do cabeçalho do
+CONTRATO ou, ainda, caso não estejam previstos nesses dois campos,
+corresponderão às definições abaixo:</p>
+<p class="removed">• FUNCIONÁRIOS - empregados, representantes, diretores,
+administradores, sócios, prepostos, subcontratados e/ou terceiros
+relacionados e/ou que atuem em nome de qualquer das PARTES.</p>
+<p class="added">• PESSOAL - empregados, representantes, diretores, administradores,
+sócios, prepostos, subcontratados e/ou terceiros relacionados e/ou que
+atuem em nome de qualquer das PARTES.</p>
+<p>• DIAS – dias corridos, excluindo-se o primeiro dia e contando-se o
+último.</p>
+<p>• MEDIÇÃO - documento que conterá todos os eventos geradores de
+pagamento realizados no PERÍODO DE MEDIÇÃO, com o detalhamento das
+atividades realizadas que foram solicitadas e aceitas pela CONTRATANTE
+no respectivo intervalo temporal.</p>
+<p>• OBJETO</p>
+<p>• Este CONTRATO está de acordo com o disposto na legislação
+brasileira, especialmente no que diz respeito ao disposto nos artigos
+423 e 424 do Código Civil.</p>
+<p>• A CONTRATADA prestará à CONTRATANTE os serviços técnicos
+especializados detalhados no QUADRO DE ITENS PREENCHÍVEIS, os quais
+serão prestados conforme disciplinado neste CONTRATO.</p>
+<p class="removed">• Este CONTRATO não implica em nenhum dever de exclusividade da
+CONTRATANTE, que poderá firmar contratos com outras empresas para os
+mesmos fins, de acordo com seus interesses.</p>
+<p class="added">• Este não implica em nenhum dever de exclusividade da CONTRATANTE,
+que poderá firmar contratos com outras empresas para os mesmos fins, de
+acordo com seus interesses.</p>
+<p>• Os ANEXOS “Documentos Contratuais Gerais” ficam dispensados de
+rubrica ou validação digital posterior. A CONTRATADA declara que já
+recebeu estes ANEXOS previamente em mídia eletrônica ou outra forma de
+acesso, que tem ciência do seu conteúdo e que concorda com os termos
+neles contidos, comprometendo-se a cumpri-los na sua
+integralidade.</p>
+<p class="removed">• Os termos do QUADRO DE ITENS PREENCHÍVEIS prevalecem sobre os
+termos destas Condições Gerais os quais prevalecem sobre os termos dos
+ANEXOS. Na hipótese de conflitos entre os ANEXOS, prevalecerão uns sobre
+os outros na ordem em que se acham listados no QUADRO RESUMO
+acima.</p>
+<p class="added">• Os termos do JANELA DE ITENS PREENCHÍVEIS prevalecem sobre os
+termos destas Condições Gerais os quais prevalecem sobre os termos dos
+ANEXOS. Na hipótese de conflitos entre os ANEXOS, prevalecerão uns sobre
+os outros na ordem em que se acham listados no QUADRO RESUMO
+acima.</p>
+<p>• A CONTRATADA, em nenhuma hipótese, poderá alegar, como
+justificativa ou defesa, o desconhecimento, incompreensão, dúvida, no
+todo ou em parte, das disposições do presente CONTRATO e demais
+disposições de ordem geral ou particular nele estabelecidas, que são,
+desde já, consideradas necessárias e suficientes para definir os
+Serviços e os fornecimentos contidos no que foi contratado, e, ainda,
+permitir a sua execução de acordo com as normas vigentes no País, sendo
+vedado à CONTRATADA pleitear qualquer revisão de preços ou prorrogação
+de prazo, por erros ou omissões, que tenham sido cometidos na elaboração
+de sua(s) Proposta(s) que integra(m) o CONTRATO.</p>
+<p>• PRAZO DE VIGÊNCIA</p>
+<p>• O prazo de vigência do CONTRATO tem início e término definidos no
+cabeçalho do CONTRATO e encerrará; (i) caso seja consumido todo o saldo
+do valor do CONTRATO; (ii) após o cumprimento de todas as obrigações
+contratuais e/ou dele decorrentes ou (iii) no caso de atingido o valor
+estabelecido neste instrumento, o que ocorrer primeiro,
+independentemente de qualquer notificação judicial ou extrajudicial.</p>
+</div>
+</body>
+</html>
