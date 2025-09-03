@@ -4,9 +4,8 @@ API simples para comparação de documentos DOCX
 Integração completa com Directus usando lógica de negócio
 """
 
-import difflib
+import argparse
 import os
-import re
 import subprocess
 import tempfile
 import uuid
@@ -15,6 +14,9 @@ from datetime import datetime
 import requests
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request, send_from_directory
+
+# Importar funções do módulo comum
+from docx_utils import analyze_differences, html_to_text
 
 # Carregar variáveis de ambiente
 load_dotenv()
@@ -160,129 +162,79 @@ def download_file_from_directus(file_id):
         raise Exception(f"Erro ao baixar arquivo {file_id}: {e}")
 
 
-def clean_html_for_diff(html_content):
-    """Remove tags HTML desnecessárias e normaliza o conteúdo"""
-    html_content = re.sub(r"\n\s*\n", "\n", html_content)
-    html_content = re.sub(r"\s+", " ", html_content)
-    html_content = re.sub(r"</?html[^>]*>", "", html_content)
-    html_content = re.sub(r"</?head[^>]*>", "", html_content)
-    html_content = re.sub(r"</?body[^>]*>", "", html_content)
-    html_content = re.sub(r"<meta[^>]*>", "", html_content)
-    html_content = re.sub(r"<title[^>]*>.*?</title>", "", html_content)
-    return html_content.strip()
+def analyze_differences_for_directus(original_text, modified_text):
+    """
+    Analisa as diferenças e retorna modificações no formato esperado pelo Directus
+    Usa a função do módulo comum mas adapta o formato de retorno
+    """
+    # Usar a função básica de análise do módulo comum
+    analysis = analyze_differences(original_text, modified_text)
 
-
-def html_to_text(html_content):
-    """Converte HTML para texto limpo"""
-    html_content = re.sub(r"<!--.*?-->", "", html_content, flags=re.DOTALL)
-    html_content = re.sub(
-        r"<strong[^>]*>(.*?)</strong>", r"\1", html_content, flags=re.DOTALL
-    )
-    html_content = re.sub(r"<b[^>]*>(.*?)</b>", r"\1", html_content, flags=re.DOTALL)
-    html_content = re.sub(r"<em[^>]*>(.*?)</em>", r"\1", html_content, flags=re.DOTALL)
-    html_content = re.sub(r"<i[^>]*>(.*?)</i>", r"\1", html_content, flags=re.DOTALL)
-    html_content = re.sub(r"<u[^>]*>(.*?)</u>", r"\1", html_content, flags=re.DOTALL)
-    html_content = re.sub(
-        r"<mark[^>]*>(.*?)</mark>", r"\1", html_content, flags=re.DOTALL
-    )
-    html_content = re.sub(
-        r"<li[^>]*><p[^>]*>(.*?)</p></li>", r"• \1", html_content, flags=re.DOTALL
-    )
-    html_content = re.sub(
-        r"<li[^>]*>(.*?)</li>", r"• \1", html_content, flags=re.DOTALL
-    )
-    html_content = re.sub(r"<ol[^>]*>|</ol>", "", html_content)
-    html_content = re.sub(r"<ul[^>]*>|</ul>", "", html_content)
-    html_content = re.sub(r"<blockquote[^>]*>|</blockquote>", "", html_content)
-    html_content = re.sub(r"<p[^>]*>|</p>", "\n", html_content)
-    html_content = re.sub(r"<br[^>]*/?>", "\n", html_content)
-    html_content = re.sub(r"<[^>]+>", "", html_content)
-    html_content = re.sub(r"&nbsp;", " ", html_content)
-    html_content = re.sub(r"&amp;", "&", html_content)
-    html_content = re.sub(r"&lt;", "<", html_content)
-    html_content = re.sub(r"&gt;", ">", html_content)
-    html_content = re.sub(r"&quot;", '"', html_content)
-    html_content = re.sub(r"\n\s*\n", "\n", html_content)
-    return html_content.strip()
-
-
-def analyze_differences_detailed(original_text, modified_text):
-    """Analisa as diferenças e retorna modificações detalhadas"""
-    original_lines = original_text.split("\n")
-    modified_lines = modified_text.split("\n")
-
-    diff = list(
-        difflib.unified_diff(
-            original_lines,
-            modified_lines,
-            fromfile="Original",
-            tofile="Modificado",
-            lineterm="",
-        )
-    )
-
+    # Converter para o formato esperado pelo Directus
     modifications = []
     modification_count = 1
 
-    i = 0
-    while i < len(diff):
-        line = diff[i]
+    # Processar as modificações encontradas
+    for mod in analysis.get("modifications", []):
+        modifications.append(
+            {
+                "categoria": "modificacao",
+                "conteudo": mod.get("original", ""),
+                "alteracao": mod.get("modified", ""),
+                "sort": modification_count,
+            }
+        )
+        modification_count += 1
 
-        if line.startswith("@@") or line.startswith("---") or line.startswith("+++"):
-            i += 1
-            continue
-        elif line.startswith("-"):
-            # Linha removida
-            original_content = line[1:].strip()
-            if original_content:  # Ignorar linhas vazias
-                # Verificar se a próxima linha é uma adição (modificação)
-                if i + 1 < len(diff) and diff[i + 1].startswith("+"):
-                    modified_content = diff[i + 1][1:].strip()
-                    modifications.append(
-                        {
-                            "categoria": "modificacao",
-                            "conteudo": original_content,
-                            "alteracao": modified_content,
-                            "sort": modification_count,
-                        }
-                    )
-                    i += 2  # Pular a próxima linha pois já processamos
-                else:
-                    # Apenas remoção
-                    modifications.append(
-                        {
-                            "categoria": "remocao",
-                            "conteudo": original_content,
-                            "alteracao": "",
-                            "sort": modification_count,
-                        }
-                    )
-                    i += 1
-                modification_count += 1
-        elif line.startswith("+"):
-            # Linha adicionada (que não foi processada como modificação)
-            added_content = line[1:].strip()
-            if added_content:  # Ignorar linhas vazias
-                modifications.append(
-                    {
-                        "categoria": "adicao",
-                        "conteudo": "",
-                        "alteracao": added_content,
-                        "sort": modification_count,
-                    }
-                )
-                modification_count += 1
-            i += 1
-        else:
-            i += 1
+    # Adicionar estatísticas como modificações adicionais se necessário
+    if analysis.get("total_additions", 0) > len(modifications):
+        for i in range(analysis["total_additions"] - len(modifications)):
+            modifications.append(
+                {
+                    "categoria": "adicao",
+                    "conteudo": "",
+                    "alteracao": f"Adição {i + 1}",
+                    "sort": modification_count,
+                }
+            )
+            modification_count += 1
+
+    if analysis.get("total_deletions", 0) > len(modifications):
+        for i in range(analysis["total_deletions"] - len(modifications)):
+            modifications.append(
+                {
+                    "categoria": "remocao",
+                    "conteudo": f"Remoção {i + 1}",
+                    "alteracao": "",
+                    "sort": modification_count,
+                }
+            )
+            modification_count += 1
 
     return modifications
 
 
-def save_modifications_to_directus(versao_id, modifications):
+def save_modifications_to_directus(versao_id, modifications, dry_run=False):
     """Salva as modificações na coleção modificacao do Directus"""
     try:
         print(f"💾 Salvando {len(modifications)} modificações...")
+
+        if dry_run:
+            print("🏃‍♂️ DRY-RUN: Não salvando modificações no Directus")
+            saved_modifications = []
+            for i, mod in enumerate(modifications):
+                fake_data = {
+                    "id": f"dry-run-{i + 1}",
+                    "versao": versao_id,
+                    "categoria": mod["categoria"],
+                    "conteudo": mod["conteudo"],
+                    "alteracao": mod["alteracao"],
+                    "sort": mod["sort"],
+                    "status": "draft",
+                }
+                saved_modifications.append(fake_data)
+                print(f"✅ (DRY-RUN) Modificação {mod['sort']}: {mod['categoria']}")
+            return saved_modifications
 
         headers = get_directus_headers()
         saved_modifications = []
@@ -320,7 +272,7 @@ def save_modifications_to_directus(versao_id, modifications):
         return []
 
 
-def update_versao_status(versao_id, result_url, total_modifications):
+def update_versao_status(versao_id, result_url, total_modifications, dry_run=False):
     """Atualiza o status da versão para 'concluido' e adiciona observações"""
     try:
         print(f"📝 Atualizando status da versão {versao_id}...")
@@ -332,6 +284,12 @@ def update_versao_status(versao_id, result_url, total_modifications):
         )
 
         update_data = {"status": "concluido", "observacao": observacao}
+
+        if dry_run:
+            print("🏃‍♂️ DRY-RUN: Não executando atualização no Directus")
+            print(f"   Status: {update_data['status']}")
+            print(f"   Observação: {update_data['observacao']}")
+            return {"id": versao_id, "status": "concluido", "observacao": observacao}
 
         # Atualizar versão usando a API do Directus
         response = requests.patch(
@@ -451,8 +409,14 @@ def compare_versao():
             ), 400
 
         versao_id = data["versao_id"]
+        dry_run = data.get("dry_run", False)  # Novo parâmetro opcional
 
-        print(f"🚀 Iniciando comparação para versão {versao_id}")
+        if dry_run:
+            print(
+                f"🏃‍♂️ DRY-RUN: Iniciando análise (sem alterações) para versão {versao_id}"
+            )
+        else:
+            print(f"🚀 Iniciando comparação para versão {versao_id}")
 
         # 1. Buscar dados completos da versão
         versao_data = get_versao_complete_data(versao_id)
@@ -527,16 +491,18 @@ def compare_versao():
             modified_text = html_to_text(modified_html)
 
             # Analisar diferenças
-            modifications = analyze_differences_detailed(original_text, modified_text)
+            modifications = analyze_differences_for_directus(
+                original_text, modified_text
+            )
 
             # 6. Salvar modificações no Directus
             saved_modifications = save_modifications_to_directus(
-                versao_id, modifications
+                versao_id, modifications, dry_run
             )
 
             # 7. Atualizar status da versão
             result_url = f"http://{FLASK_HOST}:{FLASK_PORT}/outputs/{result_filename}"
-            update_versao_status(versao_id, result_url, len(modifications))
+            update_versao_status(versao_id, result_url, len(modifications), dry_run)
 
             print(
                 f"✅ Processo completo! {len(modifications)} modificações encontradas"
@@ -585,11 +551,54 @@ def serve_result(filename):
         return jsonify({"error": "Arquivo não encontrado"}), 404
 
 
+def create_arg_parser():
+    """Criar parser de argumentos da linha de comando"""
+    parser = argparse.ArgumentParser(
+        description="API simples para comparação de documentos DOCX",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Executar em modo de análise sem modificar registros no Directus",
+    )
+
+    parser.add_argument(
+        "--host",
+        default=FLASK_HOST,
+        help=f"Host para o servidor Flask (padrão: {FLASK_HOST})",
+    )
+
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=FLASK_PORT,
+        help=f"Porta para o servidor Flask (padrão: {FLASK_PORT})",
+    )
+
+    return parser
+
+
 if __name__ == "__main__":
+    # Configurar argumentos da linha de comando
+    parser = create_arg_parser()
+    args = parser.parse_args()
+
+    # Aplicar configurações globais baseadas nos argumentos
+    if args.dry_run:
+        # Configurar modo dry-run global (pode ser usado em middleware)
+        app.config["DRY_RUN"] = True
+        print("🏃‍♂️ MODO DRY-RUN ATIVADO - Nenhuma alteração será feita no Directus")
+    else:
+        app.config["DRY_RUN"] = False
+
     print("🚀 API Completa de Comparação de Documentos")
     print(f"📁 Resultados salvos em: {RESULTS_DIR}")
     print(f"🔗 Directus: {DIRECTUS_BASE_URL}")
-    print(f"🌐 Servidor: http://{FLASK_HOST}:{FLASK_PORT}")
+    print(f"🌐 Servidor: http://{args.host}:{args.port}")
+    if args.dry_run:
+        print("🏃‍♂️ Modo: DRY-RUN (sem alterações no banco)")
     print("")
     print("📋 Endpoints disponíveis:")
     print("  • POST /compare - Comparação com lógica de negócio (versao_id)")
@@ -603,8 +612,10 @@ if __name__ == "__main__":
     print(
         "  1. Para lógica de negócio: POST /compare com {'versao_id': 'id-da-versao'}"
     )
+    if args.dry_run:
+        print("     Para dry-run: adicione {'dry_run': true} ao JSON")
     print(
         "  2. Para comparação simples: POST /compare_simple com original_file_id e modified_file_id"
     )
 
-    app.run(host=FLASK_HOST, port=FLASK_PORT, debug=True)
+    app.run(host=args.host, port=args.port, debug=True)

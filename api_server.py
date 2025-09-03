@@ -1,8 +1,6 @@
 import difflib
 import html
 import os
-import re
-import subprocess
 import tempfile
 import uuid
 from datetime import datetime
@@ -11,6 +9,14 @@ from urllib.parse import urljoin
 import requests
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request, send_file
+
+from docx_utils import (
+    analyze_differences,
+    convert_docx_to_html_content,
+    convert_docx_to_text,
+    get_css_styles,
+    html_to_text,
+)
 
 # Carregar variáveis de ambiente
 load_dotenv()
@@ -95,50 +101,16 @@ def download_file_from_directus(file_id, filename_prefix="file"):
         raise Exception(f"Erro inesperado: {e}")
 
 
-def html_to_text(html_content):
-    """Remove todas as tags HTML e retorna apenas o texto."""
-    # Remove todas as tags HTML
-    text = re.sub(r"<[^>]+>", "", html_content)
-    # Decodifica entidades HTML
-    text = html.unescape(text)
-    # Remove espaços extras
-    text = re.sub(r"\s+", " ", text).strip()
-    return text
-
-
 def compare_docx_files(file1_path, file2_path):
     """Compara dois arquivos DOCX usando pandoc e retorna o resultado."""
     try:
-        # Converter arquivos para texto usando pandoc
-        def docx_to_text(docx_path):
-            cmd = ["pandoc", docx_path, "-t", "plain"]
-            result = subprocess.run(
-                cmd, capture_output=True, text=True, encoding="utf-8"
-            )
-            if result.returncode != 0:
-                raise Exception(f"Erro ao converter {docx_path}: {result.stderr}")
-            return result.stdout
-
-        # Converter para HTML usando pandoc com filtro Lua
-        def docx_to_html_with_filter(docx_path):
-            cmd = ["pandoc", docx_path, "-t", "html", "--standalone"]
-            if os.path.exists(LUA_FILTER_PATH):
-                cmd.extend(["--lua-filter", LUA_FILTER_PATH])
-
-            result = subprocess.run(
-                cmd, capture_output=True, text=True, encoding="utf-8"
-            )
-            if result.returncode != 0:
-                raise Exception(f"Erro ao converter {docx_path}: {result.stderr}")
-            return result.stdout
-
-        # Converter ambos os arquivos
-        original_text = docx_to_text(file1_path)
-        modified_text = docx_to_text(file2_path)
+        # Converter ambos os arquivos para texto
+        original_text = convert_docx_to_text(file1_path)
+        modified_text = convert_docx_to_text(file2_path)
 
         # Converter para HTML para comparação visual
-        original_html = docx_to_html_with_filter(file1_path)
-        modified_html = docx_to_html_with_filter(file2_path)
+        original_html = convert_docx_to_html_content(file1_path, LUA_FILTER_PATH)
+        modified_html = convert_docx_to_html_content(file2_path, LUA_FILTER_PATH)
 
         # Analisar diferenças
         statistics = analyze_differences(original_text, modified_text)
@@ -152,67 +124,11 @@ def compare_docx_files(file1_path, file2_path):
         raise Exception(f"Erro na comparação: {e}")
 
 
-def extract_body_content(html_file):
-    """Extrai apenas o conteúdo do body do HTML."""
-    with open(html_file, encoding="utf-8") as f:
-        content = f.read()
-
-    body_match = re.search(r"<body[^>]*>(.*?)</body>", content, re.DOTALL)
-    if body_match:
-        return body_match.group(1).strip()
-    return content
-
-
-def analyze_differences(original_text, modified_text):
-    """Analisa as diferenças e extrai estatísticas detalhadas."""
-    original_lines = original_text.splitlines()
-    modified_lines = modified_text.splitlines()
-
-    differ = difflib.unified_diff(original_lines, modified_lines, lineterm="")
-    changes = list(differ)
-
-    additions = sum(
-        1 for line in changes if line.startswith("+") and not line.startswith("+++")
-    )
-    deletions = sum(
-        1 for line in changes if line.startswith("-") and not line.startswith("---")
-    )
-
-    # Encontrar modificações específicas
-    modifications = []
-    i = 0
-    while i < len(changes):
-        if changes[i].startswith("-") and not changes[i].startswith("---"):
-            original_line = changes[i][1:].strip()
-            if (
-                i + 1 < len(changes)
-                and changes[i + 1].startswith("+")
-                and not changes[i + 1].startswith("+++")
-            ):
-                modified_line = changes[i + 1][1:].strip()
-                if original_line and modified_line:
-                    modifications.append(
-                        {"original": original_line, "modified": modified_line}
-                    )
-                i += 2
-            else:
-                i += 1
-        else:
-            i += 1
-
-    return {
-        "total_additions": additions,
-        "total_deletions": deletions,
-        "total_modifications": len(modifications),
-        "modifications": modifications[:10],  # Limitar a 10 exemplos
-    }
-
-
 def generate_comparison_html(original_html, modified_html, statistics):
     """Gera HTML de comparação com melhor visualização."""
     # Extrair texto limpo para comparação
-    original_text = html_to_text(original_html)
-    modified_text = html_to_text(modified_html)
+    original_text = html_to_text(original_html, preserve_structure=False)
+    modified_text = html_to_text(modified_html, preserve_structure=False)
 
     # Comparar linha por linha
     original_lines = original_text.split("\n")
@@ -221,138 +137,8 @@ def generate_comparison_html(original_html, modified_html, statistics):
     differ = difflib.unified_diff(original_lines, modified_lines, lineterm="", n=3)
     diff_lines = list(differ)
 
-    # CSS melhorado
-    css = """
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .header {
-            border-bottom: 3px solid #007acc;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
-        .title {
-            color: #007acc;
-            font-size: 28px;
-            font-weight: bold;
-            margin: 0;
-        }
-        .subtitle {
-            color: #666;
-            font-size: 16px;
-            margin: 5px 0 0 0;
-        }
-        .statistics {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin: 30px 0;
-        }
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        .stat-number {
-            font-size: 2em;
-            font-weight: bold;
-            display: block;
-        }
-        .stat-label {
-            font-size: 0.9em;
-            opacity: 0.9;
-        }
-        .comparison-section {
-            margin: 30px 0;
-        }
-        .section-title {
-            color: #333;
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #eee;
-        }
-        .diff-container {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 20px;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        .diff-line {
-            margin: 2px 0;
-            padding: 2px 5px;
-            border-radius: 3px;
-        }
-        .diff-added {
-            background-color: #d4edda;
-            color: #155724;
-            border-left: 4px solid #28a745;
-        }
-        .diff-removed {
-            background-color: #f8d7da;
-            color: #721c24;
-            border-left: 4px solid #dc3545;
-        }
-        .diff-context {
-            color: #6c757d;
-        }
-        .modifications-list {
-            background: white;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        .modification-item {
-            padding: 15px;
-            border-bottom: 1px solid #eee;
-        }
-        .modification-item:last-child {
-            border-bottom: none;
-        }
-        .modification-original {
-            background: #fff3cd;
-            padding: 8px 12px;
-            border-radius: 4px;
-            margin: 5px 0;
-            border-left: 4px solid #ffc107;
-        }
-        .modification-new {
-            background: #d1ecf1;
-            padding: 8px 12px;
-            border-radius: 4px;
-            margin: 5px 0;
-            border-left: 4px solid #17a2b8;
-        }
-        .timestamp {
-            color: #6c757d;
-            font-size: 14px;
-            text-align: center;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-        }
-    </style>
-    """
+    # CSS do módulo comum
+    css_content = get_css_styles("modern")
 
     # Construir HTML
     html_content = f"""
@@ -362,7 +148,8 @@ def generate_comparison_html(original_html, modified_html, statistics):
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Comparação de Documentos DOCX</title>
-        {css}
+        <style>{css_content}</style>
+    </head>
     </head>
     <body>
         <div class="container">

@@ -46,9 +46,17 @@ run-processor: ## Executar processador automático
 	@echo "🤖 Iniciando processador automático..."
 	$(PYTHON) processador_automatico.py
 
+run-processor-dry: ## Executar processador automático em modo dry-run
+	@echo "🏃‍♂️ Iniciando processador automático (DRY-RUN)..."
+	$(PYTHON) processador_automatico.py --dry-run
+
 run-api: ## Executar API simples
 	@echo "🌐 Iniciando API simples..."
 	$(PYTHON) api_simple.py
+
+run-api-dry: ## Executar API simples em modo dry-run  
+	@echo "🏃‍♂️ Iniciando API simples (DRY-RUN)..."
+	$(PYTHON) api_simple.py --dry-run
 
 clean: ## Limpar arquivos temporários e cache
 	@echo "🧹 Limpando arquivos temporários..."
@@ -78,6 +86,30 @@ compare: ## Exemplo: make compare ORIG=doc1.docx MOD=doc2.docx OUT=result.html
 		$(PYTHON) docx_diff_viewer.py "$(ORIG)" "$(MOD)" "$(OUT)"; \
 	else \
 		$(PYTHON) docx_diff_viewer.py "$(ORIG)" "$(MOD)"; \
+	fi
+
+# Comando para análise sem gerar arquivo (dry-run)
+analyze: ## Exemplo: make analyze ORIG=doc1.docx MOD=doc2.docx (apenas análise)
+	@if [ -z "$(ORIG)" ] || [ -z "$(MOD)" ]; then \
+		echo "❌ Erro: Especifique ORIG e MOD"; \
+		echo "   Exemplo: make analyze ORIG=doc1.docx MOD=doc2.docx"; \
+		exit 1; \
+	fi
+	@echo "🔍 Analisando $(ORIG) vs $(MOD) (dry-run)..."
+	$(PYTHON) docx_diff_viewer.py "$(ORIG)" "$(MOD)" --dry-run --verbose
+
+# Comando para testar com documentos de exemplo
+demo: ## Demonstração com documentos de exemplo
+	@echo "🎭 Executando demonstração com documentos de exemplo..."
+	@if [ -f "documentos/doc-rafael-original.docx" ] && [ -f "documentos/doc-rafael-alterado.docx" ]; then \
+		echo "📋 1. Análise rápida (dry-run):"; \
+		$(PYTHON) docx_diff_viewer.py documentos/doc-rafael-original.docx documentos/doc-rafael-alterado.docx --dry-run; \
+		echo ""; \
+		echo "📄 2. Gerando relatório HTML:"; \
+		$(PYTHON) docx_diff_viewer.py documentos/doc-rafael-original.docx documentos/doc-rafael-alterado.docx outputs/demo.html --style modern; \
+		echo "✅ Demonstração concluída! Veja outputs/demo.html"; \
+	else \
+		echo "⚠️  Documentos de exemplo não encontrados em documentos/"; \
 	fi
 
 # Comando para rodar um teste específico

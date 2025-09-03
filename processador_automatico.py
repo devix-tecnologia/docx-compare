@@ -4,6 +4,7 @@ Processador automático de versões
 Verifica a cada minuto se há versões com status 'processar' e as processa automaticamente
 """
 
+import argparse
 import difflib
 import os
 import re
@@ -353,6 +354,7 @@ def update_versao_status(
     total_modifications=0,
     error_message=None,
     modifications=None,
+    dry_run=False,
 ):
     """Atualiza o status da versão, adiciona observações e salva modificações em uma única transação"""
     try:
@@ -393,6 +395,14 @@ def update_versao_status(
                 f"✅ {len(modifications_data)} modificações preparadas para salvar em uma única transação"
             )
 
+        if dry_run:
+            print("🏃‍♂️ DRY-RUN: Não executando atualização no Directus")
+            print(f"   Status: {update_data['status']}")
+            print(f"   Observação: {update_data['observacao']}")
+            if modifications and status == "concluido":
+                print(f"   Modificações: {len(modifications)} itens (não salvos)")
+            return {"id": versao_id, "status": status, "observacao": observacao}
+
         # Atualizar versão usando HTTP request direto
         try:
             update_url = f"{DIRECTUS_BASE_URL}/items/versao/{versao_id}"
@@ -423,17 +433,23 @@ def update_versao_status(
         return None
 
 
-def processar_versao(versao_data):
+def processar_versao(versao_data, dry_run=False):
     """
     Processa uma versão específica
     """
     versao_id = versao_data["id"]
 
     try:
-        print(f"\n🚀 Processando versão {versao_id}")
+        if dry_run:
+            print(f"\n🏃‍♂️ DRY-RUN: Analisando versão {versao_id} (sem alterações)")
+        else:
+            print(f"\n🚀 Processando versão {versao_id}")
 
-        # Atualizar status para 'processando'
-        update_versao_status(versao_id, "processando")
+        # Atualizar status para 'processando' (apenas se não for dry-run)
+        if not dry_run:
+            update_versao_status(versao_id, "processando")
+        else:
+            print("🏃‍♂️ DRY-RUN: Pulando atualização de status para 'processando'")
 
         # 1. Determinar arquivo original e modificado
         original_file_path, original_source = determine_original_file_id(versao_data)
@@ -514,6 +530,7 @@ def processar_versao(versao_data):
                 result_url,
                 len(modifications),
                 modifications=modifications,
+                dry_run=dry_run,
             )
 
             print(
@@ -539,14 +556,20 @@ def processar_versao(versao_data):
     except Exception as e:
         error_msg = str(e)
         print(f"❌ Erro ao processar versão {versao_id}: {error_msg}")
-        update_versao_status(versao_id, "erro", error_message=error_msg)
+        if not dry_run:
+            update_versao_status(versao_id, "erro", error_message=error_msg)
+        else:
+            print("🏃‍♂️ DRY-RUN: Não atualizando status de erro no Directus")
 
 
-def loop_processador():
+def loop_processador(dry_run=False):
     """
     Loop principal do processador automático
     """
-    print("🔄 Processador automático iniciado!")
+    if dry_run:
+        print("🏃‍♂️ Processador automático iniciado em modo DRY-RUN!")
+    else:
+        print("🔄 Processador automático iniciado!")
 
     while processador_ativo:
         try:
@@ -557,11 +580,12 @@ def loop_processador():
             for versao in versoes:
                 if not processador_ativo:
                     break
-                processar_versao(versao)
+                processar_versao(versao, dry_run)
 
             if not versoes:
+                status_msg = "DRY-RUN" if dry_run else "Normal"
                 print(
-                    f"😴 {datetime.now().strftime('%H:%M:%S')} - Nenhuma versão para processar"
+                    f"😴 {datetime.now().strftime('%H:%M:%S')} - Nenhuma versão para processar ({status_msg})"
                 )
 
         except Exception as e:
@@ -613,7 +637,40 @@ def serve_result(filename):
         return jsonify({"error": "Arquivo não encontrado"}), 404
 
 
+def create_arg_parser():
+    """Criar parser de argumentos da linha de comando"""
+    parser = argparse.ArgumentParser(
+        description="Processador automático de versões",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Executar em modo de análise sem modificar registros no Directus",
+    )
+
+    parser.add_argument(
+        "--host",
+        default=FLASK_HOST,
+        help=f"Host para o servidor Flask de monitoramento (padrão: {FLASK_HOST})",
+    )
+
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=FLASK_PORT,
+        help=f"Porta para o servidor Flask de monitoramento (padrão: {FLASK_PORT})",
+    )
+
+    return parser
+
+
 if __name__ == "__main__":
+    # Configurar argumentos da linha de comando
+    parser = create_arg_parser()
+    args = parser.parse_args()
+
     # Registrar handlers de sinais para encerramento gracioso
     signal.signal(signal.SIGINT, signal_handler)  # Ctrl+C
     signal.signal(signal.SIGTERM, signal_handler)  # Comando kill
@@ -623,9 +680,11 @@ if __name__ == "__main__":
     print("🚀 Processador Automático de Versões")
     print(f"📁 Resultados salvos em: {RESULTS_DIR}")
     print(f"🔗 Directus: {DIRECTUS_BASE_URL}")
-    print(f"🌐 Servidor de monitoramento: http://{FLASK_HOST}:{FLASK_PORT}")
+    print(f"🌐 Servidor de monitoramento: http://{args.host}:{args.port}")
     print("⏰ Verificação automática a cada 1 minuto")
     print("🔒 Monitoramento de sinais ativo (SIGINT, SIGTERM, SIGHUP)")
+    if args.dry_run:
+        print("🏃‍♂️ Modo: DRY-RUN (sem alterações no banco)")
     print("")
     print("📋 Endpoints de monitoramento:")
     print("  • GET  /health - Verificação de saúde")
@@ -634,12 +693,14 @@ if __name__ == "__main__":
     print("")
 
     # Iniciar o processador em uma thread separada
-    processador_thread = threading.Thread(target=loop_processador, daemon=True)
+    processador_thread = threading.Thread(
+        target=lambda: loop_processador(args.dry_run), daemon=True
+    )
     processador_thread.start()
 
     # Iniciar o servidor Flask para monitoramento
     try:
-        app.run(host=FLASK_HOST, port=FLASK_PORT, debug=False)
+        app.run(host=args.host, port=args.port, debug=False)
     except KeyboardInterrupt:
         print("\n🛑 Parando processador...")
         processador_ativo = False
