@@ -26,7 +26,6 @@ venv.bak/
 
 # UV e ferramentas modernas
 .uv/
-uv.lock
 
 # Pytest e cobertura
 .pytest_cache/
