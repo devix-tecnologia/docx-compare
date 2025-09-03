@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-API simples para comparação de documentos DOCX
+API completa para comparação de documentos DOCX
 Integração completa com Directus usando lógica de negócio
 """
 
@@ -271,11 +271,11 @@ def save_modifications_to_directus(versao_id, modifications):
             }
             
             # Criar modificação usando a API do Directus
-            response = requests.post(
-                f"{DIRECTUS_BASE_URL}/items/modificacao",
-                headers=headers,
-                json=modification_data
-            )
+            # response = requests.post(
+            #     f"{DIRECTUS_BASE_URL}/items/modificacao",
+            #     headers=headers,
+            #     json=modification_data
+            # )
             
             if response.status_code == 200:
                 saved_modifications.append(response.json()["data"])
@@ -331,84 +331,12 @@ def health():
     })
 
 @app.route('/compare', methods=['POST'])
-def compare():
-    """Compara dois documentos DOCX"""
-    try:
-        data = request.get_json()
-        
-        if not data or 'original_file_id' not in data or 'modified_file_id' not in data:
-            return jsonify({
-                'success': False,
-                'error': 'Campos obrigatórios: original_file_id, modified_file_id'
-            }), 400
-        
-        original_id = data['original_file_id']
-        modified_id = data['modified_file_id']
-        
-        print(f"🔄 Baixando arquivos do Directus...")
-        
-        # Baixar arquivos do Directus
-        original_path = download_file_from_directus(original_id)
-        modified_path = download_file_from_directus(modified_id)
-        
-        try:
-            # Gerar nome único para o resultado
-            result_id = str(uuid.uuid4())
-            result_filename = f"comparison_{result_id}.html"
-            result_path = os.path.join(RESULTS_DIR, result_filename)
-            
-            print(f"� Executando comparação...")
-            
-            # Executar o docx_diff_viewer.py
-            cmd = [
-                'python', 'docx_diff_viewer.py',
-                original_path,
-                modified_path, 
-                result_path
-            ]
-            
-            result = subprocess.run(cmd, capture_output=True, text=True)
-            
-            if result.returncode != 0:
-                return jsonify({
-                    'success': False,
-                    'error': f'Erro na comparação: {result.stderr}'
-                }), 500
-            
-            # URL do resultado
-            result_url = f"http://{FLASK_HOST}:{FLASK_PORT}/results/{result_filename}"
-            
-            print(f"✅ Comparação concluída: {result_url}")
-            
-            return jsonify({
-                'success': True,
-                'result_url': result_url,
-                'result_filename': result_filename,
-                'timestamp': datetime.now().isoformat()
-            })
-            
-        finally:
-            # Limpar arquivos temporários
-            for temp_file in [original_path, modified_path]:
-                try:
-                    if os.path.exists(temp_file):
-                        os.unlink(temp_file)
-                except:
-                    pass
-                    
-    except Exception as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
-
-@app.route('/compare_versao', methods=['POST'])
 def compare_versao():
     """
     Endpoint principal que implementa toda a lógica de negócio:
     1. Recebe ID da versão
     2. Determina automaticamente qual arquivo usar como original
-    3. Executa comparação usando o CLI
+    3. Executa comparação
     4. Salva modificações no Directus
     5. Atualiza status da versão
     """
@@ -446,12 +374,12 @@ def compare_versao():
         modified_path = download_file_from_directus(modified_file_id)
         
         try:
-            # 4. Gerar comparação HTML usando o CLI existente
+            # 4. Gerar comparação HTML
             result_id = str(uuid.uuid4())
             result_filename = f"comparison_{result_id}.html"
             result_path = os.path.join(RESULTS_DIR, result_filename)
             
-            print(f"🔄 Executando comparação visual usando CLI...")
+            print(f"🔄 Executando comparação visual...")
             
             # Executar o docx_diff_viewer.py para HTML visual
             cmd = [
@@ -469,7 +397,7 @@ def compare_versao():
                     'error': f'Erro na comparação: {result.stderr}'
                 }), 500
             
-            # 5. Converter documentos para análise textual (para extrair modificações)
+            # 5. Converter documentos para análise textual
             print(f"📊 Analisando diferenças textuais...")
             
             # Converter para HTML temporário para análise
@@ -531,6 +459,72 @@ def compare_versao():
                     
     except Exception as e:
         print(f"❌ Erro geral: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+# Manter compatibilidade com endpoint anterior
+@app.route('/compare_simple', methods=['POST'])
+def compare_simple():
+    """Endpoint simples para compatibilidade (recebe file_ids diretamente)"""
+    try:
+        data = request.get_json()
+        
+        if not data or 'original_file_id' not in data or 'modified_file_id' not in data:
+            return jsonify({
+                'success': False,
+                'error': 'Campos obrigatórios: original_file_id, modified_file_id'
+            }), 400
+        
+        original_id = data['original_file_id']
+        modified_id = data['modified_file_id']
+        
+        print(f"🔄 Comparação simples: {original_id} vs {modified_id}")
+        
+        # Baixar arquivos
+        original_path = download_file_from_directus(original_id)
+        modified_path = download_file_from_directus(modified_id)
+        
+        try:
+            # Executar comparação
+            result_id = str(uuid.uuid4())
+            result_filename = f"comparison_{result_id}.html"
+            result_path = os.path.join(RESULTS_DIR, result_filename)
+            
+            cmd = [
+                'python', 'docx_diff_viewer.py',
+                original_path,
+                modified_path, 
+                result_path
+            ]
+            
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            
+            if result.returncode != 0:
+                return jsonify({
+                    'success': False,
+                    'error': f'Erro na comparação: {result.stderr}'
+                }), 500
+            
+            result_url = f"http://{FLASK_HOST}:{FLASK_PORT}/results/{result_filename}"
+            
+            return jsonify({
+                'success': True,
+                'result_url': result_url,
+                'result_filename': result_filename,
+                'timestamp': datetime.now().isoformat()
+            })
+            
+        finally:
+            for temp_file in [original_path, modified_path]:
+                try:
+                    if os.path.exists(temp_file):
+                        os.unlink(temp_file)
+                except:
+                    pass
+                    
+    except Exception as e:
         return jsonify({
             'success': False,
             'error': str(e)
@@ -601,9 +595,5 @@ if __name__ == '__main__':
     print(f"  • POST /compare_simple - Comparação simples (original_file_id, modified_file_id)")
     print(f"  • GET  /results/<filename> - Visualizar resultados")
     print(f"  • GET  /health - Verificação de saúde")
-    print(f"")
-    print(f"💡 Como usar:")
-    print("  1. Para lógica de negócio: POST /compare com {'versao_id': 'id-da-versao'}")
-    print("  2. Para comparação simples: POST /compare_simple com original_file_id e modified_file_id")
     
     app.run(host=FLASK_HOST, port=FLASK_PORT, debug=True)
