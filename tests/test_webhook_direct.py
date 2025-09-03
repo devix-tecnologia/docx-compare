@@ -3,24 +3,25 @@
 Teste direto com requests para o webhook.site
 """
 
-import requests
 import json
 import os
+
+import requests
 from dotenv import load_dotenv
 
 # Carregar variáveis do .env
 load_dotenv()
 
-DIRECTUS_BASE_URL = os.getenv('DIRECTUS_BASE_URL')
-DIRECTUS_TOKEN = os.getenv('DIRECTUS_TOKEN')
+DIRECTUS_BASE_URL = os.getenv("DIRECTUS_BASE_URL")
+DIRECTUS_TOKEN = os.getenv("DIRECTUS_TOKEN")
 
 print(f"🔗 URL: {DIRECTUS_BASE_URL}")
 print(f"🔑 Token: {DIRECTUS_TOKEN}")
 
 # Headers
 headers = {
-    'Authorization': f'Bearer {DIRECTUS_TOKEN}',
-    'Content-Type': 'application/json'
+    "Authorization": f"Bearer {DIRECTUS_TOKEN}",
+    "Content-Type": "application/json",
 }
 
 # Teste 1: GET simples
@@ -36,11 +37,7 @@ except Exception as e:
 
 # Teste 2: GET com query parameters
 print("\n🧪 Teste 2: GET com filtros")
-params = {
-    'filter[status][_eq]': 'processar',
-    'limit': 10,
-    'sort': 'date_created'
-}
+params = {"filter[status][_eq]": "processar", "limit": 10, "sort": "date_created"}
 url2 = f"{DIRECTUS_BASE_URL}/items/versao"
 print(f"URL: {url2}")
 print(f"Params: {params}")
@@ -56,15 +53,11 @@ print("\n🧪 Teste 3: POST com JSON body")
 url3 = f"{DIRECTUS_BASE_URL}/items/versao"
 query_body = {
     "query": {
-        "filter": {
-            "_and": [
-                {"status": {"_eq": "processar"}}
-            ]
-        },
+        "filter": {"_and": [{"status": {"_eq": "processar"}}]},
         "sort": ["date_created"],
-        "limit": 10
+        "limit": 10,
     },
-    "fields": ["id", "status", "date_created"]
+    "fields": ["id", "status", "date_created"],
 }
 print(f"URL: {url3}")
 print(f"Body: {json.dumps(query_body, indent=2)}")

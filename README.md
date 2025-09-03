@@ -361,6 +361,71 @@ Para mais detalhes sobre a API, consulte [API_DOCUMENTATION.md](API_DOCUMENTATIO
 - [ ] Notificações webhook para conclusão de processamento
 - [ ] API GraphQL para consultas avançadas
 
-## 📄 Licença
+## �️ Ferramentas de Desenvolvimento
+
+### UV e Ruff
+
+O projeto utiliza ferramentas modernas para desenvolvimento Python:
+
+- **UV**: Gerenciador de dependências e ambientes virtuais ultra-rápido
+- **Ruff**: Linter e formatador de código extremamente performático
+- **ASDF**: Gerenciamento de versões de ferramentas
+
+### Scripts de Desenvolvimento
+
+```bash
+# Makefile (recomendado)
+make help              # Ver todos os comandos
+make install           # Instalar dependências
+make lint              # Linting com Ruff
+make lint-fix          # Corrigir problemas automaticamente
+make format            # Formatar código
+make test              # Executar testes
+make test-coverage     # Testes com cobertura
+make check             # Verificação completa
+make clean             # Limpar arquivos temporários
+
+# Executar aplicações
+make run-processor     # Processador automático
+make run-api           # API simples
+
+# Comparar documentos
+make compare ORIG=doc1.docx MOD=doc2.docx OUT=result.html
+```
+
+### UV Direto
+
+```bash
+# Gerenciar dependências
+uv sync --group dev    # Instalar dependências de desenvolvimento
+uv add requests        # Adicionar nova dependência
+uv remove requests     # Remover dependência
+
+# Executar comandos
+uv run python script.py      # Executar script
+uv run ruff check .          # Linting
+uv run pytest tests/        # Testes
+```
+
+### Configuração de Ambiente
+
+O projeto usa `.tool-versions` (ASDF) para versões:
+
+```text
+python 3.13.2
+uv 0.4.27
+```
+
+Estrutura de arquivos de configuração:
+
+```
+├── pyproject.toml     # Configuração UV, Ruff, pytest
+├── .tool-versions     # Versões ASDF
+├── Makefile          # Scripts de desenvolvimento
+├── scripts.sh        # Scripts alternativos em Bash
+└── .gitignore        # Inclui arquivos UV e coverage
+```
+
+## �📄 Licença
 
 Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
