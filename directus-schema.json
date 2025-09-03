@@ -67,6 +67,39 @@
             "schema": {}
         },
         {
+            "collection": "clausula",
+            "meta": {
+                "collection": "clausula",
+                "icon": null,
+                "note": null,
+                "display_template": null,
+                "hidden": true,
+                "singleton": false,
+                "translations": [
+                    {
+                        "language": "pt-BR",
+                        "translation": "Cláusula ",
+                        "singular": "Cláusula",
+                        "plural": "Cláusulas"
+                    }
+                ],
+                "archive_field": "status",
+                "archive_app_filter": true,
+                "archive_value": "archived",
+                "unarchive_value": "draft",
+                "sort_field": null,
+                "accountability": "all",
+                "color": null,
+                "item_duplication_fields": null,
+                "sort": 1,
+                "group": "modelo_contrato",
+                "collapse": "open",
+                "preview_url": null,
+                "versioning": false
+            },
+            "schema": {}
+        },
+        {
             "collection": "pessoa_fisica",
             "meta": {
                 "collection": "pessoa_fisica",
@@ -93,6 +126,32 @@
                 "item_duplication_fields": null,
                 "sort": 1,
                 "group": "pessoa",
+                "collapse": "open",
+                "preview_url": null,
+                "versioning": false
+            },
+            "schema": {}
+        },
+        {
+            "collection": "referencia",
+            "meta": {
+                "collection": "referencia",
+                "icon": null,
+                "note": null,
+                "display_template": null,
+                "hidden": true,
+                "singleton": false,
+                "translations": null,
+                "archive_field": "status",
+                "archive_app_filter": true,
+                "archive_value": "archived",
+                "unarchive_value": "draft",
+                "sort_field": null,
+                "accountability": "all",
+                "color": null,
+                "item_duplication_fields": null,
+                "sort": 1,
+                "group": "clausula",
                 "collapse": "open",
                 "preview_url": null,
                 "versioning": false
@@ -740,65 +799,6 @@
             "schema": {}
         },
         {
-            "collection": "clausula",
-            "meta": {
-                "collection": "clausula",
-                "icon": null,
-                "note": null,
-                "display_template": null,
-                "hidden": true,
-                "singleton": false,
-                "translations": [
-                    {
-                        "language": "pt-BR",
-                        "translation": "Cláusula ",
-                        "singular": "Cláusula",
-                        "plural": "Cláusulas"
-                    }
-                ],
-                "archive_field": "status",
-                "archive_app_filter": true,
-                "archive_value": "archived",
-                "unarchive_value": "draft",
-                "sort_field": null,
-                "accountability": "all",
-                "color": null,
-                "item_duplication_fields": null,
-                "sort": 12,
-                "group": null,
-                "collapse": "open",
-                "preview_url": null,
-                "versioning": false
-            },
-            "schema": {}
-        },
-        {
-            "collection": "referencia",
-            "meta": {
-                "collection": "referencia",
-                "icon": null,
-                "note": null,
-                "display_template": null,
-                "hidden": true,
-                "singleton": false,
-                "translations": null,
-                "archive_field": "status",
-                "archive_app_filter": true,
-                "archive_value": "archived",
-                "unarchive_value": "draft",
-                "sort_field": null,
-                "accountability": "all",
-                "color": null,
-                "item_duplication_fields": null,
-                "sort": 13,
-                "group": null,
-                "collapse": "open",
-                "preview_url": null,
-                "versioning": false
-            },
-            "schema": {}
-        },
-        {
             "collection": "gabarito",
             "meta": {
                 "collection": "gabarito",
@@ -823,7 +823,7 @@
                 "accountability": "all",
                 "color": "#E35169",
                 "item_duplication_fields": null,
-                "sort": null,
+                "sort": 12,
                 "group": null,
                 "collapse": "open",
                 "preview_url": null,
@@ -1752,6 +1752,525 @@
             }
         },
         {
+            "collection": "clausula",
+            "field": "id",
+            "type": "uuid",
+            "schema": {
+                "name": "id",
+                "table": "clausula",
+                "data_type": "uuid",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": false,
+                "is_unique": true,
+                "is_indexed": false,
+                "is_primary_key": true,
+                "has_auto_increment": false,
+                "foreign_key_schema": null,
+                "foreign_key_table": null,
+                "foreign_key_column": null,
+                "comment": null
+            },
+            "meta": {
+                "collection": "clausula",
+                "field": "id",
+                "special": [
+                    "uuid"
+                ],
+                "interface": "input",
+                "options": null,
+                "display": null,
+                "display_options": null,
+                "readonly": true,
+                "hidden": true,
+                "sort": 1,
+                "width": "full",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "clausula",
+            "field": "status",
+            "type": "string",
+            "schema": {
+                "name": "status",
+                "table": "clausula",
+                "data_type": "character varying",
+                "default_value": "draft",
+                "generation_expression": null,
+                "max_length": 255,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": false,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": null,
+                "foreign_key_table": null,
+                "foreign_key_column": null,
+                "comment": null
+            },
+            "meta": {
+                "collection": "clausula",
+                "field": "status",
+                "special": null,
+                "interface": "select-dropdown",
+                "options": {
+                    "choices": [
+                        {
+                            "text": "Publicado",
+                            "value": "published",
+                            "color": "var(--theme--primary)"
+                        },
+                        {
+                            "text": "Rascunho",
+                            "value": "draft",
+                            "color": "var(--theme--foreground)"
+                        },
+                        {
+                            "text": "Arquivado",
+                            "value": "archived",
+                            "color": "var(--theme--warning)"
+                        }
+                    ]
+                },
+                "display": "labels",
+                "display_options": {
+                    "showAsDot": true,
+                    "choices": [
+                        {
+                            "text": "Publicado",
+                            "value": "published",
+                            "color": "var(--theme--primary)",
+                            "foreground": "var(--theme--primary)",
+                            "background": "var(--theme--primary-background)"
+                        },
+                        {
+                            "text": "Rascunho",
+                            "value": "draft",
+                            "color": "var(--theme--foreground)",
+                            "foreground": "var(--theme--foreground)",
+                            "background": "var(--theme--background-normal)"
+                        },
+                        {
+                            "text": "Arquivado",
+                            "value": "archived",
+                            "color": "var(--theme--warning)",
+                            "foreground": "var(--theme--warning)",
+                            "background": "var(--theme--warning-background)"
+                        }
+                    ]
+                },
+                "readonly": false,
+                "hidden": true,
+                "sort": 2,
+                "width": "full",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "clausula",
+            "field": "user_created",
+            "type": "uuid",
+            "schema": {
+                "name": "user_created",
+                "table": "clausula",
+                "data_type": "uuid",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": "public",
+                "foreign_key_table": "directus_users",
+                "foreign_key_column": "id",
+                "comment": null
+            },
+            "meta": {
+                "collection": "clausula",
+                "field": "user_created",
+                "special": [
+                    "user-created"
+                ],
+                "interface": "select-dropdown-m2o",
+                "options": {
+                    "template": "{{avatar.$thumbnail}} {{first_name}} {{last_name}}"
+                },
+                "display": "user",
+                "display_options": null,
+                "readonly": true,
+                "hidden": true,
+                "sort": 3,
+                "width": "half",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "clausula",
+            "field": "date_created",
+            "type": "timestamp",
+            "schema": {
+                "name": "date_created",
+                "table": "clausula",
+                "data_type": "timestamp with time zone",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": null,
+                "foreign_key_table": null,
+                "foreign_key_column": null,
+                "comment": null
+            },
+            "meta": {
+                "collection": "clausula",
+                "field": "date_created",
+                "special": [
+                    "date-created"
+                ],
+                "interface": "datetime",
+                "options": null,
+                "display": "datetime",
+                "display_options": {
+                    "relative": true
+                },
+                "readonly": true,
+                "hidden": true,
+                "sort": 4,
+                "width": "half",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "clausula",
+            "field": "user_updated",
+            "type": "uuid",
+            "schema": {
+                "name": "user_updated",
+                "table": "clausula",
+                "data_type": "uuid",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": "public",
+                "foreign_key_table": "directus_users",
+                "foreign_key_column": "id",
+                "comment": null
+            },
+            "meta": {
+                "collection": "clausula",
+                "field": "user_updated",
+                "special": [
+                    "user-updated"
+                ],
+                "interface": "select-dropdown-m2o",
+                "options": {
+                    "template": "{{avatar.$thumbnail}} {{first_name}} {{last_name}}"
+                },
+                "display": "user",
+                "display_options": null,
+                "readonly": true,
+                "hidden": true,
+                "sort": 5,
+                "width": "half",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "clausula",
+            "field": "date_updated",
+            "type": "timestamp",
+            "schema": {
+                "name": "date_updated",
+                "table": "clausula",
+                "data_type": "timestamp with time zone",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": null,
+                "foreign_key_table": null,
+                "foreign_key_column": null,
+                "comment": null
+            },
+            "meta": {
+                "collection": "clausula",
+                "field": "date_updated",
+                "special": [
+                    "date-updated"
+                ],
+                "interface": "datetime",
+                "options": null,
+                "display": "datetime",
+                "display_options": {
+                    "relative": true
+                },
+                "readonly": true,
+                "hidden": true,
+                "sort": 6,
+                "width": "half",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "clausula",
+            "field": "numero",
+            "type": "string",
+            "schema": {
+                "name": "numero",
+                "table": "clausula",
+                "data_type": "character varying",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": 255,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": null,
+                "foreign_key_table": null,
+                "foreign_key_column": null,
+                "comment": null
+            },
+            "meta": {
+                "collection": "clausula",
+                "field": "numero",
+                "special": null,
+                "interface": "input",
+                "options": null,
+                "display": "formatted-value",
+                "display_options": null,
+                "readonly": false,
+                "hidden": false,
+                "sort": 7,
+                "width": "half",
+                "translations": [
+                    {
+                        "language": "pt-BR",
+                        "translation": "Tag"
+                    }
+                ],
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "clausula",
+            "field": "conteudo",
+            "type": "text",
+            "schema": {
+                "name": "conteudo",
+                "table": "clausula",
+                "data_type": "text",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": null,
+                "foreign_key_table": null,
+                "foreign_key_column": null,
+                "comment": null
+            },
+            "meta": {
+                "collection": "clausula",
+                "field": "conteudo",
+                "special": null,
+                "interface": "input-multiline",
+                "options": null,
+                "display": "formatted-value",
+                "display_options": null,
+                "readonly": false,
+                "hidden": false,
+                "sort": 8,
+                "width": "full",
+                "translations": [
+                    {
+                        "language": "pt-BR",
+                        "translation": "Conteúdo original"
+                    }
+                ],
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "clausula",
+            "field": "referencias",
+            "type": "alias",
+            "schema": null,
+            "meta": {
+                "collection": "clausula",
+                "field": "referencias",
+                "special": [
+                    "o2m"
+                ],
+                "interface": "list-o2m",
+                "options": {
+                    "template": "{{descricao}}",
+                    "layout": "table",
+                    "fields": [
+                        "orientacao_retorno",
+                        "descricao"
+                    ],
+                    "enableSelect": false
+                },
+                "display": "related-values",
+                "display_options": {
+                    "template": "{{orientacao_retorno}}: {{descricao}}"
+                },
+                "readonly": false,
+                "hidden": false,
+                "sort": 9,
+                "width": "full",
+                "translations": [
+                    {
+                        "language": "pt-BR",
+                        "translation": "Referências"
+                    }
+                ],
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "clausula",
+            "field": "modelo_contrato",
+            "type": "uuid",
+            "schema": {
+                "name": "modelo_contrato",
+                "table": "clausula",
+                "data_type": "uuid",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": "public",
+                "foreign_key_table": "modelo_contrato",
+                "foreign_key_column": "id",
+                "comment": null
+            },
+            "meta": {
+                "collection": "clausula",
+                "field": "modelo_contrato",
+                "special": null,
+                "interface": "select-dropdown-m2o",
+                "options": null,
+                "display": null,
+                "display_options": null,
+                "readonly": false,
+                "hidden": true,
+                "sort": 10,
+                "width": "full",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
             "collection": "pessoa_fisica",
             "field": "id",
             "type": "uuid",
@@ -2513,6 +3032,510 @@
             }
         },
         {
+            "collection": "referencia",
+            "field": "id",
+            "type": "uuid",
+            "schema": {
+                "name": "id",
+                "table": "referencia",
+                "data_type": "uuid",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": false,
+                "is_unique": true,
+                "is_indexed": false,
+                "is_primary_key": true,
+                "has_auto_increment": false,
+                "foreign_key_schema": null,
+                "foreign_key_table": null,
+                "foreign_key_column": null,
+                "comment": null
+            },
+            "meta": {
+                "collection": "referencia",
+                "field": "id",
+                "special": [
+                    "uuid"
+                ],
+                "interface": "input",
+                "options": null,
+                "display": null,
+                "display_options": null,
+                "readonly": true,
+                "hidden": true,
+                "sort": 1,
+                "width": "full",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "referencia",
+            "field": "status",
+            "type": "string",
+            "schema": {
+                "name": "status",
+                "table": "referencia",
+                "data_type": "character varying",
+                "default_value": "draft",
+                "generation_expression": null,
+                "max_length": 255,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": false,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": null,
+                "foreign_key_table": null,
+                "foreign_key_column": null,
+                "comment": null
+            },
+            "meta": {
+                "collection": "referencia",
+                "field": "status",
+                "special": null,
+                "interface": "select-dropdown",
+                "options": {
+                    "choices": [
+                        {
+                            "text": "Publicado",
+                            "value": "published",
+                            "color": "var(--theme--primary)"
+                        },
+                        {
+                            "text": "Rascunho",
+                            "value": "draft",
+                            "color": "var(--theme--foreground)"
+                        },
+                        {
+                            "text": "Arquivado",
+                            "value": "archived",
+                            "color": "var(--theme--warning)"
+                        }
+                    ]
+                },
+                "display": "labels",
+                "display_options": {
+                    "showAsDot": true,
+                    "choices": [
+                        {
+                            "text": "Publicado",
+                            "value": "published",
+                            "color": "var(--theme--primary)",
+                            "foreground": "var(--theme--primary)",
+                            "background": "var(--theme--primary-background)"
+                        },
+                        {
+                            "text": "Rascunho",
+                            "value": "draft",
+                            "color": "var(--theme--foreground)",
+                            "foreground": "var(--theme--foreground)",
+                            "background": "var(--theme--background-normal)"
+                        },
+                        {
+                            "text": "Arquivado",
+                            "value": "archived",
+                            "color": "var(--theme--warning)",
+                            "foreground": "var(--theme--warning)",
+                            "background": "var(--theme--warning-background)"
+                        }
+                    ]
+                },
+                "readonly": false,
+                "hidden": true,
+                "sort": 2,
+                "width": "full",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "referencia",
+            "field": "user_created",
+            "type": "uuid",
+            "schema": {
+                "name": "user_created",
+                "table": "referencia",
+                "data_type": "uuid",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": "public",
+                "foreign_key_table": "directus_users",
+                "foreign_key_column": "id",
+                "comment": null
+            },
+            "meta": {
+                "collection": "referencia",
+                "field": "user_created",
+                "special": [
+                    "user-created"
+                ],
+                "interface": "select-dropdown-m2o",
+                "options": {
+                    "template": "{{avatar.$thumbnail}} {{first_name}} {{last_name}}"
+                },
+                "display": "user",
+                "display_options": null,
+                "readonly": true,
+                "hidden": true,
+                "sort": 3,
+                "width": "half",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "referencia",
+            "field": "date_created",
+            "type": "timestamp",
+            "schema": {
+                "name": "date_created",
+                "table": "referencia",
+                "data_type": "timestamp with time zone",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": null,
+                "foreign_key_table": null,
+                "foreign_key_column": null,
+                "comment": null
+            },
+            "meta": {
+                "collection": "referencia",
+                "field": "date_created",
+                "special": [
+                    "date-created"
+                ],
+                "interface": "datetime",
+                "options": null,
+                "display": "datetime",
+                "display_options": {
+                    "relative": true
+                },
+                "readonly": true,
+                "hidden": true,
+                "sort": 4,
+                "width": "half",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "referencia",
+            "field": "user_updated",
+            "type": "uuid",
+            "schema": {
+                "name": "user_updated",
+                "table": "referencia",
+                "data_type": "uuid",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": "public",
+                "foreign_key_table": "directus_users",
+                "foreign_key_column": "id",
+                "comment": null
+            },
+            "meta": {
+                "collection": "referencia",
+                "field": "user_updated",
+                "special": [
+                    "user-updated"
+                ],
+                "interface": "select-dropdown-m2o",
+                "options": {
+                    "template": "{{avatar.$thumbnail}} {{first_name}} {{last_name}}"
+                },
+                "display": "user",
+                "display_options": null,
+                "readonly": true,
+                "hidden": true,
+                "sort": 5,
+                "width": "half",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "referencia",
+            "field": "date_updated",
+            "type": "timestamp",
+            "schema": {
+                "name": "date_updated",
+                "table": "referencia",
+                "data_type": "timestamp with time zone",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": null,
+                "foreign_key_table": null,
+                "foreign_key_column": null,
+                "comment": null
+            },
+            "meta": {
+                "collection": "referencia",
+                "field": "date_updated",
+                "special": [
+                    "date-updated"
+                ],
+                "interface": "datetime",
+                "options": null,
+                "display": "datetime",
+                "display_options": {
+                    "relative": true
+                },
+                "readonly": true,
+                "hidden": true,
+                "sort": 6,
+                "width": "half",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "referencia",
+            "field": "clausula",
+            "type": "uuid",
+            "schema": {
+                "name": "clausula",
+                "table": "referencia",
+                "data_type": "uuid",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": "public",
+                "foreign_key_table": "clausula",
+                "foreign_key_column": "id",
+                "comment": null
+            },
+            "meta": {
+                "collection": "referencia",
+                "field": "clausula",
+                "special": null,
+                "interface": "select-dropdown-m2o",
+                "options": null,
+                "display": null,
+                "display_options": null,
+                "readonly": false,
+                "hidden": true,
+                "sort": 7,
+                "width": "full",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "referencia",
+            "field": "orientacao_retorno",
+            "type": "string",
+            "schema": {
+                "name": "orientacao_retorno",
+                "table": "referencia",
+                "data_type": "character varying",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": 255,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": null,
+                "foreign_key_table": null,
+                "foreign_key_column": null,
+                "comment": null
+            },
+            "meta": {
+                "collection": "referencia",
+                "field": "orientacao_retorno",
+                "special": null,
+                "interface": "select-dropdown",
+                "options": {
+                    "choices": [
+                        {
+                            "text": "Objetivo",
+                            "value": "objetivo",
+                            "color": "#A2B5CD"
+                        },
+                        {
+                            "text": "Análise contratada",
+                            "value": "analise_contratada",
+                            "color": "#A2B5CD"
+                        },
+                        {
+                            "text": "Comentário de 1ª rodada",
+                            "value": "primeira_rodada",
+                            "color": "#2ECDA7"
+                        },
+                        {
+                            "text": "Comentário área interna",
+                            "value": "area_interna",
+                            "color": "#A2B5CD"
+                        },
+                        {
+                            "text": "Comentário de 2ª rodada",
+                            "value": "segunda_rodada",
+                            "color": "#FFC23B"
+                        },
+                        {
+                            "text": "Comentário de 3ª rodada",
+                            "value": "terceira_rodada",
+                            "color": "#E35169"
+                        }
+                    ]
+                },
+                "display": null,
+                "display_options": null,
+                "readonly": false,
+                "hidden": false,
+                "sort": 8,
+                "width": "half",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "referencia",
+            "field": "descricao",
+            "type": "text",
+            "schema": {
+                "name": "descricao",
+                "table": "referencia",
+                "data_type": "text",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": null,
+                "foreign_key_table": null,
+                "foreign_key_column": null,
+                "comment": null
+            },
+            "meta": {
+                "collection": "referencia",
+                "field": "descricao",
+                "special": null,
+                "interface": "input-rich-text-html",
+                "options": null,
+                "display": "formatted-value",
+                "display_options": null,
+                "readonly": false,
+                "hidden": false,
+                "sort": 9,
+                "width": "full",
+                "translations": [
+                    {
+                        "language": "pt-BR",
+                        "translation": "Descrição"
+                    }
+                ],
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
             "collection": "versao",
             "field": "id",
             "type": "uuid",
@@ -2589,38 +3612,7 @@
                 "special": null,
                 "interface": "select-dropdown",
                 "options": {
-                    "choices": [
-                        {
-                            "text": "Rascunho",
-                            "value": "draft",
-                            "color": "var(--theme--foreground)"
-                        },
-                        {
-                            "text": "Processar",
-                            "value": "processar",
-                            "color": "#6644FF"
-                        },
-                        {
-                            "text": "Em processamento",
-                            "value": "em_processamento",
-                            "color": "#3399FF"
-                        },
-                        {
-                            "text": "Concluído processamento",
-                            "value": "concluido",
-                            "color": "#2ECDA7"
-                        },
-                        {
-                            "text": "Erro",
-                            "value": "erro",
-                            "color": "#E35100"
-                        },
-                        {
-                            "text": "Cancelada",
-                            "value": "Cancelada",
-                            "color": "#E35169"
-                        }
-                    ]
+                    "choices": null
                 },
                 "display": "labels",
                 "display_options": {
@@ -2628,7 +3620,7 @@
                         {
                             "text": "Rascunho",
                             "value": "draft",
-                            "color": "var(--theme--foreground)"
+                            "color": "#A2B5CD"
                         },
                         {
                             "text": "Processar",
@@ -2649,11 +3641,6 @@
                             "text": "Erro",
                             "value": "erro",
                             "color": "#E35100"
-                        },
-                        {
-                            "text": "Cancelada",
-                            "value": "Cancelada",
-                            "color": "#E35169"
                         }
                     ],
                     "format": false
@@ -2664,7 +3651,169 @@
                 "width": "half",
                 "translations": null,
                 "note": null,
-                "conditions": null,
+                "conditions": [
+                    {
+                        "text": "$t:draft",
+                        "value": "draft",
+                        "color": "var(--theme--foreground)",
+                        "options": {
+                            "allowOther": false,
+                            "allowNone": false,
+                            "choices": [
+                                {
+                                    "text": "Rascunho",
+                                    "value": "draft",
+                                    "color": "#A2B5CD"
+                                },
+                                {
+                                    "text": "Processar",
+                                    "value": "processar",
+                                    "color": "#6644FF"
+                                }
+                            ]
+                        },
+                        "name": "Status Rascunho",
+                        "rule": {
+                            "_and": [
+                                {
+                                    "status": {
+                                        "_eq": "draft"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "text": "Processar",
+                        "value": "processar",
+                        "color": "#6644FF",
+                        "options": {
+                            "allowOther": false,
+                            "allowNone": false,
+                            "choices": [
+                                {
+                                    "text": "Processar",
+                                    "value": "processar",
+                                    "color": "#6644FF"
+                                },
+                                {
+                                    "text": "Em processamento",
+                                    "value": "em_processamento",
+                                    "color": "#3399FF"
+                                }
+                            ]
+                        },
+                        "name": "Status Processar",
+                        "rule": {
+                            "_and": [
+                                {
+                                    "status": {
+                                        "_eq": "processar"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "text": "Em processamento",
+                        "value": "em_processamento",
+                        "color": "#3399FF",
+                        "options": {
+                            "allowOther": false,
+                            "allowNone": false,
+                            "choices": [
+                                {
+                                    "text": "Em processamento",
+                                    "value": "em_processamento",
+                                    "color": "#3399FF"
+                                },
+                                {
+                                    "text": "Concluído processamento",
+                                    "value": "concluido",
+                                    "color": "#2ECDA7"
+                                },
+                                {
+                                    "text": "Erro",
+                                    "value": "erro",
+                                    "color": "#E35100"
+                                }
+                            ]
+                        },
+                        "name": "Status Em processamento",
+                        "rule": {
+                            "_and": [
+                                {
+                                    "status": {
+                                        "_eq": "em_processamento"
+                                    }
+                                }
+                            ]
+                        },
+                        "readonly": true
+                    },
+                    {
+                        "text": "Concluído processamento",
+                        "value": "concluido",
+                        "color": "#2ECDA7",
+                        "options": {
+                            "allowOther": false,
+                            "allowNone": false,
+                            "choices": [
+                                {
+                                    "text": "Concluído processamento",
+                                    "value": "concluido",
+                                    "color": "#2ECDA7"
+                                },
+                                {
+                                    "text": "Rascunho",
+                                    "value": "draft",
+                                    "color": "#A2B5CD"
+                                }
+                            ]
+                        },
+                        "name": "Status Concluído processamento",
+                        "rule": {
+                            "_and": [
+                                {
+                                    "status": {
+                                        "_eq": "concluido"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "text": "Erro",
+                        "value": "erro",
+                        "color": "#E35100",
+                        "options": {
+                            "allowOther": false,
+                            "allowNone": false,
+                            "choices": [
+                                {
+                                    "text": "Erro",
+                                    "value": "erro",
+                                    "color": "#E35100"
+                                },
+                                {
+                                    "text": "Rascunho",
+                                    "value": "draft",
+                                    "color": "#A2B5CD"
+                                }
+                            ]
+                        },
+                        "name": "Status erro",
+                        "rule": {
+                            "_and": [
+                                {
+                                    "status": {
+                                        "_eq": "erro"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
                 "required": false,
                 "group": "div_cabecalho",
                 "validation": null,
@@ -3356,8 +4505,8 @@
                 "options": {
                     "choices": [
                         {
-                            "text": "Cliente",
-                            "value": "cliente"
+                            "text": "Fornecedor",
+                            "value": "fornecedor"
                         },
                         {
                             "text": "SAMARCO",
@@ -3369,8 +4518,8 @@
                 "display_options": {
                     "choices": [
                         {
-                            "text": "Cliente",
-                            "value": "cliente"
+                            "text": "Fornecedor",
+                            "value": "fornecedor"
                         },
                         {
                             "text": "SAMARCO",
@@ -3427,7 +4576,9 @@
                     "file"
                 ],
                 "interface": "file",
-                "options": null,
+                "options": {
+                    "folder": "c4c37864-b194-41ff-b452-667fccb2e9ef"
+                },
                 "display": "file",
                 "display_options": null,
                 "readonly": false,
@@ -3580,6 +4731,60 @@
         },
         {
             "collection": "versao",
+            "field": "relatorio_diff",
+            "type": "uuid",
+            "schema": {
+                "name": "relatorio_diff",
+                "table": "versao",
+                "data_type": "uuid",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": true,
+                "is_indexed": true,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": "public",
+                "foreign_key_table": "directus_files",
+                "foreign_key_column": "id",
+                "comment": null
+            },
+            "meta": {
+                "collection": "versao",
+                "field": "relatorio_diff",
+                "special": [
+                    "file"
+                ],
+                "interface": "file",
+                "options": {
+                    "folder": "168abe7e-e39d-4a9a-9462-b43d0c92ba45"
+                },
+                "display": "file",
+                "display_options": null,
+                "readonly": false,
+                "hidden": true,
+                "sort": 11,
+                "width": "full",
+                "translations": [
+                    {
+                        "language": "pt-BR",
+                        "translation": "Relatório de diferença"
+                    }
+                ],
+                "note": "Arquivo html com visualizador de diferenças entre está versão e a anterior",
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "versao",
             "field": "debug",
             "type": "alias",
             "schema": null,
@@ -3599,7 +4804,7 @@
                 "display_options": null,
                 "readonly": false,
                 "hidden": false,
-                "sort": 11,
+                "sort": 12,
                 "width": "full",
                 "translations": null,
                 "note": null,
@@ -8937,7 +10142,9 @@
                     "file"
                 ],
                 "interface": "file",
-                "options": null,
+                "options": {
+                    "folder": "2e1fcb95-79d9-428d-a493-8c90a5663602"
+                },
                 "display": "file",
                 "display_options": null,
                 "readonly": false,
@@ -9004,7 +10211,9 @@
                     "file"
                 ],
                 "interface": "file",
-                "options": null,
+                "options": {
+                    "folder": "2e1fcb95-79d9-428d-a493-8c90a5663602"
+                },
                 "display": "file",
                 "display_options": null,
                 "readonly": false,
@@ -9067,7 +10276,7 @@
                     "template": "{{numero}} - {{conteudo}}"
                 },
                 "readonly": false,
-                "hidden": true,
+                "hidden": false,
                 "sort": 11,
                 "width": "full",
                 "translations": [
@@ -13612,945 +14821,6 @@
             }
         },
         {
-            "collection": "clausula",
-            "field": "id",
-            "type": "uuid",
-            "schema": {
-                "name": "id",
-                "table": "clausula",
-                "data_type": "uuid",
-                "default_value": null,
-                "generation_expression": null,
-                "max_length": null,
-                "numeric_precision": null,
-                "numeric_scale": null,
-                "is_generated": false,
-                "is_nullable": false,
-                "is_unique": true,
-                "is_indexed": false,
-                "is_primary_key": true,
-                "has_auto_increment": false,
-                "foreign_key_schema": null,
-                "foreign_key_table": null,
-                "foreign_key_column": null,
-                "comment": null
-            },
-            "meta": {
-                "collection": "clausula",
-                "field": "id",
-                "special": [
-                    "uuid"
-                ],
-                "interface": "input",
-                "options": null,
-                "display": null,
-                "display_options": null,
-                "readonly": true,
-                "hidden": true,
-                "sort": 1,
-                "width": "full",
-                "translations": null,
-                "note": null,
-                "conditions": null,
-                "required": false,
-                "group": null,
-                "validation": null,
-                "validation_message": null
-            }
-        },
-        {
-            "collection": "clausula",
-            "field": "status",
-            "type": "string",
-            "schema": {
-                "name": "status",
-                "table": "clausula",
-                "data_type": "character varying",
-                "default_value": "draft",
-                "generation_expression": null,
-                "max_length": 255,
-                "numeric_precision": null,
-                "numeric_scale": null,
-                "is_generated": false,
-                "is_nullable": false,
-                "is_unique": false,
-                "is_indexed": false,
-                "is_primary_key": false,
-                "has_auto_increment": false,
-                "foreign_key_schema": null,
-                "foreign_key_table": null,
-                "foreign_key_column": null,
-                "comment": null
-            },
-            "meta": {
-                "collection": "clausula",
-                "field": "status",
-                "special": null,
-                "interface": "select-dropdown",
-                "options": {
-                    "choices": [
-                        {
-                            "text": "Publicado",
-                            "value": "published",
-                            "color": "var(--theme--primary)"
-                        },
-                        {
-                            "text": "Rascunho",
-                            "value": "draft",
-                            "color": "var(--theme--foreground)"
-                        },
-                        {
-                            "text": "Arquivado",
-                            "value": "archived",
-                            "color": "var(--theme--warning)"
-                        }
-                    ]
-                },
-                "display": "labels",
-                "display_options": {
-                    "showAsDot": true,
-                    "choices": [
-                        {
-                            "text": "Publicado",
-                            "value": "published",
-                            "color": "var(--theme--primary)",
-                            "foreground": "var(--theme--primary)",
-                            "background": "var(--theme--primary-background)"
-                        },
-                        {
-                            "text": "Rascunho",
-                            "value": "draft",
-                            "color": "var(--theme--foreground)",
-                            "foreground": "var(--theme--foreground)",
-                            "background": "var(--theme--background-normal)"
-                        },
-                        {
-                            "text": "Arquivado",
-                            "value": "archived",
-                            "color": "var(--theme--warning)",
-                            "foreground": "var(--theme--warning)",
-                            "background": "var(--theme--warning-background)"
-                        }
-                    ]
-                },
-                "readonly": false,
-                "hidden": true,
-                "sort": 2,
-                "width": "full",
-                "translations": null,
-                "note": null,
-                "conditions": null,
-                "required": false,
-                "group": null,
-                "validation": null,
-                "validation_message": null
-            }
-        },
-        {
-            "collection": "clausula",
-            "field": "user_created",
-            "type": "uuid",
-            "schema": {
-                "name": "user_created",
-                "table": "clausula",
-                "data_type": "uuid",
-                "default_value": null,
-                "generation_expression": null,
-                "max_length": null,
-                "numeric_precision": null,
-                "numeric_scale": null,
-                "is_generated": false,
-                "is_nullable": true,
-                "is_unique": false,
-                "is_indexed": false,
-                "is_primary_key": false,
-                "has_auto_increment": false,
-                "foreign_key_schema": "public",
-                "foreign_key_table": "directus_users",
-                "foreign_key_column": "id",
-                "comment": null
-            },
-            "meta": {
-                "collection": "clausula",
-                "field": "user_created",
-                "special": [
-                    "user-created"
-                ],
-                "interface": "select-dropdown-m2o",
-                "options": {
-                    "template": "{{avatar.$thumbnail}} {{first_name}} {{last_name}}"
-                },
-                "display": "user",
-                "display_options": null,
-                "readonly": true,
-                "hidden": true,
-                "sort": 3,
-                "width": "half",
-                "translations": null,
-                "note": null,
-                "conditions": null,
-                "required": false,
-                "group": null,
-                "validation": null,
-                "validation_message": null
-            }
-        },
-        {
-            "collection": "clausula",
-            "field": "date_created",
-            "type": "timestamp",
-            "schema": {
-                "name": "date_created",
-                "table": "clausula",
-                "data_type": "timestamp with time zone",
-                "default_value": null,
-                "generation_expression": null,
-                "max_length": null,
-                "numeric_precision": null,
-                "numeric_scale": null,
-                "is_generated": false,
-                "is_nullable": true,
-                "is_unique": false,
-                "is_indexed": false,
-                "is_primary_key": false,
-                "has_auto_increment": false,
-                "foreign_key_schema": null,
-                "foreign_key_table": null,
-                "foreign_key_column": null,
-                "comment": null
-            },
-            "meta": {
-                "collection": "clausula",
-                "field": "date_created",
-                "special": [
-                    "date-created"
-                ],
-                "interface": "datetime",
-                "options": null,
-                "display": "datetime",
-                "display_options": {
-                    "relative": true
-                },
-                "readonly": true,
-                "hidden": true,
-                "sort": 4,
-                "width": "half",
-                "translations": null,
-                "note": null,
-                "conditions": null,
-                "required": false,
-                "group": null,
-                "validation": null,
-                "validation_message": null
-            }
-        },
-        {
-            "collection": "clausula",
-            "field": "user_updated",
-            "type": "uuid",
-            "schema": {
-                "name": "user_updated",
-                "table": "clausula",
-                "data_type": "uuid",
-                "default_value": null,
-                "generation_expression": null,
-                "max_length": null,
-                "numeric_precision": null,
-                "numeric_scale": null,
-                "is_generated": false,
-                "is_nullable": true,
-                "is_unique": false,
-                "is_indexed": false,
-                "is_primary_key": false,
-                "has_auto_increment": false,
-                "foreign_key_schema": "public",
-                "foreign_key_table": "directus_users",
-                "foreign_key_column": "id",
-                "comment": null
-            },
-            "meta": {
-                "collection": "clausula",
-                "field": "user_updated",
-                "special": [
-                    "user-updated"
-                ],
-                "interface": "select-dropdown-m2o",
-                "options": {
-                    "template": "{{avatar.$thumbnail}} {{first_name}} {{last_name}}"
-                },
-                "display": "user",
-                "display_options": null,
-                "readonly": true,
-                "hidden": true,
-                "sort": 5,
-                "width": "half",
-                "translations": null,
-                "note": null,
-                "conditions": null,
-                "required": false,
-                "group": null,
-                "validation": null,
-                "validation_message": null
-            }
-        },
-        {
-            "collection": "clausula",
-            "field": "date_updated",
-            "type": "timestamp",
-            "schema": {
-                "name": "date_updated",
-                "table": "clausula",
-                "data_type": "timestamp with time zone",
-                "default_value": null,
-                "generation_expression": null,
-                "max_length": null,
-                "numeric_precision": null,
-                "numeric_scale": null,
-                "is_generated": false,
-                "is_nullable": true,
-                "is_unique": false,
-                "is_indexed": false,
-                "is_primary_key": false,
-                "has_auto_increment": false,
-                "foreign_key_schema": null,
-                "foreign_key_table": null,
-                "foreign_key_column": null,
-                "comment": null
-            },
-            "meta": {
-                "collection": "clausula",
-                "field": "date_updated",
-                "special": [
-                    "date-updated"
-                ],
-                "interface": "datetime",
-                "options": null,
-                "display": "datetime",
-                "display_options": {
-                    "relative": true
-                },
-                "readonly": true,
-                "hidden": true,
-                "sort": 6,
-                "width": "half",
-                "translations": null,
-                "note": null,
-                "conditions": null,
-                "required": false,
-                "group": null,
-                "validation": null,
-                "validation_message": null
-            }
-        },
-        {
-            "collection": "clausula",
-            "field": "numero",
-            "type": "string",
-            "schema": {
-                "name": "numero",
-                "table": "clausula",
-                "data_type": "character varying",
-                "default_value": null,
-                "generation_expression": null,
-                "max_length": 255,
-                "numeric_precision": null,
-                "numeric_scale": null,
-                "is_generated": false,
-                "is_nullable": true,
-                "is_unique": false,
-                "is_indexed": false,
-                "is_primary_key": false,
-                "has_auto_increment": false,
-                "foreign_key_schema": null,
-                "foreign_key_table": null,
-                "foreign_key_column": null,
-                "comment": null
-            },
-            "meta": {
-                "collection": "clausula",
-                "field": "numero",
-                "special": null,
-                "interface": "input",
-                "options": null,
-                "display": "formatted-value",
-                "display_options": null,
-                "readonly": false,
-                "hidden": false,
-                "sort": 7,
-                "width": "half",
-                "translations": [
-                    {
-                        "language": "pt-BR",
-                        "translation": "Tag"
-                    }
-                ],
-                "note": null,
-                "conditions": null,
-                "required": false,
-                "group": null,
-                "validation": null,
-                "validation_message": null
-            }
-        },
-        {
-            "collection": "clausula",
-            "field": "conteudo",
-            "type": "text",
-            "schema": {
-                "name": "conteudo",
-                "table": "clausula",
-                "data_type": "text",
-                "default_value": null,
-                "generation_expression": null,
-                "max_length": null,
-                "numeric_precision": null,
-                "numeric_scale": null,
-                "is_generated": false,
-                "is_nullable": true,
-                "is_unique": false,
-                "is_indexed": false,
-                "is_primary_key": false,
-                "has_auto_increment": false,
-                "foreign_key_schema": null,
-                "foreign_key_table": null,
-                "foreign_key_column": null,
-                "comment": null
-            },
-            "meta": {
-                "collection": "clausula",
-                "field": "conteudo",
-                "special": null,
-                "interface": "input-multiline",
-                "options": null,
-                "display": "formatted-value",
-                "display_options": null,
-                "readonly": false,
-                "hidden": false,
-                "sort": 8,
-                "width": "full",
-                "translations": [
-                    {
-                        "language": "pt-BR",
-                        "translation": "Conteúdo original"
-                    }
-                ],
-                "note": null,
-                "conditions": null,
-                "required": false,
-                "group": null,
-                "validation": null,
-                "validation_message": null
-            }
-        },
-        {
-            "collection": "clausula",
-            "field": "referencias",
-            "type": "alias",
-            "schema": null,
-            "meta": {
-                "collection": "clausula",
-                "field": "referencias",
-                "special": [
-                    "o2m"
-                ],
-                "interface": "list-o2m",
-                "options": {
-                    "template": "{{descricao}}"
-                },
-                "display": "related-values",
-                "display_options": {
-                    "template": "{{descricao}}"
-                },
-                "readonly": false,
-                "hidden": false,
-                "sort": 9,
-                "width": "full",
-                "translations": [
-                    {
-                        "language": "pt-BR",
-                        "translation": "Referências"
-                    }
-                ],
-                "note": null,
-                "conditions": null,
-                "required": false,
-                "group": null,
-                "validation": null,
-                "validation_message": null
-            }
-        },
-        {
-            "collection": "clausula",
-            "field": "modelo_contrato",
-            "type": "uuid",
-            "schema": {
-                "name": "modelo_contrato",
-                "table": "clausula",
-                "data_type": "uuid",
-                "default_value": null,
-                "generation_expression": null,
-                "max_length": null,
-                "numeric_precision": null,
-                "numeric_scale": null,
-                "is_generated": false,
-                "is_nullable": true,
-                "is_unique": false,
-                "is_indexed": false,
-                "is_primary_key": false,
-                "has_auto_increment": false,
-                "foreign_key_schema": "public",
-                "foreign_key_table": "modelo_contrato",
-                "foreign_key_column": "id",
-                "comment": null
-            },
-            "meta": {
-                "collection": "clausula",
-                "field": "modelo_contrato",
-                "special": null,
-                "interface": "select-dropdown-m2o",
-                "options": null,
-                "display": null,
-                "display_options": null,
-                "readonly": false,
-                "hidden": true,
-                "sort": 10,
-                "width": "full",
-                "translations": null,
-                "note": null,
-                "conditions": null,
-                "required": false,
-                "group": null,
-                "validation": null,
-                "validation_message": null
-            }
-        },
-        {
-            "collection": "referencia",
-            "field": "id",
-            "type": "uuid",
-            "schema": {
-                "name": "id",
-                "table": "referencia",
-                "data_type": "uuid",
-                "default_value": null,
-                "generation_expression": null,
-                "max_length": null,
-                "numeric_precision": null,
-                "numeric_scale": null,
-                "is_generated": false,
-                "is_nullable": false,
-                "is_unique": true,
-                "is_indexed": false,
-                "is_primary_key": true,
-                "has_auto_increment": false,
-                "foreign_key_schema": null,
-                "foreign_key_table": null,
-                "foreign_key_column": null,
-                "comment": null
-            },
-            "meta": {
-                "collection": "referencia",
-                "field": "id",
-                "special": [
-                    "uuid"
-                ],
-                "interface": "input",
-                "options": null,
-                "display": null,
-                "display_options": null,
-                "readonly": true,
-                "hidden": true,
-                "sort": 1,
-                "width": "full",
-                "translations": null,
-                "note": null,
-                "conditions": null,
-                "required": false,
-                "group": null,
-                "validation": null,
-                "validation_message": null
-            }
-        },
-        {
-            "collection": "referencia",
-            "field": "status",
-            "type": "string",
-            "schema": {
-                "name": "status",
-                "table": "referencia",
-                "data_type": "character varying",
-                "default_value": "draft",
-                "generation_expression": null,
-                "max_length": 255,
-                "numeric_precision": null,
-                "numeric_scale": null,
-                "is_generated": false,
-                "is_nullable": false,
-                "is_unique": false,
-                "is_indexed": false,
-                "is_primary_key": false,
-                "has_auto_increment": false,
-                "foreign_key_schema": null,
-                "foreign_key_table": null,
-                "foreign_key_column": null,
-                "comment": null
-            },
-            "meta": {
-                "collection": "referencia",
-                "field": "status",
-                "special": null,
-                "interface": "select-dropdown",
-                "options": {
-                    "choices": [
-                        {
-                            "text": "Publicado",
-                            "value": "published",
-                            "color": "var(--theme--primary)"
-                        },
-                        {
-                            "text": "Rascunho",
-                            "value": "draft",
-                            "color": "var(--theme--foreground)"
-                        },
-                        {
-                            "text": "Arquivado",
-                            "value": "archived",
-                            "color": "var(--theme--warning)"
-                        }
-                    ]
-                },
-                "display": "labels",
-                "display_options": {
-                    "showAsDot": true,
-                    "choices": [
-                        {
-                            "text": "Publicado",
-                            "value": "published",
-                            "color": "var(--theme--primary)",
-                            "foreground": "var(--theme--primary)",
-                            "background": "var(--theme--primary-background)"
-                        },
-                        {
-                            "text": "Rascunho",
-                            "value": "draft",
-                            "color": "var(--theme--foreground)",
-                            "foreground": "var(--theme--foreground)",
-                            "background": "var(--theme--background-normal)"
-                        },
-                        {
-                            "text": "Arquivado",
-                            "value": "archived",
-                            "color": "var(--theme--warning)",
-                            "foreground": "var(--theme--warning)",
-                            "background": "var(--theme--warning-background)"
-                        }
-                    ]
-                },
-                "readonly": false,
-                "hidden": true,
-                "sort": 2,
-                "width": "full",
-                "translations": null,
-                "note": null,
-                "conditions": null,
-                "required": false,
-                "group": null,
-                "validation": null,
-                "validation_message": null
-            }
-        },
-        {
-            "collection": "referencia",
-            "field": "user_created",
-            "type": "uuid",
-            "schema": {
-                "name": "user_created",
-                "table": "referencia",
-                "data_type": "uuid",
-                "default_value": null,
-                "generation_expression": null,
-                "max_length": null,
-                "numeric_precision": null,
-                "numeric_scale": null,
-                "is_generated": false,
-                "is_nullable": true,
-                "is_unique": false,
-                "is_indexed": false,
-                "is_primary_key": false,
-                "has_auto_increment": false,
-                "foreign_key_schema": "public",
-                "foreign_key_table": "directus_users",
-                "foreign_key_column": "id",
-                "comment": null
-            },
-            "meta": {
-                "collection": "referencia",
-                "field": "user_created",
-                "special": [
-                    "user-created"
-                ],
-                "interface": "select-dropdown-m2o",
-                "options": {
-                    "template": "{{avatar.$thumbnail}} {{first_name}} {{last_name}}"
-                },
-                "display": "user",
-                "display_options": null,
-                "readonly": true,
-                "hidden": true,
-                "sort": 3,
-                "width": "half",
-                "translations": null,
-                "note": null,
-                "conditions": null,
-                "required": false,
-                "group": null,
-                "validation": null,
-                "validation_message": null
-            }
-        },
-        {
-            "collection": "referencia",
-            "field": "date_created",
-            "type": "timestamp",
-            "schema": {
-                "name": "date_created",
-                "table": "referencia",
-                "data_type": "timestamp with time zone",
-                "default_value": null,
-                "generation_expression": null,
-                "max_length": null,
-                "numeric_precision": null,
-                "numeric_scale": null,
-                "is_generated": false,
-                "is_nullable": true,
-                "is_unique": false,
-                "is_indexed": false,
-                "is_primary_key": false,
-                "has_auto_increment": false,
-                "foreign_key_schema": null,
-                "foreign_key_table": null,
-                "foreign_key_column": null,
-                "comment": null
-            },
-            "meta": {
-                "collection": "referencia",
-                "field": "date_created",
-                "special": [
-                    "date-created"
-                ],
-                "interface": "datetime",
-                "options": null,
-                "display": "datetime",
-                "display_options": {
-                    "relative": true
-                },
-                "readonly": true,
-                "hidden": true,
-                "sort": 4,
-                "width": "half",
-                "translations": null,
-                "note": null,
-                "conditions": null,
-                "required": false,
-                "group": null,
-                "validation": null,
-                "validation_message": null
-            }
-        },
-        {
-            "collection": "referencia",
-            "field": "user_updated",
-            "type": "uuid",
-            "schema": {
-                "name": "user_updated",
-                "table": "referencia",
-                "data_type": "uuid",
-                "default_value": null,
-                "generation_expression": null,
-                "max_length": null,
-                "numeric_precision": null,
-                "numeric_scale": null,
-                "is_generated": false,
-                "is_nullable": true,
-                "is_unique": false,
-                "is_indexed": false,
-                "is_primary_key": false,
-                "has_auto_increment": false,
-                "foreign_key_schema": "public",
-                "foreign_key_table": "directus_users",
-                "foreign_key_column": "id",
-                "comment": null
-            },
-            "meta": {
-                "collection": "referencia",
-                "field": "user_updated",
-                "special": [
-                    "user-updated"
-                ],
-                "interface": "select-dropdown-m2o",
-                "options": {
-                    "template": "{{avatar.$thumbnail}} {{first_name}} {{last_name}}"
-                },
-                "display": "user",
-                "display_options": null,
-                "readonly": true,
-                "hidden": true,
-                "sort": 5,
-                "width": "half",
-                "translations": null,
-                "note": null,
-                "conditions": null,
-                "required": false,
-                "group": null,
-                "validation": null,
-                "validation_message": null
-            }
-        },
-        {
-            "collection": "referencia",
-            "field": "date_updated",
-            "type": "timestamp",
-            "schema": {
-                "name": "date_updated",
-                "table": "referencia",
-                "data_type": "timestamp with time zone",
-                "default_value": null,
-                "generation_expression": null,
-                "max_length": null,
-                "numeric_precision": null,
-                "numeric_scale": null,
-                "is_generated": false,
-                "is_nullable": true,
-                "is_unique": false,
-                "is_indexed": false,
-                "is_primary_key": false,
-                "has_auto_increment": false,
-                "foreign_key_schema": null,
-                "foreign_key_table": null,
-                "foreign_key_column": null,
-                "comment": null
-            },
-            "meta": {
-                "collection": "referencia",
-                "field": "date_updated",
-                "special": [
-                    "date-updated"
-                ],
-                "interface": "datetime",
-                "options": null,
-                "display": "datetime",
-                "display_options": {
-                    "relative": true
-                },
-                "readonly": true,
-                "hidden": true,
-                "sort": 6,
-                "width": "half",
-                "translations": null,
-                "note": null,
-                "conditions": null,
-                "required": false,
-                "group": null,
-                "validation": null,
-                "validation_message": null
-            }
-        },
-        {
-            "collection": "referencia",
-            "field": "clausula",
-            "type": "uuid",
-            "schema": {
-                "name": "clausula",
-                "table": "referencia",
-                "data_type": "uuid",
-                "default_value": null,
-                "generation_expression": null,
-                "max_length": null,
-                "numeric_precision": null,
-                "numeric_scale": null,
-                "is_generated": false,
-                "is_nullable": true,
-                "is_unique": false,
-                "is_indexed": false,
-                "is_primary_key": false,
-                "has_auto_increment": false,
-                "foreign_key_schema": "public",
-                "foreign_key_table": "clausula",
-                "foreign_key_column": "id",
-                "comment": null
-            },
-            "meta": {
-                "collection": "referencia",
-                "field": "clausula",
-                "special": null,
-                "interface": "select-dropdown-m2o",
-                "options": null,
-                "display": null,
-                "display_options": null,
-                "readonly": false,
-                "hidden": true,
-                "sort": 7,
-                "width": "full",
-                "translations": null,
-                "note": null,
-                "conditions": null,
-                "required": false,
-                "group": null,
-                "validation": null,
-                "validation_message": null
-            }
-        },
-        {
-            "collection": "referencia",
-            "field": "descricao",
-            "type": "text",
-            "schema": {
-                "name": "descricao",
-                "table": "referencia",
-                "data_type": "text",
-                "default_value": null,
-                "generation_expression": null,
-                "max_length": null,
-                "numeric_precision": null,
-                "numeric_scale": null,
-                "is_generated": false,
-                "is_nullable": true,
-                "is_unique": false,
-                "is_indexed": false,
-                "is_primary_key": false,
-                "has_auto_increment": false,
-                "foreign_key_schema": null,
-                "foreign_key_table": null,
-                "foreign_key_column": null,
-                "comment": null
-            },
-            "meta": {
-                "collection": "referencia",
-                "field": "descricao",
-                "special": null,
-                "interface": "input-rich-text-html",
-                "options": null,
-                "display": "formatted-value",
-                "display_options": null,
-                "readonly": false,
-                "hidden": false,
-                "sort": 8,
-                "width": "full",
-                "translations": [
-                    {
-                        "language": "pt-BR",
-                        "translation": "Descrição"
-                    }
-                ],
-                "note": null,
-                "conditions": null,
-                "required": false,
-                "group": null,
-                "validation": null,
-                "validation_message": null
-            }
-        },
-        {
             "collection": "gabarito",
             "field": "id",
             "type": "uuid",
@@ -15271,6 +15541,84 @@
             }
         },
         {
+            "collection": "clausula",
+            "field": "user_created",
+            "related_collection": "directus_users",
+            "schema": {
+                "constraint_name": "clausula_user_created_foreign",
+                "table": "clausula",
+                "column": "user_created",
+                "foreign_key_schema": "public",
+                "foreign_key_table": "directus_users",
+                "foreign_key_column": "id",
+                "on_update": "NO ACTION",
+                "on_delete": "NO ACTION"
+            },
+            "meta": {
+                "many_collection": "clausula",
+                "many_field": "user_created",
+                "one_collection": "directus_users",
+                "one_field": null,
+                "one_collection_field": null,
+                "one_allowed_collections": null,
+                "junction_field": null,
+                "sort_field": null,
+                "one_deselect_action": "nullify"
+            }
+        },
+        {
+            "collection": "clausula",
+            "field": "user_updated",
+            "related_collection": "directus_users",
+            "schema": {
+                "constraint_name": "clausula_user_updated_foreign",
+                "table": "clausula",
+                "column": "user_updated",
+                "foreign_key_schema": "public",
+                "foreign_key_table": "directus_users",
+                "foreign_key_column": "id",
+                "on_update": "NO ACTION",
+                "on_delete": "NO ACTION"
+            },
+            "meta": {
+                "many_collection": "clausula",
+                "many_field": "user_updated",
+                "one_collection": "directus_users",
+                "one_field": null,
+                "one_collection_field": null,
+                "one_allowed_collections": null,
+                "junction_field": null,
+                "sort_field": null,
+                "one_deselect_action": "nullify"
+            }
+        },
+        {
+            "collection": "clausula",
+            "field": "modelo_contrato",
+            "related_collection": "modelo_contrato",
+            "schema": {
+                "constraint_name": "clausula_modelo_contrato_foreign",
+                "table": "clausula",
+                "column": "modelo_contrato",
+                "foreign_key_schema": "public",
+                "foreign_key_table": "modelo_contrato",
+                "foreign_key_column": "id",
+                "on_update": "NO ACTION",
+                "on_delete": "CASCADE"
+            },
+            "meta": {
+                "many_collection": "clausula",
+                "many_field": "modelo_contrato",
+                "one_collection": "modelo_contrato",
+                "one_field": "clausulas",
+                "one_collection_field": null,
+                "one_allowed_collections": null,
+                "junction_field": null,
+                "sort_field": null,
+                "one_deselect_action": "delete"
+            }
+        },
+        {
             "collection": "pessoa_fisica",
             "field": "user_created",
             "related_collection": "directus_users",
@@ -15346,6 +15694,84 @@
                 "junction_field": null,
                 "sort_field": null,
                 "one_deselect_action": "nullify"
+            }
+        },
+        {
+            "collection": "referencia",
+            "field": "user_updated",
+            "related_collection": "directus_users",
+            "schema": {
+                "constraint_name": "referencia_user_updated_foreign",
+                "table": "referencia",
+                "column": "user_updated",
+                "foreign_key_schema": "public",
+                "foreign_key_table": "directus_users",
+                "foreign_key_column": "id",
+                "on_update": "NO ACTION",
+                "on_delete": "NO ACTION"
+            },
+            "meta": {
+                "many_collection": "referencia",
+                "many_field": "user_updated",
+                "one_collection": "directus_users",
+                "one_field": null,
+                "one_collection_field": null,
+                "one_allowed_collections": null,
+                "junction_field": null,
+                "sort_field": null,
+                "one_deselect_action": "nullify"
+            }
+        },
+        {
+            "collection": "referencia",
+            "field": "user_created",
+            "related_collection": "directus_users",
+            "schema": {
+                "constraint_name": "referencia_user_created_foreign",
+                "table": "referencia",
+                "column": "user_created",
+                "foreign_key_schema": "public",
+                "foreign_key_table": "directus_users",
+                "foreign_key_column": "id",
+                "on_update": "NO ACTION",
+                "on_delete": "NO ACTION"
+            },
+            "meta": {
+                "many_collection": "referencia",
+                "many_field": "user_created",
+                "one_collection": "directus_users",
+                "one_field": null,
+                "one_collection_field": null,
+                "one_allowed_collections": null,
+                "junction_field": null,
+                "sort_field": null,
+                "one_deselect_action": "nullify"
+            }
+        },
+        {
+            "collection": "referencia",
+            "field": "clausula",
+            "related_collection": "clausula",
+            "schema": {
+                "constraint_name": "referencia_clausula_foreign",
+                "table": "referencia",
+                "column": "clausula",
+                "foreign_key_schema": "public",
+                "foreign_key_table": "clausula",
+                "foreign_key_column": "id",
+                "on_update": "NO ACTION",
+                "on_delete": "CASCADE"
+            },
+            "meta": {
+                "many_collection": "referencia",
+                "many_field": "clausula",
+                "one_collection": "clausula",
+                "one_field": "referencias",
+                "one_collection_field": null,
+                "one_allowed_collections": null,
+                "junction_field": null,
+                "sort_field": null,
+                "one_deselect_action": "delete"
             }
         },
         {
@@ -15450,6 +15876,32 @@
                 "junction_field": null,
                 "sort_field": null,
                 "one_deselect_action": "delete"
+            }
+        },
+        {
+            "collection": "versao",
+            "field": "relatorio_diff",
+            "related_collection": "directus_files",
+            "schema": {
+                "constraint_name": "versao_relatorio_diff_foreign",
+                "table": "versao",
+                "column": "relatorio_diff",
+                "foreign_key_schema": "public",
+                "foreign_key_table": "directus_files",
+                "foreign_key_column": "id",
+                "on_update": "NO ACTION",
+                "on_delete": "SET NULL"
+            },
+            "meta": {
+                "many_collection": "versao",
+                "many_field": "relatorio_diff",
+                "one_collection": "directus_files",
+                "one_field": null,
+                "one_collection_field": null,
+                "one_allowed_collections": null,
+                "junction_field": null,
+                "sort_field": null,
+                "one_deselect_action": "nullify"
             }
         },
         {
@@ -15672,7 +16124,7 @@
                 "foreign_key_table": "modelo_contrato",
                 "foreign_key_column": "id",
                 "on_update": "NO ACTION",
-                "on_delete": "SET NULL"
+                "on_delete": "CASCADE"
             },
             "meta": {
                 "many_collection": "contrato",
@@ -16776,162 +17228,6 @@
                 "junction_field": null,
                 "sort_field": null,
                 "one_deselect_action": "nullify"
-            }
-        },
-        {
-            "collection": "clausula",
-            "field": "user_created",
-            "related_collection": "directus_users",
-            "schema": {
-                "constraint_name": "clausula_user_created_foreign",
-                "table": "clausula",
-                "column": "user_created",
-                "foreign_key_schema": "public",
-                "foreign_key_table": "directus_users",
-                "foreign_key_column": "id",
-                "on_update": "NO ACTION",
-                "on_delete": "NO ACTION"
-            },
-            "meta": {
-                "many_collection": "clausula",
-                "many_field": "user_created",
-                "one_collection": "directus_users",
-                "one_field": null,
-                "one_collection_field": null,
-                "one_allowed_collections": null,
-                "junction_field": null,
-                "sort_field": null,
-                "one_deselect_action": "nullify"
-            }
-        },
-        {
-            "collection": "clausula",
-            "field": "user_updated",
-            "related_collection": "directus_users",
-            "schema": {
-                "constraint_name": "clausula_user_updated_foreign",
-                "table": "clausula",
-                "column": "user_updated",
-                "foreign_key_schema": "public",
-                "foreign_key_table": "directus_users",
-                "foreign_key_column": "id",
-                "on_update": "NO ACTION",
-                "on_delete": "NO ACTION"
-            },
-            "meta": {
-                "many_collection": "clausula",
-                "many_field": "user_updated",
-                "one_collection": "directus_users",
-                "one_field": null,
-                "one_collection_field": null,
-                "one_allowed_collections": null,
-                "junction_field": null,
-                "sort_field": null,
-                "one_deselect_action": "nullify"
-            }
-        },
-        {
-            "collection": "clausula",
-            "field": "modelo_contrato",
-            "related_collection": "modelo_contrato",
-            "schema": {
-                "constraint_name": "clausula_modelo_contrato_foreign",
-                "table": "clausula",
-                "column": "modelo_contrato",
-                "foreign_key_schema": "public",
-                "foreign_key_table": "modelo_contrato",
-                "foreign_key_column": "id",
-                "on_update": "NO ACTION",
-                "on_delete": "CASCADE"
-            },
-            "meta": {
-                "many_collection": "clausula",
-                "many_field": "modelo_contrato",
-                "one_collection": "modelo_contrato",
-                "one_field": "clausulas",
-                "one_collection_field": null,
-                "one_allowed_collections": null,
-                "junction_field": null,
-                "sort_field": null,
-                "one_deselect_action": "delete"
-            }
-        },
-        {
-            "collection": "referencia",
-            "field": "user_updated",
-            "related_collection": "directus_users",
-            "schema": {
-                "constraint_name": "referencia_user_updated_foreign",
-                "table": "referencia",
-                "column": "user_updated",
-                "foreign_key_schema": "public",
-                "foreign_key_table": "directus_users",
-                "foreign_key_column": "id",
-                "on_update": "NO ACTION",
-                "on_delete": "NO ACTION"
-            },
-            "meta": {
-                "many_collection": "referencia",
-                "many_field": "user_updated",
-                "one_collection": "directus_users",
-                "one_field": null,
-                "one_collection_field": null,
-                "one_allowed_collections": null,
-                "junction_field": null,
-                "sort_field": null,
-                "one_deselect_action": "nullify"
-            }
-        },
-        {
-            "collection": "referencia",
-            "field": "user_created",
-            "related_collection": "directus_users",
-            "schema": {
-                "constraint_name": "referencia_user_created_foreign",
-                "table": "referencia",
-                "column": "user_created",
-                "foreign_key_schema": "public",
-                "foreign_key_table": "directus_users",
-                "foreign_key_column": "id",
-                "on_update": "NO ACTION",
-                "on_delete": "NO ACTION"
-            },
-            "meta": {
-                "many_collection": "referencia",
-                "many_field": "user_created",
-                "one_collection": "directus_users",
-                "one_field": null,
-                "one_collection_field": null,
-                "one_allowed_collections": null,
-                "junction_field": null,
-                "sort_field": null,
-                "one_deselect_action": "nullify"
-            }
-        },
-        {
-            "collection": "referencia",
-            "field": "clausula",
-            "related_collection": "clausula",
-            "schema": {
-                "constraint_name": "referencia_clausula_foreign",
-                "table": "referencia",
-                "column": "clausula",
-                "foreign_key_schema": "public",
-                "foreign_key_table": "clausula",
-                "foreign_key_column": "id",
-                "on_update": "NO ACTION",
-                "on_delete": "CASCADE"
-            },
-            "meta": {
-                "many_collection": "referencia",
-                "many_field": "clausula",
-                "one_collection": "clausula",
-                "one_field": "referencias",
-                "one_collection_field": null,
-                "one_allowed_collections": null,
-                "junction_field": null,
-                "sort_field": null,
-                "one_deselect_action": "delete"
             }
         },
         {
