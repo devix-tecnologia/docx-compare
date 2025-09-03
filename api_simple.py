@@ -11,7 +11,7 @@ import subprocess
 import re
 import difflib
 from datetime import datetime
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, send_from_directory
 import requests
 from dotenv import load_dotenv
 
@@ -376,7 +376,7 @@ def compare():
                 }), 500
             
             # URL do resultado
-            result_url = f"http://{FLASK_HOST}:{FLASK_PORT}/results/{result_filename}"
+            result_url = f"http://{FLASK_HOST}:{FLASK_PORT}/outputs/{result_filename}"
             
             print(f"✅ Comparação concluída: {result_url}")
             
@@ -497,7 +497,7 @@ def compare_versao():
             saved_modifications = save_modifications_to_directus(versao_id, modifications)
             
             # 7. Atualizar status da versão
-            result_url = f"http://{FLASK_HOST}:{FLASK_PORT}/results/{result_filename}"
+            result_url = f"http://{FLASK_HOST}:{FLASK_PORT}/outputs/{result_filename}"
             update_versao_status(versao_id, result_url, len(modifications))
             
             print(f"✅ Processo completo! {len(modifications)} modificações encontradas")
@@ -536,59 +536,13 @@ def compare_versao():
             'error': str(e)
         }), 500
 
-@app.route('/results/<path:filename>', methods=['GET'])
+@app.route('/outputs/<path:filename>', methods=['GET'])
 def serve_result(filename):
-    """Serve o arquivo HTML de resultado"""
+    """Servir arquivos HTML de resultado"""
     try:
-        # Proteção contra path traversal - validação rigorosa
-        import re
-        from urllib.parse import unquote
-        
-        # Decodificar URL encoding
-        filename = unquote(filename)
-        
-        # Normalizar o path para detectar tentativas de traversal
-        normalized_filename = os.path.normpath(filename)
-        
-        # Verificar se contém sequências de path traversal
-        if '..' in normalized_filename or '/' in normalized_filename or '\\' in normalized_filename:
-            return jsonify({'error': 'Acesso negado: path traversal detectado'}), 403
-        
-        # Permitir apenas caracteres seguros no nome do arquivo
-        if not re.match(r'^[a-zA-Z0-9_\-\.]+$', normalized_filename):
-            return jsonify({'error': 'Nome de arquivo contém caracteres inválidos'}), 400
-        
-        # Verificar se termina com .html (apenas arquivos HTML são permitidos)
-        if not normalized_filename.lower().endswith('.html'):
-            return jsonify({'error': 'Apenas arquivos HTML são permitidos'}), 400
-        
-        # Verificar comprimento do nome do arquivo (evitar nomes muito longos)
-        if len(normalized_filename) > 255:
-            return jsonify({'error': 'Nome de arquivo muito longo'}), 400
-        
-        # Construir caminho seguro usando apenas o nome do arquivo
-        safe_filename = os.path.basename(normalized_filename)
-        file_path = os.path.join(RESULTS_DIR, safe_filename)
-        
-        # Verificar se o caminho resolvido ainda está dentro do diretório results
-        results_abs_path = os.path.abspath(RESULTS_DIR)
-        file_abs_path = os.path.abspath(file_path)
-        
-        if not file_abs_path.startswith(results_abs_path + os.sep):
-            return jsonify({'error': 'Acesso negado: arquivo fora do diretório permitido'}), 403
-        
-        # Verificar se o arquivo existe
-        if not os.path.exists(file_path):
-            return jsonify({'error': 'Arquivo não encontrado'}), 404
-        
-        # Verificar se é realmente um arquivo (não um diretório)
-        if not os.path.isfile(file_path):
-            return jsonify({'error': 'Recurso não é um arquivo válido'}), 400
-        
-        return send_file(file_path, mimetype='text/html')
-        
-    except Exception as e:
-        return jsonify({'error': f'Erro interno: {str(e)}'}), 500
+        return send_from_directory('outputs', filename)
+    except FileNotFoundError:
+        return jsonify({'error': 'Arquivo não encontrado'}), 404
 
 if __name__ == '__main__':
     print("🚀 API Completa de Comparação de Documentos")
@@ -599,7 +553,7 @@ if __name__ == '__main__':
     print(f"📋 Endpoints disponíveis:")
     print(f"  • POST /compare - Comparação com lógica de negócio (versao_id)")
     print(f"  • POST /compare_simple - Comparação simples (original_file_id, modified_file_id)")
-    print(f"  • GET  /results/<filename> - Visualizar resultados")
+    print(f"  • GET  /outputs/<filename> - Visualizar resultados")
     print(f"  • GET  /health - Verificação de saúde")
     print(f"")
     print(f"💡 Como usar:")

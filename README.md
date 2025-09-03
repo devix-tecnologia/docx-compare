@@ -64,12 +64,17 @@ cp .env.example .env
 ### CLI - Comparação Local
 
 ```bash
-python docx_diff_viewer.py original.docx modificado.docx resultado.html
+python docx_diff_viewer.py original.docx modificado.docx
+# Criará automaticamente outputs/resultado.html
+
+# Ou especificar arquivo de saída:
+python docx_diff_viewer.py original.docx modificado.docx outputs/minha_comparacao.html
 ```
 
 **Exemplo:**
 ```bash
-python docx_diff_viewer.py documentos/doc-rafael-original.docx documentos/doc-rafael-alterado.docx resultado.html
+python docx_diff_viewer.py documentos/doc-rafael-original.docx documentos/doc-rafael-alterado.docx
+# Criará automaticamente outputs/resultado.html
 ```
 
 ### API REST - Integração com Directus
@@ -104,7 +109,7 @@ A API estará disponível em `http://localhost:5002`
 |----------|--------|-----------|
 | `/health` | GET | Verificação de saúde da API |
 | `/compare` | POST | Comparar dois documentos DOCX |
-| `/results/<filename>` | GET | Servir arquivo HTML de resultado |
+| `/outputs/<filename>` | GET | Servir arquivo HTML de resultado |
 
 ### 🤖 Processador Automático
 
@@ -124,7 +129,7 @@ O processador executa na porta 5005 e oferece:
 |----------|--------|-----------|
 | `/health` | GET | Verificação de saúde do processador |
 | `/status` | GET | Status detalhado do processamento |
-| `/results/<filename>` | GET | Visualizar resultados HTML |
+| `/outputs/<filename>` | GET | Visualizar resultados HTML |
 
 #### 3. Lógica de Processamento
 
@@ -223,7 +228,8 @@ docx-compare/
 ├── ⚙️ .env.example                      # Exemplo de configuração
 ├── 🎨 comments_html_filter_direct.lua   # Filtro Pandoc
 ├── 📁 documentos/                       # Documentos de exemplo
-├── 📁 results/                          # Resultados HTML gerados
+├── 📁 outputs/                          # Resultados HTML gerados
+├── 📁 tests/                           # Scripts de teste organizados
 └── 📋 API_DOCUMENTATION.md              # Documentação detalhada da API
 ```
 
@@ -326,7 +332,7 @@ sudo apt-get install pandoc  # Ubuntu
 **Endpoints de Status**:
 - `GET /health`: Status geral do sistema
 - `GET /status`: Detalhes do processador
-- `GET /results/<filename>`: Visualizar resultados
+- `GET /outputs/<filename>`: Visualizar resultados
 
 **Métricas Importantes**:
 - Número de versões processadas por execução

@@ -4,9 +4,10 @@ import difflib
 import sys
 import html
 import re
+from config import OUTPUTS_DIR, LUA_FILTER_PATH
 
 # --- Configuração ---
-LUA_FILTER_PATH = "comments_html_filter_direct.lua" 
+# LUA_FILTER_PATH já vem do config.py 
 
 # CSS melhorado para estilizar as diferenças
 CSS_CONTENT = """
@@ -318,13 +319,22 @@ def generate_diff_html(original_docx, modified_docx, output_html):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
-        print("Uso: python docx_diff_viewer.py <original.docx> <modificado.docx> <saida.html>")
+    if len(sys.argv) < 3 or len(sys.argv) > 4:
+        print("Uso: python docx_diff_viewer.py <original.docx> <modificado.docx> [saida.html]")
+        print("Se saida.html não for especificado, será criado em outputs/resultado.html")
         sys.exit(1)
 
     original_doc = sys.argv[1]
     modified_doc = sys.argv[2]
-    output_html_file = sys.argv[3]
+    
+    # Se output não foi especificado, usar pasta outputs com nome padrão
+    if len(sys.argv) == 3:
+        output_html_file = os.path.join(OUTPUTS_DIR, "resultado.html")
+    else:
+        output_html_file = sys.argv[3]
+        # Se o caminho não é absoluto e não contém pasta, colocar em outputs
+        if not os.path.isabs(output_html_file) and os.path.dirname(output_html_file) == "":
+            output_html_file = os.path.join(OUTPUTS_DIR, output_html_file)
 
     if not os.path.exists(LUA_FILTER_PATH):
         print(f"ERRO: Filtro Lua não encontrado em '{LUA_FILTER_PATH}'. Verifique o caminho.")

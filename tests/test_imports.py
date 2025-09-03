@@ -3,10 +3,14 @@
 Script simples para testar a API
 """
 
+import sys
+import os
+# Adicionar o diretório pai ao path para importar os módulos
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 print("🚀 Testando API...")
 
 try:
-    import sys
     print(f"Python: {sys.version}")
     
     import flask
@@ -21,7 +25,6 @@ try:
     load_dotenv()
     print(".env carregado")
     
-    import os
     print(f"FLASK_PORT: {os.getenv('FLASK_PORT', 'Não encontrado')}")
     
     # Agora importar o módulo da API

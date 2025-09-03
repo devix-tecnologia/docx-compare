@@ -13,7 +13,7 @@ import subprocess
 import uuid
 import re
 from datetime import datetime
-from flask import Flask, jsonify, send_file
+from flask import Flask, jsonify, send_file, send_from_directory
 from dotenv import load_dotenv
 
 # Carregar configuração
@@ -238,7 +238,7 @@ def processar_versao(versao_data):
                 total_modifications = 0
             
             # 5. URL do resultado
-            result_url = f"http://127.0.0.1:5005/results/{result_filename}"
+            result_url = f"http://127.0.0.1:5005/outputs/{result_filename}"
             
             # 6. Atualizar status para concluído
             update_versao_status(versao_id, "concluido", result_url, total_modifications)
@@ -305,9 +305,9 @@ def status():
         "timestamp": datetime.now().isoformat()
     })
 
-@app.route('/results/<filename>')
+@app.route('/outputs/<filename>')
 def get_result(filename):
-    result_path = os.path.join(RESULTS_DIR, filename)
+    result_path = os.path.join('outputs', filename)
     if os.path.exists(result_path):
         return send_file(result_path, mimetype='text/html')
     else:
@@ -347,7 +347,7 @@ def main():
     print("📋 Endpoints de monitoramento:")
     print("  • GET  /health - Verificação de saúde")
     print("  • GET  /status - Status do processador")
-    print("  • GET  /results/<filename> - Visualizar resultados")
+    print("  • GET  /outputs/<filename> - Visualizar resultados")
     print()
     
     # Iniciar thread do processador

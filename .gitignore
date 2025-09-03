@@ -2,7 +2,6 @@
 **/*.diff
 diff/
 diff_output.html
-resultado*.html
 
 # Logs da API
 *.log
@@ -29,4 +28,4 @@ venv.bak/
 .env
 
 # Resultados gerados
-results/*.html
+outputs/*.html

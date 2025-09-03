@@ -8,9 +8,19 @@ load_dotenv()
 DIRECTUS_BASE_URL = os.getenv('DIRECTUS_BASE_URL', 'https://your-directus-instance.com')
 DIRECTUS_TOKEN = os.getenv('DIRECTUS_TOKEN', 'your-directus-token')
 
+# Diretórios do projeto
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+OUTPUTS_DIR = os.path.join(PROJECT_ROOT, "outputs")
+DOCUMENTOS_DIR = os.path.join(PROJECT_ROOT, "documentos")
+TESTS_DIR = os.path.join(PROJECT_ROOT, "tests")
+
 # Configurações da aplicação
-RESULTS_DIR = os.getenv('RESULTS_DIR', 'results')
+RESULTS_DIR = os.getenv('RESULTS_DIR', 'outputs')  # Atualizado para nova pasta
 LUA_FILTER_PATH = os.getenv('LUA_FILTER_PATH', 'comments_html_filter_direct.lua')
+
+# Garantir que os diretórios existam
+for directory in [OUTPUTS_DIR, DOCUMENTOS_DIR, TESTS_DIR]:
+    os.makedirs(directory, exist_ok=True)
 
 # Configurações do Flask
 FLASK_HOST = os.getenv('FLASK_HOST', '0.0.0.0')
