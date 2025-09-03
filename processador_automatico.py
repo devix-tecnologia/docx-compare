@@ -54,9 +54,12 @@ print("✅ Cliente HTTP inicializado")
 FLASK_HOST = "127.0.0.1"
 FLASK_PORT = 5005
 
-# Variável global para controlar o processador
+# Variáveis globais para controlar o processador
 processador_ativo = True
 processador_thread = None
+verbose_mode = False
+check_interval = 60  # Intervalo de verificação em segundos (padrão: 1 minuto)
+request_timeout = 30  # Timeout das requisições HTTP em segundos (padrão: 30s)
 
 
 def signal_handler(signum, frame):
@@ -104,23 +107,28 @@ def buscar_versoes_para_processar():
         )
 
         # Primeiro, vamos testar uma query simples sem filtros
-        print("🧪 Testando conectividade com query simples...")
+        if verbose_mode:
+            print("🧪 Testando conectividade com query simples...")
 
         url_simple = f"{DIRECTUS_BASE_URL}/items/versao?limit=5"
-        print(f"� URL simples: {url_simple}")
-        print(f"� Headers: {DIRECTUS_HEADERS}")
-        print("   ----")
+        
+        if verbose_mode:
+            print(f"🔗 URL simples: {url_simple}")
+            print(f"🔑 Headers: {DIRECTUS_HEADERS}")
+            print("   ----")
 
-        simple_response = requests.get(url_simple, headers=DIRECTUS_HEADERS)
+        simple_response = requests.get(url_simple, headers=DIRECTUS_HEADERS, timeout=request_timeout)
 
-        print("🔍 Resultado RAW da query simples:")
-        print(f"   Status: {simple_response.status_code}")
-        print(f"   Response: {simple_response.text}")
-        print("   ----")
+        if verbose_mode:
+            print("🔍 Resultado RAW da query simples:")
+            print(f"   Status: {simple_response.status_code}")
+            print(f"   Response: {simple_response.text}")
+            print("   ----")
 
         # Se a query simples funcionar, tentamos com filtro
         if simple_response.status_code == 200:
-            print("✅ Conectividade OK, tentando query com filtro...")
+            if verbose_mode:
+                print("✅ Conectividade OK, tentando query com filtro...")
 
             # Query com filtros usando query parameters - campos corretos
             url_filtered = f"{DIRECTUS_BASE_URL}/items/versao"
@@ -131,18 +139,20 @@ def buscar_versoes_para_processar():
                 "fields": "id,date_created,status,versao,observacao,contrato,versiona_ai_request_json",
             }
 
-            print(f"🔍 URL com filtro: {url_filtered}")
-            print(f"🔍 Params: {params}")
-            print("   ----")
+            if verbose_mode:
+                print(f"🔍 URL com filtro: {url_filtered}")
+                print(f"🔍 Params: {params}")
+                print("   ----")
 
             versoes_response = requests.get(
-                url_filtered, headers=DIRECTUS_HEADERS, params=params
+                url_filtered, headers=DIRECTUS_HEADERS, params=params, timeout=request_timeout
             )
 
-            print("🔍 Resultado RAW da query com filtro:")
-            print(f"   Status: {versoes_response.status_code}")
-            print(f"   Response: {versoes_response.text}")
-            print("   ----")
+            if verbose_mode:
+                print("🔍 Resultado RAW da query com filtro:")
+                print(f"   Status: {versoes_response.status_code}")
+                print(f"   Response: {versoes_response.text}")
+                print("   ----")
 
             if versoes_response.status_code == 200:
                 try:
@@ -221,7 +231,7 @@ def download_file_from_directus(file_path):
         download_url = f"{DIRECTUS_BASE_URL}/assets/{file_id}"
 
         # Fazer o download do arquivo
-        response = requests.get(download_url, headers=DIRECTUS_HEADERS)
+        response = requests.get(download_url, headers=DIRECTUS_HEADERS, timeout=request_timeout)
 
         if response.status_code == 200:
             # Criar arquivo temporário com extensão correta
@@ -347,6 +357,50 @@ def analyze_differences_detailed(original_text, modified_text):
     return modifications
 
 
+def upload_file_to_directus(file_path, filename=None, dry_run=False):
+    """
+    Faz upload de um arquivo para o Directus e retorna o ID do arquivo
+    """
+    try:
+        if not filename:
+            filename = os.path.basename(file_path)
+
+        print(f"📤 Fazendo upload do arquivo {filename} para o Directus...")
+
+        if dry_run:
+            print("🏃‍♂️ DRY-RUN: Não executando upload real para o Directus")
+            return f"mock-file-id-{uuid.uuid4()}"
+
+        # Endpoint para upload de arquivos no Directus
+        upload_url = f"{DIRECTUS_BASE_URL}/files"
+
+        # Preparar o arquivo para upload
+        with open(file_path, "rb") as file:
+            files = {"file": (filename, file, "text/html")}
+
+            # Headers sem Content-Type para upload de arquivo
+            upload_headers = {"Authorization": f"Bearer {DIRECTUS_TOKEN}"}
+
+            # Fazer o upload
+            response = requests.post(upload_url, headers=upload_headers, files=files, timeout=request_timeout)
+
+            if response.status_code == 200:
+                file_data = response.json().get("data", {})
+                file_id = file_data.get("id")
+
+                if file_id:
+                    print(f"✅ Arquivo enviado com sucesso! ID: {file_id}")
+                    return file_id
+                else:
+                    raise Exception("Resposta do upload não contém ID do arquivo")
+            else:
+                raise Exception(f"Erro HTTP {response.status_code}: {response.text}")
+
+    except Exception as e:
+        print(f"❌ Erro ao fazer upload do arquivo: {e}")
+        return None
+
+
 def update_versao_status(
     versao_id,
     status,
@@ -354,11 +408,33 @@ def update_versao_status(
     total_modifications=0,
     error_message=None,
     modifications=None,
+    result_file_path=None,
     dry_run=False,
 ):
-    """Atualiza o status da versão, adiciona observações e salva modificações em uma única transação"""
+    """Atualiza o status da versão, adiciona observações, salva modificações e faz upload do relatório HTML"""
     try:
         print(f"📝 Atualizando status da versão {versao_id} para '{status}'...")
+
+        # Upload do arquivo HTML se fornecido e status for concluído
+        relatorio_diff_id = None
+        if (
+            result_file_path
+            and status == "concluido"
+            and os.path.exists(result_file_path)
+        ):
+            filename = f"relatorio_diff_{versao_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
+            relatorio_diff_id = upload_file_to_directus(
+                result_file_path, filename, dry_run
+            )
+
+            if relatorio_diff_id:
+                print(
+                    f"✅ Relatório HTML enviado para o Directus com ID: {relatorio_diff_id}"
+                )
+                # Atualizar URL do resultado para usar o Directus
+                result_url = f"{DIRECTUS_BASE_URL}/assets/{relatorio_diff_id}"
+            else:
+                print("❌ Falha no upload do relatório HTML")
 
         if status == "concluido":
             observacao = (
@@ -372,6 +448,13 @@ def update_versao_status(
             observacao = f"Status atualizado para '{status}' em {datetime.now().strftime('%d/%m/%Y %H:%M')}"
 
         update_data = {"status": status, "observacao": observacao}
+
+        # Adicionar ID do relatório se disponível
+        if relatorio_diff_id:
+            update_data["relatorio_diff"] = relatorio_diff_id
+            print(
+                f"📄 Incluindo relatório HTML no campo relatorio_diff: {relatorio_diff_id}"
+            )
 
         # Se há modificações para salvar, incluir no update_data
         if modifications and status == "concluido":
@@ -399,6 +482,8 @@ def update_versao_status(
             print("🏃‍♂️ DRY-RUN: Não executando atualização no Directus")
             print(f"   Status: {update_data['status']}")
             print(f"   Observação: {update_data['observacao']}")
+            if relatorio_diff_id:
+                print(f"   Relatório HTML: {relatorio_diff_id} (não salvo)")
             if modifications and status == "concluido":
                 print(f"   Modificações: {len(modifications)} itens (não salvos)")
             return {"id": versao_id, "status": status, "observacao": observacao}
@@ -407,12 +492,16 @@ def update_versao_status(
         try:
             update_url = f"{DIRECTUS_BASE_URL}/items/versao/{versao_id}"
             response = requests.patch(
-                update_url, headers=DIRECTUS_HEADERS, json=update_data
+                update_url, headers=DIRECTUS_HEADERS, json=update_data, timeout=request_timeout
             )
 
             if response.status_code == 200:
                 updated_versao = response.json().get("data", {})
-                if modifications and status == "concluido":
+                if relatorio_diff_id:
+                    print(
+                        f"✅ Versão atualizada com status '{status}', relatório HTML ID {relatorio_diff_id}, e {len(modifications) if modifications else 0} modificações"
+                    )
+                elif modifications and status == "concluido":
                     print(
                         f"✅ Versão atualizada com status '{status}' e {len(modifications)} modificações salvas em uma única transação"
                     )
@@ -530,6 +619,7 @@ def processar_versao(versao_data, dry_run=False):
                 result_url,
                 len(modifications),
                 modifications=modifications,
+                result_file_path=result_path,
                 dry_run=dry_run,
             )
 
@@ -566,10 +656,14 @@ def loop_processador(dry_run=False):
     """
     Loop principal do processador automático
     """
+    mode_text = []
     if dry_run:
-        print("🏃‍♂️ Processador automático iniciado em modo DRY-RUN!")
-    else:
-        print("🔄 Processador automático iniciado!")
+        mode_text.append("DRY-RUN")
+    if verbose_mode:
+        mode_text.append("VERBOSE")
+    
+    mode_suffix = f" ({', '.join(mode_text)})" if mode_text else ""
+    print(f"🔄 Processador automático iniciado{mode_suffix}!")
 
     while processador_ativo:
         try:
@@ -591,10 +685,10 @@ def loop_processador(dry_run=False):
         except Exception as e:
             print(f"❌ Erro no loop do processador: {e}")
 
-        # Aguardar 1 minuto antes da próxima verificação
+        # Aguardar intervalo configurado antes da próxima verificação
         # Dividir em intervalos menores para ser mais responsivo aos sinais
         if processador_ativo:
-            for _ in range(60):  # 60 segundos divididos em intervalos de 1 segundo
+            for _ in range(check_interval):  # check_interval segundos divididos em intervalos de 1 segundo
                 if not processador_ativo:
                     break
                 time.sleep(1)
@@ -651,6 +745,26 @@ def create_arg_parser():
     )
 
     parser.add_argument(
+        "--verbose", "-v",
+        action="store_true",
+        help="Ativar modo verbose com logs detalhados das consultas HTTP",
+    )
+
+    parser.add_argument(
+        "--interval", "-i",
+        type=int,
+        default=60,
+        help="Intervalo de verificação em segundos (padrão: 60s)",
+    )
+
+    parser.add_argument(
+        "--timeout", "-t",
+        type=int,
+        default=30,
+        help="Timeout das requisições HTTP em segundos (padrão: 30s)",
+    )
+
+    parser.add_argument(
         "--host",
         default=FLASK_HOST,
         help=f"Host para o servidor Flask de monitoramento (padrão: {FLASK_HOST})",
@@ -671,6 +785,11 @@ if __name__ == "__main__":
     parser = create_arg_parser()
     args = parser.parse_args()
 
+    # Configurar variáveis globais
+    verbose_mode = args.verbose
+    check_interval = args.interval
+    request_timeout = args.timeout
+
     # Registrar handlers de sinais para encerramento gracioso
     signal.signal(signal.SIGINT, signal_handler)  # Ctrl+C
     signal.signal(signal.SIGTERM, signal_handler)  # Comando kill
@@ -681,10 +800,19 @@ if __name__ == "__main__":
     print(f"📁 Resultados salvos em: {RESULTS_DIR}")
     print(f"🔗 Directus: {DIRECTUS_BASE_URL}")
     print(f"🌐 Servidor de monitoramento: http://{args.host}:{args.port}")
-    print("⏰ Verificação automática a cada 1 minuto")
+    print(f"⏰ Verificação automática a cada {args.interval} segundos")
+    print(f"⏱️  Timeout de requisições: {args.timeout} segundos")
     print("🔒 Monitoramento de sinais ativo (SIGINT, SIGTERM, SIGHUP)")
+    
+    mode_flags = []
     if args.dry_run:
-        print("🏃‍♂️ Modo: DRY-RUN (sem alterações no banco)")
+        mode_flags.append("DRY-RUN (sem alterações no banco)")
+    if args.verbose:
+        mode_flags.append("VERBOSE (logs detalhados)")
+    
+    if mode_flags:
+        print(f"🏃‍♂️ Modo: {' + '.join(mode_flags)}")
+    
     print("")
     print("📋 Endpoints de monitoramento:")
     print("  • GET  /health - Verificação de saúde")
