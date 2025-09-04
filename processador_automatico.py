@@ -111,13 +111,15 @@ def buscar_versoes_para_processar():
             print("🧪 Testando conectividade com query simples...")
 
         url_simple = f"{DIRECTUS_BASE_URL}/items/versao?limit=5"
-        
+
         if verbose_mode:
             print(f"🔗 URL simples: {url_simple}")
             print(f"🔑 Headers: {DIRECTUS_HEADERS}")
             print("   ----")
 
-        simple_response = requests.get(url_simple, headers=DIRECTUS_HEADERS, timeout=request_timeout)
+        simple_response = requests.get(
+            url_simple, headers=DIRECTUS_HEADERS, timeout=request_timeout
+        )
 
         if verbose_mode:
             print("🔍 Resultado RAW da query simples:")
@@ -136,7 +138,7 @@ def buscar_versoes_para_processar():
                 "filter[status][_eq]": "processar",
                 "limit": 10,
                 "sort": "date_created",
-                "fields": "id,date_created,status,versao,observacao,contrato,versiona_ai_request_json",
+                "fields": "id,date_created,status,versao,observacao,contrato,contrato.modelo_contrato.modelo_contrato,versiona_ai_request_json",
             }
 
             if verbose_mode:
@@ -145,7 +147,10 @@ def buscar_versoes_para_processar():
                 print("   ----")
 
             versoes_response = requests.get(
-                url_filtered, headers=DIRECTUS_HEADERS, params=params, timeout=request_timeout
+                url_filtered,
+                headers=DIRECTUS_HEADERS,
+                params=params,
+                timeout=request_timeout,
             )
 
             if verbose_mode:
@@ -179,6 +184,7 @@ def determine_original_file_id(versao_data):
     Determina qual arquivo usar como original baseado no campo versiona_ai_request_json:
     1. Se is_first_version=true: usa arquivoTemplate (modelo_template)
     2. Se is_first_version=false: usa arquivoBranco (versao_anterior)
+    3. Se versiona_ai_request_json não existe: tenta buscar template do contrato
     """
     try:
         versao_id = versao_data["id"]
@@ -187,28 +193,62 @@ def determine_original_file_id(versao_data):
         print(f"🧠 Determinando arquivo original para versão {versao_id}...")
         print(f"🔗 Dados do contrato: {versao_data.get('contrato')}")
 
-        # Verificar se temos os dados de request
-        if not versao_request:
-            raise Exception("Campo versiona_ai_request_json não encontrado")
+        # Estratégia 1: Usar dados do versiona_ai_request_json se disponível
+        if versao_request:
+            print("📋 Dados versiona_ai_request_json encontrados")
+            is_first_version = versao_request.get("is_first_version", False)
+            versao_comparacao_tipo = versao_request.get("versao_comparacao_tipo", "")
 
-        is_first_version = versao_request.get("is_first_version", False)
-        versao_comparacao_tipo = versao_request.get("versao_comparacao_tipo", "")
+            if is_first_version or versao_comparacao_tipo == "modelo_template":
+                # Primeira versão: comparar com template
+                arquivo_original = versao_request.get("arquivoTemplate")
+                if arquivo_original:
+                    print(
+                        f"📝 Primeira versão - usando arquivoTemplate: {arquivo_original}"
+                    )
+                    return arquivo_original, "modelo_template"
+            else:
+                # Versão posterior: comparar com versão anterior (arquivoBranco)
+                arquivo_original = versao_request.get("arquivoBranco")
+                if arquivo_original:
+                    print(
+                        f"📄 Versão posterior - usando arquivoBranco: {arquivo_original}"
+                    )
+                    return arquivo_original, "versao_anterior"
 
-        if is_first_version or versao_comparacao_tipo == "modelo_template":
-            # Primeira versão: comparar com template
-            arquivo_original = versao_request.get("arquivoTemplate")
-            if arquivo_original:
-                print(f"� Primeira versão - usando arquivoTemplate: {arquivo_original}")
-                return arquivo_original, "modelo_template"
+        # Estratégia 2: Se versiona_ai_request_json não existe, usar template do contrato obtido na consulta
+        print("⚠️ Campo versiona_ai_request_json vazio ou não encontrado")
+        print("🔍 Usando template do contrato obtido na consulta...")
+
+        # Verificar se temos dados do contrato com template
+        contrato_data = versao_data.get("contrato", {})
+        if isinstance(contrato_data, dict):
+            modelo_contrato = contrato_data.get("modelo_contrato", {})
+            if isinstance(modelo_contrato, dict):
+                template_id = modelo_contrato.get("modelo_contrato")
+            else:
+                template_id = None
         else:
-            # Versão posterior: comparar com versão anterior (arquivoBranco)
-            arquivo_original = versao_request.get("arquivoBranco")
-            if arquivo_original:
-                print(f"📄 Versão posterior - usando arquivoBranco: {arquivo_original}")
-                return arquivo_original, "versao_anterior"
+            # Caso contrato seja apenas o ID, não temos o template
+            template_id = None
+
+        if template_id:
+            print(f"📋 Template encontrado no contrato: {template_id}")
+            return f"/directus/uploads/{template_id}", "modelo_template"
+        else:
+            print("❌ Template não encontrado no contrato")
+
+        # Estratégia 3: Tentar usar o próprio contrato como fallback
+        contrato_id = versao_data.get("contrato")
+        if isinstance(contrato_id, dict):
+            contrato_id = contrato_id.get("id") or contrato_id
+
+        if contrato_id:
+            print(f"🔄 Usando contrato como fallback: {contrato_id}")
+            return f"/directus/uploads/{contrato_id}", "contrato_fallback"
 
         raise Exception(
-            "Não foi possível encontrar arquivo original nos dados da versão"
+            "Não foi possível encontrar arquivo original - verifique se o contrato tem template configurado"
         )
 
     except Exception as e:
@@ -231,7 +271,9 @@ def download_file_from_directus(file_path):
         download_url = f"{DIRECTUS_BASE_URL}/assets/{file_id}"
 
         # Fazer o download do arquivo
-        response = requests.get(download_url, headers=DIRECTUS_HEADERS, timeout=request_timeout)
+        response = requests.get(
+            download_url, headers=DIRECTUS_HEADERS, timeout=request_timeout
+        )
 
         if response.status_code == 200:
             # Criar arquivo temporário com extensão correta
@@ -382,7 +424,9 @@ def upload_file_to_directus(file_path, filename=None, dry_run=False):
             upload_headers = {"Authorization": f"Bearer {DIRECTUS_TOKEN}"}
 
             # Fazer o upload
-            response = requests.post(upload_url, headers=upload_headers, files=files, timeout=request_timeout)
+            response = requests.post(
+                upload_url, headers=upload_headers, files=files, timeout=request_timeout
+            )
 
             if response.status_code == 200:
                 file_data = response.json().get("data", {})
@@ -469,7 +513,7 @@ def update_versao_status(
                     "conteudo": mod["conteudo"],
                     "alteracao": mod["alteracao"],
                     "sort": mod["sort"],
-                    "status": "published",
+                    "status": "draft",
                 }
                 modifications_data.append(modification_data)
 
@@ -492,7 +536,10 @@ def update_versao_status(
         try:
             update_url = f"{DIRECTUS_BASE_URL}/items/versao/{versao_id}"
             response = requests.patch(
-                update_url, headers=DIRECTUS_HEADERS, json=update_data, timeout=request_timeout
+                update_url,
+                headers=DIRECTUS_HEADERS,
+                json=update_data,
+                timeout=request_timeout,
             )
 
             if response.status_code == 200:
@@ -547,8 +594,18 @@ def processar_versao(versao_data, dry_run=False):
         versao_request = versao_data.get("versiona_ai_request_json", {})
         modified_file_path = versao_request.get("arquivoPreenchido")
 
+        # Se não encontrar nos dados de request, usar o próprio contrato como modificado
         if not modified_file_path:
-            raise Exception("Versão não possui arquivoPreenchido nos dados de request")
+            contrato_id = versao_data.get("contrato")
+            if contrato_id:
+                modified_file_path = f"/directus/uploads/{contrato_id}"
+                print(
+                    f"⚠️ arquivoPreenchido não encontrado, usando contrato: {modified_file_path}"
+                )
+            else:
+                raise Exception(
+                    "Versão não possui arquivoPreenchido nos dados de request nem contrato válido"
+                )
 
         print(f"📁 Original: {original_file_path} (fonte: {original_source})")
         print(f"📄 Modificado: {modified_file_path}")
@@ -661,7 +718,7 @@ def loop_processador(dry_run=False):
         mode_text.append("DRY-RUN")
     if verbose_mode:
         mode_text.append("VERBOSE")
-    
+
     mode_suffix = f" ({', '.join(mode_text)})" if mode_text else ""
     print(f"🔄 Processador automático iniciado{mode_suffix}!")
 
@@ -688,7 +745,9 @@ def loop_processador(dry_run=False):
         # Aguardar intervalo configurado antes da próxima verificação
         # Dividir em intervalos menores para ser mais responsivo aos sinais
         if processador_ativo:
-            for _ in range(check_interval):  # check_interval segundos divididos em intervalos de 1 segundo
+            for _ in range(
+                check_interval
+            ):  # check_interval segundos divididos em intervalos de 1 segundo
                 if not processador_ativo:
                     break
                 time.sleep(1)
@@ -745,20 +804,23 @@ def create_arg_parser():
     )
 
     parser.add_argument(
-        "--verbose", "-v",
+        "--verbose",
+        "-v",
         action="store_true",
         help="Ativar modo verbose com logs detalhados das consultas HTTP",
     )
 
     parser.add_argument(
-        "--interval", "-i",
+        "--interval",
+        "-i",
         type=int,
         default=60,
         help="Intervalo de verificação em segundos (padrão: 60s)",
     )
 
     parser.add_argument(
-        "--timeout", "-t",
+        "--timeout",
+        "-t",
         type=int,
         default=30,
         help="Timeout das requisições HTTP em segundos (padrão: 30s)",
@@ -778,6 +840,22 @@ def create_arg_parser():
     )
 
     return parser
+
+
+def init_application():
+    """Inicializa a aplicação com configurações padrão"""
+    global verbose_mode, check_interval, request_timeout
+
+    # Configurações padrão para produção
+    verbose_mode = os.getenv("VERBOSE_MODE", "false").lower() == "true"
+    check_interval = int(os.getenv("CHECK_INTERVAL", "60"))
+    request_timeout = int(os.getenv("REQUEST_TIMEOUT", "30"))
+
+    # Registrar handlers de sinais para encerramento gracioso
+    signal.signal(signal.SIGINT, signal_handler)  # Ctrl+C
+    signal.signal(signal.SIGTERM, signal_handler)  # Comando kill
+    if hasattr(signal, "SIGHUP"):
+        signal.signal(signal.SIGHUP, signal_handler)  # Hang up
 
 
 if __name__ == "__main__":
@@ -803,16 +881,16 @@ if __name__ == "__main__":
     print(f"⏰ Verificação automática a cada {args.interval} segundos")
     print(f"⏱️  Timeout de requisições: {args.timeout} segundos")
     print("🔒 Monitoramento de sinais ativo (SIGINT, SIGTERM, SIGHUP)")
-    
+
     mode_flags = []
     if args.dry_run:
         mode_flags.append("DRY-RUN (sem alterações no banco)")
     if args.verbose:
         mode_flags.append("VERBOSE (logs detalhados)")
-    
+
     if mode_flags:
         print(f"🏃‍♂️ Modo: {' + '.join(mode_flags)}")
-    
+
     print("")
     print("📋 Endpoints de monitoramento:")
     print("  • GET  /health - Verificação de saúde")
@@ -820,16 +898,48 @@ if __name__ == "__main__":
     print("  • GET  /outputs/<filename> - Visualizar resultados")
     print("")
 
-    # Iniciar o processador em uma thread separada
-    processador_thread = threading.Thread(
-        target=lambda: loop_processador(args.dry_run), daemon=True
-    )
-    processador_thread.start()
+    # Verificar se deve usar servidor de produção
+    if args.dry_run or args.verbose or args.interval != 60 or args.timeout != 30:
+        # Modo desenvolvimento/debug - usar Flask development server
+        print("🔧 Modo desenvolvimento detectado - usando Flask dev server")
 
-    # Iniciar o servidor Flask para monitoramento
-    try:
-        app.run(host=args.host, port=args.port, debug=False)
-    except KeyboardInterrupt:
-        print("\n🛑 Parando processador...")
-        processador_ativo = False
-        print("✅ Processador parado!")
+        # Iniciar o processador em uma thread separada
+        processador_thread = threading.Thread(
+            target=lambda: loop_processador(args.dry_run), daemon=True
+        )
+        processador_thread.start()
+
+        # Iniciar o servidor Flask para monitoramento
+        try:
+            app.run(host=args.host, port=args.port, debug=False)
+        except KeyboardInterrupt:
+            print("\n🛑 Parando processador...")
+            processador_ativo = False
+            print("✅ Processador parado!")
+    else:
+        # Modo produção - sugerir Gunicorn
+        print("🚀 Para produção, use:")
+        print(f"   gunicorn -c gunicorn.conf.py wsgi:app")
+        print("   ou")
+        print(
+            f"   docker build -t docx-compare . && docker run -p 5005:5005 docx-compare"
+        )
+
+        # Executar mesmo assim em desenvolvimento
+        init_application()
+
+        # Iniciar o processador em uma thread separada
+        processador_thread = threading.Thread(
+            target=lambda: loop_processador(args.dry_run), daemon=True
+        )
+        processador_thread.start()
+
+        try:
+            app.run(host=args.host, port=args.port, debug=False)
+        except KeyboardInterrupt:
+            print("\n🛑 Parando processador...")
+            processador_ativo = False
+            print("✅ Processador parado!")
+else:
+    # Quando importado (para Gunicorn), inicializar configurações
+    init_application()

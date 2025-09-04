@@ -62,7 +62,7 @@ def buscar_versoes_para_processar():
             "filter[status][_eq]": "processar",
             "limit": 10,
             "sort": "date_created",
-            "fields": "id,date_created,status,versao,observacao,contrato,versiona_ai_request_json",
+            "fields": "id,date_created,status,versao,observacao,contrato_analise.modelo_contrato.modelo_contrato,contrato_analise.versoes.id,contrato_analise.versoes.date_created,contrato.id,contrato.modelo_contrato.modelo_contrato",
         }
 
         response = requests.get(url, headers=DIRECTUS_HEADERS, params=params)
@@ -87,37 +87,62 @@ def buscar_versoes_para_processar():
 
 
 def determine_original_file_id(versao_data):
-    """Determina arquivo original baseado no campo versiona_ai_request_json"""
+    """Determina arquivo original baseado na lógica de primeira versão ou versão posterior"""
     try:
         versao_id = versao_data["id"]
-        request_data = versao_data.get("versiona_ai_request_json", {})
+        contrato_data = versao_data.get("contrato", {})
 
         print(f"🧠 Determinando arquivo original para versão {versao_id[:8]}...")
 
-        if not request_data:
-            raise Exception("Campo versiona_ai_request_json não encontrado")
+        # Verifica se existe alguma versão anterior à data de criação da versão atual
+        contrato_analise = versao_data.get("contrato_analise", {})
+        versoes = contrato_analise.get("versoes", [])
+        data_criacao_atual = versao_data.get("date_created")
 
-        is_first_version = request_data.get("is_first_version", False)
-        versao_comparacao_tipo = request_data.get("versao_comparacao_tipo", "")
+        is_first_version = True
+        if data_criacao_atual and isinstance(versoes, list):
+            for v in versoes:
+                data_outra = v.get("date_created")
+                if data_outra and data_outra < data_criacao_atual:
+                    is_first_version = False
+                    break
 
-        if is_first_version or versao_comparacao_tipo == "modelo_template":
-            # Primeira versão: comparar com template
-            arquivo_original = request_data.get("arquivoTemplate")
-            if arquivo_original:
-                print(
-                    f"📄 Primeira versão - usando arquivoTemplate: {arquivo_original}"
-                )
-                return arquivo_original, "modelo_template"
+        if is_first_version:
+            # PRIMEIRA VERSÃO: usar template do contrato (contrato.modelo_contrato.modelo_contrato)
+            print("📄 Primeira versão detectada - buscando template do contrato...")
+
+            if contrato_data and "modelo_contrato" in contrato_data:
+                modelo_contrato = contrato_data["modelo_contrato"]
+                if (
+                    isinstance(modelo_contrato, dict)
+                    and "modelo_contrato" in modelo_contrato
+                ):
+                    arquivo_original = modelo_contrato["modelo_contrato"]
+                    if arquivo_original:
+                        print(f"✅ Template encontrado: {arquivo_original}")
+                        return arquivo_original, "modelo_template"
+
+            raise Exception(
+                "Primeira versão: template não encontrado em contrato.modelo_contrato.modelo_contrato"
+            )
         else:
-            # Versão posterior: comparar com versão anterior (arquivoBranco)
-            arquivo_original = request_data.get("arquivoBranco")
-            if arquivo_original:
-                print(f"📄 Versão posterior - usando arquivoBranco: {arquivo_original}")
-                return arquivo_original, "versao_anterior"
+            # VERSÃO POSTERIOR: usar versão anterior do contrato (contrato)
+            print("📄 Versão posterior detectada - buscando contrato anterior...")
 
-        raise Exception(
-            "Não foi possível encontrar arquivo original nos dados da versão"
-        )
+            if contrato_data:
+                # Se contrato_data é um dict com ID
+                if isinstance(contrato_data, dict):
+                    contrato_id = contrato_data.get("id")
+                    if contrato_id:
+                        print(f"✅ Contrato anterior (ID): {contrato_id}")
+                        return contrato_id, "versao_anterior"
+
+                # Se contrato_data é um ID direto (string)
+                elif isinstance(contrato_data, str):
+                    print(f"✅ Contrato anterior (ID): {contrato_data}")
+                    return contrato_data, "versao_anterior"
+
+            raise Exception("Versão posterior: ID do contrato não encontrado")
 
     except Exception as e:
         raise Exception(f"Erro ao determinar arquivo original: {e}")
