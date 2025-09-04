@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  docx-compare:
+    build: .
+    container_name: docx-compare-processor
+    ports:
+      - "5005:5005"
+    environment:
+      - FLASK_ENV=production
+      - DIRECTUS_BASE_URL=${DIRECTUS_BASE_URL}
+      - DIRECTUS_TOKEN=${DIRECTUS_TOKEN}
+      - RESULTS_DIR=/app/results
+      - CHECK_INTERVAL=${CHECK_INTERVAL:-60}
+      - REQUEST_TIMEOUT=${REQUEST_TIMEOUT:-30}
+      - VERBOSE_MODE=${VERBOSE_MODE:-false}
+      - DRY_RUN=${DRY_RUN:-false}
+    volumes:
+      - ./results:/app/results
+      - ./outputs:/app/outputs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

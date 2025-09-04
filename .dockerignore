@@ -1,0 +1,37 @@
+# Imagem Docker para o Processador Automático de Versões
+.git
+.gitignore
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env
+pip-log.txt
+pip-delete-this-directory.txt
+.tox
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.DS_Store
+.vscode
+.pytest_cache
+.mypy_cache
+.idea
+*.swp
+*.swo
+*~
+
+# Diretórios locais de desenvolvimento
+outputs/*
+!outputs/.gitkeep
+documentos/*
+!documentos/.gitkeep
+
+# Arquivos de teste local
+teste_*.html
+resultado*.html
