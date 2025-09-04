@@ -1,0 +1,72 @@
+# **Implementação de Cláusulas e Referencias no versiona.ai**
+
+# **1\. Objetivo**
+
+O objetivo é permitir que o sistema associe **referências a cada alteração
+detectada em um contrato**, orientando o usuário sobre quais ações ou respostas
+são necessárias diante dessas mudanças. Essas referências são definidas por meio
+de **tags únicas** inseridas no _Template modelo com tags_. Cada tag delimita um
+bloco de texto, transformando-o em uma **cláusula identificável**.
+
+Desta forma, o contrato deixa de ser apenas um texto contínuo e passa a ser
+organizado em **unidades menores (cláusulas com referências)**, cada uma capaz
+de receber **uma ou mais referências**. Essas referências podem representar
+ações, regras de validação ou notificações que devem ser apresentadas ao usuário
+sempre que a cláusula correspondente sofrer alteração em versões posteriores.
+
+Assim, o sistema garante rastreabilidade das mudanças, contextualiza seu impacto
+e fornece instruções claras ao usuário durante a análise de versões de
+contratos.
+
+---
+
+## **2\. Estrutura de Dados**
+
+```mermaid
+erDiagram
+  direction LR
+  MODELO_CONTRATO {
+    string id
+    string nome
+    string versao
+    text modelo_contrato
+    text modelo_tag
+    uuid clausulas
+  }
+  CLAUSULA {
+    string id
+    string numero
+    text conteudo
+    text objetivo
+    uuid referencias
+  }
+  REFERENCIA {
+    string id
+    string orientacao_retorno
+    text descricao
+  }
+  MODELO_CONTRATO ||--o{ CLAUSULA : "possui várias"
+  CLAUSULA ||..o{ REFERENCIA : "possui várias"
+```
+
+---
+
+## **3\. Fluxo de Funcionamento**
+
+1. Usuário cadastra/atualiza um **Modelo de Contrato**.
+
+2. O campo **Contrato Taggeado** contém modelo com tags delimitando blocos.
+
+3. As referências das clausulas são associadas a cada bloco delimitado por meio
+   de sua tag
+
+4. Usuário pode cadastrar varias **Referências** para cada cláusula.
+
+5. Quando ocorre uma nova versão de contrato:
+
+   - O sistema compara os blocos taggeados.
+
+   - Marca as diferenças no texto das cláusulas.
+
+   - Exibe as referências associadas às cláusulas alteradas (objetivo e
+     referencias).
