@@ -172,7 +172,7 @@ def gerar_relatorio_html():
     </html>
     """
 
-    output_path = "outputs/exemplo_docx_utils.html"
+    output_path = "results/exemplo_docx_utils.html"
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(html_content)
 

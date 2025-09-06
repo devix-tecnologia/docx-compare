@@ -4,7 +4,7 @@ import html
 import os
 import sys
 
-from config import LUA_FILTER_PATH, OUTPUTS_DIR
+from config import LUA_FILTER_PATH, OUTPUTS_DIR, RESULTS_DIR
 from docx_utils import (
     analyze_differences,
     convert_docx_to_html,
@@ -193,7 +193,7 @@ Exemplos de uso:
     parser.add_argument(
         "output",
         nargs="?",
-        help="Caminho para o arquivo HTML de saída (padrão: outputs/resultado.html)",
+        help="Caminho para o arquivo HTML de saída (padrão: results/resultado.html)",
     )
 
     parser.add_argument(
@@ -231,14 +231,14 @@ Exemplos de uso:
         output_html_file = None
     elif args.output:
         output_html_file = args.output
-        # Se o caminho não é absoluto e não contém pasta, colocar em outputs
+        # Se o caminho não é absoluto e não contém pasta, colocar em results
         if (
             not os.path.isabs(output_html_file)
             and os.path.dirname(output_html_file) == ""
         ):
-            output_html_file = os.path.join(OUTPUTS_DIR, output_html_file)
+            output_html_file = os.path.join(RESULTS_DIR, output_html_file)
     else:
-        output_html_file = os.path.join(OUTPUTS_DIR, "resultado.html")
+        output_html_file = os.path.join(RESULTS_DIR, "resultado.html")
 
     # Verificar filtro Lua
     if not os.path.exists(LUA_FILTER_PATH):

@@ -546,7 +546,7 @@ def compare_versao():
 def serve_result(filename):
     """Servir arquivos HTML de resultado"""
     try:
-        return send_from_directory("outputs", filename)
+        return send_from_directory(RESULTS_DIR, filename)
     except FileNotFoundError:
         return jsonify({"error": "Arquivo não encontrado"}), 404
 

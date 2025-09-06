@@ -369,7 +369,7 @@ def status():
 
 @app.route("/outputs/<filename>")
 def get_result(filename):
-    result_path = os.path.join("outputs", filename)
+    result_path = os.path.join(RESULTS_DIR, filename)
     if os.path.exists(result_path):
         return send_file(result_path, mimetype="text/html")
     else:

@@ -3,6 +3,12 @@
 diff/
 diff_output.html
 
+# Diretórios de resultados
+results/
+results/*.html
+outputs/
+outputs/*.html
+
 # Logs da API
 *.log
 api*.log
@@ -37,9 +43,6 @@ coverage.xml
 
 # Configuração local
 .env
-
-# Resultados gerados
-outputs/*.html
 
 # IDEs
 .vscode/
