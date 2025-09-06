@@ -5,6 +5,8 @@ Integração completa com Directus usando lógica de negócio
 """
 
 import argparse
+import builtins
+import contextlib
 import os
 import subprocess
 import tempfile
@@ -510,10 +512,8 @@ def compare_versao():
 
             # Limpar arquivos temporários de análise
             for temp_file in [original_html_temp.name, modified_html_temp.name]:
-                try:
+                with contextlib.suppress(builtins.BaseException):
                     os.unlink(temp_file)
-                except:
-                    pass
 
             return jsonify(
                 {

@@ -4,6 +4,8 @@ API completa para comparação de documentos DOCX
 Integração completa com Directus usando lógica de negócio
 """
 
+import builtins
+import contextlib
 import difflib
 import os
 import re
@@ -284,11 +286,11 @@ def save_modifications_to_directus(versao_id, modifications):
     try:
         print(f"💾 Salvando {len(modifications)} modificações...")
 
-        headers = get_directus_headers()
+        get_directus_headers()
         saved_modifications = []
 
         for mod in modifications:
-            modification_data = {
+            {
                 "versao": versao_id,
                 "categoria": mod["categoria"],
                 "conteudo": mod["conteudo"],
@@ -470,10 +472,8 @@ def compare_versao():
 
             # Limpar arquivos temporários de análise
             for temp_file in [original_html_temp.name, modified_html_temp.name]:
-                try:
+                with contextlib.suppress(builtins.BaseException):
                     os.unlink(temp_file)
-                except:
-                    pass
 
             return jsonify(
                 {

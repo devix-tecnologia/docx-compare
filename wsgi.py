@@ -4,9 +4,10 @@ Aplicação Flask para o Processador Automático de Versões
 Separada para permitir execução com Gunicorn em produção
 """
 
-from processador_automatico import app, processador_thread, loop_processador
-import threading
 import os
+import threading
+
+from processador_automatico import app, loop_processador, processador_thread
 
 
 # Função para inicializar o processador em background

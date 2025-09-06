@@ -16,32 +16,32 @@ import subprocess
 
 # CSS padrão para relatórios de comparação
 DEFAULT_CSS = """
-body { 
-    font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif; 
-    line-height: 1.6; 
-    margin: 20px auto; 
-    max-width: 1200px; 
-    background-color: #f8f9fa; 
-    color: #343a40; 
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
-    padding: 30px; 
-    border-radius: 8px; 
+body {
+    font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.6;
+    margin: 20px auto;
+    max-width: 1200px;
+    background-color: #f8f9fa;
+    color: #343a40;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    padding: 30px;
+    border-radius: 8px;
 }
-h1, h2, h3, h4, h5, h6 { 
-    color: #212529; 
-    margin-top: 1.5em; 
-    margin-bottom: 0.5em; 
+h1, h2, h3, h4, h5, h6 {
+    color: #212529;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
 }
-.diff-header { 
-    background-color: #e9ecef; 
-    padding: 15px 20px; 
-    border-bottom: 1px solid #dee2e6; 
-    margin: -30px -30px 20px -30px; 
-    border-top-left-radius: 8px; 
-    border-top-right-radius: 8px; 
-    font-size: 1.2em; 
-    color: #495057; 
-    text-align: center; 
+.diff-header {
+    background-color: #e9ecef;
+    padding: 15px 20px;
+    border-bottom: 1px solid #dee2e6;
+    margin: -30px -30px 20px -30px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    font-size: 1.2em;
+    color: #495057;
+    text-align: center;
 }
 .diff-content {
     background-color: white;
@@ -49,66 +49,66 @@ h1, h2, h3, h4, h5, h6 {
     border-radius: 5px;
     margin-top: 20px;
 }
-.added { 
-    background-color: #d4edda; 
-    color: #155724; 
-    font-weight: bold; 
-    padding: 8px 12px; 
-    border-radius: 4px; 
+.added {
+    background-color: #d4edda;
+    color: #155724;
+    font-weight: bold;
+    padding: 8px 12px;
+    border-radius: 4px;
     text-decoration: none;
     border-left: 4px solid #28a745;
     margin: 8px 0;
     display: block;
 }
-.removed { 
-    background-color: #f8d7da; 
-    color: #721c24; 
-    text-decoration: line-through; 
-    padding: 8px 12px; 
+.removed {
+    background-color: #f8d7da;
+    color: #721c24;
+    text-decoration: line-through;
+    padding: 8px 12px;
     border-radius: 4px;
     border-left: 4px solid #dc3545;
     margin: 8px 0;
     display: block;
 }
-.changed-old { 
-    background-color: #fff3cd; 
-    color: #856404; 
-    text-decoration: line-through; 
-    padding: 0.1em 0.3em; 
-    border-radius: 3px; 
+.changed-old {
+    background-color: #fff3cd;
+    color: #856404;
+    text-decoration: line-through;
+    padding: 0.1em 0.3em;
+    border-radius: 3px;
 }
-.changed-new { 
-    background-color: #fff3cd; 
-    color: #856404; 
-    font-weight: bold; 
-    padding: 0.1em 0.3em; 
-    border-radius: 3px; 
+.changed-new {
+    background-color: #fff3cd;
+    color: #856404;
+    font-weight: bold;
+    padding: 0.1em 0.3em;
+    border-radius: 3px;
 }
-.commented-text-container { 
-    border-bottom: 2px dotted #007bff; 
-    cursor: help; 
-    position: relative; 
-    display: inline-block; 
+.commented-text-container {
+    border-bottom: 2px dotted #007bff;
+    cursor: help;
+    position: relative;
+    display: inline-block;
 }
-.inserted-comment-info { 
-    font-family: monospace; 
-    font-size: 0.8em; 
-    color: #6c757d; 
-    margin-left: 0.5em; 
-    padding: 0.2em 0.5em; 
-    border-left: 3px solid #17a2b8; 
-    background-color: #eaf6f9; 
-    border-radius: 4px; 
-    white-space: normal; 
-    display: inline-block; 
+.inserted-comment-info {
+    font-family: monospace;
+    font-size: 0.8em;
+    color: #6c757d;
+    margin-left: 0.5em;
+    padding: 0.2em 0.5em;
+    border-left: 3px solid #17a2b8;
+    background-color: #eaf6f9;
+    border-radius: 4px;
+    white-space: normal;
+    display: inline-block;
 }
-.inserted-comment-info strong { 
-    color: #0056b3; 
-    font-weight: bold; 
+.inserted-comment-info strong {
+    color: #0056b3;
+    font-weight: bold;
 }
-.inserted-comment-info em { 
-    font-style: italic; 
-    color: #495057; 
+.inserted-comment-info em {
+    font-style: italic;
+    color: #495057;
 }
 .diff-stats {
     background-color: #e3f2fd;
@@ -524,8 +524,8 @@ def _get_modern_css() -> str:
     """CSS moderno para relatórios."""
     return """
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-body { 
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     margin: 0; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
 }
@@ -533,17 +533,17 @@ body {
     max-width: 1000px; margin: 0 auto; background: white; border-radius: 16px;
     box-shadow: 0 20px 40px rgba(0,0,0,0.1); overflow: hidden;
 }
-.header { 
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+.header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white; padding: 40px; text-align: center;
 }
-.added { 
-    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); 
+.added {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
     color: #155724; padding: 12px; border-radius: 8px; margin: 8px 0;
     border-left: 4px solid #28a745; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
-.removed { 
-    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%); 
+.removed {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
     color: #721c24; padding: 12px; border-radius: 8px; margin: 8px 0;
     border-left: 4px solid #dc3545; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }

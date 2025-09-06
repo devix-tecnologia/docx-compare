@@ -46,15 +46,40 @@ sudo apt-get install pandoc
 
 ## 🔧 Instalação
 
+### Opção 1: Com UV (Recomendado)
+
 ```bash
 # 1. Clone o repositório
 git clone <repository-url>
 cd docx-compare
 
-# 2. Instale as dependências Python
+# 2. Instale o UV (se não tiver)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# 3. Instale as dependências Python
+uv sync
+
+# 4. Configure as variáveis de ambiente
+cp .env.example .env
+# Edite o .env com suas configurações do Directus
+```
+
+### Opção 2: Com pip tradicional
+
+```bash
+# 1. Clone o repositório
+git clone <repository-url>
+cd docx-compare
+
+# 2. Crie um ambiente virtual
+python -m venv venv
+source venv/bin/activate  # Linux/macOS
+# ou: venv\Scripts\activate  # Windows
+
+# 3. Instale as dependências Python
 pip install -r requirements.txt
 
-# 3. Configure as variáveis de ambiente
+# 4. Configure as variáveis de ambiente
 cp .env.example .env
 # Edite o .env com suas configurações do Directus
 ```
@@ -64,16 +89,20 @@ cp .env.example .env
 ### CLI - Comparação Local
 
 ```bash
-python docx_diff_viewer.py original.docx modificado.docx
+# Com UV (recomendado)
+uv run python docx_diff_viewer.py original.docx modificado.docx
 # Criará automaticamente outputs/resultado.html
 
 # Ou especificar arquivo de saída:
-python docx_diff_viewer.py original.docx modificado.docx outputs/minha_comparacao.html
+uv run python docx_diff_viewer.py original.docx modificado.docx outputs/minha_comparacao.html
+
+# Com Python tradicional
+python docx_diff_viewer.py original.docx modificado.docx
 ```
 
 **Exemplo:**
 ```bash
-python docx_diff_viewer.py documentos/doc-rafael-original.docx documentos/doc-rafael-alterado.docx
+uv run python docx_diff_viewer.py documentos/doc-rafael-original.docx documentos/doc-rafael-alterado.docx
 # Criará automaticamente outputs/resultado.html
 ```
 
@@ -98,6 +127,10 @@ RESULTS_DIR=results
 #### 2. Executar a API
 
 ```bash
+# Com UV (recomendado)
+uv run python api_simple.py
+
+# Com Python tradicional
 python api_simple.py
 ```
 
@@ -118,6 +151,10 @@ O processador automático monitora o Directus continuamente e processa versões 
 #### 1. Executar o Processador
 
 ```bash
+# Com UV (recomendado)
+uv run python processador_automatico.py
+
+# Com Python tradicional
 python processador_automatico.py
 ```
 
@@ -183,13 +220,17 @@ O processador executa na porta 5005 e oferece:
 ## 🧪 Testes
 
 ```bash
-# Testar a API
+# Com UV (recomendado)
+uv run python test_api_simple.py
+uv run python test_processamento_completo.py
+uv run python test_directus_sdk.py
+
+# Executar todos os testes com pytest
+uv run pytest tests/
+
+# Com Python tradicional
 python test_api_simple.py
-
-# Testar processamento completo
 python test_processamento_completo.py
-
-# Testar conexão Directus
 python test_directus_sdk.py
 ```
 
@@ -257,7 +298,11 @@ docx-compare/
 
 ### API REST
 ```bash
-# Com Gunicorn
+# Com UV e Gunicorn (recomendado)
+uv add gunicorn
+uv run gunicorn -w 4 -b 0.0.0.0:5002 api_simple:app
+
+# Com pip tradicional
 pip install gunicorn
 gunicorn -w 4 -b 0.0.0.0:5002 api_simple:app
 ```
@@ -268,7 +313,10 @@ gunicorn -w 4 -b 0.0.0.0:5002 api_simple:app
 sudo systemctl enable docx-processor
 sudo systemctl start docx-processor
 
-# Como serviço em background
+# Como serviço em background com UV
+nohup uv run python processador_automatico.py > processador.log 2>&1 &
+
+# Com Python tradicional
 nohup python processador_automatico.py > processador.log 2>&1 &
 ```
 
@@ -369,12 +417,46 @@ O projeto utiliza ferramentas modernas para desenvolvimento Python:
 
 - **UV**: Gerenciador de dependências e ambientes virtuais ultra-rápido
 - **Ruff**: Linter e formatador de código extremamente performático
-- **ASDF**: Gerenciamento de versões de ferramentas
+- **ASDF**: Gerenciamento de versões de ferramentas (opcional)
 
-### Scripts de Desenvolvimento
+### Por que UV?
+
+**UV vs pip tradicional:**
+- ⚡ **Performance**: 10-100x mais rápido que pip
+- 🔒 **Resolução de dependências**: Mais robusta e determinística
+- 📦 **Gestão unificada**: Dependências, ambientes virtuais e ferramentas em um só lugar
+- 🛠️ **Compatibilidade**: Funciona com arquivos `requirements.txt` existentes
+- 📋 **pyproject.toml**: Suporte nativo ao padrão moderno Python
+
+### Comandos UV Principais
 
 ```bash
-# Makefile (recomendado)
+# Instalar dependências
+uv sync                    # Instalar todas as dependências
+uv sync --group dev        # Instalar dependências de desenvolvimento
+uv add requests            # Adicionar nova dependência
+uv add pytest --group dev # Adicionar dependência de desenvolvimento
+uv remove requests         # Remover dependência
+
+# Executar aplicações
+uv run python script.py           # Executar script
+uv run python api_simple.py       # Executar API
+uv run python processador_automatico.py  # Executar processador
+
+# Ferramentas de qualidade de código
+uv run ruff check .               # Linting
+uv run ruff check . --fix         # Corrigir problemas automaticamente
+uv run ruff format .              # Formatar código
+uv run pytest tests/             # Executar testes
+
+# Comparar documentos
+uv run python docx_diff_viewer.py doc1.docx doc2.docx result.html
+```
+
+### Scripts de Desenvolvimento com Makefile
+
+```bash
+# Makefile (recomendado para automação)
 make help              # Ver todos os comandos
 make install           # Instalar dependências
 make lint              # Linting com Ruff
@@ -393,18 +475,16 @@ make run-api           # API simples
 make compare ORIG=doc1.docx MOD=doc2.docx OUT=result.html
 ```
 
-### UV Direto
+### Scripts Bash Alternativos
 
 ```bash
-# Gerenciar dependências
-uv sync --group dev    # Instalar dependências de desenvolvimento
-uv add requests        # Adicionar nova dependência
-uv remove requests     # Remover dependência
-
-# Executar comandos
-uv run python script.py      # Executar script
-uv run ruff check .          # Linting
-uv run pytest tests/        # Testes
+# scripts.sh (para ambientes sem Make)
+./scripts.sh install      # Instalar dependências
+./scripts.sh lint         # Linting
+./scripts.sh format       # Formatar código
+./scripts.sh test         # Executar testes
+./scripts.sh run-api      # Executar API
+./scripts.sh run-processor # Executar processador
 ```
 
 ### Configuração de Ambiente

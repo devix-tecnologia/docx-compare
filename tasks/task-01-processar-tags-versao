@@ -2,21 +2,36 @@
 
 # **1\. Objetivo**
 
-O objetivo é permitir que o sistema associe **referências a cada alteração
-detectada em um contrato**, orientando o usuário sobre quais ações ou respostas
-são necessárias diante dessas mudanças. Essas referências são definidas por meio
-de **tags únicas** inseridas no _Template modelo com tags_. Cada tag delimita um
+O objetivo é fazer com que o sistema associe **cláusulas** a cada alteração
+detectada em uma versão de contrato**, orientando o usuário sobre quais ações ou respostas são necessárias diante dessas alteração. 
+
+As cláusulas são cadastrads manualmente no sistema e associadas a partir de **tags únicas** inseridas no _Template modelo com tags_. Cada tag delimita um
 bloco de texto, transformando-o em uma **cláusula identificável**.
 
-Desta forma, o contrato deixa de ser apenas um texto contínuo e passa a ser
-organizado em **unidades menores (cláusulas com referências)**, cada uma capaz
-de receber **uma ou mais referências**. Essas referências podem representar
-ações, regras de validação ou notificações que devem ser apresentadas ao usuário
-sempre que a cláusula correspondente sofrer alteração em versões posteriores.
+A sintaxe para taggear parte do documento .docx é:
 
-Assim, o sistema garante rastreabilidade das mudanças, contextualiza seu impacto
-e fornece instruções claras ao usuário durante a análise de versões de
-contratos.
+**{{TAG-**_nome_unico_**}}**
+
+conteúdo
+
+**{{/TAG-**_nome_unico_**}}**
+
+exemplo:
+<pre>
+{{TAG-responsavel}}
+
+Nome: Sidarta
+E-mail: sidartaveloso@gmail.com
+
+{{/TAG-responsavel}}
+</pre>
+
+Desta forma, o contrato deixa de ser apenas um texto contínuo e passa a ser
+organizado em **unidades menores (cláusulas com referências)**.
+
+Referencias são ações, regras de validação ou notificações que devem ser apresentadas ao usuário sempre que a cláusula correspondente for modificada através da versão.
+
+Assim, o sistema garante rastreabilidade das mudanças, contextualiza seu impacto e fornece instruções claras ao usuário durante a análise de versões de contratos.
 
 ---
 
@@ -35,6 +50,7 @@ erDiagram
   }
   CLAUSULA {
     string id
+    string tag
     string numero
     text conteudo
     text objetivo

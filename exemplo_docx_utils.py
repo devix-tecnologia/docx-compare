@@ -122,7 +122,7 @@ def gerar_relatorio_html():
                 <h1 class="title">Demonstração do Módulo docx_utils</h1>
                 <p class="subtitle">Funcionalidades centralizadas para comparação de documentos</p>
             </div>
-            
+
             <div class="statistics">
                 <div class="stat-card">
                     <span class="stat-number">8</span>
@@ -137,7 +137,7 @@ def gerar_relatorio_html():
                     <span class="stat-label">Compatibilidade</span>
                 </div>
             </div>
-            
+
             <div class="comparison-section">
                 <h2 class="section-title">Funcionalidades Disponíveis</h2>
                 <div class="modifications-list">
@@ -163,7 +163,7 @@ def gerar_relatorio_html():
                     </div>
                 </div>
             </div>
-            
+
             <div class="timestamp">
                 Relatório gerado em {datetime.now().strftime("%d/%m/%Y às %H:%M:%S")}
             </div>

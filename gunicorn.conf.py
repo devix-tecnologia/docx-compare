@@ -5,7 +5,6 @@ Usa Gunicorn como servidor WSGI para produção
 """
 
 import multiprocessing
-import os
 
 # Configurações do Gunicorn
 bind = "0.0.0.0:5005"

@@ -86,12 +86,12 @@ def generate_diff_html(original_docx, modified_docx, output_html, dry_run=False)
         diff_lines = list(d)
 
         # Contar adições e remoções (para compatibilidade)
-        added_count = sum(
+        sum(
             1
             for line in diff_lines
             if line.startswith("+") and not line.startswith("+++")
         )
-        removed_count = sum(
+        sum(
             1
             for line in diff_lines
             if line.startswith("-") and not line.startswith("---")

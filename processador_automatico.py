@@ -5,6 +5,8 @@ Verifica a cada minuto se há versões com status 'processar' e as processa auto
 """
 
 import argparse
+import builtins
+import contextlib
 import difflib
 import os
 import re
@@ -686,10 +688,8 @@ def processar_versao(versao_data, dry_run=False):
 
             # Limpar arquivos temporários de análise
             for temp_file in [original_html_temp.name, modified_html_temp.name]:
-                try:
+                with contextlib.suppress(builtins.BaseException):
                     os.unlink(temp_file)
-                except:
-                    pass
 
         finally:
             # Limpar arquivos temporários principais
@@ -919,10 +919,10 @@ if __name__ == "__main__":
     else:
         # Modo produção - sugerir Gunicorn
         print("🚀 Para produção, use:")
-        print(f"   gunicorn -c gunicorn.conf.py wsgi:app")
+        print("   gunicorn -c gunicorn.conf.py wsgi:app")
         print("   ou")
         print(
-            f"   docker build -t docx-compare . && docker run -p 5005:5005 docx-compare"
+            "   docker build -t docx-compare . && docker run -p 5005:5005 docx-compare"
         )
 
         # Executar mesmo assim em desenvolvimento

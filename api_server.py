@@ -157,7 +157,7 @@ def generate_comparison_html(original_html, modified_html, statistics):
                 <h1 class="title">Relatório de Comparação de Documentos</h1>
                 <p class="subtitle">Análise detalhada das diferenças entre os documentos</p>
             </div>
-            
+
             <div class="statistics">
                 <div class="stat-card">
                     <span class="stat-number">{statistics["total_additions"]}</span>
@@ -228,7 +228,7 @@ def generate_comparison_html(original_html, modified_html, statistics):
     html_content += f"""
             </div>
         </div>
-        
+
         <div class="timestamp">
             Relatório gerado em {datetime.now().strftime("%d/%m/%Y às %H:%M:%S")}
         </div>
