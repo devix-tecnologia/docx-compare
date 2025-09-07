@@ -416,7 +416,9 @@ def remove_inline_styles(html_content: str) -> str:
     return html_content
 
 
-def convert_docx_to_html_content(docx_path: str, lua_filter_path: str | None = None) -> str:
+def convert_docx_to_html_content(
+    docx_path: str, lua_filter_path: str | None = None
+) -> str:
     """Converte um DOCX para HTML e retorna o conteúdo como string."""
     cmd = ["pandoc", docx_path, "-t", "html", "--standalone"]
 
