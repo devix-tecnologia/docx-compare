@@ -186,7 +186,7 @@
                 "sort": 1,
                 "group": "contrato",
                 "collapse": "open",
-                "preview_url": null,
+                "preview_url": "https://contract.devix.co/assets/{{relatorio_diff.id}}",
                 "versioning": false
             },
             "schema": {}
@@ -824,6 +824,58 @@
                 "color": "#E35169",
                 "item_duplication_fields": null,
                 "sort": 12,
+                "group": null,
+                "collapse": "open",
+                "preview_url": null,
+                "versioning": false
+            },
+            "schema": {}
+        },
+        {
+            "collection": "modelo_contrato_tag",
+            "meta": {
+                "collection": "modelo_contrato_tag",
+                "icon": null,
+                "note": null,
+                "display_template": null,
+                "hidden": false,
+                "singleton": false,
+                "translations": null,
+                "archive_field": "status",
+                "archive_app_filter": true,
+                "archive_value": "archived",
+                "unarchive_value": "draft",
+                "sort_field": "sort",
+                "accountability": "all",
+                "color": null,
+                "item_duplication_fields": null,
+                "sort": null,
+                "group": null,
+                "collapse": "open",
+                "preview_url": null,
+                "versioning": false
+            },
+            "schema": {}
+        },
+        {
+            "collection": "modificacao_referencia",
+            "meta": {
+                "collection": "modificacao_referencia",
+                "icon": "import_export",
+                "note": null,
+                "display_template": null,
+                "hidden": true,
+                "singleton": false,
+                "translations": null,
+                "archive_field": null,
+                "archive_app_filter": true,
+                "archive_value": null,
+                "unarchive_value": null,
+                "sort_field": null,
+                "accountability": "all",
+                "color": null,
+                "item_duplication_fields": null,
+                "sort": null,
                 "group": null,
                 "collapse": "open",
                 "preview_url": null,
@@ -2118,12 +2170,54 @@
                 "hidden": false,
                 "sort": 7,
                 "width": "half",
-                "translations": [
-                    {
-                        "language": "pt-BR",
-                        "translation": "Tag"
-                    }
-                ],
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "clausula",
+            "field": "nome",
+            "type": "string",
+            "schema": {
+                "name": "nome",
+                "table": "clausula",
+                "data_type": "character varying",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": 255,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": null,
+                "foreign_key_table": null,
+                "foreign_key_column": null,
+                "comment": null
+            },
+            "meta": {
+                "collection": "clausula",
+                "field": "nome",
+                "special": null,
+                "interface": "input",
+                "options": {
+                    "placeholder": null
+                },
+                "display": null,
+                "display_options": null,
+                "readonly": false,
+                "hidden": false,
+                "sort": 8,
+                "width": "full",
+                "translations": null,
                 "note": null,
                 "conditions": null,
                 "required": false,
@@ -2166,12 +2260,62 @@
                 "display_options": null,
                 "readonly": false,
                 "hidden": false,
-                "sort": 8,
+                "sort": 9,
                 "width": "full",
                 "translations": [
                     {
                         "language": "pt-BR",
                         "translation": "Conteúdo original"
+                    }
+                ],
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "clausula",
+            "field": "objetivo",
+            "type": "text",
+            "schema": {
+                "name": "objetivo",
+                "table": "clausula",
+                "data_type": "text",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": null,
+                "foreign_key_table": null,
+                "foreign_key_column": null,
+                "comment": null
+            },
+            "meta": {
+                "collection": "clausula",
+                "field": "objetivo",
+                "special": null,
+                "interface": "input-multiline",
+                "options": null,
+                "display": "formatted-value",
+                "display_options": null,
+                "readonly": false,
+                "hidden": false,
+                "sort": 10,
+                "width": "full",
+                "translations": [
+                    {
+                        "language": "pt-BR",
+                        "translation": "Objetivo"
                     }
                 ],
                 "note": null,
@@ -2201,7 +2345,10 @@
                         "orientacao_retorno",
                         "descricao"
                     ],
-                    "enableSelect": false
+                    "enableSelect": false,
+                    "sort": "date_created",
+                    "enableSearchFilter": true,
+                    "enableLink": true
                 },
                 "display": "related-values",
                 "display_options": {
@@ -2209,7 +2356,7 @@
                 },
                 "readonly": false,
                 "hidden": false,
-                "sort": 9,
+                "sort": 11,
                 "width": "full",
                 "translations": [
                     {
@@ -2259,7 +2406,58 @@
                 "display_options": null,
                 "readonly": false,
                 "hidden": true,
-                "sort": 10,
+                "sort": 12,
+                "width": "full",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "clausula",
+            "field": "tag",
+            "type": "uuid",
+            "schema": {
+                "name": "tag",
+                "table": "clausula",
+                "data_type": "uuid",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": "public",
+                "foreign_key_table": "modelo_contrato_tag",
+                "foreign_key_column": "id",
+                "comment": null
+            },
+            "meta": {
+                "collection": "clausula",
+                "field": "tag",
+                "special": [
+                    "m2o"
+                ],
+                "interface": "select-dropdown-m2o",
+                "options": {
+                    "template": "{{tag_nome}}",
+                    "filter": null,
+                    "enableCreate": false
+                },
+                "display": null,
+                "display_options": null,
+                "readonly": false,
+                "hidden": false,
+                "sort": 13,
                 "width": "full",
                 "translations": null,
                 "note": null,
@@ -3439,14 +3637,10 @@
                 "options": {
                     "choices": [
                         {
-                            "text": "Objetivo",
-                            "value": "objetivo",
-                            "color": "#A2B5CD"
-                        },
-                        {
                             "text": "Análise contratada",
                             "value": "analise_contratada",
-                            "color": "#A2B5CD"
+                            "color": "#A2B5CD",
+                            "icon": null
                         },
                         {
                             "text": "Comentário de 1ª rodada",
@@ -3456,7 +3650,8 @@
                         {
                             "text": "Comentário área interna",
                             "value": "area_interna",
-                            "color": "#A2B5CD"
+                            "color": "#18222F",
+                            "icon": null
                         },
                         {
                             "text": "Comentário de 2ª rodada",
@@ -3470,13 +3665,49 @@
                         }
                     ]
                 },
-                "display": null,
-                "display_options": null,
+                "display": "labels",
+                "display_options": {
+                    "choices": [
+                        {
+                            "text": "Análise contratada",
+                            "value": "analise_contratada",
+                            "color": "#A2B5CD",
+                            "icon": null
+                        },
+                        {
+                            "text": "Comentário de 1ª rodada",
+                            "value": "primeira_rodada",
+                            "color": "#2ECDA7"
+                        },
+                        {
+                            "text": "Comentário área interna",
+                            "value": "area_interna",
+                            "color": "#18222F",
+                            "icon": null
+                        },
+                        {
+                            "text": "Comentário de 2ª rodada",
+                            "value": "segunda_rodada",
+                            "color": "#FFC23B"
+                        },
+                        {
+                            "text": "Comentário de 3ª rodada",
+                            "value": "terceira_rodada",
+                            "color": "#E35169"
+                        }
+                    ],
+                    "format": false
+                },
                 "readonly": false,
                 "hidden": false,
                 "sort": 8,
                 "width": "half",
-                "translations": null,
+                "translations": [
+                    {
+                        "language": "pt-BR",
+                        "translation": "Orientação para retorno"
+                    }
+                ],
                 "note": null,
                 "conditions": null,
                 "required": false,
@@ -3513,8 +3744,10 @@
                 "collection": "referencia",
                 "field": "descricao",
                 "special": null,
-                "interface": "input-rich-text-html",
-                "options": null,
+                "interface": "input-multiline",
+                "options": {
+                    "trim": true
+                },
                 "display": "formatted-value",
                 "display_options": null,
                 "readonly": false,
@@ -3584,6 +3817,153 @@
         },
         {
             "collection": "versao",
+            "field": "user_created",
+            "type": "uuid",
+            "schema": {
+                "name": "user_created",
+                "table": "versao",
+                "data_type": "uuid",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": "public",
+                "foreign_key_table": "directus_users",
+                "foreign_key_column": "id",
+                "comment": null
+            },
+            "meta": {
+                "collection": "versao",
+                "field": "user_created",
+                "special": [
+                    "user-created"
+                ],
+                "interface": "select-dropdown-m2o",
+                "options": {
+                    "template": "{{avatar.$thumbnail}} {{first_name}} {{last_name}}"
+                },
+                "display": "user",
+                "display_options": null,
+                "readonly": true,
+                "hidden": true,
+                "sort": 1,
+                "width": "half",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": "div_subcabecalho",
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "versao",
+            "field": "versiona_ai_request_json",
+            "type": "json",
+            "schema": {
+                "name": "versiona_ai_request_json",
+                "table": "versao",
+                "data_type": "json",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": null,
+                "foreign_key_table": null,
+                "foreign_key_column": null,
+                "comment": null
+            },
+            "meta": {
+                "collection": "versao",
+                "field": "versiona_ai_request_json",
+                "special": [
+                    "cast-json"
+                ],
+                "interface": "input-code",
+                "options": null,
+                "display": null,
+                "display_options": null,
+                "readonly": false,
+                "hidden": false,
+                "sort": 1,
+                "width": "full",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": "debug",
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "versao",
+            "field": "contrato",
+            "type": "uuid",
+            "schema": {
+                "name": "contrato",
+                "table": "versao",
+                "data_type": "uuid",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": true,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": "public",
+                "foreign_key_table": "contrato",
+                "foreign_key_column": "id",
+                "comment": null
+            },
+            "meta": {
+                "collection": "versao",
+                "field": "contrato",
+                "special": [
+                    "m2o"
+                ],
+                "interface": "select-dropdown-m2o",
+                "options": {
+                    "template": "{{numero}} - {{titulo}}",
+                    "enableCreate": false,
+                    "enableSelect": false
+                },
+                "display": "related-values",
+                "display_options": null,
+                "readonly": false,
+                "hidden": false,
+                "sort": 1,
+                "width": "full",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": "div_cabecalho",
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "versao",
             "field": "status",
             "type": "string",
             "schema": {
@@ -3612,7 +3992,39 @@
                 "special": null,
                 "interface": "select-dropdown",
                 "options": {
-                    "choices": null
+                    "choices": [
+                        {
+                            "text": "Rascunho",
+                            "value": "draft",
+                            "color": "#A2B5CD"
+                        },
+                        {
+                            "text": "Processar",
+                            "value": "processar",
+                            "color": "#6644FF"
+                        },
+                        {
+                            "text": "Em processamento",
+                            "value": "em_processamento",
+                            "color": "#3399FF"
+                        },
+                        {
+                            "text": "Concluído processamento",
+                            "value": "concluido",
+                            "color": "#2ECDA7"
+                        },
+                        {
+                            "text": "Erro",
+                            "value": "erro",
+                            "color": "#E35100"
+                        },
+                        {
+                            "text": "Fechada",
+                            "value": "fechada",
+                            "color": "#18222F",
+                            "background": null
+                        }
+                    ]
                 },
                 "display": "labels",
                 "display_options": {
@@ -3641,13 +4053,19 @@
                             "text": "Erro",
                             "value": "erro",
                             "color": "#E35100"
+                        },
+                        {
+                            "text": "Fechada",
+                            "value": "fechada",
+                            "color": "#18222F",
+                            "background": null
                         }
                     ],
                     "format": false
                 },
                 "readonly": false,
                 "hidden": false,
-                "sort": 1,
+                "sort": 2,
                 "width": "half",
                 "translations": null,
                 "note": null,
@@ -3765,6 +4183,11 @@
                                     "color": "#2ECDA7"
                                 },
                                 {
+                                    "text": "Fechada",
+                                    "value": "fechada",
+                                    "color": "#18222F"
+                                },
+                                {
                                     "text": "Rascunho",
                                     "value": "draft",
                                     "color": "#A2B5CD"
@@ -3809,6 +4232,35 @@
                                     "status": {
                                         "_eq": "erro"
                                     }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "Status Fechada",
+                        "rule": {
+                            "_and": [
+                                {
+                                    "status": {
+                                        "_contains": "fechada"
+                                    }
+                                }
+                            ]
+                        },
+                        "readonly": false,
+                        "options": {
+                            "allowOther": false,
+                            "allowNone": false,
+                            "choices": [
+                                {
+                                    "text": "Fechada",
+                                    "value": "fechada",
+                                    "color": "#18222F"
+                                },
+                                {
+                                    "text": "Rascunho",
+                                    "value": "draft",
+                                    "color": "#A2B5CD"
                                 }
                             ]
                         }
@@ -3859,7 +4311,7 @@
                 },
                 "readonly": true,
                 "hidden": true,
-                "sort": 1,
+                "sort": 2,
                 "width": "half",
                 "translations": [
                     {
@@ -3868,218 +4320,9 @@
                     }
                 ],
                 "note": null,
-                "conditions": [
-                    {
-                        "name": "Exibe campo",
-                        "rule": {
-                            "_and": [
-                                {
-                                    "date_created": {
-                                        "_nnull": true
-                                    }
-                                }
-                            ]
-                        },
-                        "hidden": false,
-                        "options": {
-                            "includeSeconds": false,
-                            "use24": true
-                        }
-                    }
-                ],
-                "required": false,
-                "group": "div_subcabecalho",
-                "validation": null,
-                "validation_message": null
-            }
-        },
-        {
-            "collection": "versao",
-            "field": "versiona_ai_request_json",
-            "type": "json",
-            "schema": {
-                "name": "versiona_ai_request_json",
-                "table": "versao",
-                "data_type": "json",
-                "default_value": null,
-                "generation_expression": null,
-                "max_length": null,
-                "numeric_precision": null,
-                "numeric_scale": null,
-                "is_generated": false,
-                "is_nullable": true,
-                "is_unique": false,
-                "is_indexed": false,
-                "is_primary_key": false,
-                "has_auto_increment": false,
-                "foreign_key_schema": null,
-                "foreign_key_table": null,
-                "foreign_key_column": null,
-                "comment": null
-            },
-            "meta": {
-                "collection": "versao",
-                "field": "versiona_ai_request_json",
-                "special": [
-                    "cast-json"
-                ],
-                "interface": "input-code",
-                "options": null,
-                "display": null,
-                "display_options": null,
-                "readonly": false,
-                "hidden": false,
-                "sort": 1,
-                "width": "full",
-                "translations": null,
-                "note": null,
                 "conditions": null,
                 "required": false,
-                "group": "debug",
-                "validation": null,
-                "validation_message": null
-            }
-        },
-        {
-            "collection": "versao",
-            "field": "date_updated",
-            "type": "timestamp",
-            "schema": {
-                "name": "date_updated",
-                "table": "versao",
-                "data_type": "timestamp with time zone",
-                "default_value": null,
-                "generation_expression": null,
-                "max_length": null,
-                "numeric_precision": null,
-                "numeric_scale": null,
-                "is_generated": false,
-                "is_nullable": true,
-                "is_unique": false,
-                "is_indexed": false,
-                "is_primary_key": false,
-                "has_auto_increment": false,
-                "foreign_key_schema": null,
-                "foreign_key_table": null,
-                "foreign_key_column": null,
-                "comment": null
-            },
-            "meta": {
-                "collection": "versao",
-                "field": "date_updated",
-                "special": [
-                    "date-updated"
-                ],
-                "interface": "datetime",
-                "options": null,
-                "display": "datetime",
-                "display_options": {
-                    "suffix": false,
-                    "format": "dd/MM/yyyy HH:mm"
-                },
-                "readonly": true,
-                "hidden": true,
-                "sort": 2,
-                "width": "half",
-                "translations": [
-                    {
-                        "language": "pt-BR",
-                        "translation": "Data de atualização"
-                    }
-                ],
-                "note": null,
-                "conditions": [
-                    {
-                        "name": "Exibe campo",
-                        "rule": {
-                            "_and": [
-                                {
-                                    "date_updated": {
-                                        "_nnull": true
-                                    }
-                                }
-                            ]
-                        },
-                        "hidden": false,
-                        "options": {
-                            "includeSeconds": false,
-                            "use24": true
-                        }
-                    }
-                ],
-                "required": false,
                 "group": "div_subcabecalho",
-                "validation": null,
-                "validation_message": null
-            }
-        },
-        {
-            "collection": "versao",
-            "field": "versao",
-            "type": "string",
-            "schema": {
-                "name": "versao",
-                "table": "versao",
-                "data_type": "character varying",
-                "default_value": null,
-                "generation_expression": null,
-                "max_length": 255,
-                "numeric_precision": null,
-                "numeric_scale": null,
-                "is_generated": false,
-                "is_nullable": true,
-                "is_unique": false,
-                "is_indexed": false,
-                "is_primary_key": false,
-                "has_auto_increment": false,
-                "foreign_key_schema": null,
-                "foreign_key_table": null,
-                "foreign_key_column": null,
-                "comment": null
-            },
-            "meta": {
-                "collection": "versao",
-                "field": "versao",
-                "special": null,
-                "interface": "input",
-                "options": null,
-                "display": "formatted-value",
-                "display_options": null,
-                "readonly": true,
-                "hidden": true,
-                "sort": 2,
-                "width": "half",
-                "translations": [
-                    {
-                        "language": "pt-BR",
-                        "translation": "Numero da versão"
-                    }
-                ],
-                "note": null,
-                "conditions": [
-                    {
-                        "name": "Exibe campo",
-                        "rule": {
-                            "_and": [
-                                {
-                                    "versao": {
-                                        "_nnull": true
-                                    }
-                                }
-                            ]
-                        },
-                        "hidden": false,
-                        "options": {
-                            "font": "sans-serif",
-                            "trim": false,
-                            "masked": false,
-                            "clear": false,
-                            "slug": false
-                        }
-                    }
-                ],
-                "required": false,
-                "group": "div_cabecalho",
                 "validation": null,
                 "validation_message": null
             }
@@ -4163,10 +4406,10 @@
         },
         {
             "collection": "versao",
-            "field": "user_created",
+            "field": "user_updated",
             "type": "uuid",
             "schema": {
-                "name": "user_created",
+                "name": "user_updated",
                 "table": "versao",
                 "data_type": "uuid",
                 "default_value": null,
@@ -4187,9 +4430,9 @@
             },
             "meta": {
                 "collection": "versao",
-                "field": "user_created",
+                "field": "user_updated",
                 "special": [
-                    "user-created"
+                    "user-updated"
                 ],
                 "interface": "select-dropdown-m2o",
                 "options": {
@@ -4205,7 +4448,78 @@
                 "note": null,
                 "conditions": null,
                 "required": false,
-                "group": null,
+                "group": "div_subcabecalho",
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "versao",
+            "field": "versao",
+            "type": "string",
+            "schema": {
+                "name": "versao",
+                "table": "versao",
+                "data_type": "character varying",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": 255,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": null,
+                "foreign_key_table": null,
+                "foreign_key_column": null,
+                "comment": null
+            },
+            "meta": {
+                "collection": "versao",
+                "field": "versao",
+                "special": null,
+                "interface": "input",
+                "options": null,
+                "display": "formatted-value",
+                "display_options": null,
+                "readonly": true,
+                "hidden": true,
+                "sort": 3,
+                "width": "half",
+                "translations": [
+                    {
+                        "language": "pt-BR",
+                        "translation": "Numero da versão"
+                    }
+                ],
+                "note": null,
+                "conditions": [
+                    {
+                        "name": "Exibe campo",
+                        "rule": {
+                            "_and": [
+                                {
+                                    "versao": {
+                                        "_nnull": true
+                                    }
+                                }
+                            ]
+                        },
+                        "hidden": false,
+                        "options": {
+                            "font": "sans-serif",
+                            "trim": false,
+                            "masked": false,
+                            "clear": false,
+                            "slug": false
+                        }
+                    }
+                ],
+                "required": false,
+                "group": "div_cabecalho",
                 "validation": null,
                 "validation_message": null
             }
@@ -4259,12 +4573,42 @@
         },
         {
             "collection": "versao",
-            "field": "user_updated",
-            "type": "uuid",
+            "field": "div_subcabecalho",
+            "type": "alias",
+            "schema": null,
+            "meta": {
+                "collection": "versao",
+                "field": "div_subcabecalho",
+                "special": [
+                    "alias",
+                    "no-data",
+                    "group"
+                ],
+                "interface": "group-raw",
+                "options": null,
+                "display": null,
+                "display_options": null,
+                "readonly": false,
+                "hidden": false,
+                "sort": 3,
+                "width": "full",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "versao",
+            "field": "date_updated",
+            "type": "timestamp",
             "schema": {
-                "name": "user_updated",
+                "name": "date_updated",
                 "table": "versao",
-                "data_type": "uuid",
+                "data_type": "timestamp with time zone",
                 "default_value": null,
                 "generation_expression": null,
                 "max_length": null,
@@ -4276,32 +4620,38 @@
                 "is_indexed": false,
                 "is_primary_key": false,
                 "has_auto_increment": false,
-                "foreign_key_schema": "public",
-                "foreign_key_table": "directus_users",
-                "foreign_key_column": "id",
+                "foreign_key_schema": null,
+                "foreign_key_table": null,
+                "foreign_key_column": null,
                 "comment": null
             },
             "meta": {
                 "collection": "versao",
-                "field": "user_updated",
+                "field": "date_updated",
                 "special": [
-                    "user-updated"
+                    "date-updated"
                 ],
-                "interface": "select-dropdown-m2o",
-                "options": {
-                    "template": "{{avatar.$thumbnail}} {{first_name}} {{last_name}}"
+                "interface": "datetime",
+                "options": null,
+                "display": "datetime",
+                "display_options": {
+                    "suffix": false,
+                    "format": "dd/MM/yyyy HH:mm"
                 },
-                "display": "user",
-                "display_options": null,
                 "readonly": true,
                 "hidden": true,
                 "sort": 4,
                 "width": "half",
-                "translations": null,
+                "translations": [
+                    {
+                        "language": "pt-BR",
+                        "translation": "Data de atualização"
+                    }
+                ],
                 "note": null,
                 "conditions": null,
                 "required": false,
-                "group": null,
+                "group": "div_subcabecalho",
                 "validation": null,
                 "validation_message": null
             }
@@ -4355,6 +4705,173 @@
         },
         {
             "collection": "versao",
+            "field": "origem",
+            "type": "string",
+            "schema": {
+                "name": "origem",
+                "table": "versao",
+                "data_type": "character varying",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": 255,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": null,
+                "foreign_key_table": null,
+                "foreign_key_column": null,
+                "comment": null
+            },
+            "meta": {
+                "collection": "versao",
+                "field": "origem",
+                "special": null,
+                "interface": "select-radio",
+                "options": {
+                    "choices": [
+                        {
+                            "text": "Fornecedor",
+                            "value": "fornecedor"
+                        },
+                        {
+                            "text": "SAMARCO",
+                            "value": "samarco"
+                        }
+                    ]
+                },
+                "display": "labels",
+                "display_options": {
+                    "choices": [
+                        {
+                            "text": "Fornecedor",
+                            "value": "fornecedor",
+                            "color": null,
+                            "foreground": "#FFFFFF",
+                            "background": "#FFA439"
+                        },
+                        {
+                            "text": "SAMARCO",
+                            "value": "samarco",
+                            "background": "#004071",
+                            "foreground": "#FFFFFF"
+                        }
+                    ]
+                },
+                "readonly": false,
+                "hidden": false,
+                "sort": 4,
+                "width": "half",
+                "translations": [
+                    {
+                        "language": "pt-BR",
+                        "translation": "Origem do arquivo"
+                    }
+                ],
+                "note": null,
+                "conditions": [
+                    {
+                        "name": "Desabilita campo",
+                        "rule": {
+                            "_and": [
+                                {
+                                    "status": {
+                                        "_contains": "fechada"
+                                    }
+                                }
+                            ]
+                        },
+                        "readonly": true,
+                        "options": {
+                            "iconOn": "radio_button_checked",
+                            "iconOff": "radio_button_unchecked",
+                            "allowOther": false
+                        }
+                    }
+                ],
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "versao",
+            "field": "codigo",
+            "type": "string",
+            "schema": {
+                "name": "codigo",
+                "table": "versao",
+                "data_type": "character varying",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": 255,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": null,
+                "foreign_key_table": null,
+                "foreign_key_column": null,
+                "comment": null
+            },
+            "meta": {
+                "collection": "versao",
+                "field": "codigo",
+                "special": null,
+                "interface": "input",
+                "options": null,
+                "display": "formatted-value",
+                "display_options": null,
+                "readonly": true,
+                "hidden": true,
+                "sort": 4,
+                "width": "half",
+                "translations": [
+                    {
+                        "language": "pt-BR",
+                        "translation": "Numero da versão"
+                    }
+                ],
+                "note": null,
+                "conditions": [
+                    {
+                        "name": "Exibe campo",
+                        "rule": {
+                            "_and": [
+                                {
+                                    "versao": {
+                                        "_nnull": true
+                                    }
+                                }
+                            ]
+                        },
+                        "hidden": false,
+                        "options": {
+                            "font": "sans-serif",
+                            "trim": false,
+                            "masked": false,
+                            "clear": false,
+                            "slug": false
+                        }
+                    }
+                ],
+                "required": false,
+                "group": "div_cabecalho",
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "versao",
             "field": "versiona_ai_request_erro",
             "type": "text",
             "schema": {
@@ -4400,40 +4917,10 @@
         },
         {
             "collection": "versao",
-            "field": "div_subcabecalho",
-            "type": "alias",
-            "schema": null,
-            "meta": {
-                "collection": "versao",
-                "field": "div_subcabecalho",
-                "special": [
-                    "alias",
-                    "no-data",
-                    "group"
-                ],
-                "interface": "group-raw",
-                "options": null,
-                "display": null,
-                "display_options": null,
-                "readonly": false,
-                "hidden": false,
-                "sort": 5,
-                "width": "full",
-                "translations": null,
-                "note": null,
-                "conditions": null,
-                "required": false,
-                "group": null,
-                "validation": null,
-                "validation_message": null
-            }
-        },
-        {
-            "collection": "versao",
-            "field": "contrato_analise",
+            "field": "arquivo",
             "type": "uuid",
             "schema": {
-                "name": "contrato_analise",
+                "name": "arquivo",
                 "table": "versao",
                 "data_type": "uuid",
                 "default_value": null,
@@ -4443,125 +4930,8 @@
                 "numeric_scale": null,
                 "is_generated": false,
                 "is_nullable": true,
-                "is_unique": false,
-                "is_indexed": false,
-                "is_primary_key": false,
-                "has_auto_increment": false,
-                "foreign_key_schema": "public",
-                "foreign_key_table": "contrato",
-                "foreign_key_column": "id",
-                "comment": null
-            },
-            "meta": {
-                "collection": "versao",
-                "field": "contrato_analise",
-                "special": null,
-                "interface": "select-dropdown-m2o",
-                "options": null,
-                "display": null,
-                "display_options": null,
-                "readonly": false,
-                "hidden": true,
-                "sort": 6,
-                "width": "full",
-                "translations": null,
-                "note": null,
-                "conditions": null,
-                "required": false,
-                "group": null,
-                "validation": null,
-                "validation_message": null
-            }
-        },
-        {
-            "collection": "versao",
-            "field": "origem",
-            "type": "string",
-            "schema": {
-                "name": "origem",
-                "table": "versao",
-                "data_type": "character varying",
-                "default_value": null,
-                "generation_expression": null,
-                "max_length": 255,
-                "numeric_precision": null,
-                "numeric_scale": null,
-                "is_generated": false,
-                "is_nullable": true,
-                "is_unique": false,
-                "is_indexed": false,
-                "is_primary_key": false,
-                "has_auto_increment": false,
-                "foreign_key_schema": null,
-                "foreign_key_table": null,
-                "foreign_key_column": null,
-                "comment": null
-            },
-            "meta": {
-                "collection": "versao",
-                "field": "origem",
-                "special": null,
-                "interface": "select-radio",
-                "options": {
-                    "choices": [
-                        {
-                            "text": "Fornecedor",
-                            "value": "fornecedor"
-                        },
-                        {
-                            "text": "SAMARCO",
-                            "value": "samarco"
-                        }
-                    ]
-                },
-                "display": "labels",
-                "display_options": {
-                    "choices": [
-                        {
-                            "text": "Fornecedor",
-                            "value": "fornecedor"
-                        },
-                        {
-                            "text": "SAMARCO",
-                            "value": "samarco"
-                        }
-                    ]
-                },
-                "readonly": false,
-                "hidden": false,
-                "sort": 7,
-                "width": "half",
-                "translations": [
-                    {
-                        "language": "pt-BR",
-                        "translation": "Origem do contrato"
-                    }
-                ],
-                "note": null,
-                "conditions": null,
-                "required": false,
-                "group": null,
-                "validation": null,
-                "validation_message": null
-            }
-        },
-        {
-            "collection": "versao",
-            "field": "contrato",
-            "type": "uuid",
-            "schema": {
-                "name": "contrato",
-                "table": "versao",
-                "data_type": "uuid",
-                "default_value": null,
-                "generation_expression": null,
-                "max_length": null,
-                "numeric_precision": null,
-                "numeric_scale": null,
-                "is_generated": false,
-                "is_nullable": true,
-                "is_unique": false,
-                "is_indexed": false,
+                "is_unique": true,
+                "is_indexed": true,
                 "is_primary_key": false,
                 "has_auto_increment": false,
                 "foreign_key_schema": "public",
@@ -4571,7 +4941,7 @@
             },
             "meta": {
                 "collection": "versao",
-                "field": "contrato",
+                "field": "arquivo",
                 "special": [
                     "file"
                 ],
@@ -4583,15 +4953,10 @@
                 "display_options": null,
                 "readonly": false,
                 "hidden": false,
-                "sort": 8,
+                "sort": 5,
                 "width": "half",
-                "translations": [
-                    {
-                        "language": "pt-BR",
-                        "translation": "Contrato"
-                    }
-                ],
-                "note": null,
+                "translations": null,
+                "note": "Arquivo que representa a versão",
                 "conditions": null,
                 "required": true,
                 "group": null,
@@ -4633,7 +4998,7 @@
                 "display_options": null,
                 "readonly": false,
                 "hidden": false,
-                "sort": 9,
+                "sort": 6,
                 "width": "full",
                 "translations": [
                     {
@@ -4642,7 +5007,26 @@
                     }
                 ],
                 "note": null,
-                "conditions": null,
+                "conditions": [
+                    {
+                        "name": "Desabilita campo",
+                        "rule": {
+                            "_and": [
+                                {
+                                    "status": {
+                                        "_contains": "fechada"
+                                    }
+                                }
+                            ]
+                        },
+                        "readonly": true,
+                        "options": {
+                            "trim": false,
+                            "font": "sans-serif",
+                            "clear": false
+                        }
+                    }
+                ],
                 "required": false,
                 "group": null,
                 "validation": null,
@@ -4681,8 +5065,8 @@
                     "template": "{{sort}}ª modificação: {{status}}"
                 },
                 "readonly": false,
-                "hidden": true,
-                "sort": 10,
+                "hidden": false,
+                "sort": 7,
                 "width": "full",
                 "translations": [
                     {
@@ -4710,10 +5094,38 @@
                             "layout": "table",
                             "enableCreate": false,
                             "enableSelect": false,
-                            "limit": 15,
+                            "limit": 10,
                             "sortDirection": "+",
-                            "enableSearchFilter": false,
-                            "enableLink": false,
+                            "enableSearchFilter": true,
+                            "enableLink": true,
+                            "fields": [
+                                "sort",
+                                "status",
+                                "categoria"
+                            ]
+                        },
+                        "hidden": false
+                    },
+                    {
+                        "name": "Desabilita campo",
+                        "rule": {
+                            "_and": [
+                                {
+                                    "status": {
+                                        "_contains": "fechada"
+                                    }
+                                }
+                            ]
+                        },
+                        "readonly": true,
+                        "options": {
+                            "layout": "table",
+                            "enableCreate": false,
+                            "enableSelect": false,
+                            "limit": 10,
+                            "sortDirection": "+",
+                            "enableSearchFilter": true,
+                            "enableLink": true,
                             "fields": [
                                 "sort",
                                 "status",
@@ -4765,9 +5177,9 @@
                 },
                 "display": "file",
                 "display_options": null,
-                "readonly": false,
-                "hidden": true,
-                "sort": 11,
+                "readonly": true,
+                "hidden": false,
+                "sort": 8,
                 "width": "full",
                 "translations": [
                     {
@@ -4776,7 +5188,24 @@
                     }
                 ],
                 "note": "Arquivo html com visualizador de diferenças entre está versão e a anterior",
-                "conditions": null,
+                "conditions": [
+                    {
+                        "name": "Exibe campo",
+                        "rule": {
+                            "_and": [
+                                {
+                                    "relatorio_diff": {
+                                        "_nnull": true
+                                    }
+                                }
+                            ]
+                        },
+                        "hidden": false,
+                        "options": {
+                            "folder": "168abe7e-e39d-4a9a-9462-b43d0c92ba45"
+                        }
+                    }
+                ],
                 "required": false,
                 "group": null,
                 "validation": null,
@@ -4803,11 +5232,60 @@
                 "display": null,
                 "display_options": null,
                 "readonly": false,
-                "hidden": false,
-                "sort": 12,
+                "hidden": true,
+                "sort": 9,
                 "width": "full",
                 "translations": null,
                 "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "versao",
+            "field": "modifica_arquivo",
+            "type": "uuid",
+            "schema": {
+                "name": "modifica_arquivo",
+                "table": "versao",
+                "data_type": "uuid",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": true,
+                "is_indexed": true,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": "public",
+                "foreign_key_table": "directus_files",
+                "foreign_key_column": "id",
+                "comment": null
+            },
+            "meta": {
+                "collection": "versao",
+                "field": "modifica_arquivo",
+                "special": [
+                    "file"
+                ],
+                "interface": "file",
+                "options": {
+                    "folder": "c4c37864-b194-41ff-b452-667fccb2e9ef"
+                },
+                "display": "file",
+                "display_options": null,
+                "readonly": true,
+                "hidden": false,
+                "sort": 10,
+                "width": "full",
+                "translations": null,
+                "note": "Arquivo base de comparação com está versão",
                 "conditions": null,
                 "required": false,
                 "group": null,
@@ -6759,32 +7237,14 @@
                     "o2m"
                 ],
                 "interface": "list-o2m",
-                "options": {
-                    "layout": "table",
-                    "fields": [
-                        "versao",
-                        "status",
-                        "date_created",
-                        "modificacoes"
-                    ],
-                    "enableSelect": false,
-                    "sort": "versao",
-                    "sortDirection": "-"
-                },
-                "display": "related-values",
-                "display_options": {
-                    "template": "{{versao}} - {{status}} - {{modificacoes}}"
-                },
+                "options": null,
+                "display": null,
+                "display_options": null,
                 "readonly": false,
                 "hidden": false,
                 "sort": 16,
                 "width": "full",
-                "translations": [
-                    {
-                        "language": "pt-BR",
-                        "translation": "Versões"
-                    }
-                ],
+                "translations": null,
                 "note": null,
                 "conditions": null,
                 "required": false,
@@ -7305,10 +7765,6 @@
                 "options": {
                     "choices": [
                         {
-                            "text": "Alteração",
-                            "value": "alteracao"
-                        },
-                        {
                             "text": "Comentário",
                             "value": "comentario"
                         },
@@ -7319,6 +7775,10 @@
                         {
                             "text": "Inclusão",
                             "value": "inclusao"
+                        },
+                        {
+                            "text": "Modificação",
+                            "value": "modificacao"
                         },
                         {
                             "text": "Remoção",
@@ -7330,10 +7790,6 @@
                 "display_options": {
                     "choices": [
                         {
-                            "text": "Alteração",
-                            "value": "alteracao"
-                        },
-                        {
                             "text": "Comentário",
                             "value": "comentario"
                         },
@@ -7346,13 +7802,17 @@
                             "value": "inclusao"
                         },
                         {
+                            "text": "Modificação",
+                            "value": "modificacao"
+                        },
+                        {
                             "text": "Remoção",
                             "value": "remocao"
                         }
                     ]
                 },
                 "readonly": false,
-                "hidden": true,
+                "hidden": false,
                 "sort": 8,
                 "width": "half",
                 "translations": [
@@ -7363,6 +7823,83 @@
                 ],
                 "note": null,
                 "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "modificacao",
+            "field": "clausula",
+            "type": "uuid",
+            "schema": {
+                "name": "clausula",
+                "table": "modificacao",
+                "data_type": "uuid",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": "public",
+                "foreign_key_table": "clausula",
+                "foreign_key_column": "id",
+                "comment": null
+            },
+            "meta": {
+                "collection": "modificacao",
+                "field": "clausula",
+                "special": [
+                    "m2o"
+                ],
+                "interface": "select-dropdown-m2o",
+                "options": {
+                    "template": "Tag: {{numero}} - Retorno: {{referencias}}",
+                    "enableCreate": false
+                },
+                "display": "related-values",
+                "display_options": {
+                    "template": "Tag: {{numero}} - Retorno: {{referencias}}"
+                },
+                "readonly": true,
+                "hidden": true,
+                "sort": 9,
+                "width": "half",
+                "translations": [
+                    {
+                        "language": "pt-BR",
+                        "translation": "Cláusula"
+                    }
+                ],
+                "note": null,
+                "conditions": [
+                    {
+                        "name": "Exibe campo",
+                        "rule": {
+                            "_and": [
+                                {
+                                    "clausula": {
+                                        "_nnull": true
+                                    }
+                                }
+                            ]
+                        },
+                        "readonly": true,
+                        "hidden": false,
+                        "options": {
+                            "enableCreate": false,
+                            "enableSelect": false,
+                            "template": "Tag: {{numero}} - Retorno: {{referencias}}"
+                        }
+                    }
+                ],
                 "required": false,
                 "group": null,
                 "validation": null,
@@ -7405,7 +7942,7 @@
                 "display_options": null,
                 "readonly": true,
                 "hidden": false,
-                "sort": 9,
+                "sort": 10,
                 "width": "full",
                 "translations": [
                     {
@@ -7457,7 +7994,7 @@
                 "display_options": null,
                 "readonly": true,
                 "hidden": false,
-                "sort": 10,
+                "sort": 11,
                 "width": "full",
                 "translations": [
                     {
@@ -7467,77 +8004,6 @@
                 ],
                 "note": null,
                 "conditions": null,
-                "required": false,
-                "group": null,
-                "validation": null,
-                "validation_message": null
-            }
-        },
-        {
-            "collection": "modificacao",
-            "field": "analise_automatica",
-            "type": "text",
-            "schema": {
-                "name": "analise_automatica",
-                "table": "modificacao",
-                "data_type": "text",
-                "default_value": null,
-                "generation_expression": null,
-                "max_length": null,
-                "numeric_precision": null,
-                "numeric_scale": null,
-                "is_generated": false,
-                "is_nullable": true,
-                "is_unique": false,
-                "is_indexed": false,
-                "is_primary_key": false,
-                "has_auto_increment": false,
-                "foreign_key_schema": null,
-                "foreign_key_table": null,
-                "foreign_key_column": null,
-                "comment": null
-            },
-            "meta": {
-                "collection": "modificacao",
-                "field": "analise_automatica",
-                "special": null,
-                "interface": "input-multiline",
-                "options": {
-                    "trim": true
-                },
-                "display": "formatted-value",
-                "display_options": null,
-                "readonly": true,
-                "hidden": true,
-                "sort": 11,
-                "width": "full",
-                "translations": [
-                    {
-                        "language": "pt-BR",
-                        "translation": "Analise automática"
-                    }
-                ],
-                "note": null,
-                "conditions": [
-                    {
-                        "name": "Exibe campo",
-                        "rule": {
-                            "_and": [
-                                {
-                                    "analise_automatica": {
-                                        "_nnull": true
-                                    }
-                                }
-                            ]
-                        },
-                        "hidden": false,
-                        "options": {
-                            "trim": false,
-                            "font": "sans-serif",
-                            "clear": false
-                        }
-                    }
-                ],
                 "required": false,
                 "group": null,
                 "validation": null,
@@ -9717,19 +10183,34 @@
                 "options": {
                     "choices": [
                         {
-                            "text": "Publicado",
-                            "value": "published",
-                            "color": "var(--theme--primary)"
-                        },
-                        {
                             "text": "Rascunho",
                             "value": "draft",
-                            "color": "var(--theme--foreground)"
+                            "color": "#A2B5CD"
                         },
                         {
-                            "text": "Arquivado",
-                            "value": "archived",
-                            "color": "var(--theme--warning)"
+                            "text": "Processar",
+                            "value": "processar",
+                            "color": "#6644FF"
+                        },
+                        {
+                            "text": "Em processamento",
+                            "value": "em_processamento",
+                            "color": "#3399FF"
+                        },
+                        {
+                            "text": "Concluído processamento",
+                            "value": "concluido",
+                            "color": "#2ECDA7"
+                        },
+                        {
+                            "text": "Publicado",
+                            "value": "publicado",
+                            "color": "#18D100"
+                        },
+                        {
+                            "text": "Erro",
+                            "value": "erro",
+                            "color": "#E35100"
                         }
                     ]
                 },
@@ -9737,25 +10218,34 @@
                 "display_options": {
                     "choices": [
                         {
-                            "text": "Publicado",
-                            "value": "published",
-                            "color": "var(--theme--primary)",
-                            "foreground": "var(--theme--primary)",
-                            "background": "var(--theme--primary-background)"
-                        },
-                        {
                             "text": "Rascunho",
                             "value": "draft",
-                            "color": "var(--theme--foreground)",
-                            "foreground": "var(--theme--foreground)",
-                            "background": "var(--theme--background-normal)"
+                            "color": "#A2B5CD"
                         },
                         {
-                            "text": "Arquivado",
-                            "value": "archived",
-                            "color": "var(--theme--warning)",
-                            "foreground": "var(--theme--warning)",
-                            "background": "var(--theme--warning-background)"
+                            "text": "Processar",
+                            "value": "processar",
+                            "color": "#6644FF"
+                        },
+                        {
+                            "text": "Em processamento",
+                            "value": "em_processamento",
+                            "color": "#3399FF"
+                        },
+                        {
+                            "text": "Concluído processamento",
+                            "value": "concluido",
+                            "color": "#2ECDA7"
+                        },
+                        {
+                            "text": "Publicado",
+                            "value": "publicado",
+                            "color": "#2ECDA7"
+                        },
+                        {
+                            "text": "Erro",
+                            "value": "erro",
+                            "color": "#E35100"
                         }
                     ],
                     "format": false
@@ -10113,10 +10603,10 @@
         },
         {
             "collection": "modelo_contrato",
-            "field": "modelo_contrato",
+            "field": "arquivo_original",
             "type": "uuid",
             "schema": {
-                "name": "modelo_contrato",
+                "name": "arquivo_original",
                 "table": "modelo_contrato",
                 "data_type": "uuid",
                 "default_value": null,
@@ -10137,44 +10627,24 @@
             },
             "meta": {
                 "collection": "modelo_contrato",
-                "field": "modelo_contrato",
+                "field": "arquivo_original",
                 "special": [
                     "file"
                 ],
                 "interface": "file",
                 "options": {
-                    "folder": "2e1fcb95-79d9-428d-a493-8c90a5663602"
+                    "folder": "c4c37864-b194-41ff-b452-667fccb2e9ef"
                 },
-                "display": "file",
+                "display": null,
                 "display_options": null,
                 "readonly": false,
                 "hidden": false,
                 "sort": 9,
                 "width": "full",
-                "translations": [
-                    {
-                        "language": "pt-BR",
-                        "translation": "Template modelo original"
-                    }
-                ],
+                "translations": null,
                 "note": null,
-                "conditions": [
-                    {
-                        "name": "Obrigatoriedade do campo",
-                        "rule": {
-                            "_and": [
-                                {
-                                    "status": {
-                                        "_eq": "published"
-                                    }
-                                }
-                            ]
-                        },
-                        "required": true,
-                        "options": {}
-                    }
-                ],
-                "required": false,
+                "conditions": null,
+                "required": true,
                 "group": null,
                 "validation": null,
                 "validation_message": null
@@ -10182,10 +10652,10 @@
         },
         {
             "collection": "modelo_contrato",
-            "field": "modelo_tag",
+            "field": "arquivo_com_tags",
             "type": "uuid",
             "schema": {
-                "name": "modelo_tag",
+                "name": "arquivo_com_tags",
                 "table": "modelo_contrato",
                 "data_type": "uuid",
                 "default_value": null,
@@ -10206,41 +10676,77 @@
             },
             "meta": {
                 "collection": "modelo_contrato",
-                "field": "modelo_tag",
+                "field": "arquivo_com_tags",
                 "special": [
                     "file"
                 ],
                 "interface": "file",
                 "options": {
-                    "folder": "2e1fcb95-79d9-428d-a493-8c90a5663602"
+                    "folder": "c4c37864-b194-41ff-b452-667fccb2e9ef"
                 },
-                "display": "file",
+                "display": null,
                 "display_options": null,
                 "readonly": false,
                 "hidden": false,
                 "sort": 10,
                 "width": "full",
-                "translations": [
-                    {
-                        "language": "pt-BR",
-                        "translation": "Template modelo com tags"
-                    }
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": true,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "modelo_contrato",
+            "field": "tags",
+            "type": "alias",
+            "schema": null,
+            "meta": {
+                "collection": "modelo_contrato",
+                "field": "tags",
+                "special": [
+                    "o2m"
                 ],
+                "interface": "list-o2m",
+                "options": null,
+                "display": "related-values",
+                "display_options": {
+                    "template": "{{tag_nome}}"
+                },
+                "readonly": false,
+                "hidden": true,
+                "sort": 11,
+                "width": "full",
+                "translations": null,
                 "note": null,
                 "conditions": [
                     {
-                        "name": "Obrigatoriedade do campo",
+                        "name": "exibe quando status já foi processado",
                         "rule": {
                             "_and": [
                                 {
                                     "status": {
-                                        "_eq": "published"
+                                        "_in": [
+                                            "publicado",
+                                            "concluido"
+                                        ]
                                     }
                                 }
                             ]
                         },
-                        "required": true,
-                        "options": {}
+                        "hidden": false,
+                        "options": {
+                            "layout": "list",
+                            "enableCreate": true,
+                            "enableSelect": true,
+                            "limit": 15,
+                            "sortDirection": "+",
+                            "enableSearchFilter": false,
+                            "enableLink": false
+                        }
                     }
                 ],
                 "required": false,
@@ -10269,7 +10775,9 @@
                         "referencias"
                     ],
                     "enableSelect": false,
-                    "sort": "numero"
+                    "sort": "date_created",
+                    "enableSearchFilter": true,
+                    "enableLink": true
                 },
                 "display": "related-values",
                 "display_options": {
@@ -10277,7 +10785,7 @@
                 },
                 "readonly": false,
                 "hidden": false,
-                "sort": 11,
+                "sort": 12,
                 "width": "full",
                 "translations": [
                     {
@@ -15355,6 +15863,789 @@
                 "validation": null,
                 "validation_message": null
             }
+        },
+        {
+            "collection": "modelo_contrato_tag",
+            "field": "id",
+            "type": "uuid",
+            "schema": {
+                "name": "id",
+                "table": "modelo_contrato_tag",
+                "data_type": "uuid",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": false,
+                "is_unique": true,
+                "is_indexed": false,
+                "is_primary_key": true,
+                "has_auto_increment": false,
+                "foreign_key_schema": null,
+                "foreign_key_table": null,
+                "foreign_key_column": null,
+                "comment": null
+            },
+            "meta": {
+                "collection": "modelo_contrato_tag",
+                "field": "id",
+                "special": [
+                    "uuid"
+                ],
+                "interface": "input",
+                "options": null,
+                "display": null,
+                "display_options": null,
+                "readonly": true,
+                "hidden": true,
+                "sort": 1,
+                "width": "full",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "modelo_contrato_tag",
+            "field": "status",
+            "type": "string",
+            "schema": {
+                "name": "status",
+                "table": "modelo_contrato_tag",
+                "data_type": "character varying",
+                "default_value": "draft",
+                "generation_expression": null,
+                "max_length": 255,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": false,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": null,
+                "foreign_key_table": null,
+                "foreign_key_column": null,
+                "comment": null
+            },
+            "meta": {
+                "collection": "modelo_contrato_tag",
+                "field": "status",
+                "special": null,
+                "interface": "select-dropdown",
+                "options": {
+                    "choices": [
+                        {
+                            "text": "Publicado",
+                            "value": "published",
+                            "color": "var(--theme--primary)"
+                        },
+                        {
+                            "text": "Rascunho",
+                            "value": "draft",
+                            "color": "var(--theme--foreground)"
+                        },
+                        {
+                            "text": "Arquivado",
+                            "value": "archived",
+                            "color": "var(--theme--warning)"
+                        }
+                    ]
+                },
+                "display": "labels",
+                "display_options": {
+                    "showAsDot": true,
+                    "choices": [
+                        {
+                            "text": "Publicado",
+                            "value": "published",
+                            "color": "var(--theme--primary)",
+                            "foreground": "var(--theme--primary)",
+                            "background": "var(--theme--primary-background)"
+                        },
+                        {
+                            "text": "Rascunho",
+                            "value": "draft",
+                            "color": "var(--theme--foreground)",
+                            "foreground": "var(--theme--foreground)",
+                            "background": "var(--theme--background-normal)"
+                        },
+                        {
+                            "text": "Arquivado",
+                            "value": "archived",
+                            "color": "var(--theme--warning)",
+                            "foreground": "var(--theme--warning)",
+                            "background": "var(--theme--warning-background)"
+                        }
+                    ]
+                },
+                "readonly": false,
+                "hidden": false,
+                "sort": 2,
+                "width": "full",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "modelo_contrato_tag",
+            "field": "sort",
+            "type": "integer",
+            "schema": {
+                "name": "sort",
+                "table": "modelo_contrato_tag",
+                "data_type": "integer",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": 32,
+                "numeric_scale": 0,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": null,
+                "foreign_key_table": null,
+                "foreign_key_column": null,
+                "comment": null
+            },
+            "meta": {
+                "collection": "modelo_contrato_tag",
+                "field": "sort",
+                "special": null,
+                "interface": "input",
+                "options": null,
+                "display": null,
+                "display_options": null,
+                "readonly": false,
+                "hidden": true,
+                "sort": 3,
+                "width": "full",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "modelo_contrato_tag",
+            "field": "user_created",
+            "type": "uuid",
+            "schema": {
+                "name": "user_created",
+                "table": "modelo_contrato_tag",
+                "data_type": "uuid",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": "public",
+                "foreign_key_table": "directus_users",
+                "foreign_key_column": "id",
+                "comment": null
+            },
+            "meta": {
+                "collection": "modelo_contrato_tag",
+                "field": "user_created",
+                "special": [
+                    "user-created"
+                ],
+                "interface": "select-dropdown-m2o",
+                "options": {
+                    "template": "{{avatar.$thumbnail}} {{first_name}} {{last_name}}"
+                },
+                "display": "user",
+                "display_options": null,
+                "readonly": true,
+                "hidden": true,
+                "sort": 4,
+                "width": "half",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "modelo_contrato_tag",
+            "field": "date_created",
+            "type": "timestamp",
+            "schema": {
+                "name": "date_created",
+                "table": "modelo_contrato_tag",
+                "data_type": "timestamp with time zone",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": null,
+                "foreign_key_table": null,
+                "foreign_key_column": null,
+                "comment": null
+            },
+            "meta": {
+                "collection": "modelo_contrato_tag",
+                "field": "date_created",
+                "special": [
+                    "date-created"
+                ],
+                "interface": "datetime",
+                "options": null,
+                "display": "datetime",
+                "display_options": {
+                    "relative": true
+                },
+                "readonly": true,
+                "hidden": true,
+                "sort": 5,
+                "width": "half",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "modelo_contrato_tag",
+            "field": "user_updated",
+            "type": "uuid",
+            "schema": {
+                "name": "user_updated",
+                "table": "modelo_contrato_tag",
+                "data_type": "uuid",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": "public",
+                "foreign_key_table": "directus_users",
+                "foreign_key_column": "id",
+                "comment": null
+            },
+            "meta": {
+                "collection": "modelo_contrato_tag",
+                "field": "user_updated",
+                "special": [
+                    "user-updated"
+                ],
+                "interface": "select-dropdown-m2o",
+                "options": {
+                    "template": "{{avatar.$thumbnail}} {{first_name}} {{last_name}}"
+                },
+                "display": "user",
+                "display_options": null,
+                "readonly": true,
+                "hidden": true,
+                "sort": 6,
+                "width": "half",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "modelo_contrato_tag",
+            "field": "date_updated",
+            "type": "timestamp",
+            "schema": {
+                "name": "date_updated",
+                "table": "modelo_contrato_tag",
+                "data_type": "timestamp with time zone",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": null,
+                "foreign_key_table": null,
+                "foreign_key_column": null,
+                "comment": null
+            },
+            "meta": {
+                "collection": "modelo_contrato_tag",
+                "field": "date_updated",
+                "special": [
+                    "date-updated"
+                ],
+                "interface": "datetime",
+                "options": null,
+                "display": "datetime",
+                "display_options": {
+                    "relative": true
+                },
+                "readonly": true,
+                "hidden": true,
+                "sort": 7,
+                "width": "half",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "modelo_contrato_tag",
+            "field": "modelo_contrato",
+            "type": "uuid",
+            "schema": {
+                "name": "modelo_contrato",
+                "table": "modelo_contrato_tag",
+                "data_type": "uuid",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": "public",
+                "foreign_key_table": "modelo_contrato",
+                "foreign_key_column": "id",
+                "comment": null
+            },
+            "meta": {
+                "collection": "modelo_contrato_tag",
+                "field": "modelo_contrato",
+                "special": [
+                    "m2o"
+                ],
+                "interface": "select-dropdown-m2o",
+                "options": {
+                    "template": "{{nome}}",
+                    "enableCreate": false,
+                    "enableSelect": false
+                },
+                "display": "related-values",
+                "display_options": null,
+                "readonly": false,
+                "hidden": false,
+                "sort": 8,
+                "width": "full",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "modelo_contrato_tag",
+            "field": "tag_nome",
+            "type": "string",
+            "schema": {
+                "name": "tag_nome",
+                "table": "modelo_contrato_tag",
+                "data_type": "character varying",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": 50,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": true,
+                "is_indexed": true,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": null,
+                "foreign_key_table": null,
+                "foreign_key_column": null,
+                "comment": null
+            },
+            "meta": {
+                "collection": "modelo_contrato_tag",
+                "field": "tag_nome",
+                "special": null,
+                "interface": "input",
+                "options": {
+                    "placeholder": "ex.: \"cabecalho\"",
+                    "iconLeft": "label"
+                },
+                "display": "formatted-value",
+                "display_options": {
+                    "bold": true,
+                    "prefix": null,
+                    "suffix": null
+                },
+                "readonly": false,
+                "hidden": false,
+                "sort": 9,
+                "width": "full",
+                "translations": null,
+                "note": "Identifica a tag nos arquivos de modelo de contrato",
+                "conditions": null,
+                "required": true,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "modelo_contrato_tag",
+            "field": "caminho_tag_inicio",
+            "type": "string",
+            "schema": {
+                "name": "caminho_tag_inicio",
+                "table": "modelo_contrato_tag",
+                "data_type": "character varying",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": 255,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": null,
+                "foreign_key_table": null,
+                "foreign_key_column": null,
+                "comment": null
+            },
+            "meta": {
+                "collection": "modelo_contrato_tag",
+                "field": "caminho_tag_inicio",
+                "special": null,
+                "interface": "input",
+                "options": {
+                    "placeholder": "Ex.: \"blocks[0].c[0].c\"",
+                    "trim": true
+                },
+                "display": "formatted-value",
+                "display_options": {},
+                "readonly": false,
+                "hidden": false,
+                "sort": 10,
+                "width": "full",
+                "translations": null,
+                "note": "Posição da tag de início do bloco",
+                "conditions": null,
+                "required": true,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "modelo_contrato_tag",
+            "field": "caminho_tag_fim",
+            "type": "string",
+            "schema": {
+                "name": "caminho_tag_fim",
+                "table": "modelo_contrato_tag",
+                "data_type": "character varying",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": 255,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": null,
+                "foreign_key_table": null,
+                "foreign_key_column": null,
+                "comment": null
+            },
+            "meta": {
+                "collection": "modelo_contrato_tag",
+                "field": "caminho_tag_fim",
+                "special": null,
+                "interface": "input",
+                "options": {
+                    "placeholder": "Ex.: \"blocks[0].c[0].c\"",
+                    "trim": true
+                },
+                "display": "formatted-value",
+                "display_options": {},
+                "readonly": false,
+                "hidden": false,
+                "sort": 11,
+                "width": "full",
+                "translations": null,
+                "note": "Posição da tag de fim do bloco",
+                "conditions": null,
+                "required": true,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "modelo_contrato_tag",
+            "field": "conteudo",
+            "type": "text",
+            "schema": {
+                "name": "conteudo",
+                "table": "modelo_contrato_tag",
+                "data_type": "text",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": null,
+                "foreign_key_table": null,
+                "foreign_key_column": null,
+                "comment": null
+            },
+            "meta": {
+                "collection": "modelo_contrato_tag",
+                "field": "conteudo",
+                "special": null,
+                "interface": "input-code",
+                "options": null,
+                "display": null,
+                "display_options": null,
+                "readonly": false,
+                "hidden": false,
+                "sort": 12,
+                "width": "full",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "modelo_contrato_tag",
+            "field": "clausulas",
+            "type": "alias",
+            "schema": null,
+            "meta": {
+                "collection": "modelo_contrato_tag",
+                "field": "clausulas",
+                "special": [
+                    "o2m"
+                ],
+                "interface": "list-o2m",
+                "options": null,
+                "display": null,
+                "display_options": null,
+                "readonly": false,
+                "hidden": false,
+                "sort": 13,
+                "width": "full",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "modificacao_referencia",
+            "field": "id",
+            "type": "integer",
+            "schema": {
+                "name": "id",
+                "table": "modificacao_referencia",
+                "data_type": "integer",
+                "default_value": "nextval('modificacao_referencia_id_seq'::regclass)",
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": 32,
+                "numeric_scale": 0,
+                "is_generated": false,
+                "is_nullable": false,
+                "is_unique": true,
+                "is_indexed": false,
+                "is_primary_key": true,
+                "has_auto_increment": true,
+                "foreign_key_schema": null,
+                "foreign_key_table": null,
+                "foreign_key_column": null,
+                "comment": null
+            },
+            "meta": {
+                "collection": "modificacao_referencia",
+                "field": "id",
+                "special": null,
+                "interface": null,
+                "options": null,
+                "display": null,
+                "display_options": null,
+                "readonly": false,
+                "hidden": true,
+                "sort": 1,
+                "width": "full",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "modificacao_referencia",
+            "field": "modificacao",
+            "type": "uuid",
+            "schema": {
+                "name": "modificacao",
+                "table": "modificacao_referencia",
+                "data_type": "uuid",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": "public",
+                "foreign_key_table": "modificacao",
+                "foreign_key_column": "id",
+                "comment": null
+            },
+            "meta": {
+                "collection": "modificacao_referencia",
+                "field": "modificacao",
+                "special": null,
+                "interface": null,
+                "options": null,
+                "display": null,
+                "display_options": null,
+                "readonly": false,
+                "hidden": true,
+                "sort": 2,
+                "width": "full",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
+        },
+        {
+            "collection": "modificacao_referencia",
+            "field": "referencia",
+            "type": "uuid",
+            "schema": {
+                "name": "referencia",
+                "table": "modificacao_referencia",
+                "data_type": "uuid",
+                "default_value": null,
+                "generation_expression": null,
+                "max_length": null,
+                "numeric_precision": null,
+                "numeric_scale": null,
+                "is_generated": false,
+                "is_nullable": true,
+                "is_unique": false,
+                "is_indexed": false,
+                "is_primary_key": false,
+                "has_auto_increment": false,
+                "foreign_key_schema": "public",
+                "foreign_key_table": "referencia",
+                "foreign_key_column": "id",
+                "comment": null
+            },
+            "meta": {
+                "collection": "modificacao_referencia",
+                "field": "referencia",
+                "special": null,
+                "interface": null,
+                "options": null,
+                "display": null,
+                "display_options": null,
+                "readonly": false,
+                "hidden": true,
+                "sort": 3,
+                "width": "full",
+                "translations": null,
+                "note": null,
+                "conditions": null,
+                "required": false,
+                "group": null,
+                "validation": null,
+                "validation_message": null
+            }
         }
     ],
     "relations": [
@@ -15619,6 +16910,32 @@
             }
         },
         {
+            "collection": "clausula",
+            "field": "tag",
+            "related_collection": "modelo_contrato_tag",
+            "schema": {
+                "constraint_name": "clausula_tag_foreign",
+                "table": "clausula",
+                "column": "tag",
+                "foreign_key_schema": "public",
+                "foreign_key_table": "modelo_contrato_tag",
+                "foreign_key_column": "id",
+                "on_update": "NO ACTION",
+                "on_delete": "SET NULL"
+            },
+            "meta": {
+                "many_collection": "clausula",
+                "many_field": "tag",
+                "one_collection": "modelo_contrato_tag",
+                "one_field": "clausulas",
+                "one_collection_field": null,
+                "one_allowed_collections": null,
+                "junction_field": null,
+                "sort_field": null,
+                "one_deselect_action": "nullify"
+            }
+        },
+        {
             "collection": "pessoa_fisica",
             "field": "user_created",
             "related_collection": "directus_users",
@@ -15828,58 +17145,6 @@
         },
         {
             "collection": "versao",
-            "field": "contrato",
-            "related_collection": "directus_files",
-            "schema": {
-                "constraint_name": "versao_contrato_foreign",
-                "table": "versao",
-                "column": "contrato",
-                "foreign_key_schema": "public",
-                "foreign_key_table": "directus_files",
-                "foreign_key_column": "id",
-                "on_update": "NO ACTION",
-                "on_delete": "CASCADE"
-            },
-            "meta": {
-                "many_collection": "versao",
-                "many_field": "contrato",
-                "one_collection": "directus_files",
-                "one_field": "versoes",
-                "one_collection_field": null,
-                "one_allowed_collections": null,
-                "junction_field": null,
-                "sort_field": null,
-                "one_deselect_action": "delete"
-            }
-        },
-        {
-            "collection": "versao",
-            "field": "contrato_analise",
-            "related_collection": "contrato",
-            "schema": {
-                "constraint_name": "versao_contrato_analise_foreign",
-                "table": "versao",
-                "column": "contrato_analise",
-                "foreign_key_schema": "public",
-                "foreign_key_table": "contrato",
-                "foreign_key_column": "id",
-                "on_update": "NO ACTION",
-                "on_delete": "CASCADE"
-            },
-            "meta": {
-                "many_collection": "versao",
-                "many_field": "contrato_analise",
-                "one_collection": "contrato",
-                "one_field": "versoes",
-                "one_collection_field": null,
-                "one_allowed_collections": null,
-                "junction_field": null,
-                "sort_field": null,
-                "one_deselect_action": "delete"
-            }
-        },
-        {
-            "collection": "versao",
             "field": "relatorio_diff",
             "related_collection": "directus_files",
             "schema": {
@@ -15897,6 +17162,84 @@
                 "many_field": "relatorio_diff",
                 "one_collection": "directus_files",
                 "one_field": null,
+                "one_collection_field": null,
+                "one_allowed_collections": null,
+                "junction_field": null,
+                "sort_field": null,
+                "one_deselect_action": "nullify"
+            }
+        },
+        {
+            "collection": "versao",
+            "field": "arquivo",
+            "related_collection": "directus_files",
+            "schema": {
+                "constraint_name": "versao_arquivo_foreign",
+                "table": "versao",
+                "column": "arquivo",
+                "foreign_key_schema": "public",
+                "foreign_key_table": "directus_files",
+                "foreign_key_column": "id",
+                "on_update": "NO ACTION",
+                "on_delete": "NO ACTION"
+            },
+            "meta": {
+                "many_collection": "versao",
+                "many_field": "arquivo",
+                "one_collection": "directus_files",
+                "one_field": null,
+                "one_collection_field": null,
+                "one_allowed_collections": null,
+                "junction_field": null,
+                "sort_field": null,
+                "one_deselect_action": "nullify"
+            }
+        },
+        {
+            "collection": "versao",
+            "field": "modifica_arquivo",
+            "related_collection": "directus_files",
+            "schema": {
+                "constraint_name": "versao_modifica_arquivo_foreign",
+                "table": "versao",
+                "column": "modifica_arquivo",
+                "foreign_key_schema": "public",
+                "foreign_key_table": "directus_files",
+                "foreign_key_column": "id",
+                "on_update": "NO ACTION",
+                "on_delete": "SET NULL"
+            },
+            "meta": {
+                "many_collection": "versao",
+                "many_field": "modifica_arquivo",
+                "one_collection": "directus_files",
+                "one_field": null,
+                "one_collection_field": null,
+                "one_allowed_collections": null,
+                "junction_field": null,
+                "sort_field": null,
+                "one_deselect_action": "nullify"
+            }
+        },
+        {
+            "collection": "versao",
+            "field": "contrato",
+            "related_collection": "contrato",
+            "schema": {
+                "constraint_name": "versao_contrato_foreign",
+                "table": "versao",
+                "column": "contrato",
+                "foreign_key_schema": "public",
+                "foreign_key_table": "contrato",
+                "foreign_key_column": "id",
+                "on_update": "NO ACTION",
+                "on_delete": "CASCADE"
+            },
+            "meta": {
+                "many_collection": "versao",
+                "many_field": "contrato",
+                "one_collection": "contrato",
+                "one_field": "versoes",
                 "one_collection_field": null,
                 "one_allowed_collections": null,
                 "junction_field": null,
@@ -16217,6 +17560,32 @@
             }
         },
         {
+            "collection": "modificacao",
+            "field": "clausula",
+            "related_collection": "clausula",
+            "schema": {
+                "constraint_name": "modificacao_clausula_foreign",
+                "table": "modificacao",
+                "column": "clausula",
+                "foreign_key_schema": "public",
+                "foreign_key_table": "clausula",
+                "foreign_key_column": "id",
+                "on_update": "NO ACTION",
+                "on_delete": "NO ACTION"
+            },
+            "meta": {
+                "many_collection": "modificacao",
+                "many_field": "clausula",
+                "one_collection": "clausula",
+                "one_field": null,
+                "one_collection_field": null,
+                "one_allowed_collections": null,
+                "junction_field": null,
+                "sort_field": null,
+                "one_deselect_action": "nullify"
+            }
+        },
+        {
             "collection": "pessoa_juridica",
             "field": "user_created",
             "related_collection": "directus_users",
@@ -16504,12 +17873,12 @@
         },
         {
             "collection": "modelo_contrato",
-            "field": "modelo_contrato",
+            "field": "arquivo_com_tags",
             "related_collection": "directus_files",
             "schema": {
-                "constraint_name": "modelo_contrato_modelo_contrato_foreign",
+                "constraint_name": "modelo_contrato_arquivo_com_tags_foreign",
                 "table": "modelo_contrato",
-                "column": "modelo_contrato",
+                "column": "arquivo_com_tags",
                 "foreign_key_schema": "public",
                 "foreign_key_table": "directus_files",
                 "foreign_key_column": "id",
@@ -16518,7 +17887,7 @@
             },
             "meta": {
                 "many_collection": "modelo_contrato",
-                "many_field": "modelo_contrato",
+                "many_field": "arquivo_com_tags",
                 "one_collection": "directus_files",
                 "one_field": null,
                 "one_collection_field": null,
@@ -16530,12 +17899,12 @@
         },
         {
             "collection": "modelo_contrato",
-            "field": "modelo_tag",
+            "field": "arquivo_original",
             "related_collection": "directus_files",
             "schema": {
-                "constraint_name": "modelo_contrato_modelo_tag_foreign",
+                "constraint_name": "modelo_contrato_arquivo_original_foreign",
                 "table": "modelo_contrato",
-                "column": "modelo_tag",
+                "column": "arquivo_original",
                 "foreign_key_schema": "public",
                 "foreign_key_table": "directus_files",
                 "foreign_key_column": "id",
@@ -16544,7 +17913,7 @@
             },
             "meta": {
                 "many_collection": "modelo_contrato",
-                "many_field": "modelo_tag",
+                "many_field": "arquivo_original",
                 "one_collection": "directus_files",
                 "one_field": null,
                 "one_collection_field": null,
@@ -17332,6 +18701,136 @@
                 "junction_field": null,
                 "sort_field": null,
                 "one_deselect_action": "nullify"
+            }
+        },
+        {
+            "collection": "modelo_contrato_tag",
+            "field": "user_created",
+            "related_collection": "directus_users",
+            "schema": {
+                "constraint_name": "modelo_contrato_tag_user_created_foreign",
+                "table": "modelo_contrato_tag",
+                "column": "user_created",
+                "foreign_key_schema": "public",
+                "foreign_key_table": "directus_users",
+                "foreign_key_column": "id",
+                "on_update": "NO ACTION",
+                "on_delete": "NO ACTION"
+            },
+            "meta": {
+                "many_collection": "modelo_contrato_tag",
+                "many_field": "user_created",
+                "one_collection": "directus_users",
+                "one_field": null,
+                "one_collection_field": null,
+                "one_allowed_collections": null,
+                "junction_field": null,
+                "sort_field": null,
+                "one_deselect_action": "nullify"
+            }
+        },
+        {
+            "collection": "modelo_contrato_tag",
+            "field": "user_updated",
+            "related_collection": "directus_users",
+            "schema": {
+                "constraint_name": "modelo_contrato_tag_user_updated_foreign",
+                "table": "modelo_contrato_tag",
+                "column": "user_updated",
+                "foreign_key_schema": "public",
+                "foreign_key_table": "directus_users",
+                "foreign_key_column": "id",
+                "on_update": "NO ACTION",
+                "on_delete": "NO ACTION"
+            },
+            "meta": {
+                "many_collection": "modelo_contrato_tag",
+                "many_field": "user_updated",
+                "one_collection": "directus_users",
+                "one_field": null,
+                "one_collection_field": null,
+                "one_allowed_collections": null,
+                "junction_field": null,
+                "sort_field": null,
+                "one_deselect_action": "nullify"
+            }
+        },
+        {
+            "collection": "modelo_contrato_tag",
+            "field": "modelo_contrato",
+            "related_collection": "modelo_contrato",
+            "schema": {
+                "constraint_name": "modelo_contrato_tag_modelo_contrato_foreign",
+                "table": "modelo_contrato_tag",
+                "column": "modelo_contrato",
+                "foreign_key_schema": "public",
+                "foreign_key_table": "modelo_contrato",
+                "foreign_key_column": "id",
+                "on_update": "NO ACTION",
+                "on_delete": "CASCADE"
+            },
+            "meta": {
+                "many_collection": "modelo_contrato_tag",
+                "many_field": "modelo_contrato",
+                "one_collection": "modelo_contrato",
+                "one_field": "tags",
+                "one_collection_field": null,
+                "one_allowed_collections": null,
+                "junction_field": null,
+                "sort_field": "sort",
+                "one_deselect_action": "delete"
+            }
+        },
+        {
+            "collection": "modificacao_referencia",
+            "field": "referencia",
+            "related_collection": "referencia",
+            "schema": {
+                "constraint_name": "modificacao_referencia_referencia_foreign",
+                "table": "modificacao_referencia",
+                "column": "referencia",
+                "foreign_key_schema": "public",
+                "foreign_key_table": "referencia",
+                "foreign_key_column": "id",
+                "on_update": "NO ACTION",
+                "on_delete": "NO ACTION"
+            },
+            "meta": {
+                "many_collection": "modificacao_referencia",
+                "many_field": "referencia",
+                "one_collection": "referencia",
+                "one_field": null,
+                "one_collection_field": null,
+                "one_allowed_collections": null,
+                "junction_field": "modificacao",
+                "sort_field": null,
+                "one_deselect_action": "nullify"
+            }
+        },
+        {
+            "collection": "modificacao_referencia",
+            "field": "modificacao",
+            "related_collection": "modificacao",
+            "schema": {
+                "constraint_name": "modificacao_referencia_modificacao_foreign",
+                "table": "modificacao_referencia",
+                "column": "modificacao",
+                "foreign_key_schema": "public",
+                "foreign_key_table": "modificacao",
+                "foreign_key_column": "id",
+                "on_update": "NO ACTION",
+                "on_delete": "CASCADE"
+            },
+            "meta": {
+                "many_collection": "modificacao_referencia",
+                "many_field": "modificacao",
+                "one_collection": "modificacao",
+                "one_field": null,
+                "one_collection_field": null,
+                "one_allowed_collections": null,
+                "junction_field": "referencia",
+                "sort_field": null,
+                "one_deselect_action": "delete"
             }
         }
     ]
