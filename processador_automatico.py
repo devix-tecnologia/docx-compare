@@ -145,7 +145,7 @@ def buscar_versoes_para_processar():
                 "status",
                 "codigo",
                 "contrato.id",
-                "contrato.modelo_contrato.modelo_contrato",
+                "contrato.modelo_contrato.arquivo_original",
                 "contrato.versoes.arquivo",
                 "contrato.versoes.codigo",
                 "contrato.versoes.id",
@@ -234,25 +234,25 @@ def determine_versao_anterior(versao_data):
 
 def determine_template_id(versao_data):
     """
-    Determina o ID do modelo do contrato a partir dos dados da versão.
+    Determina o ID do arquivo original do modelo do contrato a partir dos dados da versão.
 
     Args:
         versao_data: Dados da versão contendo a estrutura do contrato
 
     Returns:
-        str ou None: O ID do template do modelo de contrato ou None se não encontrado
+        str ou None: O ID do arquivo original do modelo de contrato ou None se não encontrado
     """
     contrato_data = versao_data.get("contrato", {})
 
     if isinstance(contrato_data, dict):
         modelo_contrato = contrato_data.get("modelo_contrato", {})
         if isinstance(modelo_contrato, dict):
-            template_id = modelo_contrato.get("modelo_contrato")
-            if template_id:
-                print(f"📄 Template ID encontrado: {template_id}")
+            arquivo_original_id = modelo_contrato.get("arquivo_original")
+            if arquivo_original_id:
+                print(f"📄 arquivo_original encontrado: {arquivo_original_id}")
             else:
-                print("⚠️ Template ID não encontrado no modelo_contrato")
-            return template_id
+                print("⚠️ arquivo_original não encontrado no modelo_contrato")
+            return arquivo_original_id
         else:
             print("⚠️ modelo_contrato não é um dict válido")
             return None
@@ -996,7 +996,7 @@ if __name__ == "__main__":
 
         # Iniciar o servidor Flask para monitoramento
         try:
-            app.run(host=args.host, port=args.port, debug=False)
+            app.run(host=args.host, port=args.port, debug=True)
         except KeyboardInterrupt:
             print("\n🛑 Parando processador...")
             processador_ativo = False
@@ -1020,7 +1020,7 @@ if __name__ == "__main__":
         processador_thread.start()
 
         try:
-            app.run(host=args.host, port=args.port, debug=False)
+            app.run(host=args.host, port=args.port, debug=True)
         except KeyboardInterrupt:
             print("\n🛑 Parando processador...")
             processador_ativo = False
