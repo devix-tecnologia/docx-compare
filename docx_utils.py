@@ -269,6 +269,7 @@ def convert_docx_to_html(
     docx_path: str, output_html_path: str, lua_filter_path: str = None
 ) -> None:
     """Converte um DOCX para HTML usando Pandoc com filtro Lua opcional."""
+
     cmd = [
         "pandoc",
         docx_path,
@@ -281,32 +282,60 @@ def convert_docx_to_html(
         cmd.insert(-1, f"--lua-filter={lua_filter_path}")
 
     print(f"Executando: {' '.join(cmd)}")
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    if result.returncode != 0:
-        print(f"Erro ao converter {docx_path}:")
-        print(result.stderr)
-        raise RuntimeError(f"Erro no Pandoc para {docx_path}")
+    print(f"📁 Tamanho do arquivo: {os.path.getsize(docx_path)} bytes")
 
-    # Remove estilos inline do arquivo gerado para compatibilidade com CSP
-    if os.path.exists(output_html_path):
-        with open(output_html_path, encoding="utf-8") as f:
-            content = f.read()
+    try:
+        import time
 
-        content = remove_inline_styles(content)
+        start_time = time.time()
+        print(f"⏰ Iniciando pandoc às {time.strftime('%H:%M:%S')}")
+        result = subprocess.run(
+            cmd, capture_output=True, text=True, timeout=30
+        )  # Reduzir para 30 segundos
+        end_time = time.time()
+        print(f"✅ Pandoc concluído em {end_time - start_time:.2f} segundos")
+        if result.returncode != 0:
+            print(f"Erro ao converter {docx_path}:")
+            print(f"STDERR: {result.stderr}")
+            print(f"STDOUT: {result.stdout}")
+            raise RuntimeError(f"Erro no Pandoc para {docx_path}: {result.stderr}")
 
-        with open(output_html_path, "w", encoding="utf-8") as f:
-            f.write(content)
+        # Remove estilos inline do arquivo gerado para compatibilidade com CSP
+        if os.path.exists(output_html_path):
+            with open(output_html_path, encoding="utf-8") as f:
+                content = f.read()
 
-    print(f"Convertido {docx_path} para {output_html_path}")
+            content = remove_inline_styles(content)
+
+            with open(output_html_path, "w", encoding="utf-8") as f:
+                f.write(content)
+
+        print(f"Convertido {docx_path} para {output_html_path}")
+
+    except subprocess.TimeoutExpired:
+        raise RuntimeError(f"Timeout na conversão do arquivo {docx_path}")
+    except Exception as e:
+        raise RuntimeError(f"Erro na conversão: {e}")
 
 
 def convert_docx_to_text(docx_path: str) -> str:
     """Converte um DOCX para texto usando Pandoc."""
-    cmd = ["pandoc", docx_path, "-t", "plain"]
-    result = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8")
-    if result.returncode != 0:
-        raise Exception(f"Erro ao converter {docx_path}: {result.stderr}")
-    return result.stdout
+
+    try:
+        cmd = ["pandoc", docx_path, "-t", "plain"]
+        print(f"Executando: {' '.join(cmd)}")
+        print(f"📁 Tamanho do arquivo: {os.path.getsize(docx_path)} bytes")
+        result = subprocess.run(
+            cmd, capture_output=True, text=True, encoding="utf-8", timeout=120
+        )  # Aumentar para 2 minutos
+        if result.returncode != 0:
+            raise Exception(f"Erro ao converter {docx_path}: {result.stderr}")
+        return result.stdout
+
+    except subprocess.TimeoutExpired:
+        raise Exception(f"Timeout na conversão do arquivo {docx_path}")
+    except Exception as e:
+        raise Exception(f"Erro na conversão: {e}")
 
 
 def remove_inline_styles(html_content: str) -> str:
@@ -340,7 +369,9 @@ def convert_docx_to_html_content(docx_path: str, lua_filter_path: str = None) ->
     if lua_filter_path and os.path.exists(lua_filter_path):
         cmd.extend(["--lua-filter", lua_filter_path])
 
-    result = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8")
+    result = subprocess.run(
+        cmd, capture_output=True, text=True, encoding="utf-8", timeout=60
+    )
     if result.returncode != 0:
         raise Exception(f"Erro ao converter {docx_path}: {result.stderr}")
 

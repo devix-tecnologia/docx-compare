@@ -18,6 +18,7 @@ import threading
 import time
 import uuid
 from datetime import datetime
+from typing import Literal
 
 import requests
 from dotenv import load_dotenv
@@ -136,11 +137,28 @@ def buscar_versoes_para_processar():
 
             # Query com filtros usando query parameters - campos corretos
             url_filtered = f"{DIRECTUS_BASE_URL}/items/versao"
+
+            # Usar array de campos concatenado com vírgula
+            fields_array = [
+                "id",
+                "date_created",
+                "status",
+                "codigo",
+                "contrato.id",
+                "contrato.modelo_contrato.modelo_contrato",
+                "contrato.versoes.arquivo",
+                "contrato.versoes.codigo",
+                "contrato.versoes.id",
+                "contrato.versoes.date_created",
+                "arquivo",
+            ]
+
             params = {
                 "filter[status][_eq]": "processar",
                 "limit": 10,
                 "sort": "date_created",
-                "fields": "id,date_created,status,versao,observacao,contrato,contrato.modelo_contrato.modelo_contrato,versiona_ai_request_json",
+                "fields": ",".join(fields_array),
+                # TODO: limitar as versoes cuja data_created seja menor
             }
 
             if verbose_mode:
@@ -181,96 +199,141 @@ def buscar_versoes_para_processar():
         return []
 
 
+def determine_versao_anterior(versao_data):
+    """
+    Determina a versão anterior mais próxima baseada na data de criação.
+
+    Args:
+        versao_data: Dados da versão atual contendo id, date_created e contrato com versões
+
+    Returns:
+        dict ou None: A versão anterior mais próxima ou None se não existir
+    """
+    versao_id = versao_data.get("id")
+    versao_data_criacao = versao_data.get("date_created", "")
+
+    versao_anterior = max(
+        (
+            v
+            for v in versao_data.get("contrato", {}).get("versoes", [])
+            if v["id"] != versao_id and v.get("date_created", "") < versao_data_criacao
+        ),
+        key=lambda v: v.get("date_created", ""),
+        default=None,
+    )
+
+    if versao_anterior:
+        print(
+            f"📅 Versão anterior encontrada: ID {versao_anterior['id']} - Data: {versao_anterior['date_created']}"
+        )
+    else:
+        print("⚠️ Nenhuma versão anterior encontrada")
+
+    return versao_anterior
+
+
+def determine_template_id(versao_data):
+    """
+    Determina o ID do modelo do contrato a partir dos dados da versão.
+
+    Args:
+        versao_data: Dados da versão contendo a estrutura do contrato
+
+    Returns:
+        str ou None: O ID do template do modelo de contrato ou None se não encontrado
+    """
+    contrato_data = versao_data.get("contrato", {})
+
+    if isinstance(contrato_data, dict):
+        modelo_contrato = contrato_data.get("modelo_contrato", {})
+        if isinstance(modelo_contrato, dict):
+            template_id = modelo_contrato.get("modelo_contrato")
+            if template_id:
+                print(f"📄 Template ID encontrado: {template_id}")
+            else:
+                print("⚠️ Template ID não encontrado no modelo_contrato")
+            return template_id
+        else:
+            print("⚠️ modelo_contrato não é um dict válido")
+            return None
+    else:
+        print("⚠️ contrato_data não é um dict válido")
+        return None
+
+
 def determine_original_file_id(versao_data):
     """
-    Determina qual arquivo usar como original baseado no campo versiona_ai_request_json:
-    1. Se is_first_version=true: usa arquivoTemplate (modelo_template)
-    2. Se is_first_version=false: usa arquivoBranco (versao_anterior)
-    3. Se versiona_ai_request_json não existe: tenta buscar template do contrato
+    Determina o ID do arquivo original e sua origem.
+    Se há versão anterior, DEVE ter arquivo (erro se não tiver).
+    Se não há versão anterior, usa o template do modelo.
+
+    Args:
+        versao_data: Dados da versão atual
+
+    Returns:
+        tuple: (file_id, source) ou (None, None) se erro
+    """
+    versao_anterior = determine_versao_anterior(versao_data)
+
+    if versao_anterior:
+        # Se existe versão anterior, DEVE ter arquivo
+        original_file_id = versao_anterior.get("arquivo")
+        if original_file_id:
+            print(f"📁 Usando arquivo da versão anterior: {original_file_id}")
+            return original_file_id, "versao_anterior"
+        else:
+            print("❌ ERRO: Versão anterior encontrada mas sem arquivo válido")
+            return None, None
+
+    # Se não há versão anterior, usa o template
+    template_id: str | None = determine_template_id(versao_data)
+    if template_id:
+        print("ℹ️ Usando template do modelo de contrato (primeira versão)")
+        return template_id, "modelo_contrato"
+    else:
+        print("❌ ERRO: Template do modelo de contrato não encontrado")
+        return None, None
+
+
+def download_file_from_directus(
+    file_id: str, cache_dir: str = None
+) -> tuple[str, Literal["downloaded", "cached"]]:
+    """
+    Baixa um arquivo do Directus usando o caminho do arquivo.
+    Verifica cache para evitar downloads desnecessários.
+
+    Args:
+        file_id: ID do arquivo no Directus
+        cache_dir: Diretório para cache (opcional)
+
+    Returns:
+        Tuple[str, status]: (caminho_arquivo, status)
+        - status: "downloaded" se baixou novo arquivo, "cached" se usou cache
     """
     try:
-        versao_id = versao_data["id"]
-        versao_request = versao_data.get("versiona_ai_request_json", {})
-
-        print(f"🧠 Determinando arquivo original para versão {versao_id}...")
-        print(f"🔗 Dados do contrato: {versao_data.get('contrato')}")
-
-        # Estratégia 1: Usar dados do versiona_ai_request_json se disponível
-        if versao_request:
-            print("📋 Dados versiona_ai_request_json encontrados")
-            is_first_version = versao_request.get("is_first_version", False)
-            versao_comparacao_tipo = versao_request.get("versao_comparacao_tipo", "")
-
-            if is_first_version or versao_comparacao_tipo == "modelo_template":
-                # Primeira versão: comparar com template
-                arquivo_original = versao_request.get("arquivoTemplate")
-                if arquivo_original:
-                    print(
-                        f"📝 Primeira versão - usando arquivoTemplate: {arquivo_original}"
-                    )
-                    return arquivo_original, "modelo_template"
-            else:
-                # Versão posterior: comparar com versão anterior (arquivoBranco)
-                arquivo_original = versao_request.get("arquivoBranco")
-                if arquivo_original:
-                    print(
-                        f"📄 Versão posterior - usando arquivoBranco: {arquivo_original}"
-                    )
-                    return arquivo_original, "versao_anterior"
-
-        # Estratégia 2: Se versiona_ai_request_json não existe, usar template do contrato obtido na consulta
-        print("⚠️ Campo versiona_ai_request_json vazio ou não encontrado")
-        print("🔍 Usando template do contrato obtido na consulta...")
-
-        # Verificar se temos dados do contrato com template
-        contrato_data = versao_data.get("contrato", {})
-        if isinstance(contrato_data, dict):
-            modelo_contrato = contrato_data.get("modelo_contrato", {})
-            if isinstance(modelo_contrato, dict):
-                template_id = modelo_contrato.get("modelo_contrato")
-            else:
-                template_id = None
-        else:
-            # Caso contrato seja apenas o ID, não temos o template
-            template_id = None
-
-        if template_id:
-            print(f"📋 Template encontrado no contrato: {template_id}")
-            return f"/directus/uploads/{template_id}", "modelo_template"
-        else:
-            print("❌ Template não encontrado no contrato")
-
-        # Estratégia 3: Tentar usar o próprio contrato como fallback
-        contrato_id = versao_data.get("contrato")
-        if isinstance(contrato_id, dict):
-            contrato_id = contrato_id.get("id") or contrato_id
-
-        if contrato_id:
-            print(f"🔄 Usando contrato como fallback: {contrato_id}")
-            return f"/directus/uploads/{contrato_id}", "contrato_fallback"
-
-        raise Exception(
-            "Não foi possível encontrar arquivo original - verifique se o contrato tem template configurado"
-        )
-
-    except Exception as e:
-        raise Exception(f"Erro ao determinar arquivo original: {e}")
-
-
-def download_file_from_directus(file_path):
-    """
-    Baixa um arquivo do Directus usando o caminho do arquivo
-    """
-    try:
-        print(f"📥 Baixando arquivo {file_path}...")
-
-        # Construir URL completa para download
-        if file_path.startswith("/directus/uploads/"):
-            file_id = file_path.replace("/directus/uploads/", "")
-        else:
-            file_id = file_path
-
         download_url = f"{DIRECTUS_BASE_URL}/assets/{file_id}"
+
+        # Verificar cache se diretório foi fornecido
+        if cache_dir:
+            os.makedirs(cache_dir, exist_ok=True)
+            cached_file_path = os.path.join(cache_dir, f"{file_id}.docx")
+
+            if os.path.exists(cached_file_path):
+                # Verificar se arquivo remoto mudou (usando HEAD request)
+                head_response = requests.head(
+                    download_url, headers=DIRECTUS_HEADERS, timeout=request_timeout
+                )
+
+                if head_response.status_code == 200:
+                    # Comparar tamanhos ou ETags se disponível
+                    remote_size = head_response.headers.get("content-length")
+                    local_size = str(os.path.getsize(cached_file_path))
+
+                    if remote_size and remote_size == local_size:
+                        print(f"📋 Usando arquivo em cache: {cached_file_path}")
+                        return cached_file_path, "cached"
+
+        print(f"📥 Baixando arquivo {file_id}, através do endereço {download_url}")
 
         # Fazer o download do arquivo
         response = requests.get(
@@ -278,20 +341,28 @@ def download_file_from_directus(file_path):
         )
 
         if response.status_code == 200:
-            # Criar arquivo temporário com extensão correta
-            import tempfile
+            if cache_dir:
+                # Salvar no cache com extensão .docx
+                file_path = os.path.join(cache_dir, f"{file_id}.docx")
+                with open(file_path, "wb") as f:
+                    f.write(response.content)
+            else:
+                # Criar arquivo temporário com extensão .docx
+                import tempfile
 
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as temp_file:
-                temp_file.write(response.content)
-                temp_file_name = temp_file.name
+                with tempfile.NamedTemporaryFile(
+                    delete=False, suffix=".docx"
+                ) as temp_file:
+                    temp_file.write(response.content)
+                    file_path = temp_file.name
 
-            print(f"✅ Arquivo baixado: {temp_file_name}")
-            return temp_file_name
+            print(f"✅ Arquivo baixado: {file_path}")
+            return file_path, "downloaded"
         else:
             raise Exception(f"Erro HTTP {response.status_code}: {response.text}")
 
     except Exception as e:
-        raise Exception(f"Erro ao baixar arquivo {file_path}: {e}")
+        raise Exception(f"Erro ao baixar arquivo {file_id}: {e}")
 
 
 def html_to_text(html_content):
@@ -450,6 +521,7 @@ def upload_file_to_directus(file_path, filename=None, dry_run=False):
 def update_versao_status(
     versao_id,
     status,
+    modifica_arquivo=None,
     result_url=None,
     total_modifications=0,
     error_message=None,
@@ -494,6 +566,13 @@ def update_versao_status(
             observacao = f"Status atualizado para '{status}' em {datetime.now().strftime('%d/%m/%Y %H:%M')}"
 
         update_data = {"status": status, "observacao": observacao}
+
+        # Adicionar ID do arquivo original se fornecido
+        if modifica_arquivo:
+            update_data["modifica_arquivo"] = modifica_arquivo
+            print(
+                f"📄 Incluindo arquivo original no campo modifica_arquivo: {modifica_arquivo}"
+            )
 
         # Adicionar ID do relatório se disponível
         if relatorio_diff_id:
@@ -576,6 +655,7 @@ def processar_versao(versao_data, dry_run=False):
     Processa uma versão específica
     """
     versao_id = versao_data["id"]
+    original_file_id = None  # Inicializar para uso no tratamento de erro
 
     try:
         if dry_run:
@@ -585,58 +665,54 @@ def processar_versao(versao_data, dry_run=False):
 
         # Atualizar status para 'processando' (apenas se não for dry-run)
         if not dry_run:
-            update_versao_status(versao_id, "processando")
+            update_versao_status(
+                versao_id,
+                "processando",
+                modifica_arquivo=None,
+                result_url=None,
+                total_modifications=0,
+                error_message=None,
+                modifications=None,
+                result_file_path=None,
+                dry_run=dry_run,
+            )
         else:
             print("🏃‍♂️ DRY-RUN: Pulando atualização de status para 'processando'")
 
         # 1. Determinar arquivo original e modificado
-        original_file_path, original_source = determine_original_file_id(versao_data)
+        original_file_id, original_source = determine_original_file_id(versao_data)
+        modificado_file_id = versao_data.get("arquivo")
 
-        # Obter arquivo modificado (preenchido) dos dados de request
-        versao_request = versao_data.get("versiona_ai_request_json", {})
-        modified_file_path = versao_request.get("arquivoPreenchido")
+        if not original_file_id or not modificado_file_id:
+            raise Exception("IDs de arquivo original ou modificado não encontrados")
 
-        # Se não encontrar nos dados de request, usar o próprio contrato como modificado
-        if not modified_file_path:
-            contrato_id = versao_data.get("contrato")
-            if contrato_id:
-                modified_file_path = f"/directus/uploads/{contrato_id}"
-                print(
-                    f"⚠️ arquivoPreenchido não encontrado, usando contrato: {modified_file_path}"
-                )
-            else:
-                raise Exception(
-                    "Versão não possui arquivoPreenchido nos dados de request nem contrato válido"
-                )
-
-        print(f"📁 Original: {original_file_path} (fonte: {original_source})")
-        print(f"📄 Modificado: {modified_file_path}")
+        print(f"📁 Original: {original_file_id} (fonte: {original_source})")
+        print(f"📄 Modificado: {modificado_file_id}")
 
         # 2. Baixar arquivos
-        original_path = download_file_from_directus(original_file_path)
-        modified_path = download_file_from_directus(modified_file_path)
+        original_path, _ = download_file_from_directus(original_file_id)
+        modified_path, _ = download_file_from_directus(modificado_file_id)
 
         try:
-            # 3. Gerar comparação HTML usando o CLI existente
+            # 3. Gerar comparação HTML usando a função interna em vez do CLI
             result_id = str(uuid.uuid4())
             result_filename = f"comparison_{result_id}.html"
             result_path = os.path.join(RESULTS_DIR, result_filename)
 
-            print("🔄 Executando comparação visual usando CLI...")
+            print("🔄 Executando comparação visual usando função interna...")
 
-            # Executar o docx_diff_viewer.py para HTML visual
-            cmd = [
-                "python",
-                "docx_diff_viewer.py",
-                original_path,
-                modified_path,
-                result_path,
-            ]
+            # Usar a função do docx_diff_viewer diretamente
+            from docx_diff_viewer import generate_diff_html
 
-            result = subprocess.run(cmd, capture_output=True, text=True)
-
-            if result.returncode != 0:
-                raise Exception(f"Erro na comparação: {result.stderr}")
+            try:
+                print(
+                    f"🔍 Analisando: {os.path.basename(original_path)} vs {os.path.basename(modified_path)}"
+                )
+                stats = generate_diff_html(original_path, modified_path, result_path)
+                print(f"✅ Comparação visual concluída: {stats}")
+            except Exception as e:
+                print(f"❌ Erro na comparação visual: {e}")
+                raise Exception(f"Erro na comparação: {e}")
 
             # 4. Converter documentos para análise textual
             print("📊 Analisando diferenças textuais...")
@@ -678,8 +754,9 @@ def processar_versao(versao_data, dry_run=False):
             update_versao_status(
                 versao_id,
                 "concluido",
-                result_url,
-                len(modifications),
+                modifica_arquivo=original_file_id,
+                result_url=result_url,
+                total_modifications=len(modifications),
                 modifications=modifications,
                 result_file_path=result_path,
                 dry_run=dry_run,
@@ -690,7 +767,7 @@ def processar_versao(versao_data, dry_run=False):
             )
 
             # Limpar arquivos temporários de análise
-            for temp_file in [original_html_temp.name, modified_html_temp.name]:
+            for temp_file in [original_html_temp_name, modified_html_temp_name]:
                 with contextlib.suppress(builtins.BaseException):
                     os.unlink(temp_file)
 
@@ -707,7 +784,12 @@ def processar_versao(versao_data, dry_run=False):
         error_msg = str(e)
         print(f"❌ Erro ao processar versão {versao_id}: {error_msg}")
         if not dry_run:
-            update_versao_status(versao_id, "erro", error_message=error_msg)
+            update_versao_status(
+                versao_id,
+                "erro",
+                modifica_arquivo=original_file_id,
+                error_message=error_msg,
+            )
         else:
             print("🏃‍♂️ DRY-RUN: Não atualizando status de erro no Directus")
 
