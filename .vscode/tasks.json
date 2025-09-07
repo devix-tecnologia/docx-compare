@@ -76,7 +76,7 @@
             "type": "shell",
             "command": "docker",
             "args": [
-                "run", "-d", 
+                "run", "-d",
                 "--name", "docx-compare-prod",
                 "-p", "5005:5005",
                 "--env", "FLASK_ENV=production",

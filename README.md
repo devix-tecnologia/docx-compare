@@ -1,12 +1,47 @@
 # 📄 Sistema de Processamento Automático de Documentos DOCX
 
+## 🚀 Execução Rápida
+
+### Processador Automático
+
+```bash
+# Executar o processador automático (principal)
+uv run python processador_automatico.py
+
+# Executar com logs detalhados
+uv run python processador_automatico.py --verbose
+
+# Executar em modo simulação (sem alterações)
+uv run python processador_automatico.py --dry-run
+```
+
+### Comparação Local de Documentos
+
+```bash
+# Comparar dois documentos DOCX
+uv run python docx_diff_viewer.py original.docx modificado.docx
+
+# Exemplo com arquivos do projeto
+uv run python docx_diff_viewer.py documentos/doc-rafael-original.docx documentos/doc-rafael-alterado.docx
+```
+
+### Endpoints de Monitoramento
+
+- **Dashboard**: http://localhost:5005
+- **Health Check**: http://localhost:5005/health
+- **Métricas**: http://localhost:5005/metrics
+- **Resultados**: http://localhost:5005/results
+
+---
+
 Sistema de processamento automático para comparação de documentos DOCX integrado com Directus CMS. Monitora continuamente o Directus em busca de versões para processar e gera comparações visuais automaticamente.
 
 ## 🚀 Funcionalidades
 
 ### 🤖 Processamento Automático
+
 - **Monitoramento Contínuo**: Busca versões com status "processar" no Directus a cada minuto
-- **Processamento Inteligente**: 
+- **Processamento Inteligente**:
   - Primeira versão: compara com template do modelo de contrato
   - Versões subsequentes: compara com versão anterior
 - **Transação Única**: Salva status, observações e modificações em uma única operação
@@ -15,12 +50,14 @@ Sistema de processamento automático para comparação de documentos DOCX integr
 - **Cache Inteligente**: Evita downloads desnecessários
 
 ### 🔧 CLI - Comparação Local
+
 - **Comparação Direta**: Comparação local de arquivos DOCX
 - **HTML Responsivo**: Visualização profissional das diferenças
 - **Filtro Lua**: Remove tags HTML desnecessárias com Pandoc
 - **CSP Compatível**: HTML gerado sem estilos inline para máxima segurança
 
 ### 📊 Monitoramento e Observabilidade
+
 - **Dashboard Web**: Interface visual para monitoramento do sistema
 - **Endpoints REST**: APIs para verificação de saúde e métricas
 - **Modo Debug**: Logs detalhados para troubleshooting
@@ -125,18 +162,19 @@ uv run python processador_automatico.py --interval 30 --timeout 60
 
 #### 3. Endpoints de Monitoramento
 
-| Endpoint | Descrição |
-|----------|-----------|
-| `GET /` | Dashboard web com informações do sistema |
-| `GET /health` | Verificação de saúde |
-| `GET /status` | Status detalhado do processador |
-| `GET /metrics` | Métricas do sistema |
-| `GET /results` | Lista de resultados processados |
-| `GET /outputs/<filename>` | Visualizar resultado específico |
+| Endpoint                  | Descrição                                |
+| ------------------------- | ---------------------------------------- |
+| `GET /`                   | Dashboard web com informações do sistema |
+| `GET /health`             | Verificação de saúde                     |
+| `GET /status`             | Status detalhado do processador          |
+| `GET /metrics`            | Métricas do sistema                      |
+| `GET /results`            | Lista de resultados processados          |
+| `GET /outputs/<filename>` | Visualizar resultado específico          |
 
 #### 4. Monitoramento Web
 
 Acesse `http://localhost:5005` para ver o dashboard de monitoramento com:
+
 - Status do processador em tempo real
 - Lista de todos os endpoints disponíveis
 - Informações de configuração
@@ -157,6 +195,7 @@ python docx_diff_viewer.py original.docx modificado.docx
 ```
 
 **Exemplo:**
+
 ```bash
 uv run python docx_diff_viewer.py documentos/doc-rafael-original.docx documentos/doc-rafael-alterado.docx
 # Criará automaticamente outputs/resultado.html
@@ -178,21 +217,23 @@ python processador_automatico.py
 
 O processador executa na porta 5005 e oferece:
 
-| Endpoint | Método | Descrição |
-|----------|--------|-----------|
-| `/health` | GET | Verificação de saúde do processador |
-| `/status` | GET | Status detalhado do processamento |
-| `/outputs/<filename>` | GET | Visualizar resultados HTML |
+| Endpoint              | Método | Descrição                           |
+| --------------------- | ------ | ----------------------------------- |
+| `/health`             | GET    | Verificação de saúde do processador |
+| `/status`             | GET    | Status detalhado do processamento   |
+| `/outputs/<filename>` | GET    | Visualizar resultados HTML          |
 
 #### 3. Lógica de Processamento
 
 **Busca Automática**: A cada minuto, busca versões com `status = "processar"`
 
 **Determinação do Arquivo Original**:
+
 - **Primeira versão** (`is_first_version = true`): Compara `arquivoPreenchido` vs `arquivoTemplate`
 - **Versões subsequentes** (`is_first_version = false`): Compara `arquivoPreenchido` vs `arquivoBranco`
 
 **Fluxo de Processamento**:
+
 1. 🔍 Busca versões pendentes no Directus
 2. 📝 Atualiza status para "processando"
 3. 📥 Baixa arquivos original e modificado
@@ -202,6 +243,7 @@ O processador executa na porta 5005 e oferece:
 7. 🧹 Limpa arquivos temporários
 
 **Tratamento de Erros**:
+
 - Atualiza status para "erro" com mensagem detalhada
 - Continua processamento das próximas versões
 - Log completo de todas as operações
@@ -209,10 +251,11 @@ O processador executa na porta 5005 e oferece:
 #### 4. Estrutura de Dados no Directus
 
 **Campo `versiona_ai_request_json`** deve conter:
+
 ```json
 {
   "arquivoTemplate": "/directus/uploads/xxx.docx",
-  "arquivoBranco": "/directus/uploads/yyy.docx", 
+  "arquivoBranco": "/directus/uploads/yyy.docx",
   "arquivoPreenchido": "/directus/uploads/zzz.docx",
   "is_first_version": true/false,
   "versao_comparacao_tipo": "modelo_template" | "versao_anterior"
@@ -220,6 +263,7 @@ O processador executa na porta 5005 e oferece:
 ```
 
 **Campo `modificacoes`** será automaticamente populado com:
+
 ```json
 [
   {
@@ -253,6 +297,7 @@ python test_directus_sdk.py
 ## 🏗️ Arquitetura do Sistema
 
 ### API REST
+
 1. **📥 Receber Request**: Endpoint `/compare` recebe UUIDs dos arquivos
 2. **⬇️ Download**: Baixa arquivos do Directus usando os UUIDs
 3. **💾 Salvar**: Salva arquivos temporariamente no disco
@@ -261,6 +306,7 @@ python test_directus_sdk.py
 6. **🗑️ Limpar**: Remove arquivos temporários automaticamente
 
 ### Processador Automático
+
 1. **⏰ Loop Contínuo**: Monitora Directus a cada minuto
 2. **🔍 Busca Inteligente**: Filtra versões com status "processar"
 3. **🧠 Lógica de Negócio**: Determina arquivo original automaticamente
@@ -294,7 +340,7 @@ docx-compare/
 
 - **Design Responsivo**: Adapta-se a diferentes tamanhos de tela
 - **Estatísticas**: Contadores de adições, remoções e modificações
-- **Cores Intuitivas**: 
+- **Cores Intuitivas**:
   - 🟢 Verde para adições
   - 🔴 Vermelho para remoções
   - 🟡 Amarelo para modificações
@@ -321,6 +367,7 @@ O sistema gera HTML completamente compatível com Content Security Policy restri
 - ✅ **Classes CSS**: Usa apenas classes para estilização
 
 **Configuração CSP recomendada:**
+
 ```
 Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';
 ```
@@ -328,6 +375,7 @@ Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline'; s
 ## 🚀 Deploy em Produção
 
 ### API REST
+
 ```bash
 # Com UV e Gunicorn (recomendado)
 uv add gunicorn
@@ -339,6 +387,7 @@ gunicorn -w 4 -b 0.0.0.0:5002 api_simple:app
 ```
 
 ### Processador Automático
+
 ```bash
 # Com systemd (Linux)
 sudo systemctl enable docx-processor
@@ -352,6 +401,7 @@ nohup python processador_automatico.py > processador.log 2>&1 &
 ```
 
 ### Considerações para Produção
+
 1. **Servidor WSGI**: Use Gunicorn ou uWSGI
 2. **Proxy Reverso**: Configure Nginx
 3. **HTTPS**: Configure certificados SSL/TLS
@@ -363,6 +413,7 @@ nohup python processador_automatico.py > processador.log 2>&1 &
 ## 🐛 Solução de Problemas
 
 ### Erro: "Pandoc not found"
+
 ```bash
 # Instale o Pandoc
 brew install pandoc  # macOS
@@ -370,26 +421,31 @@ sudo apt-get install pandoc  # Ubuntu
 ```
 
 ### Erro: "Filtro Lua não encontrado"
+
 - Verifique se `comments_html_filter_direct.lua` está no diretório raiz
 - Confirme o caminho no arquivo `.env`
 
 ### Erro: "Connection refused" na API
+
 - Verifique se a API está rodando: `python api_simple.py`
 - Confirme a porta no arquivo `.env`
 - Verifique se a porta não está ocupada: `lsof -i :5002`
 
 ### Erro: "Directus authentication failed"
+
 - Verifique `DIRECTUS_BASE_URL` e `DIRECTUS_TOKEN` no `.env`
 - Confirme se o token tem permissões para acessar arquivos
 - Teste a conexão: `curl -H "Authorization: Bearer $TOKEN" $DIRECTUS_URL/users/me`
 
 ### Processador Automático não encontra versões
+
 - Verifique se existem registros com `status = "processar"`
 - Confirme se o campo `versiona_ai_request_json` está populado
 - Verifique logs no terminal do processador
 - Teste conexão: `curl http://localhost:5005/health`
 
 ### Modificações não são salvas
+
 - Confirme que o processador está usando transação única
 - Verifique permissões do token para criar/editar modificações
 - Verifique logs para mensagens de erro de transação
@@ -399,6 +455,7 @@ sudo apt-get install pandoc  # Ubuntu
 ### Processador Automático
 
 **Logs em Tempo Real**: O processador exibe logs detalhados:
+
 ```
 🔍 00:49:15 - Buscando versões para processar...
 ✅ Encontradas 2 versões para processar
@@ -409,11 +466,13 @@ sudo apt-get install pandoc  # Ubuntu
 ```
 
 **Endpoints de Status**:
+
 - `GET /health`: Status geral do sistema
 - `GET /status`: Detalhes do processador
 - `GET /outputs/<filename>`: Visualizar resultados
 
 **Métricas Importantes**:
+
 - Número de versões processadas por execução
 - Tempo de processamento por versão
 - Taxa de sucesso vs erro
@@ -453,6 +512,7 @@ O projeto utiliza ferramentas modernas para desenvolvimento Python:
 ### Por que UV?
 
 **UV vs pip tradicional:**
+
 - ⚡ **Performance**: 10-100x mais rápido que pip
 - 🔒 **Resolução de dependências**: Mais robusta e determinística
 - 📦 **Gestão unificada**: Dependências, ambientes virtuais e ferramentas em um só lugar

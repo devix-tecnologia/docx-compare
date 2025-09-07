@@ -11,7 +11,7 @@
     // Configurações Python específicas
     "python.defaultInterpreterPath": "./venv/bin/python",
     "python.terminal.activateEnvironment": true,
-    
+
     // Configurações do Ruff (formatador e linter)
     "[python]": {
         "editor.defaultFormatter": "charliermarsh.ruff",
@@ -43,7 +43,7 @@
 
     // Configurações do terminal
     "terminal.integrated.defaultProfile.osx": "zsh",
-    
+
     // Configurações do Git
     "git.enableSmartCommit": true,
     "git.autofetch": true,
