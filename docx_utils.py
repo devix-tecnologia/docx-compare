@@ -14,6 +14,91 @@ import os
 import re
 import subprocess
 
+
+def sanitize_html_for_csp(html_content: str) -> str:
+    """
+    Sanitiza HTML para compatibilidade com Content Security Policy (CSP).
+
+    Move estilos inline para um bloco <style> no cabeçalho, mantendo a aparência
+    visual mas removendo violações de CSP.
+
+    Args:
+        html_content: Conteúdo HTML original
+
+    Returns:
+        HTML sanitizado compatível com CSP
+    """
+    # Regex para encontrar atributos style
+    style_pattern = r'style\s*=\s*["\']([^"\']*)["\']'
+
+    # Dicionário para armazenar estilos únicos e gerar classes
+    styles_map = {}
+    class_counter = 0
+
+    def replace_style_with_class(match):
+        nonlocal class_counter
+        style_content = match.group(1)
+
+        # Se já temos essa regra de estilo, reutilizar a classe
+        if style_content in styles_map:
+            class_name = styles_map[style_content]
+        else:
+            # Criar nova classe
+            class_name = f"csp-style-{class_counter}"
+            styles_map[style_content] = class_name
+            class_counter += 1
+
+        # Retornar o atributo class em vez de style
+        return f'class="{class_name}"'
+
+    # Substituir todos os atributos style por classes
+    sanitized_content = re.sub(style_pattern, replace_style_with_class, html_content)
+
+    # Gerar CSS das classes criadas
+    css_rules = []
+    for style_content, class_name in styles_map.items():
+        css_rules.append(f".{class_name} {{ {style_content} }}")
+
+    additional_css = "\n".join(css_rules)
+
+    # Se há estilos para adicionar, inserir no cabeçalho
+    if additional_css:
+        # Procurar por um bloco <style> existente
+        style_block_pattern = r"(<style[^>]*>)(.*?)(</style>)"
+        style_match = re.search(style_block_pattern, sanitized_content, re.DOTALL)
+
+        if style_match:
+            # Adicionar aos estilos existentes
+            existing_styles = style_match.group(2)
+            new_styles = existing_styles + "\n" + additional_css
+            sanitized_content = re.sub(
+                style_block_pattern,
+                f"{style_match.group(1)}{new_styles}{style_match.group(3)}",
+                sanitized_content,
+                flags=re.DOTALL,
+            )
+        else:
+            # Criar novo bloco de estilo no cabeçalho
+            head_pattern = r"(<head[^>]*>)"
+            if re.search(head_pattern, sanitized_content):
+                sanitized_content = re.sub(
+                    head_pattern,
+                    f"\\1\n<style>\n{additional_css}\n</style>",
+                    sanitized_content,
+                )
+            else:
+                # Se não há <head>, adicionar no início do body
+                body_pattern = r"(<body[^>]*>)"
+                if re.search(body_pattern, sanitized_content):
+                    sanitized_content = re.sub(
+                        body_pattern,
+                        f"\\1\n<style>\n{additional_css}\n</style>",
+                        sanitized_content,
+                    )
+
+    return sanitized_content
+
+
 # CSS padrão para relatórios de comparação
 DEFAULT_CSS = """
 body {
