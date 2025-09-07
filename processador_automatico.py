@@ -64,7 +64,7 @@ check_interval = 60  # Intervalo de verificação em segundos (padrão: 1 minuto
 request_timeout = 30  # Timeout das requisições HTTP em segundos (padrão: 30s)
 
 
-def signal_handler(signum, frame):
+def signal_handler(signum, _frame):
     """
     Manipula sinais para encerramento gracioso da aplicação
     """
@@ -165,7 +165,7 @@ def buscar_versoes_para_processar():
                 try:
                     response_json = versoes_response.json()
                     versoes = response_json.get("data", [])
-                except:
+                except (ValueError, KeyError):
                     versoes = []
             else:
                 versoes = []
@@ -281,12 +281,12 @@ def download_file_from_directus(file_path):
             # Criar arquivo temporário com extensão correta
             import tempfile
 
-            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".docx")
-            temp_file.write(response.content)
-            temp_file.close()
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as temp_file:
+                temp_file.write(response.content)
+                temp_file_name = temp_file.name
 
-            print(f"✅ Arquivo baixado: {temp_file.name}")
-            return temp_file.name
+            print(f"✅ Arquivo baixado: {temp_file_name}")
+            return temp_file_name
         else:
             raise Exception(f"Erro HTTP {response.status_code}: {response.text}")
 
@@ -642,25 +642,28 @@ def processar_versao(versao_data, dry_run=False):
             print("📊 Analisando diferenças textuais...")
 
             # Converter para HTML temporário para análise
-            original_html_temp = tempfile.NamedTemporaryFile(
+            with tempfile.NamedTemporaryFile(
                 mode="w", suffix=".html", delete=False
-            )
-            modified_html_temp = tempfile.NamedTemporaryFile(
+            ) as original_html_temp:
+                original_html_temp_name = original_html_temp.name
+
+            with tempfile.NamedTemporaryFile(
                 mode="w", suffix=".html", delete=False
-            )
+            ) as modified_html_temp:
+                modified_html_temp_name = modified_html_temp.name
 
             # Converter usando pandoc
             subprocess.run(
-                ["pandoc", original_path, "-o", original_html_temp.name], check=True
+                ["pandoc", original_path, "-o", original_html_temp_name], check=True
             )
             subprocess.run(
-                ["pandoc", modified_path, "-o", modified_html_temp.name], check=True
+                ["pandoc", modified_path, "-o", modified_html_temp_name], check=True
             )
 
             # Ler e processar HTML
-            with open(original_html_temp.name, encoding="utf-8") as f:
+            with open(original_html_temp_name, encoding="utf-8") as f:
                 original_html = f.read()
-            with open(modified_html_temp.name, encoding="utf-8") as f:
+            with open(modified_html_temp_name, encoding="utf-8") as f:
                 modified_html = f.read()
 
             # Converter para texto limpo
@@ -697,7 +700,7 @@ def processar_versao(versao_data, dry_run=False):
                 try:
                     if os.path.exists(temp_file):
                         os.unlink(temp_file)
-                except:
+                except OSError:
                     pass
 
     except Exception as e:

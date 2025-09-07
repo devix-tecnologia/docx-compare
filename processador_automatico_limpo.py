@@ -166,14 +166,14 @@ def download_file_from_directus(file_path):
 
         if response.status_code == 200:
             # Criar arquivo temporário com extensão correta
-            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".docx")
-            temp_file.write(response.content)
-            temp_file.close()
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as temp_file:
+                temp_file.write(response.content)
+                temp_file_name = temp_file.name
 
             print(
-                f"✅ Arquivo baixado: {temp_file.name} (tamanho: {len(response.content)} bytes)"
+                f"✅ Arquivo baixado: {temp_file_name} (tamanho: {len(response.content)} bytes)"
             )
-            return temp_file.name
+            return temp_file_name
         else:
             raise Exception(f"Erro HTTP {response.status_code}: {response.text}")
 
@@ -284,7 +284,7 @@ def processar_versao(versao_data):
                     total_modifications += len(
                         re.findall(r"<span[^>]*class[^>]*deletion[^>]*>", content)
                     )
-            except:
+            except (ValueError, AttributeError):
                 total_modifications = 0
 
             # 5. URL do resultado
@@ -302,7 +302,7 @@ def processar_versao(versao_data):
             try:
                 os.unlink(original_path)
                 os.unlink(modified_path)
-            except:
+            except OSError:
                 pass
 
     except Exception as e:
@@ -377,7 +377,7 @@ def get_result(filename):
 
 
 # Signal handlers
-def signal_handler(signum, frame):
+def signal_handler(signum, _frame):
     global running, processor_thread
 
     print(

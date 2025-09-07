@@ -86,12 +86,12 @@ def download_file_from_directus(file_id, filename_prefix="file"):
         download_response.raise_for_status()
 
         # Salvar arquivo temporário
-        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".docx")
-        for chunk in download_response.iter_content(chunk_size=8192):
-            temp_file.write(chunk)
-        temp_file.close()
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as temp_file:
+            for chunk in download_response.iter_content(chunk_size=8192):
+                temp_file.write(chunk)
+            temp_file_name = temp_file.name
 
-        return temp_file.name, filename, filesize
+        return temp_file_name, filename, filesize
 
     except requests.exceptions.RequestException as e:
         raise Exception(f"Erro ao baixar arquivo do Directus: {e}")
@@ -345,7 +345,7 @@ def compare():
                 try:
                     if os.path.exists(temp_file):
                         os.unlink(temp_file)
-                except:
+                except OSError:
                     pass
 
     except Exception as e:

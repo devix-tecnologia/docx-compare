@@ -47,14 +47,14 @@ def download_file_from_directus(file_path):
 
         if response.status_code == 200:
             # Criar arquivo temporário com extensão correta
-            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".docx")
-            temp_file.write(response.content)
-            temp_file.close()
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as temp_file:
+                temp_file.write(response.content)
+                temp_file_name = temp_file.name
 
             print(
-                f"  ✅ Arquivo baixado: {temp_file.name} (tamanho: {len(response.content)} bytes)"
+                f"  ✅ Arquivo baixado: {temp_file_name} (tamanho: {len(response.content)} bytes)"
             )
-            return temp_file.name
+            return temp_file_name
         else:
             raise Exception(f"Erro HTTP {response.status_code}: {response.text}")
 

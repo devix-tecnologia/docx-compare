@@ -152,13 +152,13 @@ def download_file_from_directus(file_id):
         response.raise_for_status()
 
         # Salvar arquivo temporário
-        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".docx")
-        for chunk in response.iter_content(chunk_size=8192):
-            temp_file.write(chunk)
-        temp_file.close()
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as temp_file:
+            for chunk in response.iter_content(chunk_size=8192):
+                temp_file.write(chunk)
+            temp_file_name = temp_file.name
 
-        print(f"✅ Arquivo baixado: {temp_file.name}")
-        return temp_file.name
+        print(f"✅ Arquivo baixado: {temp_file_name}")
+        return temp_file_name
 
     except Exception as e:
         raise Exception(f"Erro ao baixar arquivo {file_id}: {e}")
@@ -385,7 +385,7 @@ def compare():
                 try:
                     if os.path.exists(temp_file):
                         os.unlink(temp_file)
-                except:
+                except OSError:
                     pass
 
     except Exception as e:
@@ -467,25 +467,28 @@ def compare_versao():
             print("📊 Analisando diferenças textuais...")
 
             # Converter para HTML temporário para análise
-            original_html_temp = tempfile.NamedTemporaryFile(
+            with tempfile.NamedTemporaryFile(
                 mode="w", suffix=".html", delete=False
-            )
-            modified_html_temp = tempfile.NamedTemporaryFile(
+            ) as original_html_temp:
+                original_html_temp_name = original_html_temp.name
+
+            with tempfile.NamedTemporaryFile(
                 mode="w", suffix=".html", delete=False
-            )
+            ) as modified_html_temp:
+                modified_html_temp_name = modified_html_temp.name
 
             # Converter usando pandoc
             subprocess.run(
-                ["pandoc", original_path, "-o", original_html_temp.name], check=True
+                ["pandoc", original_path, "-o", original_html_temp_name], check=True
             )
             subprocess.run(
-                ["pandoc", modified_path, "-o", modified_html_temp.name], check=True
+                ["pandoc", modified_path, "-o", modified_html_temp_name], check=True
             )
 
             # Ler e processar HTML
-            with open(original_html_temp.name, encoding="utf-8") as f:
+            with open(original_html_temp_name, encoding="utf-8") as f:
                 original_html = f.read()
-            with open(modified_html_temp.name, encoding="utf-8") as f:
+            with open(modified_html_temp_name, encoding="utf-8") as f:
                 modified_html = f.read()
 
             # Converter para texto limpo
@@ -534,7 +537,7 @@ def compare_versao():
                 try:
                     if os.path.exists(temp_file):
                         os.unlink(temp_file)
-                except:
+                except OSError:
                     pass
 
     except Exception as e:

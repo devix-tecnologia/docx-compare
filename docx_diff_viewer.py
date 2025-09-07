@@ -4,7 +4,7 @@ import html
 import os
 import sys
 
-from config import LUA_FILTER_PATH, OUTPUTS_DIR, RESULTS_DIR
+from config import LUA_FILTER_PATH, RESULTS_DIR
 from docx_utils import (
     analyze_differences,
     convert_docx_to_html,
