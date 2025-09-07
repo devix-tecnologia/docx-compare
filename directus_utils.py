@@ -34,7 +34,9 @@ DIRECTUS_HEADERS = {
 DEFAULT_REQUEST_TIMEOUT = 30
 
 
-def buscar_versoes_para_processar(verbose_mode=False, request_timeout=DEFAULT_REQUEST_TIMEOUT):
+def buscar_versoes_para_processar(
+    verbose_mode=False, request_timeout=DEFAULT_REQUEST_TIMEOUT
+):
     """
     Busca versões com status 'processar' no Directus usando requisições HTTP diretas
     """
@@ -229,9 +231,7 @@ def determine_original_file_id(versao_data):
 
 
 def download_file_from_directus(
-    file_id: str, 
-    cache_dir: str = None,
-    request_timeout: int = DEFAULT_REQUEST_TIMEOUT
+    file_id: str, cache_dir: str = None, request_timeout: int = DEFAULT_REQUEST_TIMEOUT
 ) -> tuple[str, Literal["downloaded", "cached"]]:
     """
     Baixa um arquivo do Directus usando o caminho do arquivo.
@@ -300,10 +300,10 @@ def download_file_from_directus(
 
 
 def upload_file_to_directus(
-    file_path, 
-    filename=None, 
+    file_path,
+    filename=None,
     dry_run=False,
-    request_timeout: int = DEFAULT_REQUEST_TIMEOUT
+    request_timeout: int = DEFAULT_REQUEST_TIMEOUT,
 ):
     """
     Faz upload de um arquivo para o Directus e retorna o ID do arquivo

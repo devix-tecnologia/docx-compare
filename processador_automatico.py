@@ -881,19 +881,21 @@ def metrics():
     try:
         # Contar arquivos de resultado
         result_files = os.listdir(RESULTS_DIR) if os.path.exists(RESULTS_DIR) else []
-        html_files = [f for f in result_files if f.endswith('.html')]
-        
+        html_files = [f for f in result_files if f.endswith(".html")]
+
         # Informações básicas
-        return jsonify({
-            "processador_ativo": processador_ativo,
-            "directus_url": DIRECTUS_BASE_URL,
-            "results_dir": RESULTS_DIR,
-            "total_result_files": len(html_files),
-            "check_interval": check_interval,
-            "request_timeout": request_timeout,
-            "verbose_mode": verbose_mode,
-            "timestamp": datetime.now().isoformat(),
-        })
+        return jsonify(
+            {
+                "processador_ativo": processador_ativo,
+                "directus_url": DIRECTUS_BASE_URL,
+                "results_dir": RESULTS_DIR,
+                "total_result_files": len(html_files),
+                "check_interval": check_interval,
+                "request_timeout": request_timeout,
+                "verbose_mode": verbose_mode,
+                "timestamp": datetime.now().isoformat(),
+            }
+        )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -904,28 +906,32 @@ def list_results():
     try:
         if not os.path.exists(RESULTS_DIR):
             return jsonify({"results": []})
-            
+
         result_files = os.listdir(RESULTS_DIR)
-        html_files = [f for f in result_files if f.endswith('.html')]
-        
+        html_files = [f for f in result_files if f.endswith(".html")]
+
         results = []
         for filename in sorted(html_files, reverse=True):  # Mais recentes primeiro
             file_path = os.path.join(RESULTS_DIR, filename)
             if os.path.exists(file_path):
                 stat = os.stat(file_path)
-                results.append({
-                    "filename": filename,
-                    "size": stat.st_size,
-                    "created": datetime.fromtimestamp(stat.st_ctime).isoformat(),
-                    "modified": datetime.fromtimestamp(stat.st_mtime).isoformat(),
-                    "url": f"/outputs/{filename}"
-                })
-        
-        return jsonify({
-            "total": len(results),
-            "results": results,
-            "timestamp": datetime.now().isoformat()
-        })
+                results.append(
+                    {
+                        "filename": filename,
+                        "size": stat.st_size,
+                        "created": datetime.fromtimestamp(stat.st_ctime).isoformat(),
+                        "modified": datetime.fromtimestamp(stat.st_mtime).isoformat(),
+                        "url": f"/outputs/{filename}",
+                    }
+                )
+
+        return jsonify(
+            {
+                "total": len(results),
+                "results": results,
+                "timestamp": datetime.now().isoformat(),
+            }
+        )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -934,22 +940,6 @@ def list_results():
 def index():
     """Página inicial com informações do sistema"""
     try:
-        status_info = {
-            "service": "DOCX Compare - Processador Automático",
-            "version": "1.0.0",
-            "status": "running" if processador_ativo else "stopped",
-            "directus_url": DIRECTUS_BASE_URL,
-            "check_interval": f"{check_interval}s",
-            "endpoints": {
-                "health": "/health - Verificação de saúde",
-                "status": "/status - Status detalhado",
-                "metrics": "/metrics - Métricas do sistema",
-                "results": "/results - Lista de resultados",
-                "outputs": "/outputs/<filename> - Visualizar resultado"
-            },
-            "timestamp": datetime.now().isoformat()
-        }
-        
         # Retornar HTML simples para facilitar visualização
         html = f"""
         <!DOCTYPE html>
@@ -959,31 +949,31 @@ def index():
             <meta charset="utf-8">
             <style>
                 body {{ font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }}
-                .status {{ color: {'green' if processador_ativo else 'red'}; }}
+                .status {{ color: {"green" if processador_ativo else "red"}; }}
                 .endpoint {{ background: #f5f5f5; padding: 10px; margin: 5px 0; border-radius: 4px; }}
                 .code {{ font-family: monospace; background: #e8e8e8; padding: 2px 6px; border-radius: 3px; }}
             </style>
         </head>
         <body>
             <h1>🚀 DOCX Compare - Processador Automático</h1>
-            <p><strong>Status:</strong> <span class="status">{'🟢 Ativo' if processador_ativo else '🔴 Parado'}</span></p>
+            <p><strong>Status:</strong> <span class="status">{"🟢 Ativo" if processador_ativo else "🔴 Parado"}</span></p>
             <p><strong>Directus:</strong> <span class="code">{DIRECTUS_BASE_URL}</span></p>
             <p><strong>Intervalo de verificação:</strong> {check_interval}s</p>
-            
+
             <h2>📋 Endpoints Disponíveis</h2>
             <div class="endpoint"><strong>GET /health</strong> - Verificação de saúde</div>
             <div class="endpoint"><strong>GET /status</strong> - Status detalhado do processador</div>
             <div class="endpoint"><strong>GET /metrics</strong> - Métricas do sistema</div>
             <div class="endpoint"><strong>GET /results</strong> - Lista de resultados processados</div>
             <div class="endpoint"><strong>GET /outputs/&lt;filename&gt;</strong> - Visualizar resultado específico</div>
-            
+
             <h2>ℹ️ Informações</h2>
             <p>Este serviço monitora automaticamente o Directus em busca de versões com status "processar" e gera comparações visuais entre documentos.</p>
-            <p><strong>Última atualização:</strong> {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}</p>
+            <p><strong>Última atualização:</strong> {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}</p>
         </body>
         </html>
         """
-        
+
         return html
     except Exception as e:
         return jsonify({"error": str(e)}), 500

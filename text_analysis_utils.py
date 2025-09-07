@@ -129,16 +129,16 @@ def analyze_differences(original_text: str, modified_text: str) -> dict:
     para compatibilidade com código existente
     """
     modifications = analyze_differences_detailed(original_text, modified_text)
-    
+
     # Contar tipos de modificações
     adicoes = sum(1 for mod in modifications if mod["categoria"] == "adicao")
     remocoes = sum(1 for mod in modifications if mod["categoria"] == "remocao")
     modificacoes = sum(1 for mod in modifications if mod["categoria"] == "modificacao")
-    
+
     return {
         "total_modifications": len(modifications),
         "additions": adicoes,
         "deletions": remocoes,
         "modifications": modificacoes,
-        "details": modifications
+        "details": modifications,
     }
