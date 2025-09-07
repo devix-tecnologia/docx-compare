@@ -1,8 +1,18 @@
-# 📄 Sistema de Comparação de Documentos DOCX com Processamento Automático
+# 📄 Sistema de Processamento Automático de Documentos DOCX
 
-Sistema completo para comparação de documentos DOCX com interface CLI, API REST e processamento automático integrado com Directus CMS.
+Sistema de processamento automático para comparação de documentos DOCX integrado com Directus CMS. Monitora continuamente o Directus em busca de versões para processar e gera comparações visuais automaticamente.
 
 ## 🚀 Funcionalidades
+
+### 🤖 Processamento Automático
+- **Monitoramento Contínuo**: Busca versões com status "processar" no Directus a cada minuto
+- **Processamento Inteligente**: 
+  - Primeira versão: compara com template do modelo de contrato
+  - Versões subsequentes: compara com versão anterior
+- **Transação Única**: Salva status, observações e modificações em uma única operação
+- **Signal Handling**: Encerramento gracioso com SIGINT/SIGTERM/SIGHUP
+- **Upload Automático**: Envia relatórios HTML para o Directus
+- **Cache Inteligente**: Evita downloads desnecessários
 
 ### 🔧 CLI - Comparação Local
 - **Comparação Direta**: Comparação local de arquivos DOCX
@@ -10,21 +20,12 @@ Sistema completo para comparação de documentos DOCX com interface CLI, API RES
 - **Filtro Lua**: Remove tags HTML desnecessárias com Pandoc
 - **CSP Compatível**: HTML gerado sem estilos inline para máxima segurança
 
-### 🌐 API REST - Integração Directus
-- **Endpoint HTTP**: Comparação via API REST
-- **Download Automático**: Busca arquivos do Directus por UUID
-- **Validação de Segurança**: Prevenção de path traversal
-- **Limpeza Automática**: Remove arquivos temporários
-- **CSP Seguro**: HTML limpo sem estilos inline
-
-### 🤖 Processador Automático
-- **Monitoramento Contínuo**: Busca versões com status "processar" no Directus
-- **Processamento Inteligente**: 
-  - Primeira versão: compara com template
-  - Versões subsequentes: compara com versão anterior
-- **Transação Única**: Salva status, observações e modificações em uma única operação
-- **Signal Handling**: Encerramento gracioso com SIGINT/SIGTERM/SIGHUP
-- **Monitoramento Web**: Endpoints para verificação de saúde e status
+### 📊 Monitoramento e Observabilidade
+- **Dashboard Web**: Interface visual para monitoramento do sistema
+- **Endpoints REST**: APIs para verificação de saúde e métricas
+- **Modo Debug**: Logs detalhados para troubleshooting
+- **Modo Dry-Run**: Simulação sem alterações no banco
+- **Listagem de Resultados**: Visualização de todos os processamentos realizados
 
 ## 📋 Pré-requisitos
 
@@ -88,7 +89,60 @@ cp .env.example .env
 
 ## 🎯 Uso
 
-### CLI - Comparação Local
+### 🤖 Processador Automático (Principal)
+
+#### 1. Configurar o .env
+
+```env
+# Configurações do Directus
+DIRECTUS_BASE_URL=https://your-directus-instance.com
+DIRECTUS_TOKEN=your-directus-token-here
+
+# Configurações do Processador
+VERBOSE_MODE=false
+CHECK_INTERVAL=60
+REQUEST_TIMEOUT=30
+
+# Diretórios
+RESULTS_DIR=results
+```
+
+#### 2. Executar o Processador
+
+```bash
+# Modo normal (produção)
+uv run python processador_automatico.py
+
+# Modo debug com logs detalhados
+uv run python processador_automatico.py --verbose
+
+# Modo dry-run (análise sem alterações)
+uv run python processador_automatico.py --dry-run
+
+# Configurar intervalo personalizado
+uv run python processador_automatico.py --interval 30 --timeout 60
+```
+
+#### 3. Endpoints de Monitoramento
+
+| Endpoint | Descrição |
+|----------|-----------|
+| `GET /` | Dashboard web com informações do sistema |
+| `GET /health` | Verificação de saúde |
+| `GET /status` | Status detalhado do processador |
+| `GET /metrics` | Métricas do sistema |
+| `GET /results` | Lista de resultados processados |
+| `GET /outputs/<filename>` | Visualizar resultado específico |
+
+#### 4. Monitoramento Web
+
+Acesse `http://localhost:5005` para ver o dashboard de monitoramento com:
+- Status do processador em tempo real
+- Lista de todos os endpoints disponíveis
+- Informações de configuração
+- Última atualização do sistema
+
+### CLI - Comparação Local (Para desenvolvimento/testes)
 
 ```bash
 # Com UV (recomendado)
@@ -107,46 +161,6 @@ python docx_diff_viewer.py original.docx modificado.docx
 uv run python docx_diff_viewer.py documentos/doc-rafael-original.docx documentos/doc-rafael-alterado.docx
 # Criará automaticamente outputs/resultado.html
 ```
-
-### API REST - Integração com Directus
-
-#### 1. Configurar o .env
-
-```env
-# Configurações do Directus
-DIRECTUS_BASE_URL=https://your-directus-instance.com
-DIRECTUS_TOKEN=your-directus-token-here
-
-# Configurações da API
-FLASK_HOST=0.0.0.0
-FLASK_PORT=5002
-FLASK_DEBUG=True
-
-# Diretórios
-RESULTS_DIR=results
-```
-
-#### 2. Executar a API
-
-```bash
-# Com UV (recomendado)
-uv run python api_simple.py
-
-# Com Python tradicional
-python api_simple.py
-```
-
-A API estará disponível em `http://localhost:5002`
-
-#### 3. Endpoints Disponíveis
-
-| Endpoint | Método | Descrição |
-|----------|--------|-----------|
-| `/health` | GET | Verificação de saúde da API |
-| `/compare` | POST | Comparar dois documentos DOCX |
-| `/outputs/<filename>` | GET | Servir arquivo HTML de resultado |
-
-### 🤖 Processador Automático
 
 O processador automático monitora o Directus continuamente e processa versões automaticamente.
 
