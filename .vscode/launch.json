@@ -1,0 +1,56 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Processador Automático",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/processador_automatico.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}",
+                "DRY_RUN": "true"
+            }
+        },
+        {
+            "name": "Processador Automático (Verbose)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/processador_automatico.py",
+            "args": ["--verbose"],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}",
+                "DRY_RUN": "true"
+            }
+        },
+        {
+            "name": "DOCX Diff Viewer",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/docx_diff_viewer.py",
+            "args": ["--help"],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
+        },
+        {
+            "name": "Flask Debug Server",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/processador_automatico.py",
+            "args": ["--debug"],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}",
+                "FLASK_ENV": "development",
+                "FLASK_DEBUG": "1"
+            }
+        }
+    ]
+}

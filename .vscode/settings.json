@@ -1,0 +1,57 @@
+{
+    // Configurações gerais do editor
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": true,
+    "editor.formatOnType": false,
+    "editor.codeActionsOnSave": {
+        "source.fixAll": "explicit",
+        "source.organizeImports": "explicit"
+    },
+
+    // Configurações Python específicas
+    "python.defaultInterpreterPath": "./venv/bin/python",
+    "python.terminal.activateEnvironment": true,
+    
+    // Configurações do Ruff (formatador e linter)
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.fixAll.ruff": "explicit",
+            "source.organizeImports.ruff": "explicit"
+        }
+    },
+
+    // Configurações de arquivos
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+
+    // Configurações do workspace
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/*.pyc": true,
+        "**/.pytest_cache": true,
+        "**/node_modules": true,
+        "**/.git": false
+    },
+
+    // Configurações de linha
+    "editor.rulers": [88],
+    "editor.wordWrap": "bounded",
+    "editor.wordWrapColumn": 88,
+
+    // Configurações do terminal
+    "terminal.integrated.defaultProfile.osx": "zsh",
+    
+    // Configurações do Git
+    "git.enableSmartCommit": true,
+    "git.autofetch": true,
+
+    // Configurações específicas do projeto
+    "python.testing.pytestEnabled": true,
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "python.analysis.typeCheckingMode": "basic"
+}

@@ -44,8 +44,7 @@ coverage.xml
 # Configuração local
 .env
 
-# IDEs
-.vscode/
+# IDEs - permitir configurações do workspace
 .idea/
 *.swp
 *.swo
