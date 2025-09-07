@@ -286,6 +286,17 @@ def convert_docx_to_html(
         print(f"Erro ao converter {docx_path}:")
         print(result.stderr)
         raise RuntimeError(f"Erro no Pandoc para {docx_path}")
+    
+    # Remove estilos inline do arquivo gerado para compatibilidade com CSP
+    if os.path.exists(output_html_path):
+        with open(output_html_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        content = remove_inline_styles(content)
+        
+        with open(output_html_path, 'w', encoding='utf-8') as f:
+            f.write(content)
+    
     print(f"Convertido {docx_path} para {output_html_path}")
 
 
@@ -298,6 +309,31 @@ def convert_docx_to_text(docx_path: str) -> str:
     return result.stdout
 
 
+def remove_inline_styles(html_content: str) -> str:
+    """
+    Remove estilos inline do HTML para compatibilidade com Content Security Policy (CSP).
+    
+    Args:
+        html_content: Conteúdo HTML que pode conter atributos style=""
+        
+    Returns:
+        HTML limpo sem estilos inline
+    """
+    # Remove todos os atributos style="" 
+    html_content = re.sub(r'\s+style\s*=\s*["\'][^"\']*["\']', '', html_content, flags=re.IGNORECASE)
+    
+    # Remove estilos CSS inline das tags <style> que podem ter sido gerados pelo Pandoc
+    # Mas mantém nossos estilos CSS customizados
+    html_content = re.sub(
+        r'<style[^>]*>.*?</style>', 
+        '', 
+        html_content, 
+        flags=re.DOTALL | re.IGNORECASE
+    )
+    
+    return html_content
+
+
 def convert_docx_to_html_content(docx_path: str, lua_filter_path: str = None) -> str:
     """Converte um DOCX para HTML e retorna o conteúdo como string."""
     cmd = ["pandoc", docx_path, "-t", "html", "--standalone"]
@@ -308,7 +344,12 @@ def convert_docx_to_html_content(docx_path: str, lua_filter_path: str = None) ->
     result = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8")
     if result.returncode != 0:
         raise Exception(f"Erro ao converter {docx_path}: {result.stderr}")
-    return result.stdout
+    
+    # Remove estilos inline para compatibilidade com CSP
+    html_content = result.stdout
+    html_content = remove_inline_styles(html_content)
+    
+    return html_content
 
 
 def extract_body_content(html_content: str) -> str:

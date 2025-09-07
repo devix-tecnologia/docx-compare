@@ -8,12 +8,14 @@ Sistema completo para comparação de documentos DOCX com interface CLI, API RES
 - **Comparação Direta**: Comparação local de arquivos DOCX
 - **HTML Responsivo**: Visualização profissional das diferenças
 - **Filtro Lua**: Remove tags HTML desnecessárias com Pandoc
+- **CSP Compatível**: HTML gerado sem estilos inline para máxima segurança
 
 ### 🌐 API REST - Integração Directus
 - **Endpoint HTTP**: Comparação via API REST
 - **Download Automático**: Busca arquivos do Directus por UUID
 - **Validação de Segurança**: Prevenção de path traversal
 - **Limpeza Automática**: Remove arquivos temporários
+- **CSP Seguro**: HTML limpo sem estilos inline
 
 ### 🤖 Processador Automático
 - **Monitoramento Contínuo**: Busca versões com status "processar" no Directus
@@ -293,6 +295,21 @@ docx-compare/
 - **Tratamento de Erros**: Robusto e seguro
 - **Signal Handling**: Encerramento gracioso do processador
 - **Transações Atômicas**: Operações consistentes no Directus
+- **CSP Compatível**: HTML gerado sem estilos inline para máxima compatibilidade com Content Security Policy
+
+### 🛡️ Content Security Policy (CSP)
+
+O sistema gera HTML completamente compatível com Content Security Policy restritivo:
+
+- ✅ **Sem estilos inline**: Todos os estilos são movidos para blocos `<style>`
+- ✅ **Sem scripts inline**: JavaScript externo opcional
+- ✅ **Sanitização automática**: Remove estilos inline do Pandoc
+- ✅ **Classes CSS**: Usa apenas classes para estilização
+
+**Configuração CSP recomendada:**
+```
+Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';
+```
 
 ## 🚀 Deploy em Produção
 
