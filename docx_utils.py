@@ -28,73 +28,42 @@ def sanitize_html_for_csp(html_content: str) -> str:
     Returns:
         HTML sanitizado compatível com CSP
     """
-    # Regex para encontrar atributos style
-    style_pattern = r'style\s*=\s*["\']([^"\']*)["\']'
+    # Primeiro, garantir que não há nenhum estilo inline
+    # Regex mais agressiva para encontrar todos os tipos de estilos inline
+    style_patterns = [
+        r'style\s*=\s*["\'][^"\']*["\']',  # style="..." ou style='...'
+        r'style\s*=\s*[^"\'\s>][^\s>]*',  # style=valor sem aspas
+    ]
 
-    # Dicionário para armazenar estilos únicos e gerar classes
-    styles_map = {}
-    class_counter = 0
+    sanitized_content = html_content
 
-    def replace_style_with_class(match):
-        nonlocal class_counter
-        style_content = match.group(1)
+    # Remover todos os estilos inline encontrados
+    for pattern in style_patterns:
+        sanitized_content = re.sub(pattern, "", sanitized_content, flags=re.IGNORECASE)
 
-        # Se já temos essa regra de estilo, reutilizar a classe
-        if style_content in styles_map:
-            class_name = styles_map[style_content]
-        else:
-            # Criar nova classe
-            class_name = f"csp-style-{class_counter}"
-            styles_map[style_content] = class_name
-            class_counter += 1
+    # Remover atributos que podem causar problemas de CSP
+    unsafe_attributes = [
+        r'onclick\s*=\s*["\'][^"\']*["\']',
+        r'onload\s*=\s*["\'][^"\']*["\']',
+        r'onerror\s*=\s*["\'][^"\']*["\']',
+        r'onmouseover\s*=\s*["\'][^"\']*["\']',
+        r'href\s*=\s*["\']javascript:[^"\']*["\']',
+    ]
 
-        # Retornar o atributo class em vez de style
-        return f'class="{class_name}"'
+    for pattern in unsafe_attributes:
+        sanitized_content = re.sub(pattern, "", sanitized_content, flags=re.IGNORECASE)
 
-    # Substituir todos os atributos style por classes
-    sanitized_content = re.sub(style_pattern, replace_style_with_class, html_content)
+    # Adicionar meta tags de CSP para melhor compatibilidade
+    csp_meta = """<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'none';">"""
 
-    # Gerar CSS das classes criadas
-    css_rules = []
-    for style_content, class_name in styles_map.items():
-        css_rules.append(f".{class_name} {{ {style_content} }}")
-
-    additional_css = "\n".join(css_rules)
-
-    # Se há estilos para adicionar, inserir no cabeçalho
-    if additional_css:
-        # Procurar por um bloco <style> existente
-        style_block_pattern = r"(<style[^>]*>)(.*?)(</style>)"
-        style_match = re.search(style_block_pattern, sanitized_content, re.DOTALL)
-
-        if style_match:
-            # Adicionar aos estilos existentes
-            existing_styles = style_match.group(2)
-            new_styles = existing_styles + "\n" + additional_css
-            sanitized_content = re.sub(
-                style_block_pattern,
-                f"{style_match.group(1)}{new_styles}{style_match.group(3)}",
-                sanitized_content,
-                flags=re.DOTALL,
-            )
-        else:
-            # Criar novo bloco de estilo no cabeçalho
-            head_pattern = r"(<head[^>]*>)"
-            if re.search(head_pattern, sanitized_content):
-                sanitized_content = re.sub(
-                    head_pattern,
-                    f"\\1\n<style>\n{additional_css}\n</style>",
-                    sanitized_content,
-                )
-            else:
-                # Se não há <head>, adicionar no início do body
-                body_pattern = r"(<body[^>]*>)"
-                if re.search(body_pattern, sanitized_content):
-                    sanitized_content = re.sub(
-                        body_pattern,
-                        f"\\1\n<style>\n{additional_css}\n</style>",
-                        sanitized_content,
-                    )
+    # Inserir meta CSP no cabeçalho
+    if "<head>" in sanitized_content:
+        sanitized_content = sanitized_content.replace("<head>", f"<head>\n{csp_meta}")
+    elif "<meta charset=" in sanitized_content:
+        # Se não há <head> mas há charset, inserir após charset
+        sanitized_content = re.sub(
+            r"(<meta charset=[^>]*>)", f"\\1\n{csp_meta}", sanitized_content
+        )
 
     return sanitized_content
 
@@ -351,7 +320,7 @@ def clean_html_for_diff(html_content: str) -> str:
 
 
 def convert_docx_to_html(
-    docx_path: str, output_html_path: str, lua_filter_path: str = None
+    docx_path: str, output_html_path: str, lua_filter_path: str | None = None
 ) -> None:
     """Converte um DOCX para HTML usando Pandoc com filtro Lua opcional."""
 
@@ -447,7 +416,7 @@ def remove_inline_styles(html_content: str) -> str:
     return html_content
 
 
-def convert_docx_to_html_content(docx_path: str, lua_filter_path: str = None) -> str:
+def convert_docx_to_html_content(docx_path: str, lua_filter_path: str | None = None) -> str:
     """Converte um DOCX para HTML e retorna o conteúdo como string."""
     cmd = ["pandoc", docx_path, "-t", "html", "--standalone"]
 

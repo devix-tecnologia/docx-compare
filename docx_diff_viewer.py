@@ -165,10 +165,10 @@ def generate_diff_html(original_docx, modified_docx, output_html, dry_run=False)
 
         # Combinar todo o HTML
         full_html = "".join(html_content)
-        
+
         # Sanitizar para compatibilidade com CSP
         sanitized_html = sanitize_html_for_csp(full_html)
-        
+
         # Escrever HTML sanitizado no arquivo
         with open(output_html, "w", encoding="utf-8") as f:
             f.write(sanitized_html)
@@ -177,10 +177,11 @@ def generate_diff_html(original_docx, modified_docx, output_html, dry_run=False)
         return stats
 
     finally:
-        # Limpar arquivos temporários
-        for temp_file in [temp_original_html, temp_modified_html]:
-            if os.path.exists(temp_file):
-                os.remove(temp_file)
+        # Limpar arquivos temporários (temporariamente comentado para debug)
+        # for temp_file in [temp_original_html, temp_modified_html]:
+        #     if os.path.exists(temp_file):
+        #         os.remove(temp_file)
+        pass
 
 
 def main():
