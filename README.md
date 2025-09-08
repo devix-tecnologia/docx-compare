@@ -19,16 +19,16 @@ make run-processor-dry
 
 ```bash
 # Executar o processador de modelos de contrato
-uv run python processador_modelo_contrato.py
+uv run python src/docx_compare/processors/processador_modelo_contrato.py
 
 # Executar com logs detalhados
-uv run python processador_modelo_contrato.py --verbose
+uv run python src/docx_compare/processors/processador_modelo_contrato.py --verbose
 
 # Executar em modo simulação (sem alterações)
-uv run python processador_modelo_contrato.py --dry-run
+uv run python src/docx_compare/processors/processador_modelo_contrato.py --dry-run
 
 # Testar extração de tags
-uv run python test_processador_modelo_contrato.py
+uv run python tests/unit/test_processador_modelo_contrato.py
 ```
 
 ### Comparação Local de Documentos
@@ -109,12 +109,14 @@ docx-compare/
 │   │   ├── directus_utils.py      # Funções Directus
 │   │   └── text_analysis_utils.py # Análise de texto
 │   ├── 📁 processors/             # Processadores automáticos
-│   │   └── processador_automatico.py # Processador principal
+│   │   ├── processador_automatico.py # Processador principal
+│   │   └── processador_modelo_contrato.py # Processador de tags
 │   └── 📁 api/                    # APIs REST (futuro)
 ├── 📁 tests/                      # Testes organizados
 │   ├── 📁 unit/                   # Testes unitários
 │   └── 📁 integration/            # Testes de integração
 ├── 📁 scripts/                    # Scripts e exemplos
+│   └── 📁 analysis/               # Scripts de análise
 ├── 📁 config/                     # Configurações centralizadas
 ├── 📁 docs/                       # Documentação técnica
 ├── 📁 documentos/                 # Documentos de exemplo
@@ -144,10 +146,13 @@ make test-unit           # Apenas testes unitários
 make test-integration    # Apenas testes de integração
 
 # Execução
-make run-processor       # Processador automático
+make run-processor       # Processador automático (versões)
 make run-processor-dry   # Modo simulação
 make compare ORIG=doc1.docx MOD=doc2.docx # Comparar documentos
 make example             # Executar exemplo
+
+# Processador de modelo de contrato (execute diretamente)
+# uv run python src/docx_compare/processors/processador_modelo_contrato.py
 
 # Limpeza
 make clean               # Remover arquivos temporários
