@@ -266,13 +266,36 @@ class ProcessorOrchestrator:
         processing_thread.start()
         self.threads.append(processing_thread)
 
-        # Iniciar servidor Flask para monitoramento
+        # Iniciar servidor Flask para monitoramento (em thread separada)
+        flask_thread = threading.Thread(
+            target=self._iniciar_flask_server, name="FlaskServer"
+        )
+        flask_thread.daemon = True
+        flask_thread.start()
+        self.threads.append(flask_thread)
+
+        # Loop principal para capturar sinais
         try:
-            app.run(host="127.0.0.1", port=self.porta_monitoramento, debug=False)
+            while self.running:
+                time.sleep(1)
         except KeyboardInterrupt:
             print("\n🛑 Recebido SIGINT (Ctrl+C) - Iniciando encerramento gracioso...")
         finally:
             self._encerrar()
+
+    def _iniciar_flask_server(self):
+        """Inicia o servidor Flask em thread separada"""
+        try:
+            app.run(
+                host="127.0.0.1",
+                port=self.porta_monitoramento,
+                debug=False,
+                use_reloader=False,
+                threaded=True
+            )
+        except Exception as e:
+            if self.running:  # Só reportar erro se não estiver encerrando
+                print(f"❌ Erro no servidor Flask: {e}")
 
     def _encerrar(self):
         """Encerra o orquestrador graciosamente"""
@@ -282,7 +305,7 @@ class ProcessorOrchestrator:
         # Aguardar threads terminarem
         for thread in self.threads:
             if thread.is_alive():
-                thread.join(timeout=5)
+                thread.join(timeout=3)  # Timeout reduzido
 
         # Terminar processos ativos
         for nome, processo in self.processes.items():
@@ -290,11 +313,15 @@ class ProcessorOrchestrator:
                 print(f"🛑 Terminando processo {nome}...")
                 processo.terminate()
                 try:
-                    processo.wait(timeout=5)
+                    processo.wait(timeout=3)
                 except subprocess.TimeoutExpired:
+                    print(f"💀 Forçando término do processo {nome}...")
                     processo.kill()
 
-        print("✅ Orquestrador encerrado graciosamente!")
+        print("🔄 Loop do orquestrador finalizado")
+        # Forçar saída se necessário
+        import os
+        os._exit(0)
 
 
 # Instância global do orquestrador para os endpoints Flask
