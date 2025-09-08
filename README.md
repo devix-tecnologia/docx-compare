@@ -281,7 +281,6 @@ O processador executa na porta 5005 e oferece:
 
 ```bash
 # Com UV (recomendado)
-uv run python test_api_simple.py
 uv run python test_processamento_completo.py
 uv run python test_directus_sdk.py
 
@@ -289,21 +288,11 @@ uv run python test_directus_sdk.py
 uv run pytest tests/
 
 # Com Python tradicional
-python test_api_simple.py
 python test_processamento_completo.py
 python test_directus_sdk.py
 ```
 
 ## 🏗️ Arquitetura do Sistema
-
-### API REST
-
-1. **📥 Receber Request**: Endpoint `/compare` recebe UUIDs dos arquivos
-2. **⬇️ Download**: Baixa arquivos do Directus usando os UUIDs
-3. **💾 Salvar**: Salva arquivos temporariamente no disco
-4. **🔄 Processar**: Executa `docx_diff_viewer.py` para gerar comparação
-5. **📊 Retornar**: Retorna URL do arquivo HTML gerado
-6. **🗑️ Limpar**: Remove arquivos temporários automaticamente
 
 ### Processador Automático
 
@@ -320,10 +309,8 @@ python test_directus_sdk.py
 docx-compare/
 ├── 📄 README.md                         # Este arquivo
 ├── 🐍 docx_diff_viewer.py               # CLI principal
-├── 🌐 api_simple.py                     # API REST
 ├── 🤖 processador_automatico.py         # Processador automático principal
 ├── 🧪 processador_automatico_limpo.py   # Versão limpa do processador
-├── 🧪 test_api_simple.py                # Testes da API
 ├── 🧪 test_processamento.py             # Testes de processamento
 ├── 🧪 test_processamento_completo.py    # Testes completos
 ├── 🧪 test_directus_sdk.py              # Testes Directus
@@ -332,8 +319,7 @@ docx-compare/
 ├── 🎨 comments_html_filter_direct.lua   # Filtro Pandoc
 ├── 📁 documentos/                       # Documentos de exemplo
 ├── 📁 outputs/                          # Resultados HTML gerados
-├── 📁 tests/                           # Scripts de teste organizados
-└── 📋 API_DOCUMENTATION.md              # Documentação detalhada da API
+└── 📁 tests/                           # Scripts de teste organizados
 ```
 
 ## 🎨 Características do HTML Gerado
@@ -374,18 +360,6 @@ Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline'; s
 
 ## 🚀 Deploy em Produção
 
-### API REST
-
-```bash
-# Com UV e Gunicorn (recomendado)
-uv add gunicorn
-uv run gunicorn -w 4 -b 0.0.0.0:5002 api_simple:app
-
-# Com pip tradicional
-pip install gunicorn
-gunicorn -w 4 -b 0.0.0.0:5002 api_simple:app
-```
-
 ### Processador Automático
 
 ```bash
@@ -402,13 +376,11 @@ nohup python processador_automatico.py > processador.log 2>&1 &
 
 ### Considerações para Produção
 
-1. **Servidor WSGI**: Use Gunicorn ou uWSGI
-2. **Proxy Reverso**: Configure Nginx
-3. **HTTPS**: Configure certificados SSL/TLS
-4. **Monitoramento**: Implemente logs e métricas
-5. **Rate Limiting**: Limitação de taxa
-6. **Systemd**: Configure como serviço do sistema
-7. **Backup**: Estratégia de backup dos resultados
+1. **Monitoramento**: Implemente logs e métricas
+2. **Systemd**: Configure como serviço do sistema
+3. **Backup**: Estratégia de backup dos resultados
+4. **HTTPS**: Configure certificados SSL/TLS para endpoints de monitoramento
+5. **Proxy Reverso**: Configure Nginx para endpoints web se necessário
 
 ## 🐛 Solução de Problemas
 
@@ -424,12 +396,6 @@ sudo apt-get install pandoc  # Ubuntu
 
 - Verifique se `comments_html_filter_direct.lua` está no diretório raiz
 - Confirme o caminho no arquivo `.env`
-
-### Erro: "Connection refused" na API
-
-- Verifique se a API está rodando: `python api_simple.py`
-- Confirme a porta no arquivo `.env`
-- Verifique se a porta não está ocupada: `lsof -i :5002`
 
 ### Erro: "Directus authentication failed"
 
@@ -477,10 +443,6 @@ sudo apt-get install pandoc  # Ubuntu
 - Tempo de processamento por versão
 - Taxa de sucesso vs erro
 - Tamanho dos arquivos processados
-
-## 📖 Documentação Adicional
-
-Para mais detalhes sobre a API, consulte [API_DOCUMENTATION.md](API_DOCUMENTATION.md).
 
 ## 🤝 Contribuição
 
@@ -530,8 +492,6 @@ uv add pytest --group dev # Adicionar dependência de desenvolvimento
 uv remove requests         # Remover dependência
 
 # Executar aplicações
-uv run python script.py           # Executar script
-uv run python api_simple.py       # Executar API
 uv run python processador_automatico.py  # Executar processador
 
 # Ferramentas de qualidade de código
@@ -560,7 +520,6 @@ make clean             # Limpar arquivos temporários
 
 # Executar aplicações
 make run-processor     # Processador automático
-make run-api           # API simples
 
 # Comparar documentos
 make compare ORIG=doc1.docx MOD=doc2.docx OUT=result.html
@@ -574,7 +533,6 @@ make compare ORIG=doc1.docx MOD=doc2.docx OUT=result.html
 ./scripts.sh lint         # Linting
 ./scripts.sh format       # Formatar código
 ./scripts.sh test         # Executar testes
-./scripts.sh run-api      # Executar API
 ./scripts.sh run-processor # Executar processador
 ```
 

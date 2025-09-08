@@ -60,12 +60,6 @@ run_processor() {
     run_with_uv processador_automatico.py
 }
 
-# Função para executar API simples
-run_api() {
-    echo "🌐 Iniciando API simples..."
-    run_with_uv api_simple.py
-}
-
 # Função para executar CLI de comparação
 compare() {
     if [ $# -lt 2 ]; then
@@ -89,7 +83,6 @@ help() {
     echo "  check             - Verificação completa (lint + format + test)"
     echo "  install           - Instalar dependências"
     echo "  run_processor     - Executar processador automático"
-    echo "  run_api           - Executar API simples"
     echo "  compare           - Executar CLI de comparação"
     echo "  help              - Mostrar esta ajuda"
     echo ""

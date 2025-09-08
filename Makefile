@@ -50,14 +50,6 @@ run-processor-dry: ## Executar processador automático em modo dry-run
 	@echo "🏃‍♂️ Iniciando processador automático (DRY-RUN)..."
 	$(PYTHON) processador_automatico.py --dry-run
 
-run-api: ## Executar API simples
-	@echo "🌐 Iniciando API simples..."
-	$(PYTHON) api_simple.py
-
-run-api-dry: ## Executar API simples em modo dry-run  
-	@echo "🏃‍♂️ Iniciando API simples (DRY-RUN)..."
-	$(PYTHON) api_simple.py --dry-run
-
 clean: ## Limpar arquivos temporários e cache
 	@echo "🧹 Limpando arquivos temporários..."
 	find . -type f -name "*.pyc" -delete
