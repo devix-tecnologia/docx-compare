@@ -291,7 +291,7 @@ class ProcessorOrchestrator:
                 port=self.porta_monitoramento,
                 debug=False,
                 use_reloader=False,
-                threaded=True
+                threaded=True,
             )
         except Exception as e:
             if self.running:  # Só reportar erro se não estiver encerrando
@@ -321,6 +321,7 @@ class ProcessorOrchestrator:
         print("🔄 Loop do orquestrador finalizado")
         # Forçar saída se necessário
         import os
+
         os._exit(0)
 
 
