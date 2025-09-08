@@ -1,6 +1,6 @@
 name: Advanced Build and Deploy
 
-on:
+"on":
   push:
     branches:
       - main
@@ -8,21 +8,23 @@ on:
   workflow_dispatch:
     inputs:
       dockerfile:
-        description: 'Choose Dockerfile variant'
+        description: "Choose Dockerfile variant"
         required: true
-        default: 'optimized'
+        default: "orquestrador"
         type: choice
         options:
-        - optimized
-        - secure
-        - alpine
+          - orquestrador
+          - optimized
+          - secure
+          - alpine
+          - uv
       push_to_registry:
-        description: 'Push to Docker registry'
+        description: "Push to Docker registry"
         required: false
         default: true
         type: boolean
       run_security_scan:
-        description: 'Run detailed security scan'
+        description: "Run detailed security scan"
         required: false
         default: true
         type: boolean
@@ -30,9 +32,11 @@ on:
 env:
   DOCKERFILE_MAP: |
     {
+      "orquestrador": "docker/Dockerfile.orquestrador",
       "optimized": "docker/Dockerfile.optimized",
       "secure": "docker/Dockerfile.secure",
-      "alpine": "docker/Dockerfile.alpine"
+      "alpine": "docker/Dockerfile.alpine",
+      "uv": "docker/Dockerfile.uv"
     }
 
 jobs:
@@ -52,14 +56,16 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             DOCKERFILE_VARIANT="${{ github.event.inputs.dockerfile }}"
           else
-            DOCKERFILE_VARIANT="optimized"
+            DOCKERFILE_VARIANT="orquestrador"
           fi
 
           case $DOCKERFILE_VARIANT in
+            "orquestrador") DOCKERFILE="docker/Dockerfile.orquestrador" ;;
             "optimized") DOCKERFILE="docker/Dockerfile.optimized" ;;
             "secure") DOCKERFILE="docker/Dockerfile.secure" ;;
             "alpine") DOCKERFILE="docker/Dockerfile.alpine" ;;
-            *) DOCKERFILE="docker/Dockerfile.optimized" ;;
+            "uv") DOCKERFILE="docker/Dockerfile.uv" ;;
+            *) DOCKERFILE="docker/Dockerfile.orquestrador" ;;
           esac
 
           echo "dockerfile=${DOCKERFILE}" >> $GITHUB_OUTPUT
@@ -69,7 +75,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
+          python-version: "3.13"
 
       - name: Install uv
         uses: astral-sh/setup-uv@v3

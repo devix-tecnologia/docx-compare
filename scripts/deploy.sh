@@ -76,12 +76,12 @@ fi
 
 # Construir imagem Docker
 log "Construindo imagem Docker..."
-if [ "$USE_UV" = "true" ] && [ -f "Dockerfile.uv" ]; then
-    DOCKERFILE="Dockerfile.uv"
+if [ "$USE_UV" = "true" ] && [ -f "docker/Dockerfile.uv" ]; then
+    DOCKERFILE="docker/Dockerfile.uv"
     log "Usando Dockerfile otimizado com uv"
 else
-    DOCKERFILE="Dockerfile"
-    log "Usando Dockerfile tradicional"
+    DOCKERFILE="docker/Dockerfile.orquestrador"
+    log "Usando Dockerfile do orquestrador"
 fi
 
 docker build -f $DOCKERFILE -t ${PROJECT_NAME}:${VERSION} .

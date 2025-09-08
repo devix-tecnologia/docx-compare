@@ -719,6 +719,33 @@ def processar_modelo_contrato(modelo_data, dry_run=False):
             )
 
 
+def processar_ciclo_unico(dry_run=False):
+    """Executa um único ciclo de processamento de modelos"""
+    try:
+        print(
+            f"🔍 {datetime.now().strftime('%H:%M:%S')} - Buscando modelos para processar..."
+        )
+
+        # Buscar modelos para processar
+        modelos = buscar_modelos_para_processar()
+
+        if modelos:
+            print(f"✅ Encontrados {len(modelos)} modelos para processar")
+
+            # Processar cada modelo encontrado
+            for modelo in modelos:
+                processar_modelo_contrato(modelo, dry_run)
+
+            print(f"🎯 Processamento completado: {len(modelos)} modelos processados")
+        else:
+            status_msg = "DRY-RUN" if dry_run else "Normal"
+            print(f"😴 Nenhum modelo para processar ({status_msg})")
+
+    except Exception as e:
+        print(f"❌ Erro no processamento: {e}")
+        raise
+
+
 def loop_processador(dry_run=False):
     """
     Loop principal do processador automático de modelos
@@ -875,6 +902,12 @@ def create_arg_parser():
     )
 
     parser.add_argument(
+        "--single-run",
+        action="store_true",
+        help="Executar apenas um ciclo de processamento e encerrar",
+    )
+
+    parser.add_argument(
         "--verbose",
         "-v",
         action="store_true",
@@ -947,8 +980,11 @@ if __name__ == "__main__":
     print("🏷️ Processador Automático de Modelos de Contrato")
     print(f"📁 Resultados salvos em: {RESULTS_DIR}")
     print(f"🔗 Directus: {DIRECTUS_BASE_URL}")
-    print(f"🌐 Servidor de monitoramento: http://{args.host}:{args.port}")
-    print(f"⏰ Verificação automática a cada {args.interval} segundos")
+
+    if not args.single_run:
+        print(f"🌐 Servidor de monitoramento: http://{args.host}:{args.port}")
+        print(f"⏰ Verificação automática a cada {args.interval} segundos")
+
     print(f"⏱️  Timeout de requisições: {args.timeout} segundos")
 
     mode_flags = []
@@ -956,28 +992,36 @@ if __name__ == "__main__":
         mode_flags.append("DRY-RUN (sem alterações no banco)")
     if args.verbose:
         mode_flags.append("VERBOSE (logs detalhados)")
+    if args.single_run:
+        mode_flags.append("SINGLE-RUN (execução única)")
 
     if mode_flags:
         print(f"🏃‍♂️ Modo: {' + '.join(mode_flags)}")
 
-    print("")
-    print("📋 Endpoints de monitoramento:")
-    print("  • GET  /health - Verificação de saúde")
-    print("  • GET  /status - Status do processador")
-    print("  • GET  /metrics - Métricas do sistema")
-    print("")
+    if args.single_run:
+        print("\n🎯 Executando ciclo único...")
+        processar_ciclo_unico(args.dry_run)
+        print("✅ Execução única completada")
+        sys.exit(0)  # Encerrar aqui no modo single-run
+    else:
+        print("")
+        print("📋 Endpoints de monitoramento:")
+        print("  • GET  /health - Verificação de saúde")
+        print("  • GET  /status - Status do processador")
+        print("  • GET  /metrics - Métricas do sistema")
+        print("")
 
-    # Iniciar o processador em uma thread separada
-    processador_thread = threading.Thread(
-        target=lambda: loop_processador(args.dry_run), daemon=True
-    )
-    processador_thread.start()
+        # Iniciar o processador em uma thread separada
+        processador_thread = threading.Thread(
+            target=lambda: loop_processador(args.dry_run), daemon=True
+        )
+        processador_thread.start()
 
-    # Iniciar o servidor Flask para monitoramento
-    try:
-        app.run(host=args.host, port=args.port, debug=True)
-    except KeyboardInterrupt:
-        print("\n🛑 Parando processador...")
+        # Iniciar o servidor Flask para monitoramento
+        try:
+            app.run(host=args.host, port=args.port, debug=True)
+        except KeyboardInterrupt:
+            print("\n🛑 Parando processador...")
         processador_ativo = False
         print("✅ Processador parado!")
 else:

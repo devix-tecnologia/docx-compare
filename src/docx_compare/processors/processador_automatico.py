@@ -795,6 +795,33 @@ def processar_versao(versao_data, dry_run=False):
             print("🏃‍♂️ DRY-RUN: Não atualizando status de erro no Directus")
 
 
+def processar_ciclo_unico(dry_run=False):
+    """Executa um único ciclo de processamento"""
+    try:
+        print(
+            f"🔍 {datetime.now().strftime('%H:%M:%S')} - Buscando versões para processar..."
+        )
+
+        # Buscar versões para processar
+        versoes = buscar_versoes_para_processar()
+
+        if versoes:
+            print(f"✅ Encontradas {len(versoes)} versões para processar")
+
+            # Processar cada versão encontrada
+            for versao in versoes:
+                processar_versao(versao, dry_run)
+
+            print(f"🎯 Processamento completado: {len(versoes)} versões processadas")
+        else:
+            status_msg = "DRY-RUN" if dry_run else "Normal"
+            print(f"😴 Nenhuma versão para processar ({status_msg})")
+
+    except Exception as e:
+        print(f"❌ Erro no processamento: {e}")
+        raise
+
+
 def loop_processador(dry_run=False):
     """
     Loop principal do processador automático
@@ -1023,6 +1050,12 @@ def create_arg_parser():
     )
 
     parser.add_argument(
+        "--single-run",
+        action="store_true",
+        help="Executar apenas um ciclo de processamento e encerrar",
+    )
+
+    parser.add_argument(
         "--verbose",
         "-v",
         action="store_true",
@@ -1096,8 +1129,11 @@ if __name__ == "__main__":
     print("🚀 Processador Automático de Versões")
     print(f"📁 Resultados salvos em: {RESULTS_DIR}")
     print(f"🔗 Directus: {DIRECTUS_BASE_URL}")
-    print(f"🌐 Servidor de monitoramento: http://{args.host}:{args.port}")
-    print(f"⏰ Verificação automática a cada {args.interval} segundos")
+
+    if not args.single_run:
+        print(f"🌐 Servidor de monitoramento: http://{args.host}:{args.port}")
+        print(f"⏰ Verificação automática a cada {args.interval} segundos")
+
     print(f"⏱️  Timeout de requisições: {args.timeout} segundos")
     print("🔒 Monitoramento de sinais ativo (SIGINT, SIGTERM, SIGHUP)")
 
@@ -1106,16 +1142,24 @@ if __name__ == "__main__":
         mode_flags.append("DRY-RUN (sem alterações no banco)")
     if args.verbose:
         mode_flags.append("VERBOSE (logs detalhados)")
+    if args.single_run:
+        mode_flags.append("SINGLE-RUN (execução única)")
 
     if mode_flags:
         print(f"🏃‍♂️ Modo: {' + '.join(mode_flags)}")
 
-    print("")
-    print("📋 Endpoints de monitoramento:")
-    print("  • GET  /health - Verificação de saúde")
-    print("  • GET  /status - Status do processador")
-    print("  • GET  /results/<filename> - Visualizar resultados")
-    print("")
+    if args.single_run:
+        print("\n🎯 Executando ciclo único...")
+        processar_ciclo_unico(args.dry_run)
+        print("✅ Execução única completada")
+        sys.exit(0)  # Encerrar aqui no modo single-run
+    else:
+        print("")
+        print("📋 Endpoints de monitoramento:")
+        print("  • GET  /health - Verificação de saúde")
+        print("  • GET  /status - Status do processador")
+        print("  • GET  /results/<filename> - Visualizar resultados")
+        print("")
 
     # Verificar se deve usar servidor de produção
     if args.dry_run or args.verbose or args.interval != 60 or args.timeout != 30:

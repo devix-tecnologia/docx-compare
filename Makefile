@@ -8,12 +8,42 @@ UV := uv
 help: ## Mostrar esta ajuda
 	@echo "📚 Comandos disponíveis para docx-compare:"
 	@echo ""
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-30s\033[0m %s\n", $$1, $$2}'
 	@echo ""
 	@echo "🔧 Exemplos de uso:"
-	@echo "  make install       # Instalar dependências"
-	@echo "  make check         # Verificação completa"
-	@echo "  make run-processor # Executar processador automático"
+	@echo "  make install                      # Instalar dependências"
+	@echo "  make check                        # Verificação completa"
+	@echo "  make run-orquestrador-single      # Executar todos os processadores (recomendado)"
+	@echo "  make docker-up                    # Executar com Docker Compose"
+	@echo ""
+	@echo "🎯 Processadores disponíveis:"
+	@echo "  🔄 Processador de Versões:"
+	@echo "    run-processor                   # Modo contínuo"
+	@echo "    run-processor-verbose           # Modo contínuo com logs"
+	@echo "    run-processor-dry               # Modo simulação"
+	@echo ""
+	@echo "  🏷️  Processador de Modelos:"
+	@echo "    run-processor-modelo            # Modo contínuo"
+	@echo "    run-processor-modelo-verbose    # Modo contínuo com logs"
+	@echo ""
+	@echo "  🎯 Orquestrador (Execução Coordenada):"
+	@echo "    run-orquestrador-single         # Execução única sequencial ⭐"
+	@echo "    run-orquestrador-single-verbose # Execução única com logs"
+	@echo "    run-orquestrador                # Modo contínuo paralelo"
+	@echo "    run-orquestrador-sequencial     # Modo contínuo sequencial"
+	@echo ""
+	@echo "  🐳 Docker (Recomendado para Produção):"
+	@echo "    docker-up                       # Iniciar com Docker Compose ⭐"
+	@echo "    docker-single                   # Execução única em container"
+	@echo "    docker-up-prod                  # Modo produção"
+	@echo "    docker-up-dev                   # Modo desenvolvimento"
+	@echo "    docker-logs                     # Ver logs do container"
+	@echo "    docker-down                     # Parar containers"
+	@echo ""
+	@echo "  📊 Monitoramento:"
+	@echo "    Orquestrador:    http://localhost:5007"
+	@echo "    Proc. Versões:   http://localhost:5005"
+	@echo "    Proc. Modelos:   http://localhost:5006"
 
 install: ## Instalar dependências do projeto
 	@echo "📦 Instalando dependências..."
@@ -44,11 +74,35 @@ check: lint format test ## Verificação completa do código
 
 run-processor: ## Executar processador automático
 	@echo "🤖 Iniciando processador automático..."
-	$(PYTHON) -m src.docx_compare.processors.processador_automatico
+	$(PYTHON) src/docx_compare/processors/processador_automatico.py
 
 run-processor-dry: ## Executar processador automático em modo dry-run
 	@echo "🏃‍♂️ Iniciando processador automático (DRY-RUN)..."
-	$(PYTHON) -m src.docx_compare.processors.processador_automatico --dry-run
+	$(PYTHON) src/docx_compare/processors/processador_automatico.py --dry-run
+
+run-processor-modelo: ## Executar processador de modelo de contrato
+	@echo "🏷️ Iniciando processador de modelo de contrato..."
+	$(PYTHON) src/docx_compare/processors/processador_modelo_contrato.py
+
+run-processor-modelo-verbose: ## Executar processador de modelo de contrato com logs detalhados
+	@echo "🏷️ Iniciando processador de modelo de contrato (VERBOSE)..."
+	$(PYTHON) src/docx_compare/processors/processador_modelo_contrato.py --verbose
+
+run-orquestrador: ## Executar orquestrador (todos os processadores em paralelo)
+	@echo "🎯 Iniciando orquestrador de processadores..."
+	$(PYTHON) src/docx_compare/processors/orquestrador.py
+
+run-orquestrador-sequencial: ## Executar orquestrador em modo sequencial
+	@echo "🎯 Iniciando orquestrador de processadores (sequencial)..."
+	$(PYTHON) src/docx_compare/processors/orquestrador.py --modo sequencial
+
+run-orquestrador-single: ## Executar orquestrador uma única vez
+	@echo "🎯 Executando orquestrador (ciclo único)..."
+	$(PYTHON) src/docx_compare/processors/orquestrador.py --single-run
+
+run-orquestrador-verbose: ## Executar orquestrador com logs detalhados
+	@echo "🎯 Iniciando orquestrador de processadores (verbose)..."
+	$(PYTHON) src/docx_compare/processors/orquestrador.py --verbose
 
 clean: ## Limpar arquivos temporários e cache
 	@echo "🧹 Limpando arquivos temporários..."
@@ -116,6 +170,48 @@ test-file: ## Executar um arquivo de teste específico: make test-file FILE=test
 	$(PYTHON) "$(FILE)"
 
 ## 🐳 Docker Commands
+
+# Docker Compose Commands (Orquestrador)
+docker-up: ## Iniciar orquestrador com Docker Compose
+	@echo "🚀 Iniciando orquestrador com Docker Compose..."
+	docker-compose up -d
+
+docker-up-prod: ## Iniciar orquestrador em modo produção
+	@echo "🏭 Iniciando orquestrador em modo produção..."
+	docker-compose -f docker-compose.production.yml up -d
+
+docker-up-dev: ## Iniciar orquestrador em modo desenvolvimento
+	@echo "🔧 Iniciando orquestrador em modo desenvolvimento..."
+	docker-compose -f docker-compose.production.yml --profile dev up -d
+
+docker-single: ## Executar orquestrador uma única vez
+	@echo "🎯 Executando orquestrador em modo single-run..."
+	docker-compose -f docker-compose.production.yml --profile single up --rm docx-compare-single
+
+docker-logs: ## Ver logs do orquestrador
+	@echo "📋 Visualizando logs do orquestrador..."
+	docker-compose logs -f docx-compare-orquestrador
+
+docker-down: ## Parar e remover containers
+	@echo "🛑 Parando containers..."
+	docker-compose down
+
+docker-build: ## Build da imagem principal (orquestrador)
+	@echo "🏗️ Construindo imagem do orquestrador..."
+	docker build -f docker/Dockerfile.orquestrador -t docx-compare:latest .
+
+docker-run: ## Executar orquestrador em container standalone
+	@echo "🎯 Executando orquestrador em container..."
+	docker run -d --name docx-compare-orquestrador \
+		-p 5007:5007 \
+		-v $(PWD)/results:/app/results \
+		-v $(PWD)/logs:/app/logs \
+		-e DIRECTUS_BASE_URL=${DIRECTUS_BASE_URL} \
+		-e DIRECTUS_TOKEN=${DIRECTUS_TOKEN} \
+		-e ORQUESTRADOR_MODO=sequencial \
+		docx-compare:latest
+
+# Comandos Docker existentes (imagens especializadas)
 docker-build-secure: ## Build da imagem Docker segura
 	@echo "🐳 Construindo imagem Docker segura..."
 	docker build -f docker/Dockerfile.secure -t docx-compare:secure .
@@ -130,23 +226,23 @@ docker-build-optimized: ## Build da imagem Docker super otimizada (recomendado)
 
 docker-run-secure: ## Executar container seguro
 	@echo "🚀 Executando container seguro..."
-	docker run -p 8000:8000 -v $(PWD)/results:/app/results docx-compare:secure
+	docker run -p 5007:5007 -v $(PWD)/results:/app/results docx-compare:secure
 
 docker-run-optimized: ## Executar container otimizado
 	@echo "⚡ Executando container otimizado..."
-	docker run -p 8000:8000 -v $(PWD)/results:/app/results docx-compare:optimized
+	docker run -p 5007:5007 -v $(PWD)/results:/app/results docx-compare:optimized
 
 docker-scan: ## Scan de vulnerabilidades na imagem
 	@echo "🔍 Verificando vulnerabilidades..."
-	docker scout cves docx-compare:secure || echo "Docker Scout não disponível, use: docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image docx-compare:secure"
+	docker scout cves docx-compare:latest || echo "Docker Scout não disponível, use: docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image docx-compare:latest"
 
-docker-test-secure: docker-build-secure ## Build e teste da imagem segura
-	@echo "✅ Testando imagem segura..."
-	docker run --rm docx-compare:secure python -c "import src.main; print('✅ Imagem funcionando!')"
+docker-test: docker-build ## Build e teste da imagem principal
+	@echo "✅ Testando imagem do orquestrador..."
+	docker run --rm -e ORQUESTRADOR_SINGLE_RUN=true docx-compare:latest
 
 docker-benchmark: ## Comparar tamanhos das imagens Docker
 	@echo "📊 Comparando tamanhos das imagens..."
-	@echo "🐳 Dockerfile original:"
+	@echo "🎯 Dockerfile principal (orquestrador):"
 	@docker images docx-compare:latest --format "table {{.Repository}}:{{.Tag}}\t{{.Size}}" 2>/dev/null || echo "  Não encontrada"
 	@echo "🛡️ Dockerfile.secure:"
 	@docker images docx-compare:secure --format "table {{.Repository}}:{{.Tag}}\t{{.Size}}" 2>/dev/null || echo "  Não encontrada"

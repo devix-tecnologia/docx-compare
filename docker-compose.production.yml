@@ -1,32 +1,51 @@
 # Docker Compose para desenvolvimento e produção
-version: '3.8'
 
 services:
-  # Serviço principal da aplicação
-  docx-compare:
+  # Serviço principal - Orquestrador de Processadores
+  docx-compare-orquestrador:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile.orquestrador
+    container_name: docx-compare-orquestrador-prod
     ports:
-      - "8000:8000"
+      - "5007:5007"
     environment:
       - FLASK_ENV=production
       - PYTHONUNBUFFERED=1
+      - DIRECTUS_BASE_URL=${DIRECTUS_BASE_URL}
+      - DIRECTUS_TOKEN=${DIRECTUS_TOKEN}
+      - ORQUESTRADOR_MODO=sequencial
+      - ORQUESTRADOR_INTERVALO=60
+      - ORQUESTRADOR_VERBOSE=false
+      - ORQUESTRADOR_SINGLE_RUN=false
     volumes:
       - ./results:/app/results
       - ./logs:/app/logs
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5007/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   # Serviço para desenvolvimento (com uv)
   docx-compare-dev:
     build:
       context: .
-      dockerfile: Dockerfile.uv
+      dockerfile: docker/Dockerfile.uv
+    container_name: docx-compare-dev
     ports:
-      - "8001:8000"
+      - "5008:5007"
     environment:
       - FLASK_ENV=development
       - PYTHONUNBUFFERED=1
+      - DIRECTUS_BASE_URL=${DIRECTUS_BASE_URL}
+      - DIRECTUS_TOKEN=${DIRECTUS_TOKEN}
+      - ORQUESTRADOR_MODO=sequencial
+      - ORQUESTRADOR_INTERVALO=30
+      - ORQUESTRADOR_VERBOSE=true
+      - ORQUESTRADOR_PORTA=5007
     volumes:
       - .:/app
       - ./results:/app/results
@@ -34,16 +53,57 @@ services:
     restart: unless-stopped
     profiles:
       - dev
+    command:
+      [
+        "uv",
+        "run",
+        "python",
+        "src/docx_compare/processors/orquestrador.py",
+        "--modo",
+        "sequencial",
+        "--verbose",
+        "--intervalo",
+        "30",
+      ]
+
+  # Serviço para execução única (testes/CI)
+  docx-compare-single:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.orquestrador
+    container_name: docx-compare-single
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DIRECTUS_BASE_URL=${DIRECTUS_BASE_URL}
+      - DIRECTUS_TOKEN=${DIRECTUS_TOKEN}
+      - ORQUESTRADOR_MODO=sequencial
+      - ORQUESTRADOR_SINGLE_RUN=true
+      - ORQUESTRADOR_VERBOSE=true
+    volumes:
+      - ./results:/app/results
+      - ./logs:/app/logs
+    profiles:
+      - single
+    command:
+      [
+        "python",
+        "src/docx_compare/processors/orquestrador.py",
+        "--single-run",
+        "--modo",
+        "sequencial",
+        "--verbose",
+      ]
 
   # Serviço para testes
   docx-compare-test:
     build:
       context: .
-      dockerfile: Dockerfile.uv
+      dockerfile: docker/Dockerfile.uv
+    container_name: docx-compare-test
     environment:
       - PYTHONUNBUFFERED=1
     volumes:
       - .:/app
-    command: ["python", "-m", "pytest", "tests/", "--cov=src"]
+    command: ["uv", "run", "pytest", "tests/", "--cov=src"]
     profiles:
       - test

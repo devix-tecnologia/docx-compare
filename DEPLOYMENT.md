@@ -5,37 +5,43 @@ Este guia explica como fazer deploy da aplicação `docx-compare` usando GitHub 
 ## 🚀 Workflows de GitHub Actions
 
 ### 1. **deploy.yml** - Workflow Padrão ✅
+
 - **Trigger**: Push para `main`/`master`
-- **Dockerfile**: `docker/Dockerfile.optimized`
+- **Dockerfile**: `docker/Dockerfile.orquestrador` (orquestrador principal)
 - **Cache**: GitHub Actions Cache otimizado
 - **Segurança**: Scan automático de vulnerabilidades
 - **Testes**: Validação funcional da imagem
 
 ### 2. **deploy-advanced.yml** - Workflow Avançado 🚀
+
 - **Trigger**: Push ou Manual (workflow_dispatch)
-- **Escolha de Dockerfile**: optimized/secure/alpine
+- **Escolha de Dockerfile**: orquestrador/optimized/secure/alpine/uv
 - **Cache**: Scoped por variante para máxima eficiência
 - **Multi-platform**: Preparado para ARM64/AMD64
 - **Segurança**: Trivy scan detalhado
 - **Relatórios**: Summary completo no GitHub
 
 ### 3. **deploy-traditional.yml** - Compatibilidade
+
 - **Trigger**: Push para `main`/`master`
 - **Fallback**: Sem uv, usando pip tradicional
 
 ## ⚡ Principais Melhorias dos Workflows
 
 ### **Cache Inteligente:**
+
 - **GitHub Actions Cache**: Reutilização de dependências Python
 - **Docker BuildKit Cache**: Layers Docker reutilizáveis por variante
 - **Base Stage Reuse**: Pandoc instalado apenas 1x por build
 
 ### **Segurança Integrada:**
+
 - **Trivy Scanner**: Detecção automática de vulnerabilidades
 - **Multi-stage builds**: Superfície de ataque reduzida
 - **Non-root execution**: Princípio do menor privilégio
 
 ### **Flexibilidade:**
+
 - **Manual triggers**: Escolha de Dockerfile via UI
 - **Conditional push**: Push apenas quando necessário
 - **Comprehensive reports**: Summaries detalhados no GitHub
@@ -43,17 +49,19 @@ Este guia explica como fazer deploy da aplicação `docx-compare` usando GitHub 
 ## 🔧 Como Usar os Workflows
 
 ### Automático (Push)
+
 ```bash
 git push origin main
 # → Executa deploy.yml automaticamente
 ```
 
 ### Manual (Escolha de Dockerfile)
+
 1. Acesse **Actions** no GitHub
 2. Selecione **Advanced Build and Deploy**
 3. Clique **Run workflow**
 4. Escolha:
-   - **Dockerfile**: optimized/secure/alpine
+   - **Dockerfile**: orquestrador/optimized/secure/alpine/uv
    - **Push to registry**: true/false
    - **Security scan**: true/false
 
@@ -61,15 +69,21 @@ git push origin main
 
 ### Imagens Disponíveis
 
-1. **docker/Dockerfile.secure** - ✅ **Recomendado** - Sem vulnerabilidades
-2. **docker/Dockerfile.alpine** - 🏔️ **Máxima segurança** - Base Alpine 
-3. **Dockerfile.uv** - Otimizada com uv (atualizada com patches)
-4. **Dockerfile** - Tradicional (⚠️ contém vulnerabilidades)
+1. **docker/Dockerfile.orquestrador** - 🎯 **Recomendado** - Orquestrador principal
+2. **docker/Dockerfile.secure** - ✅ **Seguro** - Sem vulnerabilidades
+3. **docker/Dockerfile.alpine** - 🏔️ **Máxima segurança** - Base Alpine
+4. **docker/Dockerfile.uv** - ⚡ **Otimizada** - Com uv (atualizada com patches)
+5. **docker/Dockerfile.optimized** - 🚀 **Performance** - Multi-stage otimizada
 
 ### Docker Compose
 
-```bash
+````bash
 # Produção (imagem segura)
+```bash
+# Orquestrador principal (recomendado)
+docker build -f docker/Dockerfile.orquestrador -t docx-compare:orquestrador .
+
+# Versão segura
 docker build -f docker/Dockerfile.secure -t docx-compare:secure .
 docker run -p 8000:8000 docx-compare:secure
 
@@ -78,7 +92,7 @@ docker-compose -f docker-compose.production.yml --profile dev up -d
 
 # Testes
 docker-compose -f docker-compose.production.yml --profile test up
-```
+````
 
 ### Comandos Make
 
@@ -107,6 +121,7 @@ DOCKER_PASSWORD - sua senha/token do Docker Hub
 ### Variáveis de Ambiente
 
 No arquivo `.env`:
+
 ```bash
 FLASK_ENV=production
 RESULTS_DIR=/app/results
@@ -116,10 +131,12 @@ PYTHONUNBUFFERED=1
 ## 🔧 Troubleshooting
 
 ### UV não funciona em produção?
+
 - Use o workflow `deploy-traditional.yml`
 - Set `USE_UV=false` no script de deploy
 
 ### Problemas de dependências?
+
 ```bash
 # Limpar cache
 uv cache clean
@@ -133,6 +150,7 @@ pip install -r requirements.txt --force-reinstall
 ```
 
 ### Problemas de Docker?
+
 ```bash
 # Limpar imagens
 docker system prune -f
@@ -146,13 +164,19 @@ docker build --no-cache -t docx-compare:latest .
 ```
 docx-compare/
 ├── .github/workflows/
-│   ├── deploy.yml              # Deploy com uv
-│   └── deploy-traditional.yml  # Deploy tradicional
+│   ├── deploy.yml              # Deploy principal (orquestrador)
+│   ├── deploy-traditional.yml  # Deploy tradicional
+│   └── deploy-advanced.yml     # Deploy avançado (múltiplas opções)
+├── docker/
+│   ├── Dockerfile.orquestrador # Docker principal (orquestrador)
+│   ├── Dockerfile.uv          # Docker otimizado com uv
+│   ├── Dockerfile.secure      # Docker seguro
+│   ├── Dockerfile.alpine      # Docker Alpine (máxima segurança)
+│   └── Dockerfile.optimized   # Docker otimizado (performance)
 ├── scripts/
 │   └── deploy.sh              # Script de deploy
-├── Dockerfile                 # Docker tradicional
-├── Dockerfile.uv             # Docker otimizado
-├── docker-compose.production.yml
+├── docker-compose.yml         # Configuração principal
+├── docker-compose.production.yml # Configuração de produção
 └── pyproject.toml
 ```
 

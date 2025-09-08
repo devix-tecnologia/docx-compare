@@ -2,6 +2,39 @@
 
 ## 🚀 Execução Rápida
 
+### 🎯 Orquestrador (Execução Coordenada)
+
+```bash
+# Executar ambos os processadores sequencialmente (recomendado)
+make run-orquestrado# Executar como módulo
+python -m src.docx_compare.processors.processador_automatico
+python -m src.docx_compare.core.docx_diff_viewer doc1.docx doc2.docx
+```
+
+## 📚 Documentação Detalhada
+
+- **[🎯 Orquestrador](docs/ORQUESTRADOR.md)** - Guia completo do orquestrador de processadores
+- **[📡 API Documentation](API_DOCUMENTATION.md)** - Endpoints e APIs REST disponíveis
+- **[🔧 Deployment](DEPLOYMENT.md)** - Guia de deployment e produção
+- **[🧪 DRY RUN](DRY_RUN_DOCUMENTATION.md)** - Modo de simulação e testes
+- **[📋 CHANGELOG](CHANGELOG.md)** - Histórico de mudanças e roadmap
+
+## 📋 Pré-requisitosle
+
+# Executar com logs detalhados
+
+make run-orquestrador-single-verbose
+
+# Executar em modo contínuo
+
+make run-orquestrador
+
+# Executar em paralelo (ambos simultaneamente)
+
+make run-orquestrador-paralelo
+
+````
+
 ### Processador Automático (Versões)
 
 ```bash
@@ -13,7 +46,7 @@ make run-processor-verbose
 
 # Executar em modo simulação (sem alterações)
 make run-processor-dry
-```
+````
 
 ### Processador de Modelo de Contrato (Tags)
 
@@ -42,6 +75,13 @@ make compare ORIG=documentos/doc-rafael-original.docx MOD=documentos/doc-rafael-
 ```
 
 ### Endpoints de Monitoramento
+
+**Orquestrador:**
+
+- **Dashboard**: http://localhost:5007
+- **Health Check**: http://localhost:5007/health
+- **Métricas**: http://localhost:5007/metrics
+- **Status**: http://localhost:5007/status
 
 **Processador de Versões:**
 
@@ -82,6 +122,14 @@ Sistema de processamento automático para comparação de documentos DOCX integr
 - **Persistência**: Salva tags na coleção `modelo_contrato_tag`
 - **Monitoramento Independente**: Servidor próprio na porta 5006
 
+### 🎯 Orquestrador de Processadores
+
+- **Execução Coordenada**: Executa múltiplos processadores em paralelo ou sequencial
+- **Monitoramento Unificado**: Dashboard centralizado para todos os processadores
+- **Gestão Inteligente**: Controle de ciclos e intervalos de execução
+- **APIs de Status**: Endpoints REST para monitoramento e métricas
+- **Encerramento Gracioso**: Finalização segura de todos os processos
+
 ### 🔧 CLI - Comparação Local
 
 - **Comparação Direta**: Comparação local de arquivos DOCX
@@ -109,8 +157,9 @@ docx-compare/
 │   │   ├── directus_utils.py      # Funções Directus
 │   │   └── text_analysis_utils.py # Análise de texto
 │   ├── 📁 processors/             # Processadores automáticos
-│   │   ├── processador_automatico.py # Processador principal
-│   │   └── processador_modelo_contrato.py # Processador de tags
+│   │   ├── processador_automatico.py # Processador principal (versões)
+│   │   ├── processador_modelo_contrato.py # Processador de tags
+│   │   └── orquestrador.py        # Orquestrador de processadores
 │   └── 📁 api/                    # APIs REST (futuro)
 ├── 📁 tests/                      # Testes organizados
 │   ├── 📁 unit/                   # Testes unitários
@@ -151,8 +200,26 @@ make run-processor-dry   # Modo simulação
 make compare ORIG=doc1.docx MOD=doc2.docx # Comparar documentos
 make example             # Executar exemplo
 
-# Processador de modelo de contrato (execute diretamente)
-# uv run python src/docx_compare/processors/processador_modelo_contrato.py
+# Orquestrador (executa múltiplos processadores)
+make run-orquestrador                     # Modo contínuo paralelo
+make run-orquestrador-single              # Execução única sequencial
+make run-orquestrador-single-verbose      # Execução única com logs
+make run-orquestrador-sequencial          # Modo contínuo sequencial
+make run-orquestrador-sequencial-single   # Execução única sequencial
+make run-orquestrador-paralelo            # Modo contínuo paralelo
+make run-orquestrador-paralelo-single     # Execução única paralelo
+make run-orquestrador-verbose             # Modo contínuo com logs
+
+# Processadores individuais
+uv run python src/docx_compare/processors/processador_automatico.py      # Processador de versões
+uv run python src/docx_compare/processors/processador_modelo_contrato.py # Processador de modelos
+
+# Comando direto do orquestrador (para configurações avançadas)
+uv run python src/docx_compare/processors/orquestrador.py                # Modo padrão (paralelo)
+uv run python src/docx_compare/processors/orquestrador.py --modo sequencial # Modo sequencial
+uv run python src/docx_compare/processors/orquestrador.py --single-run   # Execução única
+uv run python src/docx_compare/processors/orquestrador.py --verbose      # Logs detalhados
+uv run python src/docx_compare/processors/orquestrador.py --porta 5008   # Porta customizada
 
 # Limpeza
 make clean               # Remover arquivos temporários
