@@ -702,7 +702,7 @@ def processar_versao(versao_data, dry_run=False):
             print("🔄 Executando comparação visual usando função interna...")
 
             # Usar a função do docx_diff_viewer diretamente
-            from docx_diff_viewer import generate_diff_html
+            from src.docx_compare.core.docx_diff_viewer import generate_diff_html
 
             try:
                 print(
@@ -750,7 +750,7 @@ def processar_versao(versao_data, dry_run=False):
             modifications = analyze_differences_detailed(original_text, modified_text)
 
             # 5. Atualizar status da versão para concluído e salvar modificações em uma única transação
-            result_url = f"http://{FLASK_HOST}:{FLASK_PORT}/outputs/{result_filename}"
+            result_url = f"http://{FLASK_HOST}:{FLASK_PORT}/results/{result_filename}"
             update_versao_status(
                 versao_id,
                 "concluido",
@@ -866,9 +866,9 @@ def status():
     )
 
 
-@app.route("/outputs/<path:filename>", methods=["GET"])
+@app.route("/results/<path:filename>", methods=["GET"])
 def serve_result(filename):
-    """Servir arquivos HTML de resultado"""
+    """Serve arquivos de resultado HTML."""
     try:
         return send_from_directory(RESULTS_DIR, filename)
     except FileNotFoundError:
@@ -921,7 +921,7 @@ def list_results():
                         "size": stat.st_size,
                         "created": datetime.fromtimestamp(stat.st_ctime).isoformat(),
                         "modified": datetime.fromtimestamp(stat.st_mtime).isoformat(),
-                        "url": f"/outputs/{filename}",
+                        "url": f"/results/{filename}",
                     }
                 )
 
@@ -965,7 +965,7 @@ def index():
             <div class="endpoint"><strong>GET /status</strong> - Status detalhado do processador</div>
             <div class="endpoint"><strong>GET /metrics</strong> - Métricas do sistema</div>
             <div class="endpoint"><strong>GET /results</strong> - Lista de resultados processados</div>
-            <div class="endpoint"><strong>GET /outputs/&lt;filename&gt;</strong> - Visualizar resultado específico</div>
+            <div class="endpoint"><strong>GET /results/&lt;filename&gt;</strong> - Visualizar resultado específico</div>
 
             <h2>ℹ️ Informações</h2>
             <p>Este serviço monitora automaticamente o Directus em busca de versões com status "processar" e gera comparações visuais entre documentos.</p>
@@ -1084,7 +1084,7 @@ if __name__ == "__main__":
     print("📋 Endpoints de monitoramento:")
     print("  • GET  /health - Verificação de saúde")
     print("  • GET  /status - Status do processador")
-    print("  • GET  /outputs/<filename> - Visualizar resultados")
+    print("  • GET  /results/<filename> - Visualizar resultados")
     print("")
 
     # Verificar se deve usar servidor de produção

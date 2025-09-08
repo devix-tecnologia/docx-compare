@@ -8,16 +8,14 @@ import sys
 
 sys.path.append("/Users/sidarta/repositorios/docx-compare")
 
-from docx_utils import convert_docx_to_html
+from src.docx_compare.core.docx_utils import convert_docx_to_html
 
 
 def test_conversion():
     # Arquivo que sabemos que existe e é válido
     input_file = "/var/folders/db/k04l5r0n09j8dphykj0wtpfr0000gn/T/tmp0vp524hj"
     output_file = "/tmp/test_conversion_python.html"
-    filter_path = (
-        "/Users/sidarta/repositorios/docx-compare/comments_html_filter_direct.lua"
-    )
+    filter_path = "/Users/sidarta/repositorios/docx-compare/config/comments_html_filter_direct.lua"
 
     print("🔍 Testando conversão:")
     print(f"  Input: {input_file}")

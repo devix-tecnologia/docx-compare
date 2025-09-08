@@ -21,7 +21,7 @@ RUN pip install --no-cache-dir --upgrade pip \
 COPY . .
 
 # Criar diretórios necessários
-RUN mkdir -p results outputs logs
+RUN mkdir -p results logs
 
 # Definir variáveis de ambiente
 ENV PYTHONPATH=/app \

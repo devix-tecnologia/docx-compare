@@ -15,6 +15,10 @@ dependencies = [
     "python-dotenv>=1.0.0",
 ]
 
+[project.scripts]
+docx-compare = "src.docx_compare.processors.processador_automatico:main"
+docx-diff = "src.docx_compare.core.docx_diff_viewer:main"
+
 [dependency-groups]
 dev = [
     "ruff>=0.6.0",

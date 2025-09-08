@@ -6,8 +6,9 @@ diff_output.html
 # Diretórios de resultados
 results/
 results/*.html
-outputs/
-outputs/*.html
+# Resultados gerados
+results/
+results/*.html
 
 # Logs da API
 *.log

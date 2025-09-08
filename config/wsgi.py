@@ -5,9 +5,17 @@ Separada para permitir execução com Gunicorn em produção
 """
 
 import os
+import sys
 import threading
 
-from processador_automatico import app, loop_processador, processador_thread
+# Adicionar o diretório raiz ao path para importar módulos
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
+from src.docx_compare.processors.processador_automatico import (
+    app,
+    loop_processador,
+    processador_thread,
+)
 
 
 # Função para inicializar o processador em background
