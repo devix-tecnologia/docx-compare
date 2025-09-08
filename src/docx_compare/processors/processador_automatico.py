@@ -63,6 +63,7 @@ processador_thread = None
 verbose_mode = False
 check_interval = 60  # Intervalo de verificação em segundos (padrão: 1 minuto)
 request_timeout = 30  # Timeout das requisições HTTP em segundos (padrão: 30s)
+ultima_verificacao = None  # Timestamp da última verificação
 
 
 def signal_handler(signum, _frame):
@@ -798,6 +799,8 @@ def loop_processador(dry_run=False):
     """
     Loop principal do processador automático
     """
+    global ultima_verificacao
+
     mode_text = []
     if dry_run:
         mode_text.append("DRY-RUN")
@@ -809,6 +812,9 @@ def loop_processador(dry_run=False):
 
     while processador_ativo:
         try:
+            # Registrar horário da verificação
+            ultima_verificacao = datetime.now()
+
             # Buscar versões para processar
             versoes = buscar_versoes_para_processar()
 
@@ -883,6 +889,15 @@ def metrics():
         result_files = os.listdir(RESULTS_DIR) if os.path.exists(RESULTS_DIR) else []
         html_files = [f for f in result_files if f.endswith(".html")]
 
+        # Calcular próxima verificação
+        proxima_verificacao = None
+        if ultima_verificacao and processador_ativo:
+            from datetime import timedelta
+
+            proxima_verificacao = (
+                ultima_verificacao + timedelta(seconds=check_interval)
+            ).isoformat()
+
         # Informações básicas
         return jsonify(
             {
@@ -893,6 +908,10 @@ def metrics():
                 "check_interval": check_interval,
                 "request_timeout": request_timeout,
                 "verbose_mode": verbose_mode,
+                "ultima_verificacao": ultima_verificacao.isoformat()
+                if ultima_verificacao
+                else None,
+                "proxima_verificacao": proxima_verificacao,
                 "timestamp": datetime.now().isoformat(),
             }
         )
@@ -940,6 +959,16 @@ def list_results():
 def index():
     """Página inicial com informações do sistema"""
     try:
+        # Calcular horário da próxima verificação
+        proxima_verificacao_texto = "Não disponível"
+        if ultima_verificacao and processador_ativo:
+            from datetime import timedelta
+
+            proxima_verificacao = ultima_verificacao + timedelta(seconds=check_interval)
+            proxima_verificacao_texto = proxima_verificacao.strftime("%H:%M:%S")
+        elif processador_ativo:
+            proxima_verificacao_texto = "Em breve (primeira verificação)"
+
         # Retornar HTML simples para facilitar visualização
         html = f"""
         <!DOCTYPE html>
@@ -959,6 +988,7 @@ def index():
             <p><strong>Status:</strong> <span class="status">{"🟢 Ativo" if processador_ativo else "🔴 Parado"}</span></p>
             <p><strong>Directus:</strong> <span class="code">{DIRECTUS_BASE_URL}</span></p>
             <p><strong>Intervalo de verificação:</strong> {check_interval}s</p>
+            <p><strong>Próxima verificação:</strong> {proxima_verificacao_texto}</p>
 
             <h2>📋 Endpoints Disponíveis</h2>
             <div class="endpoint"><strong>GET /health</strong> - Verificação de saúde</div>
