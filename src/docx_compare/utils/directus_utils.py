@@ -231,7 +231,9 @@ def determine_original_file_id(versao_data):
 
 
 def download_file_from_directus(
-    file_id: str, cache_dir: str = None, request_timeout: int = DEFAULT_REQUEST_TIMEOUT
+    file_id: str,
+    cache_dir: str | None = None,
+    request_timeout: int = DEFAULT_REQUEST_TIMEOUT,
 ) -> tuple[str, Literal["downloaded", "cached"]]:
     """
     Baixa um arquivo do Directus usando o caminho do arquivo.

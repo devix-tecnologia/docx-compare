@@ -6,13 +6,13 @@
 
 ```bash
 # Executar o processador automático (principal)
-uv run python processador_automatico.py
+make run-processor
 
 # Executar com logs detalhados
-uv run python processador_automatico.py --verbose
+make run-processor-verbose
 
 # Executar em modo simulação (sem alterações)
-uv run python processador_automatico.py --dry-run
+make run-processor-dry
 ```
 
 ### Processador de Modelo de Contrato (Tags)
@@ -35,10 +35,10 @@ uv run python test_processador_modelo_contrato.py
 
 ```bash
 # Comparar dois documentos DOCX
-uv run python docx_diff_viewer.py original.docx modificado.docx
+make compare ORIG=original.docx MOD=modificado.docx
 
 # Exemplo com arquivos do projeto
-uv run python docx_diff_viewer.py documentos/doc-rafael-original.docx documentos/doc-rafael-alterado.docx
+make compare ORIG=documentos/doc-rafael-original.docx MOD=documentos/doc-rafael-alterado.docx OUT=results/resultado.html
 ```
 
 ### Endpoints de Monitoramento
@@ -97,9 +97,80 @@ Sistema de processamento automático para comparação de documentos DOCX integr
 - **Modo Dry-Run**: Simulação sem alterações no banco
 - **Listagem de Resultados**: Visualização de todos os processamentos realizados
 
-## 📋 Pré-requisitos
+## � Estrutura do Projeto
 
-- Python 3.8+
+```
+docx-compare/
+├── 📁 src/docx_compare/           # Código fonte principal
+│   ├── 📁 core/                   # Funcionalidades principais
+│   │   ├── docx_diff_viewer.py    # CLI de comparação
+│   │   └── docx_utils.py          # Utilitários DOCX
+│   ├── 📁 utils/                  # Utilitários auxiliares
+│   │   ├── directus_utils.py      # Funções Directus
+│   │   └── text_analysis_utils.py # Análise de texto
+│   ├── 📁 processors/             # Processadores automáticos
+│   │   └── processador_automatico.py # Processador principal
+│   └── 📁 api/                    # APIs REST (futuro)
+├── 📁 tests/                      # Testes organizados
+│   ├── 📁 unit/                   # Testes unitários
+│   └── 📁 integration/            # Testes de integração
+├── 📁 scripts/                    # Scripts e exemplos
+├── 📁 config/                     # Configurações centralizadas
+├── 📁 docs/                       # Documentação técnica
+├── 📁 documentos/                 # Documentos de exemplo
+├── 📁 results/                    # Resultados HTML gerados
+├── 📁 results/                    # Resultados processamento
+├── 🔧 Makefile                    # Comandos de desenvolvimento
+├── 🔧 pyproject.toml              # Configuração do projeto
+└── ⚙️ .env.example                # Exemplo de configuração
+```
+
+### Comandos de Desenvolvimento
+
+```bash
+# Ver todos os comandos disponíveis
+make help
+
+# Instalação e setup
+make install              # Instalar dependências
+make dev-setup           # Setup completo para desenvolvimento
+
+# Qualidade de código
+make lint                # Verificar código
+make lint-fix            # Corrigir problemas automaticamente
+make format              # Formatar código
+make test                # Executar todos os testes
+make test-unit           # Apenas testes unitários
+make test-integration    # Apenas testes de integração
+
+# Execução
+make run-processor       # Processador automático
+make run-processor-dry   # Modo simulação
+make compare ORIG=doc1.docx MOD=doc2.docx # Comparar documentos
+make example             # Executar exemplo
+
+# Limpeza
+make clean               # Remover arquivos temporários
+```
+
+### Estrutura Modular
+
+O projeto está organizado como pacotes Python:
+
+```python
+# Importar funcionalidades
+from src.docx_compare.core.docx_utils import convert_docx_to_html
+from src.docx_compare.utils.directus_utils import download_file_from_directus
+
+# Executar como módulo
+python -m src.docx_compare.processors.processador_automatico
+python -m src.docx_compare.core.docx_diff_viewer doc1.docx doc2.docx
+```
+
+## �📋 Pré-requisitos
+
+- Python 3.11+
+- UV (gerenciador de dependências)
 - Pandoc
 - Directus CMS configurado
 - Arquivo Lua filter: `comments_html_filter_direct.lua`
@@ -202,7 +273,7 @@ uv run python processador_automatico.py --interval 30 --timeout 60
 | `GET /status`             | Status detalhado do processador          |
 | `GET /metrics`            | Métricas do sistema                      |
 | `GET /results`            | Lista de resultados processados          |
-| `GET /outputs/<filename>` | Visualizar resultado específico          |
+| `GET /results/<filename>` | Visualizar resultado específico          |
 
 #### 4. Monitoramento Web
 
@@ -218,10 +289,10 @@ Acesse `http://localhost:5005` para ver o dashboard de monitoramento com:
 ```bash
 # Com UV (recomendado)
 uv run python docx_diff_viewer.py original.docx modificado.docx
-# Criará automaticamente outputs/resultado.html
+# Criará automaticamente results/resultado.html
 
 # Ou especificar arquivo de saída:
-uv run python docx_diff_viewer.py original.docx modificado.docx outputs/minha_comparacao.html
+uv run python docx_diff_viewer.py original.docx modificado.docx results/minha_comparacao.html
 
 # Com Python tradicional
 python docx_diff_viewer.py original.docx modificado.docx
@@ -231,7 +302,7 @@ python docx_diff_viewer.py original.docx modificado.docx
 
 ```bash
 uv run python docx_diff_viewer.py documentos/doc-rafael-original.docx documentos/doc-rafael-alterado.docx
-# Criará automaticamente outputs/resultado.html
+# Criará automaticamente results/resultado.html
 ```
 
 O processador automático monitora o Directus continuamente e processa versões automaticamente.
@@ -254,7 +325,7 @@ O processador executa na porta 5005 e oferece:
 | --------------------- | ------ | ----------------------------------- |
 | `/health`             | GET    | Verificação de saúde do processador |
 | `/status`             | GET    | Status detalhado do processamento   |
-| `/outputs/<filename>` | GET    | Visualizar resultados HTML          |
+| `/results/<filename>` | GET    | Visualizar resultados HTML          |
 
 #### 3. Lógica de Processamento
 
@@ -314,7 +385,6 @@ O processador executa na porta 5005 e oferece:
 
 ```bash
 # Com UV (recomendado)
-uv run python test_api_simple.py
 uv run python test_processamento_completo.py
 uv run python test_directus_sdk.py
 
@@ -322,21 +392,11 @@ uv run python test_directus_sdk.py
 uv run pytest tests/
 
 # Com Python tradicional
-python test_api_simple.py
 python test_processamento_completo.py
 python test_directus_sdk.py
 ```
 
 ## 🏗️ Arquitetura do Sistema
-
-### API REST
-
-1. **📥 Receber Request**: Endpoint `/compare` recebe UUIDs dos arquivos
-2. **⬇️ Download**: Baixa arquivos do Directus usando os UUIDs
-3. **💾 Salvar**: Salva arquivos temporariamente no disco
-4. **🔄 Processar**: Executa `docx_diff_viewer.py` para gerar comparação
-5. **📊 Retornar**: Retorna URL do arquivo HTML gerado
-6. **🗑️ Limpar**: Remove arquivos temporários automaticamente
 
 ### Processador Automático
 
@@ -353,10 +413,8 @@ python test_directus_sdk.py
 docx-compare/
 ├── 📄 README.md                         # Este arquivo
 ├── 🐍 docx_diff_viewer.py               # CLI principal
-├── 🌐 api_simple.py                     # API REST
 ├── 🤖 processador_automatico.py         # Processador automático principal
 ├── 🧪 processador_automatico_limpo.py   # Versão limpa do processador
-├── 🧪 test_api_simple.py                # Testes da API
 ├── 🧪 test_processamento.py             # Testes de processamento
 ├── 🧪 test_processamento_completo.py    # Testes completos
 ├── 🧪 test_directus_sdk.py              # Testes Directus
@@ -364,9 +422,8 @@ docx-compare/
 ├── ⚙️ .env.example                      # Exemplo de configuração
 ├── 🎨 comments_html_filter_direct.lua   # Filtro Pandoc
 ├── 📁 documentos/                       # Documentos de exemplo
-├── 📁 outputs/                          # Resultados HTML gerados
-├── 📁 tests/                           # Scripts de teste organizados
-└── 📋 API_DOCUMENTATION.md              # Documentação detalhada da API
+├── 📁 results/                          # Resultados HTML gerados
+└── 📁 tests/                           # Scripts de teste organizados
 ```
 
 ## 🎨 Características do HTML Gerado
@@ -407,18 +464,6 @@ Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline'; s
 
 ## 🚀 Deploy em Produção
 
-### API REST
-
-```bash
-# Com UV e Gunicorn (recomendado)
-uv add gunicorn
-uv run gunicorn -w 4 -b 0.0.0.0:5002 api_simple:app
-
-# Com pip tradicional
-pip install gunicorn
-gunicorn -w 4 -b 0.0.0.0:5002 api_simple:app
-```
-
 ### Processador Automático
 
 ```bash
@@ -435,13 +480,11 @@ nohup python processador_automatico.py > processador.log 2>&1 &
 
 ### Considerações para Produção
 
-1. **Servidor WSGI**: Use Gunicorn ou uWSGI
-2. **Proxy Reverso**: Configure Nginx
-3. **HTTPS**: Configure certificados SSL/TLS
-4. **Monitoramento**: Implemente logs e métricas
-5. **Rate Limiting**: Limitação de taxa
-6. **Systemd**: Configure como serviço do sistema
-7. **Backup**: Estratégia de backup dos resultados
+1. **Monitoramento**: Implemente logs e métricas
+2. **Systemd**: Configure como serviço do sistema
+3. **Backup**: Estratégia de backup dos resultados
+4. **HTTPS**: Configure certificados SSL/TLS para endpoints de monitoramento
+5. **Proxy Reverso**: Configure Nginx para endpoints web se necessário
 
 ## 🐛 Solução de Problemas
 
@@ -457,12 +500,6 @@ sudo apt-get install pandoc  # Ubuntu
 
 - Verifique se `comments_html_filter_direct.lua` está no diretório raiz
 - Confirme o caminho no arquivo `.env`
-
-### Erro: "Connection refused" na API
-
-- Verifique se a API está rodando: `python api_simple.py`
-- Confirme a porta no arquivo `.env`
-- Verifique se a porta não está ocupada: `lsof -i :5002`
 
 ### Erro: "Directus authentication failed"
 
@@ -502,7 +539,7 @@ sudo apt-get install pandoc  # Ubuntu
 
 - `GET /health`: Status geral do sistema
 - `GET /status`: Detalhes do processador
-- `GET /outputs/<filename>`: Visualizar resultados
+- `GET /results/<filename>`: Visualizar resultados
 
 **Métricas Importantes**:
 
@@ -510,10 +547,6 @@ sudo apt-get install pandoc  # Ubuntu
 - Tempo de processamento por versão
 - Taxa de sucesso vs erro
 - Tamanho dos arquivos processados
-
-## 📖 Documentação Adicional
-
-Para mais detalhes sobre a API, consulte [API_DOCUMENTATION.md](API_DOCUMENTATION.md).
 
 ## 🤝 Contribuição
 
@@ -563,8 +596,6 @@ uv add pytest --group dev # Adicionar dependência de desenvolvimento
 uv remove requests         # Remover dependência
 
 # Executar aplicações
-uv run python script.py           # Executar script
-uv run python api_simple.py       # Executar API
 uv run python processador_automatico.py  # Executar processador
 
 # Ferramentas de qualidade de código
@@ -593,7 +624,6 @@ make clean             # Limpar arquivos temporários
 
 # Executar aplicações
 make run-processor     # Processador automático
-make run-api           # API simples
 
 # Comparar documentos
 make compare ORIG=doc1.docx MOD=doc2.docx OUT=result.html
@@ -607,7 +637,6 @@ make compare ORIG=doc1.docx MOD=doc2.docx OUT=result.html
 ./scripts.sh lint         # Linting
 ./scripts.sh format       # Formatar código
 ./scripts.sh test         # Executar testes
-./scripts.sh run-api      # Executar API
 ./scripts.sh run-processor # Executar processador
 ```
 

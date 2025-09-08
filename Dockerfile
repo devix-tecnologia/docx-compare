@@ -21,7 +21,7 @@ RUN pip install --no-cache-dir --upgrade pip \
 COPY . .
 
 # Criar diretórios necessários
-RUN mkdir -p results outputs logs
+RUN mkdir -p results logs
 
 # Definir variáveis de ambiente
 ENV PYTHONPATH=/app \
@@ -43,4 +43,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD curl -f http://localhost:5005/health || exit 1
 
 # Comando de inicialização com Gunicorn para produção
-CMD ["gunicorn", "-c", "gunicorn.conf.py", "wsgi:app"]
+CMD ["gunicorn", "-c", "config/gunicorn.conf.py", "config.wsgi:app"]

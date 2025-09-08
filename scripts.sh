@@ -60,19 +60,13 @@ run_processor() {
     run_with_uv processador_automatico.py
 }
 
-# Função para executar API simples
-run_api() {
-    echo "🌐 Iniciando API simples..."
-    run_with_uv api_simple.py
-}
-
 # Função para executar CLI de comparação
 compare() {
     if [ $# -lt 2 ]; then
         echo "Uso: compare <arquivo_original> <arquivo_modificado> [arquivo_saida]"
         return 1
     fi
-    
+
     echo "📄 Comparando documentos..."
     run_with_uv docx_diff_viewer.py "$@"
 }
@@ -82,14 +76,13 @@ help() {
     echo "📚 Scripts disponíveis para docx-compare:"
     echo ""
     echo "  lint              - Executar linting com Ruff"
-    echo "  lint_fix          - Corrigir problemas de linting automaticamente"  
+    echo "  lint_fix          - Corrigir problemas de linting automaticamente"
     echo "  format            - Formatar código com Ruff"
     echo "  test              - Executar testes"
     echo "  test_coverage     - Executar testes com cobertura"
     echo "  check             - Verificação completa (lint + format + test)"
     echo "  install           - Instalar dependências"
     echo "  run_processor     - Executar processador automático"
-    echo "  run_api           - Executar API simples"
     echo "  compare           - Executar CLI de comparação"
     echo "  help              - Mostrar esta ajuda"
     echo ""

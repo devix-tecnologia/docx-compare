@@ -13,7 +13,7 @@ import unittest
 # Adicionar o diretório pai ao path para importar docx_utils
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from docx_utils import (
+from src.docx_compare.core.docx_utils import (
     analyze_differences,
     clean_html_for_diff,
     compare_docx_files,

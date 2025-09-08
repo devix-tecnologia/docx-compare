@@ -14,6 +14,60 @@ import os
 import re
 import subprocess
 
+
+def sanitize_html_for_csp(html_content: str) -> str:
+    """
+    Sanitiza HTML para compatibilidade com Content Security Policy (CSP).
+
+    Move estilos inline para um bloco <style> no cabeçalho, mantendo a aparência
+    visual mas removendo violações de CSP.
+
+    Args:
+        html_content: Conteúdo HTML original
+
+    Returns:
+        HTML sanitizado compatível com CSP
+    """
+    # Primeiro, garantir que não há nenhum estilo inline
+    # Regex mais agressiva para encontrar todos os tipos de estilos inline
+    style_patterns = [
+        r'style\s*=\s*["\'][^"\']*["\']',  # style="..." ou style='...'
+        r'style\s*=\s*[^"\'\s>][^\s>]*',  # style=valor sem aspas
+    ]
+
+    sanitized_content = html_content
+
+    # Remover todos os estilos inline encontrados
+    for pattern in style_patterns:
+        sanitized_content = re.sub(pattern, "", sanitized_content, flags=re.IGNORECASE)
+
+    # Remover atributos que podem causar problemas de CSP
+    unsafe_attributes = [
+        r'onclick\s*=\s*["\'][^"\']*["\']',
+        r'onload\s*=\s*["\'][^"\']*["\']',
+        r'onerror\s*=\s*["\'][^"\']*["\']',
+        r'onmouseover\s*=\s*["\'][^"\']*["\']',
+        r'href\s*=\s*["\']javascript:[^"\']*["\']',
+    ]
+
+    for pattern in unsafe_attributes:
+        sanitized_content = re.sub(pattern, "", sanitized_content, flags=re.IGNORECASE)
+
+    # Adicionar meta tags de CSP para melhor compatibilidade
+    csp_meta = """<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'none';">"""
+
+    # Inserir meta CSP no cabeçalho
+    if "<head>" in sanitized_content:
+        sanitized_content = sanitized_content.replace("<head>", f"<head>\n{csp_meta}")
+    elif "<meta charset=" in sanitized_content:
+        # Se não há <head> mas há charset, inserir após charset
+        sanitized_content = re.sub(
+            r"(<meta charset=[^>]*>)", f"\\1\n{csp_meta}", sanitized_content
+        )
+
+    return sanitized_content
+
+
 # CSS padrão para relatórios de comparação
 DEFAULT_CSS = """
 body {
@@ -266,7 +320,7 @@ def clean_html_for_diff(html_content: str) -> str:
 
 
 def convert_docx_to_html(
-    docx_path: str, output_html_path: str, lua_filter_path: str = None
+    docx_path: str, output_html_path: str, lua_filter_path: str | None = None
 ) -> None:
     """Converte um DOCX para HTML usando Pandoc com filtro Lua opcional."""
 
@@ -362,7 +416,9 @@ def remove_inline_styles(html_content: str) -> str:
     return html_content
 
 
-def convert_docx_to_html_content(docx_path: str, lua_filter_path: str = None) -> str:
+def convert_docx_to_html_content(
+    docx_path: str, lua_filter_path: str | None = None
+) -> str:
     """Converte um DOCX para HTML e retorna o conteúdo como string."""
     cmd = ["pandoc", docx_path, "-t", "html", "--standalone"]
 

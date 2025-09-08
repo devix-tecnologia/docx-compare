@@ -5,12 +5,13 @@ import os
 import sys
 
 from config import LUA_FILTER_PATH, RESULTS_DIR
-from docx_utils import (
+from src.docx_compare.core.docx_utils import (
     analyze_differences,
     convert_docx_to_html,
     extract_body_content,
     get_css_styles,
     html_to_text,
+    sanitize_html_for_csp,
 )
 
 
@@ -98,78 +99,89 @@ def generate_diff_html(original_docx, modified_docx, output_html, dry_run=False)
         )
 
         # 7. Gerar HTML final
+        html_content = []
+        html_content.append("<!DOCTYPE html>\n")
+        html_content.append('<html lang="pt-br">\n')
+        html_content.append("<head>\n")
+        html_content.append('<meta charset="utf-8">\n')
+        html_content.append(
+            '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
+        )
+        html_content.append("<title>Comparação de Documentos</title>\n")
+        html_content.append(f"<style>{get_css_styles()}</style>\n")
+        html_content.append("</head>\n")
+        html_content.append("<body>\n")
+        html_content.append('<div class="diff-header">\n')
+        html_content.append("<h1>Comparação de Documentos</h1>\n")
+        html_content.append(
+            f"<p><strong>Original:</strong> {os.path.basename(original_docx)} | "
+        )
+        html_content.append(
+            f"<strong>Modificado:</strong> {os.path.basename(modified_docx)}</p>\n"
+        )
+        html_content.append("</div>\n")
+
+        html_content.append('<div class="diff-stats">\n')
+        html_content.append("<strong>Estatísticas:</strong> ")
+        html_content.append(
+            f'<span class="added-count">+{stats["total_additions"]} adições</span> | '
+        )
+        html_content.append(
+            f'<span class="removed-count">-{stats["total_deletions"]} remoções</span>\n'
+        )
+        html_content.append("</div>\n")
+
+        html_content.append('<div class="diff-content">\n')
+
+        # Regenerar o diff para exibição
+        d = difflib.unified_diff(
+            original_paragraphs,
+            modified_paragraphs,
+            fromfile="Original",
+            tofile="Modificado",
+            lineterm="",
+        )
+
+        for line in d:
+            if (
+                line.startswith("@@")
+                or line.startswith("---")
+                or line.startswith("+++")
+            ):
+                continue
+            elif line.startswith("+"):
+                content = html.escape(line[1:])
+                html_content.append(f'<p class="added">{content}</p>\n')
+            elif line.startswith("-"):
+                content = html.escape(line[1:])
+                html_content.append(f'<p class="removed">{content}</p>\n')
+            elif line.startswith(" "):
+                content = html.escape(line[1:])
+                html_content.append(f"<p>{content}</p>\n")
+
+        html_content.append("</div>\n")
+        html_content.append("</body>\n")
+        html_content.append("</html>\n")
+
+        # Combinar todo o HTML
+        full_html = "".join(html_content)
+
+        # Sanitizar para compatibilidade com CSP
+        sanitized_html = sanitize_html_for_csp(full_html)
+
+        # Escrever HTML sanitizado no arquivo
         with open(output_html, "w", encoding="utf-8") as f:
-            f.write("<!DOCTYPE html>\n")
-            f.write('<html lang="pt-br">\n')
-            f.write("<head>\n")
-            f.write('<meta charset="utf-8">\n')
-            f.write(
-                '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
-            )
-            f.write("<title>Comparação de Documentos</title>\n")
-            f.write(f"<style>{get_css_styles()}</style>\n")
-            f.write("</head>\n")
-            f.write("<body>\n")
-            f.write('<div class="diff-header">\n')
-            f.write("<h1>Comparação de Documentos</h1>\n")
-            f.write(
-                f"<p><strong>Original:</strong> {os.path.basename(original_docx)} | "
-            )
-            f.write(
-                f"<strong>Modificado:</strong> {os.path.basename(modified_docx)}</p>\n"
-            )
-            f.write("</div>\n")
-
-            f.write('<div class="diff-stats">\n')
-            f.write("<strong>Estatísticas:</strong> ")
-            f.write(
-                f'<span class="added-count">+{stats["total_additions"]} adições</span> | '
-            )
-            f.write(
-                f'<span class="removed-count">-{stats["total_deletions"]} remoções</span>\n'
-            )
-            f.write("</div>\n")
-
-            f.write('<div class="diff-content">\n')
-
-            # Regenerar o diff para exibição
-            d = difflib.unified_diff(
-                original_paragraphs,
-                modified_paragraphs,
-                fromfile="Original",
-                tofile="Modificado",
-                lineterm="",
-            )
-
-            for line in d:
-                if (
-                    line.startswith("@@")
-                    or line.startswith("---")
-                    or line.startswith("+++")
-                ):
-                    continue
-                elif line.startswith("+"):
-                    content = html.escape(line[1:])
-                    f.write(f'<p class="added">{content}</p>\n')
-                elif line.startswith("-"):
-                    content = html.escape(line[1:])
-                    f.write(f'<p class="removed">{content}</p>\n')
-                elif line.startswith(" "):
-                    content = html.escape(line[1:])
-                    f.write(f"<p>{content}</p>\n")
-
-            f.write("</div>\n")
-            f.write("</body>\n")
-            f.write("</html>\n")
+            f.write(sanitized_html)
 
         print(f"✅ Diff HTML gerado em: {output_html}")
         return stats
 
     finally:
-        # Limpar arquivos temporários
-        for temp_file in [temp_original_html, temp_modified_html]:
-            if os.path.exists(temp_file):
-                os.remove(temp_file)
+        # Limpar arquivos temporários (temporariamente comentado para debug)
+        # for temp_file in [temp_original_html, temp_modified_html]:
+        #     if os.path.exists(temp_file):
+        #         os.remove(temp_file)
+        pass
 
 
 def main():
@@ -265,7 +277,7 @@ Exemplos de uso:
         # Configurar estilo CSS se não for dry-run
         if not args.dry_run:
             # Temporariamente modificar get_css_styles para usar o estilo escolhido
-            import docx_utils
+            from src.docx_compare.core import docx_utils
 
             original_get_css = docx_utils.get_css_styles
             docx_utils.get_css_styles = lambda style_type="default": original_get_css(

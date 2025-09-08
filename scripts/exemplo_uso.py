@@ -9,7 +9,7 @@ do módulo docx_utils para comparar documentos DOCX.
 import os
 from datetime import datetime
 
-from docx_utils import (
+from src.docx_compare.core.docx_utils import (
     analyze_differences,
     compare_docx_files,
     convert_docx_to_html_content,
