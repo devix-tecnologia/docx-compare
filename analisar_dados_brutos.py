@@ -3,12 +3,13 @@
 Script para mostrar os dados brutos da comparação de arquivos
 """
 
-import sys
 import os
+import sys
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from processador_modelo_contrato import analyze_differences_detailed, html_to_text
-import tempfile
+from processador_modelo_contrato import analyze_differences_detailed
+
 
 def mostrar_dados_brutos_comparacao():
     """Mostra como são os dados brutos da comparação de arquivos"""
@@ -70,40 +71,37 @@ O prazo de execução..."""
     # Analisar diferenças (esta é a função que realmente usamos)
     modificacoes = analyze_differences_detailed(original_text, tagged_text)
 
-        print(f"\n📊 TOTAL DE MODIFICAÇÕES ENCONTRADAS: {len(modificacoes)}")
-        print("=" * 80)
+    print(f"\n📊 TOTAL DE MODIFICAÇÕES ENCONTRADAS: {len(modificacoes)}")
+    print("=" * 80)
 
-        for i, mod in enumerate(modificacoes):
-            print(f"\n🔸 MODIFICAÇÃO {i}:")
-            print(f"  • Categoria: {mod['categoria']}")
-            print(f"  • Sort: {mod['sort']}")
-            print(f"  • Conteúdo original: '{mod['conteudo']}'")
-            print(f"  • Alteração: '{mod['alteracao']}'")
-            print(f"  • Dados completos: {mod}")
+    for i, mod in enumerate(modificacoes):
+        print(f"\n🔸 MODIFICAÇÃO {i}:")
+        print(f"  • Categoria: {mod['categoria']}")
+        print(f"  • Sort: {mod['sort']}")
+        print(f"  • Conteúdo original: '{mod['conteudo']}'")
+        print(f"  • Alteração: '{mod['alteracao']}'")
+        print(f"  • Dados completos: {mod}")
 
-        # Agora mostrar como extraímos as tags
-        print("\n" + "=" * 80)
-        print("🏷️ EXTRAÇÃO DE TAGS:")
+    # Agora mostrar como extraímos as tags
+    print("\n" + "=" * 80)
+    print("🏷️ EXTRAÇÃO DE TAGS:")
 
-        from processador_modelo_contrato import extract_tags_from_differences
-        tags = extract_tags_from_differences(modificacoes)
+    from processador_modelo_contrato import extract_tags_from_differences
 
-        for tag in tags:
-            print(f"\n🏷️ TAG: '{tag['nome']}'")
-            print(f"  • Texto completo encontrado: '{tag['texto_completo']}'")
-            print(f"  • Posição início: {tag['posicao_inicio']}")
-            print(f"  • Posição fim: {tag['posicao_fim']}")
-            print(f"  • Linha aproximada: {tag['linha_aproximada']}")
-            print(f"  • Fonte: {tag['fonte']}")
-            print(f"  • Índice modificação: {tag['modificacao_indice']}")
-            print(f"  • Caminho início: {tag['caminho_tag_inicio']}")
-            print(f"  • Caminho fim: {tag['caminho_tag_fim']}")
-            print(f"  • Contexto: '{tag['contexto']}'")
+    tags = extract_tags_from_differences(modificacoes)
 
-    finally:
-        # Limpar arquivos temporários
-        os.unlink(arquivo_original)
-        os.unlink(arquivo_com_tags)
+    for tag in tags:
+        print(f"\n🏷️ TAG: '{tag['nome']}'")
+        print(f"  • Texto completo encontrado: '{tag['texto_completo']}'")
+        print(f"  • Posição início: {tag['posicao_inicio']}")
+        print(f"  • Posição fim: {tag['posicao_fim']}")
+        print(f"  • Linha aproximada: {tag['linha_aproximada']}")
+        print(f"  • Fonte: {tag['fonte']}")
+        print(f"  • Índice modificação: {tag['modificacao_indice']}")
+        print(f"  • Caminho início: {tag['caminho_tag_inicio']}")
+        print(f"  • Caminho fim: {tag['caminho_tag_fim']}")
+        print(f"  • Contexto: '{tag['contexto']}'")
+
 
 if __name__ == "__main__":
     mostrar_dados_brutos_comparacao()

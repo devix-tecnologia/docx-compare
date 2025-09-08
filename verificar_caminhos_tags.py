@@ -3,11 +3,13 @@
 Script para verificar como os caminhos das tags estão sendo gerados
 """
 
-import sys
 import os
+import sys
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from processador_modelo_contrato import extract_tags_from_differences
+
 
 def test_caminhos_tags():
     """Testa se os caminhos das tags estão sendo gerados corretamente"""
@@ -17,23 +19,23 @@ def test_caminhos_tags():
     # Simulando dados de modificações
     test_modifications = [
         {
-            'categoria': 'modificacao',
-            'conteudo': 'Este é o texto original sem tags',
-            'alteracao': 'Este é o texto com {{preambulo}} modificado',
-            'sort': 0
+            "categoria": "modificacao",
+            "conteudo": "Este é o texto original sem tags",
+            "alteracao": "Este é o texto com {{preambulo}} modificado",
+            "sort": 0,
         },
         {
-            'categoria': 'adicao',
-            'conteudo': '',
-            'alteracao': 'Nova seção com {{1}} e {{1.1}} adicionadas',
-            'sort': 1
+            "categoria": "adicao",
+            "conteudo": "",
+            "alteracao": "Nova seção com {{1}} e {{1.1}} adicionadas",
+            "sort": 1,
         },
         {
-            'categoria': 'modificacao',
-            'conteudo': 'Texto antigo',
-            'alteracao': 'Novo texto com {{condicoes_gerais}} e {{2}}',
-            'sort': 2
-        }
+            "categoria": "modificacao",
+            "conteudo": "Texto antigo",
+            "alteracao": "Novo texto com {{condicoes_gerais}} e {{2}}",
+            "sort": 2,
+        },
     ]
 
     # Extrair tags
@@ -50,6 +52,7 @@ def test_caminhos_tags():
         print()
 
     return tags_encontradas
+
 
 if __name__ == "__main__":
     tags = test_caminhos_tags()

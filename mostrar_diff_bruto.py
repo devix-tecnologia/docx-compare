@@ -5,6 +5,7 @@ Script para mostrar o formato diff bruto gerado pelo difflib
 
 import difflib
 
+
 def mostrar_diff_bruto():
     """Mostra o formato diff bruto que é usado internamente"""
 
@@ -53,12 +54,12 @@ CLÁUSULA {{1.2}} - PRAZO
 O prazo de execução..."""
 
     print("📄 TEXTO ORIGINAL:")
-    for i, linha in enumerate(original_text.split('\n'), 1):
+    for i, linha in enumerate(original_text.split("\n"), 1):
         print(f"{i:2d}: {linha}")
 
     print("\n" + "=" * 80)
     print("🏷️ TEXTO COM TAGS:")
-    for i, linha in enumerate(tagged_text.split('\n'), 1):
+    for i, linha in enumerate(tagged_text.split("\n"), 1):
         print(f"{i:2d}: {linha}")
 
     print("\n" + "=" * 80)
@@ -88,15 +89,15 @@ O prazo de execução..."""
     print("-" * 80)
 
     for linha_diff in diff:
-        if linha_diff.startswith('@@'):
+        if linha_diff.startswith("@@"):
             print(f"📍 {linha_diff}")
-        elif linha_diff.startswith('---'):
+        elif linha_diff.startswith("---"):
             print(f"📄 ARQUIVO ORIGINAL: {linha_diff}")
-        elif linha_diff.startswith('+++'):
+        elif linha_diff.startswith("+++"):
             print(f"🏷️  ARQUIVO MODIFICADO: {linha_diff}")
-        elif linha_diff.startswith('-'):
+        elif linha_diff.startswith("-"):
             print(f"❌ REMOVIDO: {linha_diff}")
-        elif linha_diff.startswith('+'):
+        elif linha_diff.startswith("+"):
             print(f"✅ ADICIONADO: {linha_diff}")
         else:
             print(f"➡️  CONTEXTO: {linha_diff}")
@@ -114,7 +115,7 @@ O prazo de execução..."""
         print(f"\n📍 Processando linha {i}: {repr(line)}")
 
         if line.startswith("@@") or line.startswith("---") or line.startswith("+++"):
-            print(f"   🔸 Cabeçalho do diff - ignorado")
+            print("   🔸 Cabeçalho do diff - ignorado")
             i += 1
             continue
         elif line.startswith("-"):
@@ -124,10 +125,14 @@ O prazo de execução..."""
                 if i + 1 < len(diff) and diff[i + 1].startswith("+"):
                     modified_content = diff[i + 1][1:].strip()
                     print(f"   🔸 Próxima linha é adição: '{modified_content}'")
-                    print(f"   ➡️  MODIFICAÇÃO #{modification_count}: '{original_content}' → '{modified_content}'")
+                    print(
+                        f"   ➡️  MODIFICAÇÃO #{modification_count}: '{original_content}' → '{modified_content}'"
+                    )
                     i += 2
                 else:
-                    print(f"   ➡️  REMOÇÃO #{modification_count}: '{original_content}' (sem substituto)")
+                    print(
+                        f"   ➡️  REMOÇÃO #{modification_count}: '{original_content}' (sem substituto)"
+                    )
                     i += 1
                 modification_count += 1
             else:
@@ -140,8 +145,9 @@ O prazo de execução..."""
                 modification_count += 1
             i += 1
         else:
-            print(f"   🔸 Linha de contexto - ignorada")
+            print("   🔸 Linha de contexto - ignorada")
             i += 1
+
 
 if __name__ == "__main__":
     mostrar_diff_bruto()

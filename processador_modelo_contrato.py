@@ -16,13 +16,11 @@ import sys
 import tempfile
 import threading
 import time
-import uuid
 from datetime import datetime
-from typing import List, Dict, Set
 
 import requests
 from dotenv import load_dotenv
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify
 
 # Carregar variáveis de ambiente
 load_dotenv()
@@ -95,7 +93,7 @@ def signal_handler(signum, _frame):
     sys.exit(0)
 
 
-def extract_tags_from_differences(modifications: List[Dict]) -> List[Dict]:
+def extract_tags_from_differences(modifications: list[dict]) -> list[dict]:
     """
     Extrai tags das modificações encontradas entre os documentos.
 
@@ -113,18 +111,17 @@ def extract_tags_from_differences(modifications: List[Dict]) -> List[Dict]:
     """
     tag_patterns = [
         # Padrões para tags textuais: {{tag}} com espaços opcionais
-        r'(?<!\{)\{\{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\}\}(?!\})',
+        r"(?<!\{)\{\{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\}\}(?!\})",
         # Padrões para tags textuais auto-fechadas: {{tag /}} com espaços opcionais
-        r'(?<!\{)\{\{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*/\s*\}\}(?!\})',
+        r"(?<!\{)\{\{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*/\s*\}\}(?!\})",
         # Padrões para tags de fechamento: {{/tag}} com espaços opcionais
-        r'(?<!\{)\{\{\s*/\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\}\}(?!\})',
-
+        r"(?<!\{)\{\{\s*/\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\}\}(?!\})",
         # Padrões para tags numéricas: {{1}}, {{1.1}}, {{1.2.3}} etc.
-        r'(?<!\{)\{\{\s*(\d+(?:\.\d+)*)\s*\}\}(?!\})',
+        r"(?<!\{)\{\{\s*(\d+(?:\.\d+)*)\s*\}\}(?!\})",
         # Tags numéricas auto-fechadas: {{1 /}}, {{1.1 /}} etc.
-        r'(?<!\{)\{\{\s*(\d+(?:\.\d+)*)\s*/\s*\}\}(?!\})',
+        r"(?<!\{)\{\{\s*(\d+(?:\.\d+)*)\s*/\s*\}\}(?!\})",
         # Tags numéricas de fechamento: {{/1}}, {{/1.1}} etc.
-        r'(?<!\{)\{\{\s*/\s*(\d+(?:\.\d+)*)\s*\}\}(?!\})',
+        r"(?<!\{)\{\{\s*/\s*(\d+(?:\.\d+)*)\s*\}\}(?!\})",
     ]
 
     tags_encontradas = {}  # Usar dict para evitar duplicatas e armazenar info adicional
@@ -133,7 +130,7 @@ def extract_tags_from_differences(modifications: List[Dict]) -> List[Dict]:
         # Verificar tanto o conteúdo original quanto a alteração
         textos_para_analisar = [
             ("original", modification.get("conteudo", "")),
-            ("alteracao", modification.get("alteracao", ""))
+            ("alteracao", modification.get("alteracao", "")),
         ]
 
         for fonte, texto in textos_para_analisar:
@@ -148,10 +145,12 @@ def extract_tags_from_differences(modifications: List[Dict]) -> List[Dict]:
                     tag_nome = match.group(1).strip()
 
                     # Para tags numéricas, manter formato original
-                    if re.match(r'^\d+(?:\.\d+)*$', tag_nome):
+                    if re.match(r"^\d+(?:\.\d+)*$", tag_nome):
                         tag_nome_normalizado = tag_nome  # Manter formato numérico
                     else:
-                        tag_nome_normalizado = tag_nome.lower()  # Minúscula para tags textuais
+                        tag_nome_normalizado = (
+                            tag_nome.lower()
+                        )  # Minúscula para tags textuais
 
                     # Calcular posições no texto
                     pos_inicio = match.start()
@@ -159,33 +158,35 @@ def extract_tags_from_differences(modifications: List[Dict]) -> List[Dict]:
                     texto_completo = match.group(0)
 
                     # Se a tag já existe, manter a versão com mais contexto
-                    if (tag_nome_normalizado not in tags_encontradas or
-                        len(texto) > len(tags_encontradas[tag_nome_normalizado].get('contexto', ''))):
-
+                    if tag_nome_normalizado not in tags_encontradas or len(texto) > len(
+                        tags_encontradas[tag_nome_normalizado].get("contexto", "")
+                    ):
                         # Calcular linha aproximada
-                        linha_aproximada = texto[:pos_inicio].count('\n') + 1
+                        linha_aproximada = texto[:pos_inicio].count("\n") + 1
 
                         tags_encontradas[tag_nome_normalizado] = {
-                            'nome': tag_nome_normalizado,
-                            'texto_completo': texto_completo,
-                            'posicao_inicio': pos_inicio,
-                            'posicao_fim': pos_fim,
-                            'contexto': texto[max(0, pos_inicio-100):pos_fim+100],
-                            'fonte': fonte,
-                            'linha_aproximada': linha_aproximada,
-                            'modificacao_indice': idx,
-                            'caminho_tag_inicio': f"modificacao_{idx}_linha_{linha_aproximada}_pos_{pos_inicio}",
-                            'caminho_tag_fim': f"modificacao_{idx}_linha_{linha_aproximada}_pos_{pos_fim}"
+                            "nome": tag_nome_normalizado,
+                            "texto_completo": texto_completo,
+                            "posicao_inicio": pos_inicio,
+                            "posicao_fim": pos_fim,
+                            "contexto": texto[max(0, pos_inicio - 100) : pos_fim + 100],
+                            "fonte": fonte,
+                            "linha_aproximada": linha_aproximada,
+                            "modificacao_indice": idx,
+                            "caminho_tag_inicio": f"modificacao_{idx}_linha_{linha_aproximada}_pos_{pos_inicio}",
+                            "caminho_tag_fim": f"modificacao_{idx}_linha_{linha_aproximada}_pos_{pos_fim}",
                         }
 
                         if verbose_mode:
-                            print(f"🏷️  Tag encontrada: '{tag_nome_normalizado}' em '{texto_completo}' ({fonte})")
+                            print(
+                                f"🏷️  Tag encontrada: '{tag_nome_normalizado}' em '{texto_completo}' ({fonte})"
+                            )
 
     # Converter dict para lista
     resultado = list(tags_encontradas.values())
 
     if verbose_mode:
-        tags_nomes = [tag['nome'] for tag in resultado]
+        tags_nomes = [tag["nome"] for tag in resultado]
         print(f"🏷️  Extraídas {len(resultado)} tags únicas: {tags_nomes}")
 
     return resultado
@@ -196,7 +197,9 @@ def buscar_modelos_para_processar():
     Busca modelos de contrato com status 'processar' no Directus
     """
     try:
-        print(f"🔍 {datetime.now().strftime('%H:%M:%S')} - Buscando modelos para processar...")
+        print(
+            f"🔍 {datetime.now().strftime('%H:%M:%S')} - Buscando modelos para processar..."
+        )
 
         if verbose_mode:
             print("🧪 Testando conectividade com query simples...")
@@ -234,7 +237,7 @@ def buscar_modelos_para_processar():
                 "nome",
                 "versao",
                 "arquivo_original",
-                "arquivo_com_tags"
+                "arquivo_com_tags",
             ]
 
             params = {
@@ -284,9 +287,7 @@ def buscar_modelos_para_processar():
         return []
 
 
-def download_file_from_directus(
-    file_id: str, cache_dir: str = ""
-) -> tuple[str, str]:
+def download_file_from_directus(file_id: str, cache_dir: str = "") -> tuple[str, str]:
     """
     Baixa um arquivo do Directus usando o ID do arquivo.
 
@@ -449,7 +450,9 @@ def analyze_differences_detailed(original_text, modified_text):
     return modifications
 
 
-def salvar_tags_modelo_contrato(modelo_id: str, tags_encontradas: List[Dict], dry_run=False):
+def salvar_tags_modelo_contrato(
+    modelo_id: str, tags_encontradas: list[dict], dry_run=False
+):
     """
     Salva as tags encontradas na coleção modelo_contrato_tag
 
@@ -470,21 +473,25 @@ def salvar_tags_modelo_contrato(modelo_id: str, tags_encontradas: List[Dict], dr
 
         print(f"💾 Salvando {len(tags_encontradas)} tags para modelo {modelo_id}")
 
-        for tag_info in sorted(tags_encontradas, key=lambda x: x['nome']):
+        for tag_info in sorted(tags_encontradas, key=lambda x: x["nome"]):
             tag_data = {
                 "modelo_contrato": modelo_id,
-                "tag_nome": tag_info['nome'],
-                "caminho_tag_inicio": tag_info.get('caminho_tag_inicio', ''),
-                "caminho_tag_fim": tag_info.get('caminho_tag_fim', ''),
-                "contexto": tag_info.get('contexto', '')[:500],  # Limitar contexto a 500 chars
-                "linha_aproximada": tag_info.get('linha_aproximada', 0),
-                "posicao_inicio": tag_info.get('posicao_inicio', 0),
-                "posicao_fim": tag_info.get('posicao_fim', 0),
-                "status": "published"
+                "tag_nome": tag_info["nome"],
+                "caminho_tag_inicio": tag_info.get("caminho_tag_inicio", ""),
+                "caminho_tag_fim": tag_info.get("caminho_tag_fim", ""),
+                "contexto": tag_info.get("contexto", "")[
+                    :500
+                ],  # Limitar contexto a 500 chars
+                "linha_aproximada": tag_info.get("linha_aproximada", 0),
+                "posicao_inicio": tag_info.get("posicao_inicio", 0),
+                "posicao_fim": tag_info.get("posicao_fim", 0),
+                "status": "published",
             }
 
             if dry_run:
-                print(f"🏃‍♂️ DRY-RUN: Criaria tag '{tag_info['nome']}' para modelo {modelo_id}")
+                print(
+                    f"🏃‍♂️ DRY-RUN: Criaria tag '{tag_info['nome']}' para modelo {modelo_id}"
+                )
                 tags_criadas.append(f"mock-tag-id-{tag_info['nome']}")
                 continue
 
@@ -505,13 +512,19 @@ def salvar_tags_modelo_contrato(modelo_id: str, tags_encontradas: List[Dict], dr
                     tags_criadas.append(tag_id)
                     print(f"✅ Tag '{tag_info['nome']}' criada com ID: {tag_id}")
                     if verbose_mode:
-                        print(f"   📍 Caminho início: {tag_info.get('caminho_tag_inicio', 'N/A')}")
-                        print(f"   📍 Caminho fim: {tag_info.get('caminho_tag_fim', 'N/A')}")
+                        print(
+                            f"   📍 Caminho início: {tag_info.get('caminho_tag_inicio', 'N/A')}"
+                        )
+                        print(
+                            f"   📍 Caminho fim: {tag_info.get('caminho_tag_fim', 'N/A')}"
+                        )
                 else:
                     print(f"⚠️ Tag '{tag_info['nome']}' criada mas sem ID retornado")
             else:
                 error_text = response.text[:200]
-                print(f"❌ Erro ao criar tag '{tag_info['nome']}': {response.status_code} - {error_text}")
+                print(
+                    f"❌ Erro ao criar tag '{tag_info['nome']}': {response.status_code} - {error_text}"
+                )
 
         return tags_criadas
 
@@ -525,7 +538,7 @@ def update_modelo_status(
     status: str,
     total_tags: int = 0,
     error_message: str = "",
-    dry_run: bool = False
+    dry_run: bool = False,
 ):
     """
     Atualiza o status do modelo de contrato
@@ -551,14 +564,9 @@ def update_modelo_status(
                 f"{error_message}"
             )
         else:
-            observacao = (
-                f"Status atualizado para '{status}' em {datetime.now().strftime('%d/%m/%Y %H:%M')}"
-            )
+            observacao = f"Status atualizado para '{status}' em {datetime.now().strftime('%d/%m/%Y %H:%M')}"
 
-        update_data = {
-            "status": status,
-            "observacao": observacao
-        }
+        update_data = {"status": status, "observacao": observacao}
 
         if dry_run:
             print("🏃‍♂️ DRY-RUN: Não executando atualização no Directus")
@@ -615,7 +623,9 @@ def processar_modelo_contrato(modelo_data, dry_run=False):
         arquivo_com_tags_id = modelo_data.get("arquivo_com_tags")
 
         if not arquivo_original_id or not arquivo_com_tags_id:
-            raise Exception("IDs de arquivo original ou arquivo com tags não encontrados")
+            raise Exception(
+                "IDs de arquivo original ou arquivo com tags não encontrados"
+            )
 
         print(f"📁 Arquivo original: {arquivo_original_id}")
         print(f"🏷️  Arquivo com tags: {arquivo_com_tags_id}")
@@ -663,18 +673,22 @@ def processar_modelo_contrato(modelo_data, dry_run=False):
 
             # 4. Extrair tags das diferenças
             tags_encontradas = extract_tags_from_differences(modifications)
-            tag_names = [tag['nome'] for tag in tags_encontradas]
-            print(f"🏷️  Extraídas {len(tags_encontradas)} tags únicas: {sorted(tag_names)}")
+            tag_names = [tag["nome"] for tag in tags_encontradas]
+            print(
+                f"🏷️  Extraídas {len(tags_encontradas)} tags únicas: {sorted(tag_names)}"
+            )
 
             # 5. Salvar tags no banco
-            tags_criadas = salvar_tags_modelo_contrato(modelo_id, tags_encontradas, dry_run)
+            tags_criadas = salvar_tags_modelo_contrato(
+                modelo_id, tags_encontradas, dry_run
+            )
 
             # 6. Atualizar status do modelo para concluído
             update_modelo_status(
                 modelo_id,
                 "concluido",
                 total_tags=len(tags_encontradas),
-                dry_run=dry_run
+                dry_run=dry_run,
             )
 
             print(f"✅ Modelo {modelo_id} processado com sucesso!")
@@ -701,10 +715,7 @@ def processar_modelo_contrato(modelo_data, dry_run=False):
         print(f"❌ Erro ao processar modelo {modelo_id}: {error_msg}")
         if not dry_run:
             update_modelo_status(
-                modelo_id,
-                "erro",
-                error_message=error_msg,
-                dry_run=dry_run
+                modelo_id, "erro", error_message=error_msg, dry_run=dry_run
             )
 
 
@@ -784,17 +795,19 @@ def status():
 def metrics():
     """Métricas básicas do processador"""
     try:
-        return jsonify({
-            "processador_ativo": processador_ativo,
-            "tipo": "modelo_contrato",
-            "directus_url": DIRECTUS_BASE_URL,
-            "results_dir": RESULTS_DIR,
-            "check_interval": check_interval,
-            "request_timeout": request_timeout,
-            "verbose_mode": verbose_mode,
-            "flask_port": FLASK_PORT,
-            "timestamp": datetime.now().isoformat(),
-        })
+        return jsonify(
+            {
+                "processador_ativo": processador_ativo,
+                "tipo": "modelo_contrato",
+                "directus_url": DIRECTUS_BASE_URL,
+                "results_dir": RESULTS_DIR,
+                "check_interval": check_interval,
+                "request_timeout": request_timeout,
+                "verbose_mode": verbose_mode,
+                "flask_port": FLASK_PORT,
+                "timestamp": datetime.now().isoformat(),
+            }
+        )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -811,14 +824,14 @@ def index():
             <meta charset="utf-8">
             <style>
                 body {{ font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }}
-                .status {{ color: {'green' if processador_ativo else 'red'}; }}
+                .status {{ color: {"green" if processador_ativo else "red"}; }}
                 .endpoint {{ background: #f5f5f5; padding: 10px; margin: 5px 0; border-radius: 4px; }}
                 .code {{ font-family: monospace; background: #e8e8e8; padding: 2px 6px; border-radius: 3px; }}
             </style>
         </head>
         <body>
             <h1>🏷️ Processador de Modelo de Contrato</h1>
-            <p><strong>Status:</strong> <span class="status">{'🟢 Ativo' if processador_ativo else '🔴 Parado'}</span></p>
+            <p><strong>Status:</strong> <span class="status">{"🟢 Ativo" if processador_ativo else "🔴 Parado"}</span></p>
             <p><strong>Directus:</strong> <span class="code">{DIRECTUS_BASE_URL}</span></p>
             <p><strong>Intervalo de verificação:</strong> {check_interval}s</p>
             <p><strong>Porta:</strong> {FLASK_PORT}</p>
@@ -833,12 +846,12 @@ def index():
             <p><strong>Processo:</strong></p>
             <ul>
                 <li>Compara <code>arquivo_original</code> vs <code>arquivo_com_tags</code></li>
-                <li>Extrai tags das diferenças (padrões {{'{'}tag{'}'}} etc.)</li>
+                <li>Extrai tags das diferenças (padrões {{'{"}tag{"}'}} etc.)</li>
                 <li>Salva tags na coleção <code>modelo_contrato_tag</code></li>
                 <li>Atualiza status para "concluido"</li>
             </ul>
 
-            <p><strong>Última atualização:</strong> {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}</p>
+            <p><strong>Última atualização:</strong> {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}</p>
         </body>
         </html>
         """

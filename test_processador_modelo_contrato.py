@@ -3,8 +3,8 @@
 Testes para o processador de modelo de contrato
 """
 
-import sys
 import os
+import sys
 
 # Adicionar o diretório raiz ao path para importar o processador
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -21,18 +21,18 @@ def test_extract_tags_basic():
             "categoria": "adicao",
             "conteudo": "",
             "alteracao": "Este é o {{cabecalho}} do documento",
-            "sort": 1
+            "sort": 1,
         },
         {
             "categoria": "modificacao",
             "conteudo": "Texto original",
             "alteracao": "Texto com {{nome_cliente}} modificado",
-            "sort": 2
-        }
+            "sort": 2,
+        },
     ]
 
     tags_info = extract_tags_from_differences(modifications)
-    tags = {tag['nome'] for tag in tags_info}
+    tags = {tag["nome"] for tag in tags_info}
     expected_tags = {"cabecalho", "nome_cliente"}
 
     print(f"   Tags encontradas: {sorted(tags)}")
@@ -40,8 +40,8 @@ def test_extract_tags_basic():
 
     # Verificar se tem informações de caminho
     for tag_info in tags_info:
-        assert 'caminho_tag_inicio' in tag_info, "Tag deve ter caminho_tag_inicio"
-        assert 'caminho_tag_fim' in tag_info, "Tag deve ter caminho_tag_fim"
+        assert "caminho_tag_inicio" in tag_info, "Tag deve ter caminho_tag_inicio"
+        assert "caminho_tag_fim" in tag_info, "Tag deve ter caminho_tag_fim"
 
     assert tags == expected_tags, f"Esperado {expected_tags}, obtido {tags}"
     print("   ✅ Teste passou!")
@@ -57,7 +57,7 @@ def test_extract_tags_with_spaces():
             "categoria": "adicao",
             "conteudo": "",
             "alteracao": "{{ cabecalho }} e {{ data_atual }}",
-            "sort": 1
+            "sort": 1,
         }
     ]
 
@@ -81,7 +81,7 @@ def test_extract_tags_self_closing():
             "categoria": "adicao",
             "conteudo": "",
             "alteracao": "Insira {{linha /}} aqui e {{quebra_pagina /}} também",
-            "sort": 1
+            "sort": 1,
         }
     ]
 
@@ -105,7 +105,7 @@ def test_extract_tags_closing():
             "categoria": "adicao",
             "conteudo": "",
             "alteracao": "{{inicio_secao}} conteúdo {{/inicio_secao}}",
-            "sort": 1
+            "sort": 1,
         }
     ]
 
@@ -129,18 +129,25 @@ def test_extract_tags_mixed():
             "categoria": "adicao",
             "conteudo": "",
             "alteracao": "{{cabecalho}} texto {{ nome_cliente }} mais {{linha /}} e {{inicio}} ... {{/inicio}}",
-            "sort": 1
+            "sort": 1,
         },
         {
             "categoria": "modificacao",
             "conteudo": "Texto original {{old_tag}}",
             "alteracao": "Texto modificado {{ new_tag }}",
-            "sort": 2
-        }
+            "sort": 2,
+        },
     ]
 
     tags = extract_tags_from_differences(modifications)
-    expected_tags = {"cabecalho", "nome_cliente", "linha", "inicio", "old_tag", "new_tag"}
+    expected_tags = {
+        "cabecalho",
+        "nome_cliente",
+        "linha",
+        "inicio",
+        "old_tag",
+        "new_tag",
+    }
 
     print(f"   Tags encontradas: {sorted(tags)}")
     print(f"   Tags esperadas: {sorted(expected_tags)}")
@@ -159,7 +166,7 @@ def test_extract_tags_no_tags():
             "categoria": "adicao",
             "conteudo": "",
             "alteracao": "Texto normal sem tags",
-            "sort": 1
+            "sort": 1,
         }
     ]
 
@@ -183,7 +190,7 @@ def test_extract_tags_invalid_patterns():
             "categoria": "adicao",
             "conteudo": "",
             "alteracao": "{tag} {{}} {{123tag}} {{tag-with-dash}} texto {{{triplo}}}",
-            "sort": 1
+            "sort": 1,
         }
     ]
 
@@ -207,7 +214,7 @@ def test_extract_tags_case_insensitive():
             "categoria": "adicao",
             "conteudo": "",
             "alteracao": "{{CABECALHO}} {{Nome_Cliente}} {{data_ATUAL}}",
-            "sort": 1
+            "sort": 1,
         }
     ]
 
@@ -234,7 +241,7 @@ def run_all_tests():
         test_extract_tags_mixed,
         test_extract_tags_no_tags,
         test_extract_tags_invalid_patterns,
-        test_extract_tags_case_insensitive
+        test_extract_tags_case_insensitive,
     ]
 
     passed = 0

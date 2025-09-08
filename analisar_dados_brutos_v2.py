@@ -3,11 +3,16 @@
 Script para mostrar os dados brutos da comparação de arquivos
 """
 
-import sys
 import os
+import sys
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from processador_modelo_contrato import analyze_differences_detailed, extract_tags_from_differences
+from processador_modelo_contrato import (
+    analyze_differences_detailed,
+    extract_tags_from_differences,
+)
+
 
 def mostrar_dados_brutos_comparacao():
     """Mostra como são os dados brutos da comparação de arquivos"""
@@ -80,7 +85,7 @@ O prazo de execução..."""
         print(f"  • Alteração: '{mod['alteracao']}'")
 
         # Mostrar todos os campos disponíveis
-        print(f"  • Dados completos:")
+        print("  • Dados completos:")
         for key, value in mod.items():
             print(f"    - {key}: {repr(value)}")
 
@@ -92,17 +97,18 @@ O prazo de execução..."""
 
     for tag in tags:
         print(f"\n🏷️ TAG: '{tag['nome']}'")
-        print(f"  • Dados completos da tag:")
+        print("  • Dados completos da tag:")
         for key, value in tag.items():
             print(f"    - {key}: {repr(value)}")
 
-        print(f"\n  🔍 ORIGEM DOS CAMINHOS:")
+        print("\n  🔍 ORIGEM DOS CAMINHOS:")
         print(f"    - Modificação índice: {tag['modificacao_indice']}")
         print(f"    - Linha aproximada: {tag['linha_aproximada']}")
         print(f"    - Posição início: {tag['posicao_inicio']}")
         print(f"    - Posição fim: {tag['posicao_fim']}")
         print(f"    - Caminho gerado início: {tag['caminho_tag_inicio']}")
         print(f"    - Caminho gerado fim: {tag['caminho_tag_fim']}")
+
 
 if __name__ == "__main__":
     mostrar_dados_brutos_comparacao()
