@@ -136,7 +136,7 @@ def buscar_versoes_para_processar():
             if verbose_mode:
                 print("✅ Conectividade OK, tentando query com filtro...")
 
-            # Query com filtros usando query parameters - campos corretos
+            # Query com filtros usando query parameters padrão do Directus
             url_filtered = f"{DIRECTUS_BASE_URL}/items/versao"
 
             # Usar array de campos concatenado com vírgula
@@ -156,10 +156,10 @@ def buscar_versoes_para_processar():
 
             params = {
                 "filter[status][_eq]": "processar",
-                "limit": 10,
+                "filter[contrato][modelo_contrato][status][_eq]": "publicado",
+                "limit": 100,
                 "sort": "date_created",
                 "fields": ",".join(fields_array),
-                # TODO: limitar as versoes cuja data_created seja menor
             }
 
             if verbose_mode:
