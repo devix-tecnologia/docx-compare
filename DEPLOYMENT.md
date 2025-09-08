@@ -1,239 +1,170 @@
-# 🚀 Deployment Guide - Processador Automático de Versões
+# Guia de Deployment - docx-compare
 
-Este guia mostra como fazer o deploy da aplicação usando Docker para produção.
+Este guia explica como fazer deploy da aplicação `docx-compare` usando GitHub Actions otimizados, Docker com arquitetura de estágios base e ferramentas Python modernas.
 
-## 📋 Pré-requisitos
+## 🚀 Workflows de GitHub Actions
 
-- Docker e Docker Compose instalados
-- Acesso ao Directus configurado
-- Pandoc instalado (já incluído na imagem Docker)
+### 1. **deploy.yml** - Workflow Padrão ✅
+- **Trigger**: Push para `main`/`master`
+- **Dockerfile**: `docker/Dockerfile.optimized`
+- **Cache**: GitHub Actions Cache otimizado
+- **Segurança**: Scan automático de vulnerabilidades
+- **Testes**: Validação funcional da imagem
 
-## 🐳 Deployment com Docker
+### 2. **deploy-advanced.yml** - Workflow Avançado 🚀
+- **Trigger**: Push ou Manual (workflow_dispatch)
+- **Escolha de Dockerfile**: optimized/secure/alpine
+- **Cache**: Scoped por variante para máxima eficiência
+- **Multi-platform**: Preparado para ARM64/AMD64
+- **Segurança**: Trivy scan detalhado
+- **Relatórios**: Summary completo no GitHub
 
-### 1. Configurar Variáveis de Ambiente
+### 3. **deploy-traditional.yml** - Compatibilidade
+- **Trigger**: Push para `main`/`master`
+- **Fallback**: Sem uv, usando pip tradicional
 
-Copie o arquivo de exemplo e configure suas variáveis:
+## ⚡ Principais Melhorias dos Workflows
 
+### **Cache Inteligente:**
+- **GitHub Actions Cache**: Reutilização de dependências Python
+- **Docker BuildKit Cache**: Layers Docker reutilizáveis por variante
+- **Base Stage Reuse**: Pandoc instalado apenas 1x por build
+
+### **Segurança Integrada:**
+- **Trivy Scanner**: Detecção automática de vulnerabilidades
+- **Multi-stage builds**: Superfície de ataque reduzida
+- **Non-root execution**: Princípio do menor privilégio
+
+### **Flexibilidade:**
+- **Manual triggers**: Escolha de Dockerfile via UI
+- **Conditional push**: Push apenas quando necessário
+- **Comprehensive reports**: Summaries detalhados no GitHub
+
+## 🔧 Como Usar os Workflows
+
+### Automático (Push)
 ```bash
-cp .env.example .env
+git push origin main
+# → Executa deploy.yml automaticamente
 ```
 
-Edite o arquivo `.env` com suas configurações:
+### Manual (Escolha de Dockerfile)
+1. Acesse **Actions** no GitHub
+2. Selecione **Advanced Build and Deploy**
+3. Clique **Run workflow**
+4. Escolha:
+   - **Dockerfile**: optimized/secure/alpine
+   - **Push to registry**: true/false
+   - **Security scan**: true/false
+
+## 🐳 Docker
+
+### Imagens Disponíveis
+
+1. **docker/Dockerfile.secure** - ✅ **Recomendado** - Sem vulnerabilidades
+2. **docker/Dockerfile.alpine** - 🏔️ **Máxima segurança** - Base Alpine 
+3. **Dockerfile.uv** - Otimizada com uv (atualizada com patches)
+4. **Dockerfile** - Tradicional (⚠️ contém vulnerabilidades)
+
+### Docker Compose
 
 ```bash
-# Configurações do Directus
-DIRECTUS_BASE_URL=https://contract.devix.co
-DIRECTUS_TOKEN=your-actual-directus-token
-DIRECTUS_EMAIL=your-email@company.com
-DIRECTUS_PASSWORD=your-password
+# Produção (imagem segura)
+docker build -f docker/Dockerfile.secure -t docx-compare:secure .
+docker run -p 8000:8000 docx-compare:secure
 
-# Configurações da aplicação
-CHECK_INTERVAL=60          # Intervalo entre verificações (segundos)
-REQUEST_TIMEOUT=30         # Timeout das requisições HTTP (segundos)
-VERBOSE_MODE=false         # Logs detalhados (true/false)
-DRY_RUN=false             # Modo teste sem alterações (true/false)
+# Desenvolvimento
+docker-compose -f docker-compose.production.yml --profile dev up -d
+
+# Testes
+docker-compose -f docker-compose.production.yml --profile test up
 ```
 
-### 2. Build e Deploy
-
-#### Opção A: Docker Compose (Recomendado)
+### Comandos Make
 
 ```bash
-# Build e start
-docker-compose up -d
+# Build imagem segura
+make docker-build-secure
 
-# Verificar logs
-docker-compose logs -f
+# Teste de segurança
+make docker-scan
 
-# Verificar status
-curl http://localhost:5005/health
+# Execução
+make docker-run-secure
 ```
 
-#### Opção B: Docker Manual
+## ⚙️ Configuração do GitHub
 
-```bash
-# Build da imagem
-docker build -t docx-compare .
+### Secrets Necessários (Opcional)
 
-# Executar container
-docker run -d \
-  --name docx-compare-processor \
-  -p 5005:5005 \
-  --env-file .env \
-  -v $(pwd)/results:/app/results \
-  -v $(pwd)/results:/app/results \
-  --restart unless-stopped \
-  docx-compare
+Para push automático para Docker Hub:
+
+```
+DOCKER_USERNAME - seu usuário do Docker Hub
+DOCKER_PASSWORD - sua senha/token do Docker Hub
 ```
 
-### 3. Monitoramento
+### Variáveis de Ambiente
 
-#### Endpoints Disponíveis
-
-- **Health Check**: `GET http://localhost:5005/health`
-- **Status**: `GET http://localhost:5005/status`
-- **Resultados**: `GET http://localhost:5005/results/<filename>`
-
-#### Verificar Status
-
+No arquivo `.env`:
 ```bash
-# Health check
-curl http://localhost:5005/health
-
-# Status detalhado
-curl http://localhost:5005/status
-
-# Logs em tempo real
-docker-compose logs -f docx-compare
-```
-
-## 🔧 Configurações de Produção
-
-### Servidor WSGI
-
-A aplicação usa **Gunicorn** como servidor WSGI para produção:
-
-- **Workers**: `CPU cores * 2 + 1`
-- **Timeout**: 300 segundos
-- **Keep-alive**: 60 segundos
-- **Max requests**: 1000 por worker
-
-### Recursos da Aplicação
-
-- **Processamento automático** em background
-- **Encerramento gracioso** com sinais SIGTERM/SIGINT
-- **Health checks** para monitoramento
-- **Logs estruturados** para análise
-- **Volumes persistentes** para resultados
-
-### Variáveis de Ambiente Disponíveis
-
-| Variável | Padrão | Descrição |
-|----------|--------|-----------|
-| `DIRECTUS_BASE_URL` | - | URL base do Directus |
-| `DIRECTUS_TOKEN` | - | Token de acesso ao Directus |
-| `CHECK_INTERVAL` | 60 | Intervalo entre verificações (s) |
-| `REQUEST_TIMEOUT` | 30 | Timeout HTTP (s) |
-| `VERBOSE_MODE` | false | Logs detalhados |
-| `DRY_RUN` | false | Modo teste sem alterações |
-| `RESULTS_DIR` | results | Diretório de resultados |
-
-## 🔒 Segurança
-
-### Usuário Não-Root
-
-A aplicação roda com usuário não-root (`appuser`) para segurança.
-
-### Volumes
-
-```bash
-# Resultados persistentes
-./results:/app/results
-
-# Outputs acessíveis via web
-./results:/app/results
-```
-
-### Health Checks
-
-```bash
-# Docker Compose inclui health check automático
-healthcheck:
-  test: ["CMD", "curl", "-f", "http://localhost:5005/health"]
-  interval: 30s
-  timeout: 10s
-  retries: 3
-```
-
-## 📊 Monitoramento e Logs
-
-### Logs Estruturados
-
-```bash
-# Ver logs em tempo real
-docker-compose logs -f
-
-# Logs de uma data específica
-docker-compose logs --since "2024-01-01T00:00:00Z"
-
-# Logs filtrados por nível
-docker-compose logs | grep ERROR
-```
-
-### Métricas Disponíveis
-
-A aplicação expõe métricas via endpoints:
-
-- **Health**: Status geral da aplicação
-- **Status**: Estado do processador e estatísticas
-- **Resultados**: Acesso aos arquivos processados
-
-## 🚀 Comandos Úteis
-
-```bash
-# Restart da aplicação
-docker-compose restart
-
-# Update da aplicação
-docker-compose down
-docker-compose build --no-cache
-docker-compose up -d
-
-# Limpeza
-docker-compose down -v  # Remove volumes
-docker system prune -a  # Limpeza geral
-
-# Backup dos resultados
-tar -czf backup-results-$(date +%Y%m%d).tar.gz results/
+FLASK_ENV=production
+RESULTS_DIR=/app/results
+PYTHONUNBUFFERED=1
 ```
 
 ## 🔧 Troubleshooting
 
-### Problemas Comuns
+### UV não funciona em produção?
+- Use o workflow `deploy-traditional.yml`
+- Set `USE_UV=false` no script de deploy
 
-1. **Erro de conectividade com Directus**
-   ```bash
-   # Verificar configurações
-   curl -H "Authorization: Bearer $DIRECTUS_TOKEN" $DIRECTUS_BASE_URL/items/versao?limit=1
-   ```
-
-2. **Container não inicia**
-   ```bash
-   # Verificar logs de inicialização
-   docker-compose logs docx-compare
-   ```
-
-3. **Erro de permissões**
-   ```bash
-   # Verificar proprietário dos volumes
-   chown -R 1000:1000 results/ results/
-   ```
-
-### Logs de Debug
-
-Para debug detalhado, configure:
-
+### Problemas de dependências?
 ```bash
-# No .env
-VERBOSE_MODE=true
-DRY_RUN=true  # Para teste sem alterações
+# Limpar cache
+uv cache clean
+# ou
+pip cache purge
+
+# Reinstalar
+uv sync --reinstall
+# ou
+pip install -r requirements.txt --force-reinstall
 ```
 
-## 🔄 Atualização
-
-Para atualizar a aplicação:
-
+### Problemas de Docker?
 ```bash
-# 1. Parar o serviço
-docker-compose down
+# Limpar imagens
+docker system prune -f
 
-# 2. Atualizar código
-git pull origin main
-
-# 3. Rebuild e restart
-docker-compose build --no-cache
-docker-compose up -d
-
-# 4. Verificar saúde
-curl http://localhost:5005/health
+# Rebuild sem cache
+docker build --no-cache -t docx-compare:latest .
 ```
+
+## 📦 Estrutura do Projeto
+
+```
+docx-compare/
+├── .github/workflows/
+│   ├── deploy.yml              # Deploy com uv
+│   └── deploy-traditional.yml  # Deploy tradicional
+├── scripts/
+│   └── deploy.sh              # Script de deploy
+├── Dockerfile                 # Docker tradicional
+├── Dockerfile.uv             # Docker otimizado
+├── docker-compose.production.yml
+└── pyproject.toml
+```
+
+## 🎯 Próximos Passos
+
+1. Configure os secrets no GitHub (se usar Docker Hub)
+2. Ajuste as portas e comandos conforme sua aplicação
+3. Teste o deployment em ambiente de staging
+4. Configure monitoring e logging
+
+## 📚 Links Úteis
+
+- [UV Documentation](https://docs.astral.sh/uv/)
+- [GitHub Actions](https://docs.github.com/actions)
+- [Docker Best Practices](https://docs.docker.com/develop/best-practices/)

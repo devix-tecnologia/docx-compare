@@ -1,0 +1,93 @@
+####################################################################################################
+# Alpine-based Dockerfile for maximum security (docx-compare)
+####################################################################################################
+
+####################################################################################################
+# Stage 0: Base Alpine image with Pandoc (shared dependency)
+####################################################################################################
+FROM python:3.13-alpine AS base-alpine-pandoc
+
+# Install security updates and Pandoc (shared across stages)
+RUN apk update && apk upgrade && apk add --no-cache \
+    pandoc=3.* \
+    curl=8.* \
+    ca-certificates \
+    && rm -rf /var/cache/apk/*
+
+####################################################################################################
+# Stage 1: Build environment (extends base with Pandoc)
+####################################################################################################
+FROM base-alpine-pandoc AS build-env
+
+# Install additional build dependencies
+RUN apk add --no-cache \
+    build-base \
+    libffi-dev \
+    openssl-dev \
+    git \
+    && rm -rf /var/cache/apk/*
+
+# Install uv for faster package management
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.local/bin:$PATH"
+
+# Set working directory
+WORKDIR /app
+
+####################################################################################################
+# Stage 2: Dependencies installation and application build
+####################################################################################################
+FROM build-env AS builder
+
+# Copy dependency files first (for better Docker layer caching)
+COPY pyproject.toml ./
+COPY uv.lock ./
+
+# Install dependencies with uv
+RUN uv sync --frozen --no-dev
+
+# Copy the rest of the application
+COPY . .
+
+####################################################################################################
+# Stage 3: Production runtime (extends base with Pandoc)
+####################################################################################################
+FROM base-alpine-pandoc AS runtime
+
+# Pandoc já está instalado via base-alpine-pandoc!
+# Apenas configurar usuário não-root
+RUN addgroup -g 1000 -S appuser && \
+    adduser -u 1000 -S appuser -G appuser
+
+# Set working directory
+WORKDIR /app
+
+# Copy Python environment and application from builder
+COPY --from=builder --chown=appuser:appuser /app/.venv /app/.venv
+COPY --from=builder --chown=appuser:appuser /app /app
+
+# Set secure environment variables
+ENV PYTHONPATH=/app \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PATH="/app/.venv/bin:$PATH" \
+    USER=appuser \
+    HOME=/home/appuser \
+    RESULTS_DIR=/app/results
+
+# Create necessary directories and home directory for non-root user
+RUN mkdir -p /home/appuser /app/results /app/logs && \
+    chown -R appuser:appuser /home/appuser /app
+
+# Switch to non-root user
+USER appuser
+
+# Expose port
+EXPOSE 8000
+
+# Add health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Default command for docx-compare
+CMD ["python", "-m", "src.main"]

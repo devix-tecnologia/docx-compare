@@ -1,0 +1,49 @@
+# Docker Compose para desenvolvimento e produção
+version: '3.8'
+
+services:
+  # Serviço principal da aplicação
+  docx-compare:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - FLASK_ENV=production
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./results:/app/results
+      - ./logs:/app/logs
+    restart: unless-stopped
+
+  # Serviço para desenvolvimento (com uv)
+  docx-compare-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.uv
+    ports:
+      - "8001:8000"
+    environment:
+      - FLASK_ENV=development
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - .:/app
+      - ./results:/app/results
+      - ./logs:/app/logs
+    restart: unless-stopped
+    profiles:
+      - dev
+
+  # Serviço para testes
+  docx-compare-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.uv
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - .:/app
+    command: ["python", "-m", "pytest", "tests/", "--cov=src"]
+    profiles:
+      - test

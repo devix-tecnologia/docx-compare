@@ -1,0 +1,103 @@
+####################################################################################################
+# Multi-stage Dockerfile for Python applications with security fixes
+####################################################################################################
+
+####################################################################################################
+# Stage 0: Base image with Pandoc (shared dependency)
+####################################################################################################
+FROM python:3.13-slim AS base-with-pandoc
+
+# Install security updates and Pandoc (shared across stages)
+RUN apt-get update && apt-get upgrade -y && apt-get install -y \
+    --no-install-recommends \
+    pandoc=3.* \
+    curl \
+    ca-certificates \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /tmp/* \
+    && rm -rf /var/tmp/*
+
+####################################################################################################
+# Stage 1: Build environment (extends base with Pandoc)
+####################################################################################################
+FROM base-with-pandoc AS build-env
+
+# Install additional build dependencies
+RUN apt-get update && apt-get install -y \
+    --no-install-recommends \
+    build-essential \
+    git \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /tmp/* \
+    && rm -rf /var/tmp/*
+
+# Install uv for faster package management
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.local/bin:$PATH"
+
+# Set working directory
+WORKDIR /app
+
+####################################################################################################
+# Stage 2: Dependencies installation and application build
+####################################################################################################
+FROM build-env AS builder
+
+# Copy dependency files first (for better Docker layer caching)
+COPY pyproject.toml ./
+COPY uv.lock ./
+
+# Install dependencies with uv
+RUN uv sync --frozen --no-dev
+
+# Copy the rest of the application
+COPY . .
+
+####################################################################################################
+# Stage 3: Production runtime (extends base with Pandoc)
+####################################################################################################
+FROM base-with-pandoc AS runtime
+
+# Pandoc já está instalado via base-with-pandoc!
+# Não precisamos reinstalar, apenas configurar usuário e app
+
+# Create non-root user for security with specific UID/GID
+RUN groupadd -r -g 1000 appuser && \
+    useradd -r -u 1000 -g appuser -m -d /home/appuser -s /bin/bash appuser
+
+# Set working directory
+WORKDIR /app
+
+# Copy Python environment from builder
+COPY --from=builder --chown=appuser:appuser /app/.venv /app/.venv
+
+# Copy application code
+COPY --from=builder --chown=appuser:appuser /app /app
+
+# Set secure environment variables
+ENV PYTHONPATH=/app \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PATH="/app/.venv/bin:$PATH" \
+    USER=appuser \
+    HOME=/home/appuser \
+    RESULTS_DIR=/app/results
+
+# Create necessary directories
+RUN mkdir -p /app/results /app/logs && \
+    chown -R appuser:appuser /app
+
+# Switch to non-root user
+USER appuser
+
+# Expose port (adjust as needed)
+EXPOSE 8000
+
+# Add health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Default command for docx-compare
+CMD ["python", "-m", "src.main"]

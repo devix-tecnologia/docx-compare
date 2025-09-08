@@ -114,3 +114,43 @@ test-file: ## Executar um arquivo de teste específico: make test-file FILE=test
 	fi
 	@echo "🧪 Executando teste: $(FILE)..."
 	$(PYTHON) "$(FILE)"
+
+## 🐳 Docker Commands
+docker-build-secure: ## Build da imagem Docker segura
+	@echo "🐳 Construindo imagem Docker segura..."
+	docker build -f docker/Dockerfile.secure -t docx-compare:secure .
+
+docker-build-alpine: ## Build da imagem Docker Alpine (máxima segurança)
+	@echo "🏔️ Construindo imagem Docker Alpine..."
+	docker build -f docker/Dockerfile.alpine -t docx-compare:alpine .
+
+docker-build-optimized: ## Build da imagem Docker super otimizada (recomendado)
+	@echo "⚡ Construindo imagem Docker otimizada com cache..."
+	docker build -f docker/Dockerfile.optimized -t docx-compare:optimized .
+
+docker-run-secure: ## Executar container seguro
+	@echo "🚀 Executando container seguro..."
+	docker run -p 8000:8000 -v $(PWD)/results:/app/results docx-compare:secure
+
+docker-run-optimized: ## Executar container otimizado
+	@echo "⚡ Executando container otimizado..."
+	docker run -p 8000:8000 -v $(PWD)/results:/app/results docx-compare:optimized
+
+docker-scan: ## Scan de vulnerabilidades na imagem
+	@echo "🔍 Verificando vulnerabilidades..."
+	docker scout cves docx-compare:secure || echo "Docker Scout não disponível, use: docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image docx-compare:secure"
+
+docker-test-secure: docker-build-secure ## Build e teste da imagem segura
+	@echo "✅ Testando imagem segura..."
+	docker run --rm docx-compare:secure python -c "import src.main; print('✅ Imagem funcionando!')"
+
+docker-benchmark: ## Comparar tamanhos das imagens Docker
+	@echo "📊 Comparando tamanhos das imagens..."
+	@echo "🐳 Dockerfile original:"
+	@docker images docx-compare:latest --format "table {{.Repository}}:{{.Tag}}\t{{.Size}}" 2>/dev/null || echo "  Não encontrada"
+	@echo "🛡️ Dockerfile.secure:"
+	@docker images docx-compare:secure --format "table {{.Repository}}:{{.Tag}}\t{{.Size}}" 2>/dev/null || echo "  Não encontrada"
+	@echo "🏔️ Dockerfile.alpine:"
+	@docker images docx-compare:alpine --format "table {{.Repository}}:{{.Tag}}\t{{.Size}}" 2>/dev/null || echo "  Não encontrada"
+	@echo "⚡ Dockerfile.optimized:"
+	@docker images docx-compare:optimized --format "table {{.Repository}}:{{.Tag}}\t{{.Size}}" 2>/dev/null || echo "  Não encontrada"

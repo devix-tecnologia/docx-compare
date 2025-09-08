@@ -1,0 +1,151 @@
+####################################################################################################
+# Dockerfile super otimizado com estágio base reutilizável
+# Demonstra as melhores práticas para reutilização de dependências pesadas
+####################################################################################################
+
+####################################################################################################
+# Stage 0: Base runtime com dependências comuns (Pandoc + Python otimizado)
+####################################################################################################
+FROM python:3.13-slim AS base-runtime
+
+# Metadados do estágio base
+LABEL stage="base-runtime" \
+      description="Base image with Pandoc and optimized Python runtime" \
+      version="1.0"
+
+# Install security updates e dependências essenciais uma única vez
+RUN apt-get update && apt-get upgrade -y && apt-get install -y \
+    --no-install-recommends \
+    pandoc=3.* \
+    curl=7.* \
+    ca-certificates \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /tmp/* \
+    && rm -rf /var/tmp/* \
+    && rm -rf /var/log/*
+
+# Otimizações Python
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONHASHSEED=random \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Criar usuário padrão (reutilizado em todos os estágios)
+RUN groupadd -r -g 1000 appuser && \
+    useradd -r -u 1000 -g appuser -m -d /home/appuser -s /bin/bash appuser
+
+####################################################################################################
+# Stage 1: Build environment (herda base + adiciona build tools)
+####################################################################################################
+FROM base-runtime AS build-env
+
+LABEL stage="build-env" \
+      description="Build environment with development tools"
+
+# Apenas ferramentas de build (Pandoc já está no base!)
+RUN apt-get update && apt-get install -y \
+    --no-install-recommends \
+    build-essential \
+    git \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install uv para gestão rápida de dependências
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.local/bin:$PATH"
+
+WORKDIR /app
+
+####################################################################################################
+# Stage 2: Dependencies (compila e instala dependências Python)
+####################################################################################################
+FROM build-env AS dependencies
+
+LABEL stage="dependencies" \
+      description="Python dependencies compilation"
+
+# Copy apenas arquivos de dependências (melhor cache)
+COPY pyproject.toml uv.lock ./
+
+# Install dependencies in virtual environment
+RUN uv sync --frozen --no-dev
+
+# Verificação de integridade das dependências
+RUN uv run python -c "import sys; print(f'Python {sys.version}')" && \
+    uv run python -c "import subprocess; subprocess.run(['pandoc', '--version'], check=True)"
+
+####################################################################################################
+# Stage 3: Application build (adiciona código da aplicação)
+####################################################################################################
+FROM dependencies AS app-build
+
+LABEL stage="app-build" \
+      description="Application code and final build"
+
+# Copy código da aplicação
+COPY . .
+
+# Build/compile se necessário
+# RUN uv run python -m compileall src/
+# RUN uv run python setup.py build_ext --inplace
+
+####################################################################################################
+# Stage 4: Production runtime (clean runtime com tudo pronto)
+####################################################################################################
+FROM base-runtime AS production
+
+LABEL stage="production" \
+      description="Final production image" \
+      app="docx-compare" \
+      maintainer="devix-tecnologia"
+
+# Pandoc + Python + usuário já estão configurados no base-runtime!
+
+WORKDIR /app
+
+# Copy apenas o que precisamos do build
+COPY --from=app-build --chown=appuser:appuser /app/.venv /app/.venv
+COPY --from=app-build --chown=appuser:appuser /app/src /app/src
+COPY --from=app-build --chown=appuser:appuser /app/pyproject.toml /app/pyproject.toml
+
+# Configuração específica da aplicação
+ENV PYTHONPATH=/app \
+    PATH="/app/.venv/bin:$PATH" \
+    RESULTS_DIR=/app/results \
+    FLASK_ENV=production
+
+# Criar diretórios de trabalho
+RUN mkdir -p /app/results /app/logs && \
+    chown -R appuser:appuser /app
+
+# Switch para usuário não-root
+USER appuser
+
+# Health check optimizado
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+EXPOSE 8000
+
+# Entry point otimizado
+ENTRYPOINT ["/app/.venv/bin/python"]
+CMD ["-m", "src.main"]
+
+####################################################################################################
+# Comentários sobre a arquitetura:
+#
+# 1. base-runtime: Pandoc + Python + usuário (reutilizável, ~150MB)
+# 2. build-env: base + build tools (reutilizável, ~200MB)
+# 3. dependencies: Dependências Python compiladas (cacheable)
+# 4. app-build: Código da aplicação (muda frequentemente)
+# 5. production: Runtime limpo (apenas o necessário, ~180MB)
+#
+# Vantagens:
+# - Pandoc instalado apenas 1x (economia de ~100MB e tempo)
+# - Layers bem segmentados para cache otimizado
+# - Build incrementais muito rápidos
+# - Runtime minimal e seguro
+# - Fácil debugging (cada stage tem propósito claro)
+####################################################################################################
