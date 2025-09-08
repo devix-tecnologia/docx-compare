@@ -8,11 +8,16 @@
         "source.organizeImports": "explicit"
     },
 
-    // Configurações Python específicas
-    "python.defaultInterpreterPath": "./venv/bin/python",
+    // Configurações Python específicas - usando UV
+    "python.defaultInterpreterPath": "./.venv/bin/python",
     "python.terminal.activateEnvironment": true,
+    "python.languageServer": "Pylance",
+    "python.formatting.provider": "none", // Deixar o Ruff ser o único formatador
 
-    // Configurações do Ruff (formatador e linter)
+    // Configurações do Ruff (formatador e linter) - usando UV
+    "ruff.enable": true,
+    "ruff.path": ["uv", "run", "ruff"],
+    "ruff.importStrategy": "fromEnvironment",
     "[python]": {
         "editor.defaultFormatter": "charliermarsh.ruff",
         "editor.formatOnSave": true,
