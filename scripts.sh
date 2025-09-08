@@ -66,7 +66,7 @@ compare() {
         echo "Uso: compare <arquivo_original> <arquivo_modificado> [arquivo_saida]"
         return 1
     fi
-    
+
     echo "📄 Comparando documentos..."
     run_with_uv docx_diff_viewer.py "$@"
 }
@@ -76,7 +76,7 @@ help() {
     echo "📚 Scripts disponíveis para docx-compare:"
     echo ""
     echo "  lint              - Executar linting com Ruff"
-    echo "  lint_fix          - Corrigir problemas de linting automaticamente"  
+    echo "  lint_fix          - Corrigir problemas de linting automaticamente"
     echo "  format            - Formatar código com Ruff"
     echo "  test              - Executar testes"
     echo "  test_coverage     - Executar testes com cobertura"
