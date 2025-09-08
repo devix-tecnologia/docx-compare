@@ -44,12 +44,14 @@ uv run python docx_diff_viewer.py documentos/doc-rafael-original.docx documentos
 ### Endpoints de Monitoramento
 
 **Processador de Versões:**
+
 - **Dashboard**: http://localhost:5005
 - **Health Check**: http://localhost:5005/health
 - **Métricas**: http://localhost:5005/metrics
 - **Resultados**: http://localhost:5005/results
 
 **Processador de Modelos:**
+
 - **Dashboard**: http://localhost:5006
 - **Health Check**: http://localhost:5006/health
 - **Métricas**: http://localhost:5006/metrics

@@ -7,10 +7,10 @@ import difflib
 
 def mostrar_diff_bruto():
     """Mostra o formato diff bruto que é usado internamente"""
-    
+
     print("🔍 Mostrando formato DIFF bruto...")
     print("=" * 80)
-    
+
     # Textos de exemplo
     original_text = """CONTRATO DE PRESTAÇÃO DE SERVIÇOS
 
@@ -51,24 +51,24 @@ As especificações técnicas...
 
 CLÁUSULA {{1.2}} - PRAZO
 O prazo de execução..."""
-    
+
     print("📄 TEXTO ORIGINAL:")
     for i, linha in enumerate(original_text.split('\n'), 1):
         print(f"{i:2d}: {linha}")
-    
+
     print("\n" + "=" * 80)
     print("🏷️ TEXTO COM TAGS:")
     for i, linha in enumerate(tagged_text.split('\n'), 1):
         print(f"{i:2d}: {linha}")
-    
+
     print("\n" + "=" * 80)
     print("🔍 DIFF BRUTO (unified_diff):")
     print("-" * 80)
-    
+
     # Gerar diff exatamente como o código faz
     original_lines = original_text.split("\n")
     modified_lines = tagged_text.split("\n")
-    
+
     diff = list(
         difflib.unified_diff(
             original_lines,
@@ -78,15 +78,15 @@ O prazo de execução..."""
             lineterm="",
         )
     )
-    
+
     # Mostrar cada linha do diff com numeração
     for i, linha_diff in enumerate(diff):
         print(f"{i:2d}: {repr(linha_diff)}")
-    
+
     print("\n" + "=" * 80)
     print("🔍 DIFF FORMATADO PARA LEITURA:")
     print("-" * 80)
-    
+
     for linha_diff in diff:
         if linha_diff.startswith('@@'):
             print(f"📍 {linha_diff}")
@@ -100,19 +100,19 @@ O prazo de execução..."""
             print(f"✅ ADICIONADO: {linha_diff}")
         else:
             print(f"➡️  CONTEXTO: {linha_diff}")
-    
+
     print("\n" + "=" * 80)
     print("🔍 PROCESSAMENTO DAS LINHAS DO DIFF:")
     print("-" * 80)
-    
+
     i = 0
     modification_count = 1
-    
+
     while i < len(diff):
         line = diff[i]
-        
+
         print(f"\n📍 Processando linha {i}: {repr(line)}")
-        
+
         if line.startswith("@@") or line.startswith("---") or line.startswith("+++"):
             print(f"   🔸 Cabeçalho do diff - ignorado")
             i += 1

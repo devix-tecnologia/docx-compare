@@ -74,7 +74,7 @@ def signal_handler(signum, _frame):
 
     signal_names = {
         signal.SIGINT: "SIGINT (Ctrl+C)",
-        signal.SIGTERM: "SIGTERM", 
+        signal.SIGTERM: "SIGTERM",
         signal.SIGHUP: "SIGHUP",
     }
 
@@ -98,27 +98,27 @@ def signal_handler(signum, _frame):
 def extract_tags_from_differences(modifications: List[Dict]) -> List[Dict]:
     """
     Extrai tags das modificações encontradas entre os documentos.
-    
+
     Padrões suportados:
     - {{tag}} ou {{ tag }} - tags textuais
     - {{1}}, {{1.1}}, {{1.2.3}} - tags numéricas
     - {{tag /}} ou {{ tag /}} - tags auto-fechadas
     - Variações com espaços
-    
+
     Args:
         modifications: Lista de modificações encontradas na comparação
-        
+
     Returns:
         List de dicionários com informações detalhadas das tags encontradas
     """
     tag_patterns = [
         # Padrões para tags textuais: {{tag}} com espaços opcionais
         r'(?<!\{)\{\{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\}\}(?!\})',
-        # Padrões para tags textuais auto-fechadas: {{tag /}} com espaços opcionais  
+        # Padrões para tags textuais auto-fechadas: {{tag /}} com espaços opcionais
         r'(?<!\{)\{\{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*/\s*\}\}(?!\})',
         # Padrões para tags de fechamento: {{/tag}} com espaços opcionais
         r'(?<!\{)\{\{\s*/\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\}\}(?!\})',
-        
+
         # Padrões para tags numéricas: {{1}}, {{1.1}}, {{1.2.3}} etc.
         r'(?<!\{)\{\{\s*(\d+(?:\.\d+)*)\s*\}\}(?!\})',
         # Tags numéricas auto-fechadas: {{1 /}}, {{1.1 /}} etc.
@@ -126,45 +126,45 @@ def extract_tags_from_differences(modifications: List[Dict]) -> List[Dict]:
         # Tags numéricas de fechamento: {{/1}}, {{/1.1}} etc.
         r'(?<!\{)\{\{\s*/\s*(\d+(?:\.\d+)*)\s*\}\}(?!\})',
     ]
-    
+
     tags_encontradas = {}  # Usar dict para evitar duplicatas e armazenar info adicional
-    
+
     for idx, modification in enumerate(modifications):
         # Verificar tanto o conteúdo original quanto a alteração
         textos_para_analisar = [
             ("original", modification.get("conteudo", "")),
             ("alteracao", modification.get("alteracao", ""))
         ]
-        
+
         for fonte, texto in textos_para_analisar:
             if not texto:
                 continue
-                
+
             # Aplicar todos os padrões de regex
             for pattern in tag_patterns:
                 matches = re.finditer(pattern, texto, re.IGNORECASE)
                 for match in matches:
                     # Limpar e normalizar o nome da tag
                     tag_nome = match.group(1).strip()
-                    
+
                     # Para tags numéricas, manter formato original
                     if re.match(r'^\d+(?:\.\d+)*$', tag_nome):
                         tag_nome_normalizado = tag_nome  # Manter formato numérico
                     else:
                         tag_nome_normalizado = tag_nome.lower()  # Minúscula para tags textuais
-                    
+
                     # Calcular posições no texto
                     pos_inicio = match.start()
                     pos_fim = match.end()
                     texto_completo = match.group(0)
-                    
+
                     # Se a tag já existe, manter a versão com mais contexto
-                    if (tag_nome_normalizado not in tags_encontradas or 
+                    if (tag_nome_normalizado not in tags_encontradas or
                         len(texto) > len(tags_encontradas[tag_nome_normalizado].get('contexto', ''))):
-                        
+
                         # Calcular linha aproximada
                         linha_aproximada = texto[:pos_inicio].count('\n') + 1
-                        
+
                         tags_encontradas[tag_nome_normalizado] = {
                             'nome': tag_nome_normalizado,
                             'texto_completo': texto_completo,
@@ -177,17 +177,17 @@ def extract_tags_from_differences(modifications: List[Dict]) -> List[Dict]:
                             'caminho_tag_inicio': f"modificacao_{idx}_linha_{linha_aproximada}_pos_{pos_inicio}",
                             'caminho_tag_fim': f"modificacao_{idx}_linha_{linha_aproximada}_pos_{pos_fim}"
                         }
-                        
+
                         if verbose_mode:
                             print(f"🏷️  Tag encontrada: '{tag_nome_normalizado}' em '{texto_completo}' ({fonte})")
-    
+
     # Converter dict para lista
     resultado = list(tags_encontradas.values())
-    
+
     if verbose_mode:
         tags_nomes = [tag['nome'] for tag in resultado]
         print(f"🏷️  Extraídas {len(resultado)} tags únicas: {tags_nomes}")
-    
+
     return resultado
 
 
@@ -229,7 +229,7 @@ def buscar_modelos_para_processar():
             # Campos necessários
             fields_array = [
                 "id",
-                "date_created", 
+                "date_created",
                 "status",
                 "nome",
                 "versao",
@@ -289,11 +289,11 @@ def download_file_from_directus(
 ) -> tuple[str, str]:
     """
     Baixa um arquivo do Directus usando o ID do arquivo.
-    
+
     Args:
         file_id: ID do arquivo no Directus
         cache_dir: Diretório para cache (opcional)
-        
+
     Returns:
         Tuple[str, status]: (caminho_arquivo, status)
     """
@@ -452,18 +452,18 @@ def analyze_differences_detailed(original_text, modified_text):
 def salvar_tags_modelo_contrato(modelo_id: str, tags_encontradas: List[Dict], dry_run=False):
     """
     Salva as tags encontradas na coleção modelo_contrato_tag
-    
+
     Args:
         modelo_id: ID do modelo de contrato
         tags_encontradas: Lista de dicionários com informações das tags
         dry_run: Se True, não executa alterações no banco
-        
+
     Returns:
         List de IDs das tags criadas
     """
     try:
         tags_criadas = []
-        
+
         if not tags_encontradas:
             print("ℹ️ Nenhuma tag encontrada para salvar")
             return tags_criadas
@@ -490,7 +490,7 @@ def salvar_tags_modelo_contrato(modelo_id: str, tags_encontradas: List[Dict], dr
 
             # Criar tag no Directus
             create_url = f"{DIRECTUS_BASE_URL}/items/modelo_contrato_tag"
-            
+
             response = requests.post(
                 create_url,
                 headers=DIRECTUS_HEADERS,
@@ -522,14 +522,14 @@ def salvar_tags_modelo_contrato(modelo_id: str, tags_encontradas: List[Dict], dr
 
 def update_modelo_status(
     modelo_id: str,
-    status: str, 
+    status: str,
     total_tags: int = 0,
     error_message: str = "",
     dry_run: bool = False
 ):
     """
     Atualiza o status do modelo de contrato
-    
+
     Args:
         modelo_id: ID do modelo
         status: Novo status ('processando', 'concluido', 'erro')
@@ -593,13 +593,13 @@ def update_modelo_status(
 def processar_modelo_contrato(modelo_data, dry_run=False):
     """
     Processa um modelo de contrato específico
-    
+
     Args:
         modelo_data: Dados do modelo de contrato
         dry_run: Se True, executa sem fazer alterações no banco
     """
     modelo_id = modelo_data["id"]
-    
+
     try:
         if dry_run:
             print(f"\n🏃‍♂️ DRY-RUN: Analisando modelo {modelo_id} (sem alterações)")
@@ -611,7 +611,7 @@ def processar_modelo_contrato(modelo_data, dry_run=False):
             update_modelo_status(modelo_id, "processando", dry_run=dry_run)
 
         # 1. Obter IDs dos arquivos
-        arquivo_original_id = modelo_data.get("arquivo_original") 
+        arquivo_original_id = modelo_data.get("arquivo_original")
         arquivo_com_tags_id = modelo_data.get("arquivo_com_tags")
 
         if not arquivo_original_id or not arquivo_com_tags_id:
@@ -671,8 +671,8 @@ def processar_modelo_contrato(modelo_data, dry_run=False):
 
             # 6. Atualizar status do modelo para concluído
             update_modelo_status(
-                modelo_id, 
-                "concluido", 
+                modelo_id,
+                "concluido",
                 total_tags=len(tags_encontradas),
                 dry_run=dry_run
             )
@@ -701,8 +701,8 @@ def processar_modelo_contrato(modelo_data, dry_run=False):
         print(f"❌ Erro ao processar modelo {modelo_id}: {error_msg}")
         if not dry_run:
             update_modelo_status(
-                modelo_id, 
-                "erro", 
+                modelo_id,
+                "erro",
                 error_message=error_msg,
                 dry_run=dry_run
             )
@@ -771,7 +771,7 @@ def status():
     return jsonify(
         {
             "processador_ativo": processador_ativo,
-            "tipo": "modelo_contrato", 
+            "tipo": "modelo_contrato",
             "directus_url": DIRECTUS_BASE_URL,
             "results_dir": RESULTS_DIR,
             "check_interval": check_interval,
@@ -822,12 +822,12 @@ def index():
             <p><strong>Directus:</strong> <span class="code">{DIRECTUS_BASE_URL}</span></p>
             <p><strong>Intervalo de verificação:</strong> {check_interval}s</p>
             <p><strong>Porta:</strong> {FLASK_PORT}</p>
-            
+
             <h2>📋 Endpoints Disponíveis</h2>
             <div class="endpoint"><strong>GET /health</strong> - Verificação de saúde</div>
             <div class="endpoint"><strong>GET /status</strong> - Status detalhado do processador</div>
             <div class="endpoint"><strong>GET /metrics</strong> - Métricas do sistema</div>
-            
+
             <h2>🏷️ Funcionalidade</h2>
             <p>Este processador monitora a coleção <strong>modelo_contrato</strong> em busca de registros com status "processar".</p>
             <p><strong>Processo:</strong></p>
@@ -837,12 +837,12 @@ def index():
                 <li>Salva tags na coleção <code>modelo_contrato_tag</code></li>
                 <li>Atualiza status para "concluido"</li>
             </ul>
-            
+
             <p><strong>Última atualização:</strong> {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}</p>
         </body>
         </html>
         """
-        
+
         return html
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -949,7 +949,7 @@ if __name__ == "__main__":
 
     print("")
     print("📋 Endpoints de monitoramento:")
-    print("  • GET  /health - Verificação de saúde")  
+    print("  • GET  /health - Verificação de saúde")
     print("  • GET  /status - Status do processador")
     print("  • GET  /metrics - Métricas do sistema")
     print("")
