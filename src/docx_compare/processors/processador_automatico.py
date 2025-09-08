@@ -63,6 +63,7 @@ processador_thread = None
 verbose_mode = False
 check_interval = 60  # Intervalo de verificação em segundos (padrão: 1 minuto)
 request_timeout = 30  # Timeout das requisições HTTP em segundos (padrão: 30s)
+ultima_verificacao = None  # Timestamp da última verificação
 
 
 def signal_handler(signum, _frame):
@@ -702,7 +703,7 @@ def processar_versao(versao_data, dry_run=False):
             print("🔄 Executando comparação visual usando função interna...")
 
             # Usar a função do docx_diff_viewer diretamente
-            from docx_diff_viewer import generate_diff_html
+            from src.docx_compare.core.docx_diff_viewer import generate_diff_html
 
             try:
                 print(
@@ -750,7 +751,7 @@ def processar_versao(versao_data, dry_run=False):
             modifications = analyze_differences_detailed(original_text, modified_text)
 
             # 5. Atualizar status da versão para concluído e salvar modificações em uma única transação
-            result_url = f"http://{FLASK_HOST}:{FLASK_PORT}/outputs/{result_filename}"
+            result_url = f"http://{FLASK_HOST}:{FLASK_PORT}/results/{result_filename}"
             update_versao_status(
                 versao_id,
                 "concluido",
@@ -798,6 +799,8 @@ def loop_processador(dry_run=False):
     """
     Loop principal do processador automático
     """
+    global ultima_verificacao
+
     mode_text = []
     if dry_run:
         mode_text.append("DRY-RUN")
@@ -809,6 +812,9 @@ def loop_processador(dry_run=False):
 
     while processador_ativo:
         try:
+            # Registrar horário da verificação
+            ultima_verificacao = datetime.now()
+
             # Buscar versões para processar
             versoes = buscar_versoes_para_processar()
 
@@ -866,9 +872,9 @@ def status():
     )
 
 
-@app.route("/outputs/<path:filename>", methods=["GET"])
+@app.route("/results/<path:filename>", methods=["GET"])
 def serve_result(filename):
-    """Servir arquivos HTML de resultado"""
+    """Serve arquivos de resultado HTML."""
     try:
         return send_from_directory(RESULTS_DIR, filename)
     except FileNotFoundError:
@@ -883,6 +889,15 @@ def metrics():
         result_files = os.listdir(RESULTS_DIR) if os.path.exists(RESULTS_DIR) else []
         html_files = [f for f in result_files if f.endswith(".html")]
 
+        # Calcular próxima verificação
+        proxima_verificacao = None
+        if ultima_verificacao and processador_ativo:
+            from datetime import timedelta
+
+            proxima_verificacao = (
+                ultima_verificacao + timedelta(seconds=check_interval)
+            ).isoformat()
+
         # Informações básicas
         return jsonify(
             {
@@ -893,6 +908,10 @@ def metrics():
                 "check_interval": check_interval,
                 "request_timeout": request_timeout,
                 "verbose_mode": verbose_mode,
+                "ultima_verificacao": ultima_verificacao.isoformat()
+                if ultima_verificacao
+                else None,
+                "proxima_verificacao": proxima_verificacao,
                 "timestamp": datetime.now().isoformat(),
             }
         )
@@ -921,7 +940,7 @@ def list_results():
                         "size": stat.st_size,
                         "created": datetime.fromtimestamp(stat.st_ctime).isoformat(),
                         "modified": datetime.fromtimestamp(stat.st_mtime).isoformat(),
-                        "url": f"/outputs/{filename}",
+                        "url": f"/results/{filename}",
                     }
                 )
 
@@ -940,6 +959,16 @@ def list_results():
 def index():
     """Página inicial com informações do sistema"""
     try:
+        # Calcular horário da próxima verificação
+        proxima_verificacao_texto = "Não disponível"
+        if ultima_verificacao and processador_ativo:
+            from datetime import timedelta
+
+            proxima_verificacao = ultima_verificacao + timedelta(seconds=check_interval)
+            proxima_verificacao_texto = proxima_verificacao.strftime("%H:%M:%S")
+        elif processador_ativo:
+            proxima_verificacao_texto = "Em breve (primeira verificação)"
+
         # Retornar HTML simples para facilitar visualização
         html = f"""
         <!DOCTYPE html>
@@ -959,13 +988,14 @@ def index():
             <p><strong>Status:</strong> <span class="status">{"🟢 Ativo" if processador_ativo else "🔴 Parado"}</span></p>
             <p><strong>Directus:</strong> <span class="code">{DIRECTUS_BASE_URL}</span></p>
             <p><strong>Intervalo de verificação:</strong> {check_interval}s</p>
+            <p><strong>Próxima verificação:</strong> {proxima_verificacao_texto}</p>
 
             <h2>📋 Endpoints Disponíveis</h2>
             <div class="endpoint"><strong>GET /health</strong> - Verificação de saúde</div>
             <div class="endpoint"><strong>GET /status</strong> - Status detalhado do processador</div>
             <div class="endpoint"><strong>GET /metrics</strong> - Métricas do sistema</div>
             <div class="endpoint"><strong>GET /results</strong> - Lista de resultados processados</div>
-            <div class="endpoint"><strong>GET /outputs/&lt;filename&gt;</strong> - Visualizar resultado específico</div>
+            <div class="endpoint"><strong>GET /results/&lt;filename&gt;</strong> - Visualizar resultado específico</div>
 
             <h2>ℹ️ Informações</h2>
             <p>Este serviço monitora automaticamente o Directus em busca de versões com status "processar" e gera comparações visuais entre documentos.</p>
@@ -1084,7 +1114,7 @@ if __name__ == "__main__":
     print("📋 Endpoints de monitoramento:")
     print("  • GET  /health - Verificação de saúde")
     print("  • GET  /status - Status do processador")
-    print("  • GET  /outputs/<filename> - Visualizar resultados")
+    print("  • GET  /results/<filename> - Visualizar resultados")
     print("")
 
     # Verificar se deve usar servidor de produção

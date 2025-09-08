@@ -61,7 +61,7 @@ docker run -d \
   -p 5005:5005 \
   --env-file .env \
   -v $(pwd)/results:/app/results \
-  -v $(pwd)/outputs:/app/outputs \
+  -v $(pwd)/results:/app/results \
   --restart unless-stopped \
   docx-compare
 ```
@@ -72,7 +72,7 @@ docker run -d \
 
 - **Health Check**: `GET http://localhost:5005/health`
 - **Status**: `GET http://localhost:5005/status`
-- **Resultados**: `GET http://localhost:5005/outputs/<filename>`
+- **Resultados**: `GET http://localhost:5005/results/<filename>`
 
 #### Verificar Status
 
@@ -131,7 +131,7 @@ A aplicação roda com usuário não-root (`appuser`) para segurança.
 ./results:/app/results
 
 # Outputs acessíveis via web
-./outputs:/app/outputs
+./results:/app/results
 ```
 
 ### Health Checks
@@ -206,7 +206,7 @@ tar -czf backup-results-$(date +%Y%m%d).tar.gz results/
 3. **Erro de permissões**
    ```bash
    # Verificar proprietário dos volumes
-   chown -R 1000:1000 results/ outputs/
+   chown -R 1000:1000 results/ results/
    ```
 
 ### Logs de Debug

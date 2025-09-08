@@ -11,9 +11,13 @@ requires-python = ">=3.11"
 
 dependencies = [
     "flask>=2.3.0",
-    "requests>=2.31.0", 
+    "requests>=2.31.0",
     "python-dotenv>=1.0.0",
 ]
+
+[project.scripts]
+docx-compare = "src.docx_compare.processors.processador_automatico:main"
+docx-diff = "src.docx_compare.core.docx_diff_viewer:main"
 
 [dependency-groups]
 dev = [

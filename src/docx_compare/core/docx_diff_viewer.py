@@ -5,7 +5,7 @@ import os
 import sys
 
 from config import LUA_FILTER_PATH, RESULTS_DIR
-from docx_utils import (
+from src.docx_compare.core.docx_utils import (
     analyze_differences,
     convert_docx_to_html,
     extract_body_content,
@@ -277,7 +277,7 @@ Exemplos de uso:
         # Configurar estilo CSS se não for dry-run
         if not args.dry_run:
             # Temporariamente modificar get_css_styles para usar o estilo escolhido
-            import docx_utils
+            from src.docx_compare.core import docx_utils
 
             original_get_css = docx_utils.get_css_styles
             docx_utils.get_css_styles = lambda style_type="default": original_get_css(

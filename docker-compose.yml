@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   docx-compare:
@@ -17,7 +17,6 @@ services:
       - DRY_RUN=${DRY_RUN:-false}
     volumes:
       - ./results:/app/results
-      - ./outputs:/app/outputs
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5005/health"]

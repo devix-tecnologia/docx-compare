@@ -27,8 +27,8 @@ coverage.xml
 *~
 
 # Diretórios locais de desenvolvimento
-outputs/*
-!outputs/.gitkeep
+results/*
+!results/.gitkeep
 documentos/*
 !documentos/.gitkeep
 

@@ -11,7 +11,7 @@ DIRECTUS_TOKEN = os.getenv("DIRECTUS_TOKEN", "your-directus-token")
 
 # Diretórios do projeto
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-OUTPUTS_DIR = os.path.join(PROJECT_ROOT, "outputs")
+# Comentário: OUTPUTS_DIR removido - usando apenas RESULTS_DIR
 DOCUMENTOS_DIR = os.path.join(PROJECT_ROOT, "documentos")
 TESTS_DIR = os.path.join(PROJECT_ROOT, "tests")
 
@@ -20,7 +20,7 @@ RESULTS_DIR = os.getenv("RESULTS_DIR", "results")  # Atualizado para usar result
 LUA_FILTER_PATH = os.getenv("LUA_FILTER_PATH", "comments_html_filter_direct.lua")
 
 # Garantir que os diretórios existam
-for directory in [OUTPUTS_DIR, DOCUMENTOS_DIR, TESTS_DIR, RESULTS_DIR]:
+for directory in [DOCUMENTOS_DIR, TESTS_DIR, RESULTS_DIR]:
     os.makedirs(directory, exist_ok=True)
 
 # Configurações do Flask

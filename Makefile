@@ -44,11 +44,11 @@ check: lint format test ## Verificação completa do código
 
 run-processor: ## Executar processador automático
 	@echo "🤖 Iniciando processador automático..."
-	$(PYTHON) processador_automatico.py
+	$(PYTHON) -m src.docx_compare.processors.processador_automatico
 
 run-processor-dry: ## Executar processador automático em modo dry-run
 	@echo "🏃‍♂️ Iniciando processador automático (DRY-RUN)..."
-	$(PYTHON) processador_automatico.py --dry-run
+	$(PYTHON) -m src.docx_compare.processors.processador_automatico --dry-run
 
 clean: ## Limpar arquivos temporários e cache
 	@echo "🧹 Limpando arquivos temporários..."
@@ -75,9 +75,10 @@ compare: ## Exemplo: make compare ORIG=doc1.docx MOD=doc2.docx OUT=result.html
 	fi
 	@echo "📄 Comparando $(ORIG) com $(MOD)..."
 	@if [ -n "$(OUT)" ]; then \
-		$(PYTHON) docx_diff_viewer.py "$(ORIG)" "$(MOD)" "$(OUT)"; \
+		$(PYTHON) -m src.docx_compare.core.docx_diff_viewer "$(ORIG)" "$(MOD)" "$(OUT)"; \
 	else \
-		$(PYTHON) docx_diff_viewer.py "$(ORIG)" "$(MOD)"; \
+		$(PYTHON) -m src.docx_compare.core.docx_diff_viewer "$(ORIG)" "$(MOD)" "results/resultado.html"; \
+		echo "✅ Resultado salvo em: results/resultado.html"; \
 	fi
 
 # Comando para análise sem gerar arquivo (dry-run)
@@ -98,8 +99,8 @@ demo: ## Demonstração com documentos de exemplo
 		$(PYTHON) docx_diff_viewer.py documentos/doc-rafael-original.docx documentos/doc-rafael-alterado.docx --dry-run; \
 		echo ""; \
 		echo "📄 2. Gerando relatório HTML:"; \
-		$(PYTHON) docx_diff_viewer.py documentos/doc-rafael-original.docx documentos/doc-rafael-alterado.docx outputs/demo.html --style modern; \
-		echo "✅ Demonstração concluída! Veja outputs/demo.html"; \
+		$(PYTHON) docx_diff_viewer.py documentos/doc-rafael-original.docx documentos/doc-rafael-alterado.docx results/demo.html --style modern; \
+		echo "✅ Demonstração concluída! Veja results/demo.html"; \
 	else \
 		echo "⚠️  Documentos de exemplo não encontrados em documentos/"; \
 	fi
