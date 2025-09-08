@@ -2,7 +2,7 @@
 
 ## 🚀 Execução Rápida
 
-### Processador Automático
+### Processador Automático (Versões)
 
 ```bash
 # Executar o processador automático (principal)
@@ -13,6 +13,22 @@ uv run python processador_automatico.py --verbose
 
 # Executar em modo simulação (sem alterações)
 uv run python processador_automatico.py --dry-run
+```
+
+### Processador de Modelo de Contrato (Tags)
+
+```bash
+# Executar o processador de modelos de contrato
+uv run python processador_modelo_contrato.py
+
+# Executar com logs detalhados
+uv run python processador_modelo_contrato.py --verbose
+
+# Executar em modo simulação (sem alterações)
+uv run python processador_modelo_contrato.py --dry-run
+
+# Testar extração de tags
+uv run python test_processador_modelo_contrato.py
 ```
 
 ### Comparação Local de Documentos
@@ -27,10 +43,16 @@ uv run python docx_diff_viewer.py documentos/doc-rafael-original.docx documentos
 
 ### Endpoints de Monitoramento
 
+**Processador de Versões:**
 - **Dashboard**: http://localhost:5005
 - **Health Check**: http://localhost:5005/health
 - **Métricas**: http://localhost:5005/metrics
 - **Resultados**: http://localhost:5005/results
+
+**Processador de Modelos:**
+- **Dashboard**: http://localhost:5006
+- **Health Check**: http://localhost:5006/health
+- **Métricas**: http://localhost:5006/metrics
 
 ---
 
@@ -38,7 +60,7 @@ Sistema de processamento automático para comparação de documentos DOCX integr
 
 ## 🚀 Funcionalidades
 
-### 🤖 Processamento Automático
+### 🤖 Processamento Automático de Versões
 
 - **Monitoramento Contínuo**: Busca versões com status "processar" no Directus a cada minuto
 - **Processamento Inteligente**:
@@ -48,6 +70,15 @@ Sistema de processamento automático para comparação de documentos DOCX integr
 - **Signal Handling**: Encerramento gracioso com SIGINT/SIGTERM/SIGHUP
 - **Upload Automático**: Envia relatórios HTML para o Directus
 - **Cache Inteligente**: Evita downloads desnecessários
+
+### 🏷️ Processamento Automático de Modelos de Contrato
+
+- **Extração de Tags**: Identifica tags como `{{tag}}`, `{{ tag }}`, `{{tag /}}`, etc.
+- **Comparação Inteligente**: Compara `arquivo_original` vs `arquivo_com_tags`
+- **Análise de Diferenças**: Extrai tags apenas das modificações encontradas
+- **Validação Robusta**: Regex avançado que evita falsos positivos
+- **Persistência**: Salva tags na coleção `modelo_contrato_tag`
+- **Monitoramento Independente**: Servidor próprio na porta 5006
 
 ### 🔧 CLI - Comparação Local
 
