@@ -88,6 +88,7 @@ jobs:
           echo "🧪 Testing Docker image functionality..."
           docker run --rm \
             -e ORQUESTRADOR_SINGLE_RUN=true \
+            -e ORQUESTRADOR_INTERVALO=30 \
             -e DIRECTUS_BASE_URL=https://test.example.com \
             -e DIRECTUS_TOKEN=test-token \
             ${PROJECT_NAME}:${VERSION} python -c "

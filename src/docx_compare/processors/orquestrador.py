@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """
 Orquestrador de Processadores
-Executa os processadores automático e de modelo de contrato em paralelo ou sequencial
+Executa os         print("🎯 Orquestrador de Processadores")
+        print(f"📊 Modo de execução: {self.modo_execucao}")
+        print(f"📁 Porta de monitoramento: {self.porta_monitoramento}")
+        print(f"⏰ Intervalo de verificação: {self.intervalo_verificacao} segundos")essadores automático e de modelo de contrato em paralelo ou sequencial
 """
 
 import argparse
@@ -27,16 +30,29 @@ class ProcessorOrchestrator:
 
     def __init__(
         self,
-        modo_execucao: str = "paralelo",
-        intervalo_verificacao: int = 60,
-        porta_monitoramento: int = 5007,
-        verbose: bool = False,
+        modo_execucao: str | None = None,
+        intervalo_verificacao: int | None = None,
+        porta_monitoramento: int | None = None,
+        verbose: bool | None = None,
         dry_run: bool = False,
     ):
-        self.modo_execucao = modo_execucao  # "paralelo" ou "sequencial"
-        self.intervalo_verificacao = intervalo_verificacao
-        self.porta_monitoramento = porta_monitoramento
-        self.verbose = verbose
+        # Usar variáveis de ambiente ou valores padrão
+        self.modo_execucao = modo_execucao or os.getenv("ORQUESTRADOR_MODO", "paralelo")
+        self.intervalo_verificacao = (
+            intervalo_verificacao
+            if intervalo_verificacao is not None
+            else int(os.getenv("ORQUESTRADOR_INTERVALO", "60"))
+        )
+        self.porta_monitoramento = (
+            porta_monitoramento
+            if porta_monitoramento is not None
+            else int(os.getenv("ORQUESTRADOR_PORTA", "5007"))
+        )
+        self.verbose = (
+            verbose
+            if verbose is not None
+            else os.getenv("ORQUESTRADOR_VERBOSE", "false").lower() == "true"
+        )
         self.dry_run = dry_run
         self.running = True
         self.processes: dict[str, subprocess.Popen] = {}
