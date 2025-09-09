@@ -250,18 +250,19 @@ make clean               # Remover arquivos temporários
 
 O orquestrador suporta os seguintes parâmetros de linha de comando e variáveis de ambiente:
 
-| Parâmetro | Variável de Ambiente | Padrão | Descrição |
-|-----------|---------------------|---------|-----------|
-| `--modo` | `ORQUESTRADOR_MODO` | `paralelo` | Modo de execução: `paralelo` ou `sequencial` |
-| `--intervalo` | `ORQUESTRADOR_INTERVALO` | `60` | Intervalo entre consultas ao Directus (segundos) |
-| `--porta` | `ORQUESTRADOR_PORTA` | `5007` | Porta do servidor de monitoramento |
-| `--verbose` | `ORQUESTRADOR_VERBOSE` | `false` | Logs detalhados |
-| `--single-run` | - | `false` | Executa apenas um ciclo e encerra |
-| `--dry-run` | - | `false` | Execução completa sem persistir dados no banco |
+| Parâmetro      | Variável de Ambiente     | Padrão     | Descrição                                        |
+| -------------- | ------------------------ | ---------- | ------------------------------------------------ |
+| `--modo`       | `ORQUESTRADOR_MODO`      | `paralelo` | Modo de execução: `paralelo` ou `sequencial`     |
+| `--intervalo`  | `ORQUESTRADOR_INTERVALO` | `60`       | Intervalo entre consultas ao Directus (segundos) |
+| `--porta`      | `ORQUESTRADOR_PORTA`     | `5007`     | Porta do servidor de monitoramento               |
+| `--verbose`    | `ORQUESTRADOR_VERBOSE`   | `false`    | Logs detalhados                                  |
+| `--single-run` | -                        | `false`    | Executa apenas um ciclo e encerra                |
+| `--dry-run`    | -                        | `false`    | Execução completa sem persistir dados no banco   |
 
 **Sobre o Modo Dry-Run:**
+
 - ✅ **Consulta** dados reais do Directus
-- ✅ **Processa** documentos normalmente  
+- ✅ **Processa** documentos normalmente
 - ✅ **Gera** relatórios HTML
 - ❌ **NÃO persiste** status, observações ou modificações no banco
 - 📋 **Ideal para**: testes, validação de configurações, desenvolvimento
