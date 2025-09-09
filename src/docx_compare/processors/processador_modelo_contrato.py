@@ -130,18 +130,26 @@ def extract_content_between_tags(text: str) -> dict[str, str]:
 
             # Limpar HTML tags e normalizar texto
             clean_content = re.sub(r"<[^>]+>", "", raw_content)  # Remove tags HTML
-            clean_content = re.sub(r"\s+", " ", clean_content).strip()  # Normaliza espaços
+            clean_content = re.sub(
+                r"\s+", " ", clean_content
+            ).strip()  # Normaliza espaços
 
             if clean_content:
                 content_map[tag_name] = clean_content
                 if verbose_mode:
-                    print(f"📄 Conteúdo extraído para tag '{tag_name}': {clean_content[:100]}{'...' if len(clean_content) > 100 else ''}")
+                    print(
+                        f"📄 Conteúdo extraído para tag '{tag_name}': {clean_content[:100]}{'...' if len(clean_content) > 100 else ''}"
+                    )
             else:
                 if verbose_mode:
-                    print(f"ℹ️ Tag '{tag_name}' encontrada em pares mas sem conteúdo entre elas")
+                    print(
+                        f"ℹ️ Tag '{tag_name}' encontrada em pares mas sem conteúdo entre elas"
+                    )
         else:
             if verbose_mode:
-                print(f"⚠️ Tag '{tag_name}' encontrada apenas {len(matches)} vez(es), precisa de pelo menos 2 para extração")
+                print(
+                    f"⚠️ Tag '{tag_name}' encontrada apenas {len(matches)} vez(es), precisa de pelo menos 2 para extração"
+                )
 
     return content_map
 
@@ -531,7 +539,7 @@ def limpar_tags_modelo_contrato(modelo_id: str, dry_run=False):
         modelo_response = requests.get(
             f"{DIRECTUS_BASE_URL}/items/modelo_contrato/{modelo_id}",
             params={"fields": "tags"},
-            headers=DIRECTUS_HEADERS
+            headers=DIRECTUS_HEADERS,
         )
 
         if modelo_response.status_code == 200:
@@ -549,14 +557,16 @@ def limpar_tags_modelo_contrato(modelo_id: str, dry_run=False):
             for tag_id in tags_ids:
                 delete_response = requests.delete(
                     f"{DIRECTUS_BASE_URL}/items/modelo_contrato_tag/{tag_id}",
-                    headers=DIRECTUS_HEADERS
+                    headers=DIRECTUS_HEADERS,
                 )
 
                 if delete_response.status_code in [200, 204]:
                     print(f"   ✅ Tag 'N/A' removida (ID: {tag_id})")
                     tags_removidas += 1
                 else:
-                    print(f"   ❌ Erro ao remover tag {tag_id}: {delete_response.status_code}")
+                    print(
+                        f"   ❌ Erro ao remover tag {tag_id}: {delete_response.status_code}"
+                    )
 
             print(f"✅ {tags_removidas} tags removidas com sucesso")
             return tags_removidas
@@ -634,7 +644,9 @@ def salvar_tags_modelo_contrato(
                     conteudo_preview = tag_info.get("conteudo", "")[:50]
                     print(f"✅ Tag '{tag_info['nome']}' criada com ID: {tag_id}")
                     if conteudo_preview:
-                        print(f"   📄 Conteúdo: {conteudo_preview}{'...' if len(tag_info.get('conteudo', '')) > 50 else ''}")
+                        print(
+                            f"   📄 Conteúdo: {conteudo_preview}{'...' if len(tag_info.get('conteudo', '')) > 50 else ''}"
+                        )
                     if verbose_mode:
                         print(
                             f"   📍 Caminho início: {tag_info.get('caminho_tag_inicio', 'N/A')}"
@@ -660,7 +672,9 @@ def salvar_tags_modelo_contrato(
         return []
 
 
-def associar_tags_com_clausulas(modelo_id: str, tags_criadas: list, tags_encontradas: list, dry_run=False):
+def associar_tags_com_clausulas(
+    modelo_id: str, tags_criadas: list, tags_encontradas: list, dry_run=False
+):
     """
     Associa tags com cláusulas: se tag.nome == clausula.nome, então clausula.tag = tag.id
     Busca as tags diretamente pelo nome, sem depender de ordem.
@@ -679,16 +693,15 @@ def associar_tags_com_clausulas(modelo_id: str, tags_criadas: list, tags_encontr
             print("🏃‍♂️ DRY-RUN: Simulando associação de tags com cláusulas")
             return 0
 
-        print("🔗 Associando tags com cláusulas (busca direta pelo nome: tag.nome = clausula.nome → clausula.tag = tag.id)...")
+        print(
+            "🔗 Associando tags com cláusulas (busca direta pelo nome: tag.nome = clausula.nome → clausula.tag = tag.id)..."
+        )
 
         # Primeiro, buscar todas as cláusulas disponíveis
         clausulas_response = requests.get(
             f"{DIRECTUS_BASE_URL}/items/clausula",
-            params={
-                "fields": "id,nome,tag",
-                "limit": 1000
-            },
-            headers=DIRECTUS_HEADERS
+            params={"fields": "id,nome,tag", "limit": 1000},
+            headers=DIRECTUS_HEADERS,
         )
 
         if clausulas_response.status_code != 200:
@@ -720,9 +733,9 @@ def associar_tags_com_clausulas(modelo_id: str, tags_criadas: list, tags_encontr
                     "filter[modelo_contrato][_eq]": modelo_id,
                     "filter[tag_nome][_eq]": clausula_nome,
                     "fields": "id,tag_nome",
-                    "limit": 1
+                    "limit": 1,
                 },
-                headers=DIRECTUS_HEADERS
+                headers=DIRECTUS_HEADERS,
             )
 
             if tag_response.status_code == 200:
@@ -733,32 +746,40 @@ def associar_tags_com_clausulas(modelo_id: str, tags_criadas: list, tags_encontr
 
                     # Verificar se a cláusula já tem essa tag associada
                     if clausula_tag_atual == tag_id:
-                        print(f"     ℹ️ Cláusula '{clausula_nome}' já tem tag '{tag_nome}' associada")
+                        print(
+                            f"     ℹ️ Cláusula '{clausula_nome}' já tem tag '{tag_nome}' associada"
+                        )
                         continue
 
                     # Atualizar a cláusula com o tag_id
-                    update_data = {
-                        "tag": tag_id
-                    }
+                    update_data = {"tag": tag_id}
 
                     update_response = requests.patch(
                         f"{DIRECTUS_BASE_URL}/items/clausula/{clausula_id}",
                         json=update_data,
-                        headers=DIRECTUS_HEADERS
+                        headers=DIRECTUS_HEADERS,
                     )
 
                     if update_response.status_code in [200, 204]:
-                        print(f"     ✅ Cláusula '{clausula_nome}' associada com tag '{tag_nome}' (ID: {tag_id})")
+                        print(
+                            f"     ✅ Cláusula '{clausula_nome}' associada com tag '{tag_nome}' (ID: {tag_id})"
+                        )
                         associacoes_criadas += 1
                     else:
-                        print(f"     ❌ Erro ao associar cláusula '{clausula_nome}' com tag '{tag_nome}': {update_response.status_code}")
+                        print(
+                            f"     ❌ Erro ao associar cláusula '{clausula_nome}' com tag '{tag_nome}': {update_response.status_code}"
+                        )
                         if verbose_mode:
                             print(f"        Response: {update_response.text}")
                 else:
                     if verbose_mode:
-                        print(f"     🔍 Nenhuma tag encontrada com nome '{clausula_nome}'")
+                        print(
+                            f"     🔍 Nenhuma tag encontrada com nome '{clausula_nome}'"
+                        )
             else:
-                print(f"     ❌ Erro ao buscar tag para cláusula '{clausula_nome}': {tag_response.status_code}")
+                print(
+                    f"     ❌ Erro ao buscar tag para cláusula '{clausula_nome}': {tag_response.status_code}"
+                )
                 if verbose_mode:
                     print(f"        Response: {tag_response.text}")
 
@@ -914,7 +935,9 @@ def processar_modelo_contrato(modelo_data, dry_run=False):
 
             # 4. Extrair conteúdo entre tags do arquivo com tags
             content_map = extract_content_between_tags(tagged_text)
-            print(f"📄 Extraído conteúdo para {len(content_map)} tags: {sorted(content_map.keys())}")
+            print(
+                f"📄 Extraído conteúdo para {len(content_map)} tags: {sorted(content_map.keys())}"
+            )
 
             # 5. Extrair tags das diferenças
             tags_encontradas = extract_tags_from_differences(modifications)

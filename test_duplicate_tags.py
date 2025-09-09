@@ -75,7 +75,7 @@ def test_duplicate_tags_extraction():
         "preambulo": "Este é o conteúdo do preâmbulo",
         "1": "CLÁUSULA 1ª. OBJETIVO",
         "1.1": "1.1. O presente CONTRATO tem por objeto",
-        "2": "CLÁUSULA 2ª. PRAZO"
+        "2": "CLÁUSULA 2ª. PRAZO",
     }
 
     print("\n🔍 Validação de conteúdos específicos:")
@@ -92,6 +92,7 @@ def test_duplicate_tags_extraction():
             print(f"❌ Tag '{tag}' não foi extraída")
 
     return resultado
+
 
 if __name__ == "__main__":
     resultado = test_duplicate_tags_extraction()

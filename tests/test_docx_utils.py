@@ -144,7 +144,8 @@ class TestDocxUtils(unittest.TestCase):
             html = convert_docx_to_html_content(test_file)
             self.assertIsInstance(html, str)
             self.assertGreater(len(html), 0)
-            self.assertIn("<html>", html)
+            # Verifica se contém tag HTML válida (pode ter atributos)
+            self.assertTrue("<html" in html or "<HTML" in html)
         else:
             self.skipTest("Arquivo de teste DOCX não encontrado")
 

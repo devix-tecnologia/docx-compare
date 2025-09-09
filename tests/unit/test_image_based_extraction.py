@@ -8,7 +8,9 @@ import os
 import sys
 
 # Adicionar o diretório raiz ao path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
 
 from src.docx_compare.processors.processador_modelo_contrato import (
     extract_content_between_tags,
@@ -63,7 +65,7 @@ def test_extract_content_based_on_image():
         "1.1": '1.1. O presente CONTRATO tem por objeto a prestação de serviços de inserir "Serviços" a serem prestados em inserir.',
         "1.2": "1.2. Fazem parte do CONTRATO os seguintes anexos:\n\n    Anexo I. [Planilha de Quantidades e Preços];\n    Anexo II. [Descrição de Escopo Técnico];",
         "2": "CLÁUSULA 2ª. CONDIÇÕES DE EXECUÇÃO\n    \n    {{2.1}}\n    2.1. A execução dos serviços será realizada conforme cronograma estabelecido.\n    {{/2.1}}",
-        "2.1": "2.1. A execução dos serviços será realizada conforme cronograma estabelecido."
+        "2.1": "2.1. A execução dos serviços será realizada conforme cronograma estabelecido.",
     }
 
     print("\n🔍 Verificando conteúdos específicos:")
@@ -73,7 +75,9 @@ def test_extract_content_based_on_image():
             actual = result[tag_name].strip()
             # Mostrar preview do conteúdo
             preview = actual.replace("\n", " ").strip()[:80]
-            print(f"   🏷️  Tag '{tag_name}': {preview}{'...' if len(actual) > 80 else ''}")
+            print(
+                f"   🏷️  Tag '{tag_name}': {preview}{'...' if len(actual) > 80 else ''}"
+            )
 
             # Verificar se contém elementos principais esperados
             if tag_name == "1":
@@ -113,6 +117,7 @@ def test_extract_content_based_on_image():
 
     return result
 
+
 def test_tag_content_for_database():
     """Teste para simular o que seria salvo no banco"""
     print("\n🧪 Simulando dados que serão salvos no banco...")
@@ -149,13 +154,17 @@ def test_tag_content_for_database():
     print(f"📄 Conteúdo completo da tag '{sample_tag_info['nome']}':")
     print(f"   {sample_tag_info['conteudo']}")
 
+
 if __name__ == "__main__":
     # Configurar verbose_mode para ver logs detalhados
     import src.docx_compare.processors.processador_modelo_contrato as processador_module
+
     processador_module.verbose_mode = True
 
     result = test_extract_content_based_on_image()
     test_tag_content_for_database()
 
     print("\n🎯 Teste baseado na imagem concluído!")
-    print("✅ A implementação está pronta para gravar os conteúdos corretos no campo 'conteudo' das tags!")
+    print(
+        "✅ A implementação está pronta para gravar os conteúdos corretos no campo 'conteudo' das tags!"
+    )

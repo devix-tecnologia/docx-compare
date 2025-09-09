@@ -8,9 +8,13 @@ import os
 import sys
 
 # Adicionar o diretório raiz ao path para importar o processador
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
 
-from processador_modelo_contrato import extract_tags_from_differences
+from src.docx_compare.processors.processador_modelo_contrato import (
+    extract_tags_from_differences,
+)
 
 
 def test_extract_tags_basic():

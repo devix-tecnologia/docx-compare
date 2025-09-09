@@ -5,8 +5,10 @@
 ### 🎯 Orquestrador (Execução Coordenada)
 
 ```bash
-# Executar ambos os processadores sequencialmente (recomendado)
-make run-orquestrado# Executar como módulo
+# Executar ambos os processadores em paralelo (recomendado)
+make run-orquestrador
+
+# Executar como módulo
 python -m src.docx_compare.processors.processador_automatico
 python -m src.docx_compare.core.docx_diff_viewer doc1.docx doc2.docx
 ```
@@ -16,24 +18,41 @@ python -m src.docx_compare.core.docx_diff_viewer doc1.docx doc2.docx
 - **[🎯 Orquestrador](docs/ORQUESTRADOR.md)** - Guia completo do orquestrador de processadores
 - **[📡 API Documentation](API_DOCUMENTATION.md)** - Endpoints e APIs REST disponíveis
 - **[🔧 Deployment](DEPLOYMENT.md)** - Guia de deployment e produção
-- **[🧪 DRY RUN](DRY_RUN_DOCUMENTATION.md)** - Modo de simulação e testes
+- **[🧪 DRY RUN](DRY_RUN_DOCUMENTATION.md)** - Modo de testes sem persistência de dados
 - **[📋 CHANGELOG](CHANGELOG.md)** - Histórico de mudanças e roadmap
 
-## 📋 Pré-requisitosle
+## 📋 Pré-requisitos
 
+### 🎯 Comandos do Orquestrador
+
+```bash
 # Executar com logs detalhados
-
 make run-orquestrador-single-verbose
 
 # Executar em modo contínuo
-
 make run-orquestrador
 
 # Executar em paralelo (ambos simultaneamente)
-
 make run-orquestrador-paralelo
 
-````
+# Executar em modo dry-run - CONSULTA dados reais mas SEM PERSISTIR alterações
+uv run python src/docx_compare/processors/orquestrador.py --dry-run --single-run
+
+# Executar com configurações customizadas
+uv run python src/docx_compare/processors/orquestrador.py --modo sequencial --verbose --porta 5008
+
+# Executar com intervalo personalizado (120 segundos)
+uv run python src/docx_compare/processors/orquestrador.py --intervalo 120
+
+# Exemplo completo com todos os parâmetros
+uv run python src/docx_compare/processors/orquestrador.py \
+  --modo paralelo \
+  --intervalo 30 \
+  --porta 5007 \
+  --verbose \
+  --dry-run
+
+```
 
 ### Processador Automático (Versões)
 
@@ -44,9 +63,9 @@ make run-processor
 # Executar com logs detalhados
 make run-processor-verbose
 
-# Executar em modo simulação (sem alterações)
+# Executar em modo dry-run (sem persistir alterações)
 make run-processor-dry
-````
+```
 
 ### Processador de Modelo de Contrato (Tags)
 
@@ -57,7 +76,7 @@ uv run python src/docx_compare/processors/processador_modelo_contrato.py
 # Executar com logs detalhados
 uv run python src/docx_compare/processors/processador_modelo_contrato.py --verbose
 
-# Executar em modo simulação (sem alterações)
+# Executar em modo dry-run (sem persistir alterações)
 uv run python src/docx_compare/processors/processador_modelo_contrato.py --dry-run
 
 # Testar extração de tags
@@ -126,8 +145,10 @@ Sistema de processamento automático para comparação de documentos DOCX integr
 
 - **Execução Coordenada**: Executa múltiplos processadores em paralelo ou sequencial
 - **Monitoramento Unificado**: Dashboard centralizado para todos os processadores
-- **Gestão Inteligente**: Controle de ciclos e intervalos de execução
+- **Gestão Inteligente**: Controle de ciclos e intervalos de execução configuráveis
+- **Intervalo Customizável**: Define intervalo entre consultas ao Directus (padrão: 60s)
 - **APIs de Status**: Endpoints REST para monitoramento e métricas
+- **Modo Dry-Run**: Execução completa sem persistir dados no banco
 - **Encerramento Gracioso**: Finalização segura de todos os processos
 
 ### 🔧 CLI - Comparação Local
@@ -142,7 +163,7 @@ Sistema de processamento automático para comparação de documentos DOCX integr
 - **Dashboard Web**: Interface visual para monitoramento do sistema
 - **Endpoints REST**: APIs para verificação de saúde e métricas
 - **Modo Debug**: Logs detalhados para troubleshooting
-- **Modo Dry-Run**: Simulação sem alterações no banco
+- **Modo Dry-Run**: Execução completa sem persistir dados no banco
 - **Listagem de Resultados**: Visualização de todos os processamentos realizados
 
 ## � Estrutura do Projeto
@@ -196,7 +217,7 @@ make test-integration    # Apenas testes de integração
 
 # Execução
 make run-processor       # Processador automático (versões)
-make run-processor-dry   # Modo simulação
+make run-processor-dry   # Modo dry-run (sem persistir dados)
 make compare ORIG=doc1.docx MOD=doc2.docx # Comparar documentos
 make example             # Executar exemplo
 
@@ -223,6 +244,44 @@ uv run python src/docx_compare/processors/orquestrador.py --porta 5008   # Porta
 
 # Limpeza
 make clean               # Remover arquivos temporários
+```
+
+## ⚙️ Parâmetros do Orquestrador
+
+O orquestrador suporta os seguintes parâmetros de linha de comando e variáveis de ambiente:
+
+| Parâmetro      | Variável de Ambiente     | Padrão     | Descrição                                        |
+| -------------- | ------------------------ | ---------- | ------------------------------------------------ |
+| `--modo`       | `ORQUESTRADOR_MODO`      | `paralelo` | Modo de execução: `paralelo` ou `sequencial`     |
+| `--intervalo`  | `ORQUESTRADOR_INTERVALO` | `60`       | Intervalo entre consultas ao Directus (segundos) |
+| `--porta`      | `ORQUESTRADOR_PORTA`     | `5007`     | Porta do servidor de monitoramento               |
+| `--verbose`    | `ORQUESTRADOR_VERBOSE`   | `false`    | Logs detalhados                                  |
+| `--single-run` | -                        | `false`    | Executa apenas um ciclo e encerra                |
+| `--dry-run`    | -                        | `false`    | Execução completa sem persistir dados no banco   |
+
+**Sobre o Modo Dry-Run:**
+
+- ✅ **Consulta** dados reais do Directus
+- ✅ **Processa** documentos normalmente
+- ✅ **Gera** relatórios HTML
+- ❌ **NÃO persiste** status, observações ou modificações no banco
+- 📋 **Ideal para**: testes, validação de configurações, desenvolvimento
+
+### Exemplos de Uso
+
+```bash
+# Intervalo customizado de 30 segundos
+uv run python src/docx_compare/processors/orquestrador.py --intervalo 30
+
+# Modo sequencial com intervalo de 2 minutos
+uv run python src/docx_compare/processors/orquestrador.py --modo sequencial --intervalo 120
+
+# Configuração completa via variáveis de ambiente
+export ORQUESTRADOR_MODO=paralelo
+export ORQUESTRADOR_INTERVALO=45
+export ORQUESTRADOR_PORTA=5008
+export ORQUESTRADOR_VERBOSE=true
+uv run python src/docx_compare/processors/orquestrador.py
 ```
 
 ### Estrutura Modular
@@ -329,7 +388,7 @@ uv run python processador_automatico.py
 # Modo debug com logs detalhados
 uv run python processador_automatico.py --verbose
 
-# Modo dry-run (análise sem alterações)
+# Modo dry-run (execução completa sem persistir dados)
 uv run python processador_automatico.py --dry-run
 
 # Configurar intervalo personalizado

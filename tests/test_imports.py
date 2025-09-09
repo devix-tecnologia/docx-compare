@@ -1,44 +1,87 @@
 #!/usr/bin/env python3
 """
-Script simples para testar a API
+Testes de importação de módulos
 """
 
 import os
 import sys
+import unittest
 
 # Adicionar o diretório pai ao path para importar os módulos
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-print("🚀 Testando API...")
 
-try:
-    print(f"Python: {sys.version}")
+class TestImports(unittest.TestCase):
+    """Testes para verificar se as importações funcionam."""
 
-    import flask
+    def test_python_environment(self):
+        """Testa o ambiente Python."""
+        self.assertIsNotNone(sys.version)
+        self.assertTrue(sys.version.startswith("3."))
 
-    print(f"Flask instalado: {flask.__version__}")
+    def test_flask_import(self):
+        """Testa importação do Flask."""
+        try:
+            import flask
 
-    import requests
+            # Flask 3.x não tem __version__, usar importlib.metadata
+            try:
+                import importlib.metadata
 
-    print(f"Requests instalado: {requests.__version__}")
+                version = importlib.metadata.version("flask")
+                self.assertIsNotNone(version)
+            except Exception:
+                # Fallback: apenas verificar se Flask foi importado
+                self.assertIsNotNone(flask)
+        except ImportError:
+            self.fail("Flask não está disponível")
 
-    from dotenv import load_dotenv
+    def test_requests_import(self):
+        """Testa importação do requests."""
+        try:
+            import requests
 
-    print("Python-dotenv disponível")
+            self.assertIsNotNone(requests.__version__)
+        except ImportError:
+            self.fail("Requests não está disponível")
 
-    load_dotenv()
-    print(".env carregado")
+    def test_dotenv_import(self):
+        """Testa importação do python-dotenv."""
+        try:
+            from dotenv import load_dotenv
 
-    print(f"FLASK_PORT: {os.getenv('FLASK_PORT', 'Não encontrado')}")
+            self.assertTrue(callable(load_dotenv))
+        except ImportError:
+            self.fail("Python-dotenv não está disponível")
 
-    # Agora importar o módulo da API
-    print("Importando api_server...")
-    print("api_server importado com sucesso!")
+    def test_environment_variables(self):
+        """Testa variáveis de ambiente básicas."""
+        # Carrega .env se existir
+        try:
+            from dotenv import load_dotenv
 
-    print("✅ Todas as dependências estão funcionando!")
+            load_dotenv()
+        except ImportError:
+            pass
 
-except Exception as e:
-    print(f"❌ Erro: {e}")
-    import traceback
+        # Testa algumas variáveis básicas
+        flask_port = os.getenv("FLASK_PORT", "5000")
+        self.assertIsInstance(flask_port, str)
+        self.assertTrue(flask_port.isdigit())
 
-    traceback.print_exc()
+    def test_core_modules_exist(self):
+        """Testa se os módulos principais existem."""
+        core_modules = [
+            "src.docx_compare.core.docx_utils",
+            "src.docx_compare.core.docx_diff_viewer",
+        ]
+
+        for module_name in core_modules:
+            try:
+                __import__(module_name)
+            except ImportError as e:
+                self.fail(f"Não foi possível importar {module_name}: {e}")
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -4,72 +4,23 @@ import html
 import os
 import sys
 
-# Import das configurações - importar o módulo config.py da raiz
+# Adicionar o diretório raiz ao path
+sys.path.insert(
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../"))
+)
 
-# Encontrar o diretório raiz do projeto (onde está o config.py)
-current_dir = os.path.dirname(os.path.abspath(__file__))
-root_path = current_dir
-# Subir até encontrar o config.py
-for _ in range(4):  # src/docx_compare/core/ = 3 níveis + 1 extra
-    root_path = os.path.dirname(root_path)
-    if os.path.exists(os.path.join(root_path, "config.py")):
-        break
+# Definir constantes de configuração
+LUA_FILTER_PATH = os.getenv("LUA_FILTER_PATH", "config/comments_html_filter_direct.lua")
+RESULTS_DIR = os.getenv("RESULTS_DIR", "results")
 
-if root_path not in sys.path:
-    sys.path.insert(0, root_path)
-
-try:
-    # Importar especificamente o arquivo config.py
-    import importlib.util
-    config_path = os.path.join(root_path, "config.py")
-    spec = importlib.util.spec_from_file_location("config_module", config_path)
-    if spec and spec.loader:
-        config = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(config)
-
-        # Usar getattr com fallback para evitar AttributeError
-        LUA_FILTER_PATH = getattr(config, 'LUA_FILTER_PATH', 
-                                  os.getenv("LUA_FILTER_PATH", "config/comments_html_filter_direct.lua"))
-        RESULTS_DIR = getattr(config, 'RESULTS_DIR', 
-                              os.getenv("RESULTS_DIR", "results"))
-    else:
-        raise ImportError("Não foi possível carregar o módulo config.py")
-except Exception as e:
-    print(f"Aviso: Erro ao importar configurações ({e}), usando fallbacks")
-    # Fallback para quando executado como módulo
-    LUA_FILTER_PATH = os.getenv("LUA_FILTER_PATH", "config/comments_html_filter_direct.lua")
-    RESULTS_DIR = os.getenv("RESULTS_DIR", "results")
-
-# Tentar importar módulos utilitários com fallbacks para diferentes ambientes
-try:
-    from src.docx_compare.core.docx_utils import (
-        analyze_differences,
-        convert_docx_to_html,
-        extract_body_content,
-        get_css_styles,
-        html_to_text,
-        sanitize_html_for_csp,
-    )
-except ImportError:
-    try:
-        from docx_compare.core.docx_utils import (
-            analyze_differences,
-            convert_docx_to_html,
-            extract_body_content,
-            get_css_styles,
-            html_to_text,
-            sanitize_html_for_csp,
-        )
-    except ImportError:
-        # Fallback relativo
-        from .docx_utils import (
-            analyze_differences,
-            convert_docx_to_html,
-            extract_body_content,
-            get_css_styles,
-            html_to_text,
-            sanitize_html_for_csp,
-        )
+from src.docx_compare.core.docx_utils import (
+    analyze_differences,
+    convert_docx_to_html,
+    extract_body_content,
+    get_css_styles,
+    html_to_text,
+    sanitize_html_for_csp,
+)
 
 
 def generate_diff_html(original_docx, modified_docx, output_html, dry_run=False):
@@ -334,14 +285,7 @@ Exemplos de uso:
         # Configurar estilo CSS se não for dry-run
         if not args.dry_run:
             # Temporariamente modificar get_css_styles para usar o estilo escolhido
-            try:
-                from src.docx_compare.core import docx_utils
-            except ImportError:
-                try:
-                    from docx_compare.core import docx_utils
-                except ImportError:
-                    # Usar import relativo como fallback
-                    from . import docx_utils
+            from src.docx_compare.core import docx_utils
 
             original_get_css = docx_utils.get_css_styles
             docx_utils.get_css_styles = lambda style_type="default": original_get_css(
