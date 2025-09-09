@@ -471,10 +471,22 @@ def html_to_text(html_content: str, preserve_structure: bool = True) -> str:
 
 def _html_to_text_simple(html_content: str) -> str:
     """Remove todas as tags HTML e retorna apenas o texto."""
-    # Remove todas as tags HTML
-    text = re.sub(r"<[^>]+>", "", html_content)
+    # Remove scripts e estilos (incluindo seu conteúdo)
+    text = re.sub(
+        r"<script[^>]*>.*?</script>", "", html_content, flags=re.DOTALL | re.IGNORECASE
+    )
+    text = re.sub(r"<style[^>]*>.*?</style>", "", text, flags=re.DOTALL | re.IGNORECASE)
+
+    # Remove atributos de eventos (onclick, onerror, etc.)
+    text = re.sub(r'\s+on\w+="[^"]*"', "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s+on\w+='[^']*'", "", text, flags=re.IGNORECASE)
+
+    # Remove todas as tags HTML restantes
+    text = re.sub(r"<[^>]+>", "", text)
+
     # Decodifica entidades HTML
     text = html.unescape(text)
+
     # Remove espaços extras
     text = re.sub(r"\s+", " ", text).strip()
     return text

@@ -4,7 +4,15 @@ import html
 import os
 import sys
 
-from config import LUA_FILTER_PATH, RESULTS_DIR
+# Adicionar o diretório raiz ao path
+sys.path.insert(
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../"))
+)
+
+# Definir constantes de configuração
+LUA_FILTER_PATH = os.getenv("LUA_FILTER_PATH", "config/comments_html_filter_direct.lua")
+RESULTS_DIR = os.getenv("RESULTS_DIR", "results")
+
 from src.docx_compare.core.docx_utils import (
     analyze_differences,
     convert_docx_to_html,

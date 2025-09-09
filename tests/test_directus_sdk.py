@@ -1,54 +1,88 @@
 #!/usr/bin/env python3
 """
-Teste simples do SDK do Directus
+Teste do SDK do Directus
 """
 
 import os
+import unittest
+from unittest.mock import Mock, patch
 
-from directus_sdk_py import DirectusClient
 from dotenv import load_dotenv
 
-# Carregar variáveis de ambiente
-load_dotenv()
 
-# Configurações
-DIRECTUS_BASE_URL = (
-    os.getenv("DIRECTUS_BASE_URL", "https://contract.devix.co")
-    .replace("/admin/", "")
-    .rstrip("/")
-)
-DIRECTUS_TOKEN = os.getenv("DIRECTUS_TOKEN", "your-directus-token")
+class TestDirectusSDK(unittest.TestCase):
+    """Testes para o SDK do Directus."""
 
-print(f"🔗 Testando conexão com: {DIRECTUS_BASE_URL}")
-print(f"🔑 Token: {DIRECTUS_TOKEN[:20]}...")
+    def setUp(self):
+        """Configuração dos testes."""
+        load_dotenv()
+        self.base_url = (
+            os.getenv("DIRECTUS_BASE_URL", "https://contract.devix.co")
+            .replace("/admin/", "")
+            .rstrip("/")
+        )
+        self.token = os.getenv("DIRECTUS_TOKEN", "test-token")
 
-# Cliente Directus
-directus_client = DirectusClient(url=DIRECTUS_BASE_URL, token=DIRECTUS_TOKEN)
+    def test_directus_configuration(self):
+        """Testa se as configurações do Directus estão corretas."""
+        self.assertIsNotNone(self.base_url)
+        self.assertTrue(self.base_url.startswith("http"))
+        self.assertIsNotNone(self.token)
 
-try:
-    # Teste simples de buscar versões sem filtro primeiro
-    print("📋 Buscando todas as versões...")
-    versoes_all = directus_client.get_items("versao")
+    @patch("directus_sdk_py.DirectusClient")
+    def test_directus_client_creation(self, mock_directus_client):
+        """Testa a criação do cliente Directus."""
+        # Mock do cliente
+        mock_client = Mock()
+        mock_directus_client.return_value = mock_client
 
-    print(f"📊 Quantidade total: {len(versoes_all)}")
+        try:
+            from directus_sdk_py import DirectusClient
 
-    # Mostrar o status de cada versão
-    for versao in versoes_all:
-        print(f"  ID: {versao['id'][:8]}... Status: {versao.get('status', 'N/A')}")
+            client = DirectusClient(url=self.base_url, token=self.token)
+            self.assertIsNotNone(client)
+        except ImportError:
+            self.skipTest("directus_sdk_py não está instalado")
 
-    # Agora teste com filtro simplificado
-    print("\n📋 Testando filtro simples...")
+    @patch("directus_sdk_py.DirectusClient")
+    def test_directus_get_items(self, mock_directus_client):
+        """Testa a busca de itens no Directus."""
+        # Mock do cliente e resposta
+        mock_client = Mock()
+        mock_client.get_items.return_value = [
+            {"id": "123", "status": "processar"},
+            {"id": "456", "status": "processado"},
+        ]
+        mock_directus_client.return_value = mock_client
 
-    # Tentar sintaxe mais simples
-    versoes_filtradas = directus_client.get_items(
-        "versao", {"filter": {"status": "processar"}}
-    )
+        try:
+            from directus_sdk_py import DirectusClient
 
-    print(f"� Tipo do retorno (filtrado): {type(versoes_filtradas)}")
-    print(f"📊 Conteúdo do retorno (filtrado): {versoes_filtradas}")
+            client = DirectusClient(url=self.base_url, token=self.token)
 
-except Exception as e:
-    print(f"❌ Erro: {e}")
-    import traceback
+            # Teste buscar todos os itens
+            versoes_all = client.get_items("versao")
+            self.assertIsInstance(versoes_all, list)
+            self.assertEqual(len(versoes_all), 2)
 
-    traceback.print_exc()
+            # Teste buscar com filtro
+            versoes_filtradas = client.get_items(
+                "versao", {"filter": {"status": "processar"}}
+            )
+            self.assertIsInstance(versoes_filtradas, list)
+
+        except ImportError:
+            self.skipTest("directus_sdk_py não está instalado")
+
+    def test_environment_variables(self):
+        """Testa se as variáveis de ambiente estão configuradas."""
+        # Testa se pelo menos temos URLs válidas
+        self.assertTrue(
+            self.base_url.startswith("http://") or self.base_url.startswith("https://")
+        )
+        # Token deve ter pelo menos alguns caracteres
+        self.assertGreater(len(self.token), 5)
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -47,7 +47,7 @@ def test_extract_tags_basic():
     # Verificar estrutura das tags
     for tag in tags:
         assert isinstance(tag, dict), "Cada tag deve ser um dicionário"
-        assert "nome" in tag, "Tag deve ter campo 'nome'"
+        assert "tag" in tag, "Tag deve ter campo 'tag'"
         assert "contexto" in tag, "Tag deve ter campo 'contexto'"
 
     print("✅ Teste básico passou!")
@@ -79,8 +79,8 @@ def test_extract_tags_duplicated():
 
     # Deve ter apenas uma tag 'nome_cliente' mesmo aparecendo 2 vezes
     assert len(tags) == 1, f"Esperado 1 tag única, encontrado {len(tags)}"
-    assert tags[0]["nome"] == "nome_cliente", (
-        f"Esperado 'nome_cliente', encontrado '{tags[0]['nome']}'"
+    assert tags[0]["tag"] == "nome_cliente", (
+        f"Esperado 'nome_cliente', encontrado '{tags[0]['tag']}'"
     )
 
     print("✅ Teste de duplicação passou!")
@@ -117,7 +117,7 @@ def test_extract_tags_complex():
         "valor_contrato",
         "prazo_contrato",
     }
-    found_tags = {tag["nome"] for tag in tags}
+    found_tags = {tag["tag"] for tag in tags}
 
     assert len(tags) == 4, f"Esperado 4 tags, encontrado {len(tags)}"
     assert found_tags == expected_tags, (

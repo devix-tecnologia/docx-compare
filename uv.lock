@@ -174,10 +174,25 @@ toml = [
 ]
 
 [[package]]
+name = "directus-sdk-py"
+version = "1.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "requests" },
+    { name = "sqlparse" },
+    { name = "urllib3" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/84/fd/047b5f269befc678b6af7bc40171ee8b176fc91e8669f4fcccd65879dcea/directus-sdk-py-1.1.0.tar.gz", hash = "sha256:6122ff39149f655a35719701dda8db4c8a37078dc94e901ad94a7ef1eb8c8fb8", size = 16279 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d6/a8/3370e20be30feb91596e40c28c2986be8f6d54a143e0eb06cc555130f47c/directus_sdk_py-1.1.0-py3-none-any.whl", hash = "sha256:b6030a8f88c2b168bd3f64e554944bd7aa8c792bb6732a2f6d961dd21427efd4", size = 17873 },
+]
+
+[[package]]
 name = "docx-compare"
 version = "1.0.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "directus-sdk-py" },
     { name = "flask" },
     { name = "python-dotenv" },
     { name = "requests" },
@@ -192,6 +207,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "directus-sdk-py", specifier = ">=1.1.0" },
     { name = "flask", specifier = ">=2.3.0" },
     { name = "python-dotenv", specifier = ">=1.0.0" },
     { name = "requests", specifier = ">=2.31.0" },
@@ -413,6 +429,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/22/16/2fbfc61047dbfd009c58a28369a693a1484ad15441723be1cd7fe69bb679/ruff-0.12.11-py3-none-win32.whl", hash = "sha256:c792e8f597c9c756e9bcd4d87cf407a00b60af77078c96f7b6366ea2ce9ba9d3", size = 11944270 },
     { url = "https://files.pythonhosted.org/packages/08/a5/34276984705bfe069cd383101c45077ee029c3fe3b28225bf67aa35f0647/ruff-0.12.11-py3-none-win_amd64.whl", hash = "sha256:a3283325960307915b6deb3576b96919ee89432ebd9c48771ca12ee8afe4a0fd", size = 13046600 },
     { url = "https://files.pythonhosted.org/packages/84/a8/001d4a7c2b37623a3fd7463208267fb906df40ff31db496157549cfd6e72/ruff-0.12.11-py3-none-win_arm64.whl", hash = "sha256:bae4d6e6a2676f8fb0f98b74594a048bae1b944aab17e9f5d504062303c6dbea", size = 12135290 },
+]
+
+[[package]]
+name = "sqlparse"
+version = "0.5.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e5/40/edede8dd6977b0d3da179a342c198ed100dd2aba4be081861ee5911e4da4/sqlparse-0.5.3.tar.gz", hash = "sha256:09f67787f56a0b16ecdbde1bfc7f5d9c3371ca683cfeaa8e6ff60b4807ec9272", size = 84999 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a9/5c/bfd6bd0bf979426d405cc6e71eceb8701b148b16c21d2dc3c261efc61c7b/sqlparse-0.5.3-py3-none-any.whl", hash = "sha256:cf2196ed3418f3ba5de6af7e82c694a9fbdbfecccdfc72e281548517081f16ca", size = 44415 },
 ]
 
 [[package]]

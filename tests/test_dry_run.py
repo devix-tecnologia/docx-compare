@@ -22,6 +22,9 @@ class TestDryRun(unittest.TestCase):
         """Configuração inicial para os testes."""
         self.script_path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "src",
+            "docx_compare",
+            "core",
             "docx_diff_viewer.py",
         )
         self.original_file = "documentos/doc-rafael-original.docx"
