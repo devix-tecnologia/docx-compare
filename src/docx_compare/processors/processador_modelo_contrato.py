@@ -93,6 +93,59 @@ def signal_handler(signum, _frame):
     sys.exit(0)
 
 
+def extract_content_between_tags(text: str) -> dict[str, str]:
+    """
+    Extrai conteúdo entre tags considerando segunda ocorrência como fechamento.
+    Se encontrar {{1}} duas vezes, a segunda é considerada tag de fechamento.
+    
+    Args:
+        text: Texto para analisar
+        
+    Returns:
+        Dict com nome_tag: conteudo_extraido
+    """
+    content_map = {}
+    
+    # Encontrar todas as tags (abertura e potenciais fechamentos)
+    tag_pattern = r'\{\{(?:TAG-)?([a-zA-Z_][a-zA-Z0-9_.]*|\d+(?:\.\d+)*)\s*\}\}'
+    all_matches = list(re.finditer(tag_pattern, text, re.IGNORECASE))
+    
+    # Agrupar matches por tag name
+    tag_groups = {}
+    for match in all_matches:
+        tag_name = match.group(1).strip().lower()
+        if tag_name not in tag_groups:
+            tag_groups[tag_name] = []
+        tag_groups[tag_name].append(match)
+    
+    # Para cada tag, se tiver pelo menos 2 ocorrências, extrair conteúdo entre primeira e segunda
+    for tag_name, matches in tag_groups.items():
+        if len(matches) >= 2:
+            # Primeira ocorrência = abertura, segunda ocorrência = fechamento
+            opening_pos = matches[0].end()
+            closing_pos = matches[1].start()
+            
+            # Extrair conteúdo entre as tags
+            raw_content = text[opening_pos:closing_pos].strip()
+            
+            # Limpar HTML tags e normalizar texto
+            clean_content = re.sub(r'<[^>]+>', '', raw_content)  # Remove tags HTML
+            clean_content = re.sub(r'\s+', ' ', clean_content).strip()  # Normaliza espaços
+            
+            if clean_content:
+                content_map[tag_name] = clean_content
+                if verbose_mode:
+                    print(f"📄 Conteúdo extraído para tag '{tag_name}': {clean_content[:100]}{'...' if len(clean_content) > 100 else ''}")
+            else:
+                if verbose_mode:
+                    print(f"ℹ️ Tag '{tag_name}' encontrada em pares mas sem conteúdo entre elas")
+        else:
+            if verbose_mode:
+                print(f"⚠️ Tag '{tag_name}' encontrada apenas {len(matches)} vez(es), precisa de pelo menos 2 para extração")
+    
+    return content_map
+
+
 def extract_tags_from_differences(modifications: list[dict]) -> list[dict]:
     """
     Extrai tags das modificações encontradas entre os documentos.
@@ -110,6 +163,12 @@ def extract_tags_from_differences(modifications: list[dict]) -> list[dict]:
         List de dicionários com informações detalhadas das tags encontradas
     """
     tag_patterns = [
+        # Padrões para tags com prefixo TAG-: {{TAG-nome}}
+        r"(?<!\{)\{\{\s*TAG-([a-zA-Z_][a-zA-Z0-9_]*)\s*\}\}(?!\})",
+        # Padrões para tags com prefixo TAG- auto-fechadas: {{TAG-nome /}}
+        r"(?<!\{)\{\{\s*TAG-([a-zA-Z_][a-zA-Z0-9_]*)\s*/\s*\}\}(?!\})",
+        # Padrões para tags com prefixo TAG- de fechamento: {{/TAG-nome}}
+        r"(?<!\{)\{\{\s*/\s*TAG-([a-zA-Z_][a-zA-Z0-9_]*)\s*\}\}(?!\})",
         # Padrões para tags textuais: {{tag}} com espaços opcionais
         r"(?<!\{)\{\{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\}\}(?!\})",
         # Padrões para tags textuais auto-fechadas: {{tag /}} com espaços opcionais
@@ -450,6 +509,67 @@ def analyze_differences_detailed(original_text, modified_text):
     return modifications
 
 
+def limpar_tags_modelo_contrato(modelo_id: str, dry_run=False):
+    """
+    Remove todas as tags existentes de um modelo de contrato antes do reprocessamento.
+    
+    Args:
+        modelo_id: ID do modelo de contrato
+        dry_run: Se True, não executa alterações no banco
+        
+    Returns:
+        int: Número de tags removidas
+    """
+    try:
+        if dry_run:
+            print("🏃‍♂️ DRY-RUN: Simulando limpeza de tags existentes")
+            return 0
+            
+        print("🗑️ Limpando tags existentes...")
+        
+        # Buscar o modelo com suas tags associadas
+        modelo_response = requests.get(
+            f"{DIRECTUS_BASE_URL}/items/modelo_contrato/{modelo_id}",
+            params={"fields": "tags"},
+            headers=DIRECTUS_HEADERS
+        )
+        
+        if modelo_response.status_code == 200:
+            modelo_data = modelo_response.json().get('data', {})
+            tags_ids = modelo_data.get('tags', [])
+            
+            if not tags_ids:
+                print("ℹ️ Nenhuma tag existente para limpar")
+                return 0
+                
+            print(f"   Encontradas {len(tags_ids)} tags para remover (via modelo)")
+            tags_removidas = 0
+            
+            # Deletar cada tag
+            for tag_id in tags_ids:
+                delete_response = requests.delete(
+                    f"{DIRECTUS_BASE_URL}/items/modelo_contrato_tag/{tag_id}",
+                    headers=DIRECTUS_HEADERS
+                )
+                
+                if delete_response.status_code in [200, 204]:
+                    print(f"   ✅ Tag 'N/A' removida (ID: {tag_id})")
+                    tags_removidas += 1
+                else:
+                    print(f"   ❌ Erro ao remover tag {tag_id}: {delete_response.status_code}")
+                    
+            print(f"✅ {tags_removidas} tags removidas com sucesso")
+            return tags_removidas
+            
+        else:
+            print(f"⚠️ Erro ao buscar modelo: {modelo_response.status_code}")
+            return 0
+            
+    except Exception as e:
+        print(f"❌ Erro durante limpeza de tags: {e}")
+        return 0
+
+
 def salvar_tags_modelo_contrato(
     modelo_id: str, tags_encontradas: list[dict], dry_run=False
 ):
@@ -479,6 +599,7 @@ def salvar_tags_modelo_contrato(
                 "tag_nome": tag_info["nome"],
                 "caminho_tag_inicio": tag_info.get("caminho_tag_inicio", ""),
                 "caminho_tag_fim": tag_info.get("caminho_tag_fim", ""),
+                "conteudo": tag_info.get("conteudo", ""),  # Campo conteúdo adicionado
                 "contexto": tag_info.get("contexto", "")[
                     :500
                 ],  # Limitar contexto a 500 chars
@@ -510,7 +631,10 @@ def salvar_tags_modelo_contrato(
                 tag_id = tag_criada.get("id")
                 if tag_id:
                     tags_criadas.append(tag_id)
+                    conteudo_preview = tag_info.get("conteudo", "")[:50]
                     print(f"✅ Tag '{tag_info['nome']}' criada com ID: {tag_id}")
+                    if conteudo_preview:
+                        print(f"   📄 Conteúdo: {conteudo_preview}{'...' if len(tag_info.get('conteudo', '')) > 50 else ''}")
                     if verbose_mode:
                         print(
                             f"   📍 Caminho início: {tag_info.get('caminho_tag_inicio', 'N/A')}"
@@ -518,6 +642,9 @@ def salvar_tags_modelo_contrato(
                         print(
                             f"   📍 Caminho fim: {tag_info.get('caminho_tag_fim', 'N/A')}"
                         )
+                        full_content = tag_info.get("conteudo", "")
+                        if full_content:
+                            print(f"   📄 Conteúdo completo: {full_content}")
                 else:
                     print(f"⚠️ Tag '{tag_info['nome']}' criada mas sem ID retornado")
             else:
@@ -531,6 +658,116 @@ def salvar_tags_modelo_contrato(
     except Exception as e:
         print(f"❌ Erro ao salvar tags: {e}")
         return []
+
+
+def associar_tags_com_clausulas(modelo_id: str, tags_criadas: list, tags_encontradas: list, dry_run=False):
+    """
+    Associa tags com cláusulas: se tag.nome == clausula.nome, então clausula.tag = tag.id
+    Busca as tags diretamente pelo nome, sem depender de ordem.
+    
+    Args:
+        modelo_id: ID do modelo de contrato
+        tags_criadas: Lista de IDs das tags criadas (não usado - buscamos pelo nome)
+        tags_encontradas: Lista dos nomes das tags encontradas (usado apenas para referência)
+        dry_run: Se True, não executa alterações no banco
+        
+    Returns:
+        int: Número de associações criadas
+    """
+    try:
+        if dry_run:
+            print("🏃‍♂️ DRY-RUN: Simulando associação de tags com cláusulas")
+            return 0
+            
+        print("🔗 Associando tags com cláusulas (busca direta pelo nome: tag.nome = clausula.nome → clausula.tag = tag.id)...")
+        
+        # Primeiro, buscar todas as cláusulas disponíveis
+        clausulas_response = requests.get(
+            f"{DIRECTUS_BASE_URL}/items/clausula",
+            params={
+                "fields": "id,nome,tag",
+                "limit": 1000
+            },
+            headers=DIRECTUS_HEADERS
+        )
+        
+        if clausulas_response.status_code != 200:
+            print(f"⚠️ Erro ao buscar cláusulas: {clausulas_response.status_code}")
+            return 0
+            
+        clausulas_data = clausulas_response.json().get('data', [])
+        print(f"   Encontradas {len(clausulas_data)} cláusulas disponíveis")
+        
+        associacoes_criadas = 0
+        
+        # Para cada cláusula, buscar a tag correspondente pelo nome
+        for clausula in clausulas_data:
+            clausula_id = clausula.get('id')
+            clausula_nome = str(clausula.get('nome', '') or '').strip()
+            clausula_tag_atual = clausula.get('tag')
+            
+            if not clausula_nome:
+                if verbose_mode:
+                    print(f"   🔍 Cláusula {clausula_id} sem nome - ignorando")
+                continue
+            
+            print(f"   🔍 Buscando tag para cláusula '{clausula_nome}'...")
+            
+            # Buscar tag com o mesmo nome da cláusula
+            tag_response = requests.get(
+                f"{DIRECTUS_BASE_URL}/items/modelo_contrato_tag",
+                params={
+                    "filter[modelo_contrato][_eq]": modelo_id,
+                    "filter[tag_nome][_eq]": clausula_nome,
+                    "fields": "id,tag_nome",
+                    "limit": 1
+                },
+                headers=DIRECTUS_HEADERS
+            )
+            
+            if tag_response.status_code == 200:
+                tag_data = tag_response.json().get('data', [])
+                if tag_data:
+                    tag_id = tag_data[0].get('id')
+                    tag_nome = tag_data[0].get('tag_nome', clausula_nome)
+                    
+                    # Verificar se a cláusula já tem essa tag associada
+                    if clausula_tag_atual == tag_id:
+                        print(f"     ℹ️ Cláusula '{clausula_nome}' já tem tag '{tag_nome}' associada")
+                        continue
+                    
+                    # Atualizar a cláusula com o tag_id
+                    update_data = {
+                        "tag": tag_id
+                    }
+                    
+                    update_response = requests.patch(
+                        f"{DIRECTUS_BASE_URL}/items/clausula/{clausula_id}",
+                        json=update_data,
+                        headers=DIRECTUS_HEADERS
+                    )
+                    
+                    if update_response.status_code in [200, 204]:
+                        print(f"     ✅ Cláusula '{clausula_nome}' associada com tag '{tag_nome}' (ID: {tag_id})")
+                        associacoes_criadas += 1
+                    else:
+                        print(f"     ❌ Erro ao associar cláusula '{clausula_nome}' com tag '{tag_nome}': {update_response.status_code}")
+                        if verbose_mode:
+                            print(f"        Response: {update_response.text}")
+                else:
+                    if verbose_mode:
+                        print(f"     🔍 Nenhuma tag encontrada com nome '{clausula_nome}'")
+            else:
+                print(f"     ❌ Erro ao buscar tag para cláusula '{clausula_nome}': {tag_response.status_code}")
+                if verbose_mode:
+                    print(f"        Response: {tag_response.text}")
+        
+        print(f"✅ {associacoes_criadas} associações tag-cláusula criadas")
+        return associacoes_criadas
+        
+    except Exception as e:
+        print(f"❌ Erro ao associar tags com cláusulas: {e}")
+        return 0
 
 
 def update_modelo_status(
@@ -614,6 +851,10 @@ def processar_modelo_contrato(modelo_data, dry_run=False):
         else:
             print(f"\n🚀 Processando modelo de contrato {modelo_id}")
 
+        # Limpar tags existentes antes do processamento (para evitar duplicatas)
+        if not dry_run:
+            limpar_tags_modelo_contrato(modelo_id, dry_run=dry_run)
+
         # Atualizar status para 'processando'
         if not dry_run:
             update_modelo_status(modelo_id, "processando", dry_run=dry_run)
@@ -671,19 +912,41 @@ def processar_modelo_contrato(modelo_data, dry_run=False):
             modifications = analyze_differences_detailed(original_text, tagged_text)
             print(f"🔍 Encontradas {len(modifications)} modificações")
 
-            # 4. Extrair tags das diferenças
+            # 4. Extrair conteúdo entre tags do arquivo com tags
+            content_map = extract_content_between_tags(tagged_text)
+            print(f"📄 Extraído conteúdo para {len(content_map)} tags: {sorted(content_map.keys())}")
+
+            # 5. Extrair tags das diferenças
             tags_encontradas = extract_tags_from_differences(modifications)
+            
+            # 6. Enriquecer tags encontradas com conteúdo extraído
+            for tag_info in tags_encontradas:
+                tag_nome = tag_info["nome"]
+                if tag_nome in content_map:
+                    tag_info["conteudo"] = content_map[tag_nome]
+                    if verbose_mode:
+                        print(f"✅ Tag '{tag_nome}' enriquecida com conteúdo")
+                else:
+                    tag_info["conteudo"] = ""
+                    if verbose_mode:
+                        print(f"ℹ️ Tag '{tag_nome}' sem conteúdo correspondente")
+            
             tag_names = [tag["nome"] for tag in tags_encontradas]
             print(
                 f"🏷️  Extraídas {len(tags_encontradas)} tags únicas: {sorted(tag_names)}"
             )
 
-            # 5. Salvar tags no banco
+            # 7. Salvar tags no banco
             tags_criadas = salvar_tags_modelo_contrato(
                 modelo_id, tags_encontradas, dry_run
             )
 
-            # 6. Atualizar status do modelo para concluído
+            # 8. Associar tags com cláusulas correspondentes
+            associacoes_criadas = associar_tags_com_clausulas(
+                modelo_id, tags_criadas, tags_encontradas, dry_run
+            )
+
+            # 9. Atualizar status do modelo para concluído
             update_modelo_status(
                 modelo_id,
                 "concluido",
@@ -695,6 +958,7 @@ def processar_modelo_contrato(modelo_data, dry_run=False):
             print(f"   📊 {len(modifications)} modificações analisadas")
             print(f"   🏷️  {len(tags_encontradas)} tags extraídas")
             print(f"   💾 {len(tags_criadas)} tags salvas no banco")
+            print(f"   🔗 {associacoes_criadas} associações tag-cláusula criadas")
 
             # Limpar arquivos temporários de análise
             for temp_file in [original_html_temp_name, tagged_html_temp_name]:
