@@ -31,11 +31,13 @@ class ProcessorOrchestrator:
         intervalo_verificacao: int = 60,
         porta_monitoramento: int = 5007,
         verbose: bool = False,
+        dry_run: bool = False,
     ):
         self.modo_execucao = modo_execucao  # "paralelo" ou "sequencial"
         self.intervalo_verificacao = intervalo_verificacao
         self.porta_monitoramento = porta_monitoramento
         self.verbose = verbose
+        self.dry_run = dry_run
         self.running = True
         self.processes: dict[str, subprocess.Popen] = {}
         self.threads: list[threading.Thread] = []
@@ -56,6 +58,8 @@ class ProcessorOrchestrator:
         print(f"📁 Porta de monitoramento: {porta_monitoramento}")
         print(f"⏰ Intervalo de verificação: {intervalo_verificacao} segundos")
         print(f"🏃‍♂️ Modo: {'VERBOSE' if verbose else 'NORMAL'}")
+        if dry_run:
+            print("🔍 Modo DRY-RUN: Simulação sem execução real")
 
     def _signal_handler(self, signum, frame):
         """Handler para sinais de encerramento"""
@@ -72,6 +76,8 @@ class ProcessorOrchestrator:
             ]
             if self.verbose:
                 cmd.append("--verbose")
+            if self.dry_run:
+                cmd.append("--dry-run")
 
             result = subprocess.run(
                 cmd,
@@ -107,6 +113,8 @@ class ProcessorOrchestrator:
             ]
             if self.verbose:
                 cmd.append("--verbose")
+            if self.dry_run:
+                cmd.append("--dry-run")
 
             result = subprocess.run(
                 cmd,
@@ -414,6 +422,11 @@ def main():
         action="store_true",
         help="Executa apenas um ciclo e encerra",
     )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Modo simulação - não executa processadores reais",
+    )
 
     args = parser.parse_args()
 
@@ -423,6 +436,7 @@ def main():
         intervalo_verificacao=args.intervalo,
         porta_monitoramento=args.porta,
         verbose=args.verbose,
+        dry_run=args.dry_run,
     )
 
     if args.single_run:

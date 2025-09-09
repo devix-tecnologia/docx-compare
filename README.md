@@ -5,8 +5,10 @@
 ### 🎯 Orquestrador (Execução Coordenada)
 
 ```bash
-# Executar ambos os processadores sequencialmente (recomendado)
-make run-orquestrado# Executar como módulo
+# Executar ambos os processadores em paralelo (recomendado)
+make run-orquestrador
+
+# Executar como módulo
 python -m src.docx_compare.processors.processador_automatico
 python -m src.docx_compare.core.docx_diff_viewer doc1.docx doc2.docx
 ```
@@ -19,19 +21,25 @@ python -m src.docx_compare.core.docx_diff_viewer doc1.docx doc2.docx
 - **[🧪 DRY RUN](DRY_RUN_DOCUMENTATION.md)** - Modo de simulação e testes
 - **[📋 CHANGELOG](CHANGELOG.md)** - Histórico de mudanças e roadmap
 
-## 📋 Pré-requisitosle
+## 📋 Pré-requisitos
 
+### 🎯 Comandos do Orquestrador
+
+```bash
 # Executar com logs detalhados
-
 make run-orquestrador-single-verbose
 
 # Executar em modo contínuo
-
 make run-orquestrador
 
 # Executar em paralelo (ambos simultaneamente)
-
 make run-orquestrador-paralelo
+
+# Executar em modo simulação (dry-run) - SEM ALTERAÇÕES NO BANCO
+uv run python src/docx_compare/processors/orquestrador.py --dry-run --single-run
+
+# Executar com configurações customizadas
+uv run python src/docx_compare/processors/orquestrador.py --modo sequencial --verbose --porta 5008
 
 ````
 
