@@ -4,13 +4,18 @@ Teste específico baseado na imagem fornecida pelo usuário
 para validar extração de conteúdo de tags numéricas
 """
 
-import sys
 import os
+import sys
 
 # Adicionar o diretório raiz ao path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
 
-from src.docx_compare.processors.processador_modelo_contrato import extract_content_between_tags
+from src.docx_compare.processors.processador_modelo_contrato import (
+    extract_content_between_tags,
+)
+
 
 def test_extract_content_based_on_image():
     """Teste baseado no exemplo real da imagem fornecida"""
@@ -51,16 +56,16 @@ def test_extract_content_based_on_image():
     # Testar extração
     result = extract_content_between_tags(texto_documento)
 
-    print(f"\n📊 Resultado da extração:")
+    print("\n📊 Resultado da extração:")
     print(f"   Encontradas {len(result)} tags com conteúdo")
 
     # Verificar conteúdos específicos baseados na imagem
     expected_content = {
-        "1": "CLÁUSULA 1ª. OBJETIVO\n\n    {{1.1}}\n    1.1. O presente CONTRATO tem por objeto a prestação de serviços de inserir \"Serviços\" a serem prestados em inserir.\n    {{/1.1}}\n\n    {{1.2}}\n    1.2. Fazem parte do CONTRATO os seguintes anexos:\n\n    Anexo I. [Planilha de Quantidades e Preços];\n    Anexo II. [Descrição de Escopo Técnico];\n    {{/1.2}}",
-        "1.1": "1.1. O presente CONTRATO tem por objeto a prestação de serviços de inserir \"Serviços\" a serem prestados em inserir.",
+        "1": 'CLÁUSULA 1ª. OBJETIVO\n\n    {{1.1}}\n    1.1. O presente CONTRATO tem por objeto a prestação de serviços de inserir "Serviços" a serem prestados em inserir.\n    {{/1.1}}\n\n    {{1.2}}\n    1.2. Fazem parte do CONTRATO os seguintes anexos:\n\n    Anexo I. [Planilha de Quantidades e Preços];\n    Anexo II. [Descrição de Escopo Técnico];\n    {{/1.2}}',
+        "1.1": '1.1. O presente CONTRATO tem por objeto a prestação de serviços de inserir "Serviços" a serem prestados em inserir.',
         "1.2": "1.2. Fazem parte do CONTRATO os seguintes anexos:\n\n    Anexo I. [Planilha de Quantidades e Preços];\n    Anexo II. [Descrição de Escopo Técnico];",
         "2": "CLÁUSULA 2ª. CONDIÇÕES DE EXECUÇÃO\n    \n    {{2.1}}\n    2.1. A execução dos serviços será realizada conforme cronograma estabelecido.\n    {{/2.1}}",
-        "2.1": "2.1. A execução dos serviços será realizada conforme cronograma estabelecido."
+        "2.1": "2.1. A execução dos serviços será realizada conforme cronograma estabelecido.",
     }
 
     print("\n🔍 Verificando conteúdos específicos:")
@@ -69,31 +74,33 @@ def test_extract_content_based_on_image():
         if tag_name in result:
             actual = result[tag_name].strip()
             # Mostrar preview do conteúdo
-            preview = actual.replace('\n', ' ').strip()[:80]
-            print(f"   🏷️  Tag '{tag_name}': {preview}{'...' if len(actual) > 80 else ''}")
+            preview = actual.replace("\n", " ").strip()[:80]
+            print(
+                f"   🏷️  Tag '{tag_name}': {preview}{'...' if len(actual) > 80 else ''}"
+            )
 
             # Verificar se contém elementos principais esperados
             if tag_name == "1":
                 if "CLÁUSULA 1ª. OBJETIVO" in actual:
-                    print(f"      ✅ Contém 'CLÁUSULA 1ª. OBJETIVO'")
+                    print("      ✅ Contém 'CLÁUSULA 1ª. OBJETIVO'")
                 else:
-                    print(f"      ❌ NÃO contém 'CLÁUSULA 1ª. OBJETIVO'")
+                    print("      ❌ NÃO contém 'CLÁUSULA 1ª. OBJETIVO'")
 
             elif tag_name == "1.1":
                 if "presente CONTRATO tem por objeto" in actual and "inserir" in actual:
-                    print(f"      ✅ Contém texto correto do item 1.1")
+                    print("      ✅ Contém texto correto do item 1.1")
                 else:
-                    print(f"      ❌ NÃO contém texto esperado do item 1.1")
+                    print("      ❌ NÃO contém texto esperado do item 1.1")
 
             elif tag_name == "1.2":
                 if "Fazem parte do CONTRATO" in actual and "Anexo I" in actual:
-                    print(f"      ✅ Contém texto correto do item 1.2")
+                    print("      ✅ Contém texto correto do item 1.2")
                 else:
-                    print(f"      ❌ NÃO contém texto esperado do item 1.2")
+                    print("      ❌ NÃO contém texto esperado do item 1.2")
         else:
             print(f"   ❌ Tag '{tag_name}' não encontrada!")
 
-    print(f"\n📋 Resumo:")
+    print("\n📋 Resumo:")
     print(f"   Tags encontradas: {sorted(result.keys())}")
     print(f"   Tags esperadas: {sorted(expected_content.keys())}")
 
@@ -110,6 +117,7 @@ def test_extract_content_based_on_image():
 
     return result
 
+
 def test_tag_content_for_database():
     """Teste para simular o que seria salvo no banco"""
     print("\n🧪 Simulando dados que serão salvos no banco...")
@@ -117,7 +125,7 @@ def test_tag_content_for_database():
     # Simular tag info como seria processada
     sample_tag_info = {
         "nome": "1.1",
-        "conteudo": "1.1. O presente CONTRATO tem por objeto a prestação de serviços de inserir \"Serviços\" a serem prestados em inserir.",
+        "conteudo": '1.1. O presente CONTRATO tem por objeto a prestação de serviços de inserir "Serviços" a serem prestados em inserir.',
         "caminho_tag_inicio": "linha_5_pos_100",
         "caminho_tag_fim": "linha_5_pos_200",
         "contexto": "... OBJETIVO {{1.1}} 1.1. O presente CONTRATO tem por objeto ...",
@@ -142,17 +150,21 @@ def test_tag_content_for_database():
         else:
             print(f"   📝 {key}: {value}")
 
-    print(f"\n✅ Campo 'conteudo' seria preenchido corretamente!")
+    print("\n✅ Campo 'conteudo' seria preenchido corretamente!")
     print(f"📄 Conteúdo completo da tag '{sample_tag_info['nome']}':")
     print(f"   {sample_tag_info['conteudo']}")
+
 
 if __name__ == "__main__":
     # Configurar verbose_mode para ver logs detalhados
     import src.docx_compare.processors.processador_modelo_contrato as processador_module
+
     processador_module.verbose_mode = True
 
     result = test_extract_content_based_on_image()
     test_tag_content_for_database()
 
-    print(f"\n🎯 Teste baseado na imagem concluído!")
-    print(f"✅ A implementação está pronta para gravar os conteúdos corretos no campo 'conteudo' das tags!")
+    print("\n🎯 Teste baseado na imagem concluído!")
+    print(
+        "✅ A implementação está pronta para gravar os conteúdos corretos no campo 'conteudo' das tags!"
+    )

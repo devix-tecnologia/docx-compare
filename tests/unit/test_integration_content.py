@@ -6,19 +6,20 @@ está preenchendo corretamente o campo conteudo
 
 import os
 import sys
-import tempfile
-import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 # Adicionar o diretório raiz ao path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
 
 # Importar função que vamos testar
 from src.docx_compare.processors.processador_modelo_contrato import (
     extract_content_between_tags,
     extract_tags_from_differences,
-    salvar_tags_modelo_contrato
+    salvar_tags_modelo_contrato,
 )
+
 
 def test_integration_content_extraction():
     """Teste de integração da extração de conteúdo"""
@@ -55,7 +56,7 @@ def test_integration_content_extraction():
 
     print(f"   📊 Extraídas {len(content_map)} tags com conteúdo:")
     for tag_name, content in content_map.items():
-        preview = content.replace('\n', ' ').strip()[:60]
+        preview = content.replace("\n", " ").strip()[:60]
         print(f"   🏷️  '{tag_name}': {preview}{'...' if len(content) > 60 else ''}")
 
     # 2. Simular modificações (diferenças encontradas)
@@ -72,7 +73,7 @@ def test_integration_content_extraction():
             "conteudo": "Valor antigo",
             "alteracao": "{{TAG-valor}} novo valor {{/TAG-valor}}",
             "sort": 2,
-        }
+        },
     ]
 
     # 3. Extrair tags das modificações
@@ -95,8 +96,12 @@ def test_integration_content_extraction():
     modelo_id = "test-modelo-123"
 
     # Mock das requests para simular dry-run
-    with patch('src.docx_compare.processors.processador_modelo_contrato.requests') as mock_requests:
-        tags_criadas = salvar_tags_modelo_contrato(modelo_id, tags_encontradas, dry_run=True)
+    with patch(
+        "src.docx_compare.processors.processador_modelo_contrato.requests"
+    ) as mock_requests:
+        tags_criadas = salvar_tags_modelo_contrato(
+            modelo_id, tags_encontradas, dry_run=True
+        )
         print(f"   📊 Simulação de salvamento: {len(tags_criadas)} tags processadas")
 
     # 6. Verificar se o campo conteudo está sendo incluído
@@ -104,19 +109,25 @@ def test_integration_content_extraction():
     for tag_info in tags_encontradas:
         tag_name = tag_info["nome"]
         has_content = "conteudo" in tag_info and tag_info["conteudo"]
-        print(f"   🏷️  '{tag_name}': {'✅ COM CONTEÚDO' if has_content else '❌ SEM CONTEÚDO'}")
+        print(
+            f"   🏷️  '{tag_name}': {'✅ COM CONTEÚDO' if has_content else '❌ SEM CONTEÚDO'}"
+        )
 
         if has_content:
             content_preview = tag_info["conteudo"][:50]
-            print(f"      📄 {content_preview}{'...' if len(tag_info['conteudo']) > 50 else ''}")
+            print(
+                f"      📄 {content_preview}{'...' if len(tag_info['conteudo']) > 50 else ''}"
+            )
 
     return tags_encontradas
+
 
 if __name__ == "__main__":
     # Configurar verbose_mode para ver logs detalhados
     import src.docx_compare.processors.processador_modelo_contrato as processador_module
+
     processador_module.verbose_mode = True
 
     result = test_integration_content_extraction()
-    print(f"\n✅ Teste de integração concluído!")
+    print("\n✅ Teste de integração concluído!")
     print(f"📊 Resultado final: {len(result)} tags processadas com conteúdo")

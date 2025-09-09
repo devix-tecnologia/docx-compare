@@ -3,13 +3,18 @@
 Teste para verificar a extração de conteúdo entre tags
 """
 
-import sys
 import os
+import sys
 
 # Adicionar o diretório raiz ao path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
 
-from src.docx_compare.processors.processador_modelo_contrato import extract_content_between_tags
+from src.docx_compare.processors.processador_modelo_contrato import (
+    extract_content_between_tags,
+)
+
 
 def test_extract_content_basic():
     """Teste básico de extração de conteúdo entre tags"""
@@ -50,7 +55,7 @@ def test_extract_content_basic():
     # Testar extração
     result = extract_content_between_tags(texto_exemplo)
 
-    print(f"📊 Resultado da extração:")
+    print("📊 Resultado da extração:")
     print(f"   Encontradas {len(result)} tags com conteúdo")
 
     for tag_name, content in result.items():
@@ -60,7 +65,7 @@ def test_extract_content_basic():
     expected_tags = {"responsavel", "cabecalho", "valor", "endereco"}
     found_tags = set(result.keys())
 
-    print(f"\n🔍 Verificação:")
+    print("\n🔍 Verificação:")
     print(f"   Tags esperadas: {sorted(expected_tags)}")
     print(f"   Tags encontradas: {sorted(found_tags)}")
 
@@ -78,12 +83,16 @@ def test_extract_content_basic():
     # Verificar conteúdo específico
     if "responsavel" in result:
         responsavel_content = result["responsavel"]
-        if "João Silva" in responsavel_content and "joao.silva@empresa.com" in responsavel_content:
+        if (
+            "João Silva" in responsavel_content
+            and "joao.silva@empresa.com" in responsavel_content
+        ):
             print("   ✅ Conteúdo da tag 'responsavel' está correto")
         else:
             print("   ❌ Conteúdo da tag 'responsavel' não está correto")
 
     return result
+
 
 def test_extract_content_edge_cases():
     """Teste para casos especiais"""
@@ -119,6 +128,7 @@ def test_extract_content_edge_cases():
     print(f"📊 Tags aninhadas: {len(result_nested)} encontradas")
     for tag_name, content in result_nested.items():
         print(f"   🏷️  '{tag_name}': {content[:50]}...")
+
 
 if __name__ == "__main__":
     test_extract_content_basic()

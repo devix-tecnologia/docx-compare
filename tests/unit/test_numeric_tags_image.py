@@ -3,13 +3,18 @@
 Teste baseado na imagem fornecida para validar extração de conteúdo de tags numéricas
 """
 
-import sys
 import os
+import sys
 
 # Adicionar o diretório raiz ao path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
 
-from src.docx_compare.processors.processador_modelo_contrato import extract_content_between_tags
+from src.docx_compare.processors.processador_modelo_contrato import (
+    extract_content_between_tags,
+)
+
 
 def test_numeric_tags_from_image():
     """Teste baseado no exemplo da imagem fornecida"""
@@ -49,7 +54,7 @@ def test_numeric_tags_from_image():
     # Testar extração
     result = extract_content_between_tags(documento_exemplo)
 
-    print(f"📊 Resultado da extração:")
+    print("📊 Resultado da extração:")
     print(f"   Encontradas {len(result)} tags com conteúdo")
 
     # Verificar tag específica mencionada
@@ -60,7 +65,9 @@ def test_numeric_tags_from_image():
 
         # Verificar se contém "CLÁUSULA 1ª. OBJETIVO" como esperado
         if "CLÁUSULA 1ª. OBJETIVO" in conteudo_tag1:
-            print("✅ Conteúdo da tag {{1}} contém 'CLÁUSULA 1ª. OBJETIVO' como esperado")
+            print(
+                "✅ Conteúdo da tag {{1}} contém 'CLÁUSULA 1ª. OBJETIVO' como esperado"
+            )
         else:
             print("❌ Conteúdo da tag {{1}} NÃO contém 'CLÁUSULA 1ª. OBJETIVO'")
     else:
@@ -70,12 +77,13 @@ def test_numeric_tags_from_image():
     expected_tags = ["1", "1.1", "1.2", "1.3"]
     for tag in expected_tags:
         if tag in result:
-            content_preview = result[tag][:80].replace('\n', ' ').strip()
+            content_preview = result[tag][:80].replace("\n", " ").strip()
             print(f"🏷️  Tag {{{{ {tag} }}}}: {content_preview}...")
         else:
             print(f"❌ Tag {{{{ {tag} }}}} não encontrada")
 
     return result
+
 
 def test_edge_cases_numeric():
     """Teste para casos especiais com tags numéricas"""
@@ -97,9 +105,11 @@ def test_edge_cases_numeric():
     for tag_name, content in result.items():
         print(f"   🏷️  '{tag_name}': {content[:30].replace(chr(10), ' ')}...")
 
+
 if __name__ == "__main__":
     # Ativar modo verbose
     import src.docx_compare.processors.processador_modelo_contrato as processador_module
+
     processador_module.verbose_mode = True
 
     result = test_numeric_tags_from_image()
