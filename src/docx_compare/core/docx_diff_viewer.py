@@ -28,9 +28,9 @@ try:
         spec.loader.exec_module(config)
 
         # Usar getattr com fallback para evitar AttributeError
-        LUA_FILTER_PATH = getattr(config, 'LUA_FILTER_PATH', 
+        LUA_FILTER_PATH = getattr(config, "LUA_FILTER_PATH",
                                   os.getenv("LUA_FILTER_PATH", "config/comments_html_filter_direct.lua"))
-        RESULTS_DIR = getattr(config, 'RESULTS_DIR', 
+        RESULTS_DIR = getattr(config, "RESULTS_DIR",
                               os.getenv("RESULTS_DIR", "results"))
     else:
         raise ImportError("Não foi possível carregar o módulo config.py")
