@@ -5,6 +5,7 @@ Copia valores do campo 'numero' para o campo 'nome' quando nome estiver vazio
 """
 
 import os
+
 import requests
 from dotenv import load_dotenv
 
@@ -85,18 +86,18 @@ def buscar_clausulas_sem_nome(nome_colecao):
 
         if response.status_code == 200:
             data = response.json()
-            clausulas = data.get('data', [])
+            clausulas = data.get("data", [])
 
             print(f"✅ Encontradas {len(clausulas)} cláusulas no total")
 
             # Filtrar cláusulas que precisam de correção
             clausulas_para_corrigir = []
             for clausula in clausulas:
-                numero = str(clausula.get('numero', '') or '').strip()
-                nome = str(clausula.get('nome', '') or '').strip()
+                numero = str(clausula.get("numero", "") or "").strip()
+                nome = str(clausula.get("nome", "") or "").strip()
 
                 # Se tem número mas não tem nome, ou se nome está vazio
-                if numero and (not nome or nome == ''):
+                if numero and (not nome or nome == ""):
                     clausulas_para_corrigir.append(clausula)
 
             print(f"🎯 Encontradas {len(clausulas_para_corrigir)} cláusulas para corrigir")
@@ -168,7 +169,7 @@ def main():
     print("\n⚠️  ATENÇÃO: Este script irá modificar dados no banco de dados!")
     confirmacao = input("Digite 'CONFIRMAR' para prosseguir ou qualquer outra coisa para cancelar: ")
 
-    if confirmacao != 'CONFIRMAR':
+    if confirmacao != "CONFIRMAR":
         print("❌ Operação cancelada pelo usuário")
         return
 
@@ -180,17 +181,17 @@ def main():
     erro = 0
 
     for i, clausula in enumerate(clausulas_para_corrigir, 1):
-        clausula_id = clausula['id']
-        numero = clausula.get('numero', '')
+        clausula_id = clausula["id"]
+        numero = clausula.get("numero", "")
 
         print(f"[{i:3d}/{len(clausulas_para_corrigir)}] Corrigindo cláusula {clausula_id}...")
         print(f"         Copiando '{numero}' para campo nome")
 
         if corrigir_clausula(clausula_id, numero, nome_colecao):
-            print(f"         ✅ Sucesso!")
+            print("         ✅ Sucesso!")
             sucesso += 1
         else:
-            print(f"         ❌ Falhou!")
+            print("         ❌ Falhou!")
             erro += 1
 
     print("\n" + "=" * 60)

@@ -132,6 +132,76 @@ class ProcessorOrchestrator:
             print(f"❌ Exceção no processador de modelo de contrato: {e}")
             return False, str(e)
 
+    def _executar_processador_agrupamento(self) -> tuple[bool, str]:
+        """Executa o processador de agrupamento de modificações uma vez"""
+        try:
+            cmd = [
+                sys.executable,
+                "src/docx_compare/processors/processador_agrupamento.py",
+                "--single-run",
+            ]
+            if self.verbose:
+                cmd.append("--verbose")
+
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=600,  # 10 minutos de timeout (pode ser mais lento)
+                cwd=os.getcwd(),
+            )
+
+            if result.returncode == 0:
+                if self.verbose:
+                    print("✅ Processador de agrupamento executado com sucesso")
+                    print(f"📤 Stdout: {result.stdout}")
+                return True, result.stdout
+            else:
+                print(f"❌ Erro no processador de agrupamento: {result.stderr}")
+                return False, result.stderr
+
+        except subprocess.TimeoutExpired:
+            print("⏰ Timeout no processador de agrupamento")
+            return False, "Timeout na execução"
+        except Exception as e:
+            print(f"❌ Exceção no processador de agrupamento: {e}")
+            return False, str(e)
+
+    def _executar_processador_limpeza(self) -> tuple[bool, str]:
+        """Executa o processador de limpeza de modificações uma vez"""
+        try:
+            cmd = [
+                sys.executable,
+                "src/docx_compare/processors/processador_limpeza.py",
+                "--single-run",
+            ]
+            if self.verbose:
+                cmd.append("--dry-run")  # Em verbose, simular apenas
+
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=300,  # 5 minutos de timeout
+                cwd=os.getcwd(),
+            )
+
+            if result.returncode == 0:
+                if self.verbose:
+                    print("✅ Processador de limpeza executado com sucesso")
+                    print(f"📤 Stdout: {result.stdout}")
+                return True, result.stdout
+            else:
+                print(f"❌ Erro no processador de limpeza: {result.stderr}")
+                return False, result.stderr
+
+        except subprocess.TimeoutExpired:
+            print("⏰ Timeout no processador de limpeza")
+            return False, "Timeout na execução"
+        except Exception as e:
+            print(f"❌ Exceção no processador de limpeza: {e}")
+            return False, str(e)
+
     def _executar_paralelo(self):
         """Executa ambos os processadores em paralelo"""
         threads = []
@@ -152,6 +222,14 @@ class ProcessorOrchestrator:
                 "timestamp": datetime.now(),
             }
 
+        def run_limpeza():
+            success, output = self._executar_processador_limpeza()
+            self.stats["status_processadores"]["limpeza"] = {
+                "sucesso": success,
+                "output": output,
+                "timestamp": datetime.now(),
+            }
+
         # Criar e iniciar threads
         thread_automatico = threading.Thread(
             target=run_automatico, name="ProcessadorAutomatico"
@@ -159,8 +237,11 @@ class ProcessorOrchestrator:
         thread_modelo = threading.Thread(
             target=run_modelo_contrato, name="ProcessadorModelo"
         )
+        thread_limpeza = threading.Thread(
+            target=run_limpeza, name="ProcessadorLimpeza"
+        )
 
-        threads.extend([thread_automatico, thread_modelo])
+        threads.extend([thread_automatico, thread_modelo, thread_limpeza])
 
         for thread in threads:
             thread.start()
@@ -180,10 +261,16 @@ class ProcessorOrchestrator:
             .get("modelo_contrato", {})
             .get("sucesso", False)
         )
+        limpeza_ok = (
+            self.stats["status_processadores"]
+            .get("limpeza", {})
+            .get("sucesso", False)
+        )
 
         print("📊 Resultados paralelos:")
         print(f"   🔄 Processador automático: {'✅' if automatico_ok else '❌'}")
         print(f"   🏷️  Processador modelo: {'✅' if modelo_ok else '❌'}")
+        print(f"   🧹 Processador limpeza: {'✅' if limpeza_ok else '❌'}")
 
     def _executar_sequencial(self):
         """Executa os processadores sequencialmente"""
@@ -203,9 +290,33 @@ class ProcessorOrchestrator:
             "timestamp": datetime.now(),
         }
 
+        # Executar processador de agrupamento apenas se o automático foi bem-sucedido
+        agrupamento_success = False
+        agrupamento_output = "Pulado - processador automático falhou"
+
+        if automatico_success:
+            print("🎯 Executando processador de agrupamento...")
+            agrupamento_success, agrupamento_output = self._executar_processador_agrupamento()
+            self.stats["status_processadores"]["agrupamento"] = {
+                "sucesso": agrupamento_success,
+                "output": agrupamento_output,
+                "timestamp": datetime.now(),
+            }
+
+        # Executar processador de limpeza independentemente
+        print("🧹 Executando processador de limpeza...")
+        limpeza_success, limpeza_output = self._executar_processador_limpeza()
+        self.stats["status_processadores"]["limpeza"] = {
+            "sucesso": limpeza_success,
+            "output": limpeza_output,
+            "timestamp": datetime.now(),
+        }
+
         print("📊 Resultados sequenciais:")
         print(f"   🏷️  Processador modelo: {'✅' if modelo_success else '❌'}")
         print(f"   🔄 Processador automático: {'✅' if automatico_success else '❌'}")
+        print(f"   🎯 Processador agrupamento: {'✅' if agrupamento_success else '❌'}")
+        print(f"   🧹 Processador limpeza: {'✅' if limpeza_success else '❌'}")
 
     def _ciclo_processamento(self):
         """Executa um ciclo completo de processamento"""

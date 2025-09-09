@@ -596,6 +596,8 @@ def update_versao_status(
                     "alteracao": mod["alteracao"],
                     "sort": mod["sort"],
                     "status": "draft",
+                    "caminho_inicio": mod.get("caminho_inicio", ""),
+                    "caminho_fim": mod.get("caminho_fim", ""),
                 }
                 modifications_data.append(modification_data)
 
@@ -702,8 +704,14 @@ def processar_versao(versao_data, dry_run=False):
 
             print("🔄 Executando comparação visual usando função interna...")
 
-            # Usar a função do docx_diff_viewer diretamente
-            from src.docx_compare.core.docx_diff_viewer import generate_diff_html
+            # Usar a função do docx_diff_viewer diretamente com fallback
+            try:
+                from src.docx_compare.core.docx_diff_viewer import generate_diff_html
+            except ImportError:
+                try:
+                    from docx_compare.core.docx_diff_viewer import generate_diff_html
+                except ImportError:
+                    from core.docx_diff_viewer import generate_diff_html
 
             try:
                 print(
@@ -747,8 +755,10 @@ def processar_versao(versao_data, dry_run=False):
             original_text = html_to_text(original_html)
             modified_text = html_to_text(modified_html)
 
-            # Analisar diferenças
-            modifications = analyze_differences_detailed(original_text, modified_text)
+            # Analisar diferenças usando a função que retorna os campos de caminho
+            from src.docx_compare.utils.text_analysis_utils import analyze_differences
+            stats_detailed = analyze_differences(original_text, modified_text)
+            modifications = stats_detailed["details"]  # Lista com caminho_inicio e caminho_fim
 
             # 5. Atualizar status da versão para concluído e salvar modificações em uma única transação
             result_url = f"http://{FLASK_HOST}:{FLASK_PORT}/results/{result_filename}"

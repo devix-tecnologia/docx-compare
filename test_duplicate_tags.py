@@ -5,10 +5,13 @@ Segunda ocorrência da mesma tag é considerada como fechamento.
 """
 
 import sys
-import os
-sys.path.append('/home/joris/repositorio/devix/docx-compare/src')
 
-from docx_compare.processors.processador_modelo_contrato import extract_content_between_tags
+sys.path.append("/home/joris/repositorio/devix/docx-compare/src")
+
+from docx_compare.processors.processador_modelo_contrato import (
+    extract_content_between_tags,
+)
+
 
 def test_duplicate_tags_extraction():
     """Teste com tags duplicadas como fechamento"""
@@ -56,7 +59,7 @@ def test_duplicate_tags_extraction():
         print()
 
     # Validar resultados esperados
-    tags_esperadas = ['preambulo', '1', '1.1', '2']
+    tags_esperadas = ["preambulo", "1", "1.1", "2"]
 
     print("🧪 Validação dos resultados:")
     print("=" * 60)
@@ -69,10 +72,10 @@ def test_duplicate_tags_extraction():
 
     # Verificar conteúdos específicos
     validacoes = {
-        'preambulo': 'Este é o conteúdo do preâmbulo',
-        '1': 'CLÁUSULA 1ª. OBJETIVO',
-        '1.1': '1.1. O presente CONTRATO tem por objeto',
-        '2': 'CLÁUSULA 2ª. PRAZO'
+        "preambulo": "Este é o conteúdo do preâmbulo",
+        "1": "CLÁUSULA 1ª. OBJETIVO",
+        "1.1": "1.1. O presente CONTRATO tem por objeto",
+        "2": "CLÁUSULA 2ª. PRAZO"
     }
 
     print("\n🔍 Validação de conteúdos específicos:")

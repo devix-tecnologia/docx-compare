@@ -3,13 +3,16 @@
 Teste para verificar a extração de conteúdo entre tags
 """
 
-import sys
 import os
+import sys
 
 # Adicionar o diretório raiz ao path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from src.docx_compare.processors.processador_modelo_contrato import extract_content_between_tags
+from src.docx_compare.processors.processador_modelo_contrato import (
+    extract_content_between_tags,
+)
+
 
 def test_extract_content_basic():
     """Teste básico de extração de conteúdo entre tags"""
@@ -50,7 +53,7 @@ def test_extract_content_basic():
     # Testar extração
     result = extract_content_between_tags(texto_exemplo)
 
-    print(f"📊 Resultado da extração:")
+    print("📊 Resultado da extração:")
     print(f"   Encontradas {len(result)} tags com conteúdo")
 
     for tag_name, content in result.items():
@@ -60,7 +63,7 @@ def test_extract_content_basic():
     expected_tags = {"responsavel", "cabecalho", "valor", "endereco"}
     found_tags = set(result.keys())
 
-    print(f"\n🔍 Verificação:")
+    print("\n🔍 Verificação:")
     print(f"   Tags esperadas: {sorted(expected_tags)}")
     print(f"   Tags encontradas: {sorted(found_tags)}")
 

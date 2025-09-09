@@ -107,7 +107,7 @@ def extract_content_between_tags(text: str) -> dict[str, str]:
     content_map = {}
 
     # Encontrar todas as tags (abertura e potenciais fechamentos)
-    tag_pattern = r'\{\{(?:TAG-)?([a-zA-Z_][a-zA-Z0-9_.]*|\d+(?:\.\d+)*)\s*\}\}'
+    tag_pattern = r"\{\{(?:TAG-)?([a-zA-Z_][a-zA-Z0-9_.]*|\d+(?:\.\d+)*)\s*\}\}"
     all_matches = list(re.finditer(tag_pattern, text, re.IGNORECASE))
 
     # Agrupar matches por tag name
@@ -129,8 +129,8 @@ def extract_content_between_tags(text: str) -> dict[str, str]:
             raw_content = text[opening_pos:closing_pos].strip()
 
             # Limpar HTML tags e normalizar texto
-            clean_content = re.sub(r'<[^>]+>', '', raw_content)  # Remove tags HTML
-            clean_content = re.sub(r'\s+', ' ', clean_content).strip()  # Normaliza espaços
+            clean_content = re.sub(r"<[^>]+>", "", raw_content)  # Remove tags HTML
+            clean_content = re.sub(r"\s+", " ", clean_content).strip()  # Normaliza espaços
 
             if clean_content:
                 content_map[tag_name] = clean_content
@@ -535,8 +535,8 @@ def limpar_tags_modelo_contrato(modelo_id: str, dry_run=False):
         )
 
         if modelo_response.status_code == 200:
-            modelo_data = modelo_response.json().get('data', {})
-            tags_ids = modelo_data.get('tags', [])
+            modelo_data = modelo_response.json().get("data", {})
+            tags_ids = modelo_data.get("tags", [])
 
             if not tags_ids:
                 print("ℹ️ Nenhuma tag existente para limpar")
@@ -695,16 +695,16 @@ def associar_tags_com_clausulas(modelo_id: str, tags_criadas: list, tags_encontr
             print(f"⚠️ Erro ao buscar cláusulas: {clausulas_response.status_code}")
             return 0
 
-        clausulas_data = clausulas_response.json().get('data', [])
+        clausulas_data = clausulas_response.json().get("data", [])
         print(f"   Encontradas {len(clausulas_data)} cláusulas disponíveis")
 
         associacoes_criadas = 0
 
         # Para cada cláusula, buscar a tag correspondente pelo nome
         for clausula in clausulas_data:
-            clausula_id = clausula.get('id')
-            clausula_nome = str(clausula.get('nome', '') or '').strip()
-            clausula_tag_atual = clausula.get('tag')
+            clausula_id = clausula.get("id")
+            clausula_nome = str(clausula.get("nome", "") or "").strip()
+            clausula_tag_atual = clausula.get("tag")
 
             if not clausula_nome:
                 if verbose_mode:
@@ -726,10 +726,10 @@ def associar_tags_com_clausulas(modelo_id: str, tags_criadas: list, tags_encontr
             )
 
             if tag_response.status_code == 200:
-                tag_data = tag_response.json().get('data', [])
+                tag_data = tag_response.json().get("data", [])
                 if tag_data:
-                    tag_id = tag_data[0].get('id')
-                    tag_nome = tag_data[0].get('tag_nome', clausula_nome)
+                    tag_id = tag_data[0].get("id")
+                    tag_nome = tag_data[0].get("tag_nome", clausula_nome)
 
                     # Verificar se a cláusula já tem essa tag associada
                     if clausula_tag_atual == tag_id:

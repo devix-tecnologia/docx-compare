@@ -3,13 +3,16 @@
 Teste baseado na imagem fornecida para validar extração de conteúdo de tags numéricas
 """
 
-import sys
 import os
+import sys
 
 # Adicionar o diretório raiz ao path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from src.docx_compare.processors.processador_modelo_contrato import extract_content_between_tags
+from src.docx_compare.processors.processador_modelo_contrato import (
+    extract_content_between_tags,
+)
+
 
 def test_numeric_tags_from_image():
     """Teste baseado no exemplo da imagem fornecida"""
@@ -49,7 +52,7 @@ def test_numeric_tags_from_image():
     # Testar extração
     result = extract_content_between_tags(documento_exemplo)
 
-    print(f"📊 Resultado da extração:")
+    print("📊 Resultado da extração:")
     print(f"   Encontradas {len(result)} tags com conteúdo")
 
     # Verificar tag específica mencionada
@@ -70,7 +73,7 @@ def test_numeric_tags_from_image():
     expected_tags = ["1", "1.1", "1.2", "1.3"]
     for tag in expected_tags:
         if tag in result:
-            content_preview = result[tag][:80].replace('\n', ' ').strip()
+            content_preview = result[tag][:80].replace("\n", " ").strip()
             print(f"🏷️  Tag {{{{ {tag} }}}}: {content_preview}...")
         else:
             print(f"❌ Tag {{{{ {tag} }}}} não encontrada")
