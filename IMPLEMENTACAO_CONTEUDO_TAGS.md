@@ -9,6 +9,7 @@ O processador de modelo de contrato estava extraindo e salvando tags na coleçã
 ### 1. Nova Função: `extract_content_between_tags()`
 
 Criada função para extrair conteúdo entre tags no formato:
+
 - `{{TAG-nome}}...{{/TAG-nome}}`
 - `{{nome}}...{{/nome}}`
 
@@ -20,6 +21,7 @@ def extract_content_between_tags(text: str) -> dict[str, str]:
 ```
 
 **Funcionalidades:**
+
 - Suporta tanto formato `{{TAG-nome}}` quanto `{{nome}}`
 - Extrai conteúdo completo entre as tags
 - Valida se tags de abertura e fechamento coincidem
@@ -78,6 +80,7 @@ tag_data = {
 ### 5. Melhorias de Logging
 
 Adicionado logging para mostrar:
+
 - Conteúdo extraído para cada tag
 - Preview do conteúdo sendo salvo
 - Status de enriquecimento das tags
@@ -85,11 +88,13 @@ Adicionado logging para mostrar:
 ## 🧪 Testes Implementados
 
 ### 1. `test_extract_content_tags.py`
+
 - Testa extração básica de conteúdo
 - Valida diferentes formatos de tag
 - Verifica casos especiais
 
 ### 2. `test_integration_content.py`
+
 - Teste de integração completo
 - Simula fluxo real do processador
 - Verifica enriquecimento de tags com conteúdo
@@ -105,16 +110,19 @@ Adicionado logging para mostrar:
 ## 🚀 Como Testar em Produção
 
 1. **Modo Dry-Run:**
+
 ```bash
 uv run python src/docx_compare/processors/processador_modelo_contrato.py --dry-run --verbose
 ```
 
 2. **Processamento Real:**
+
 ```bash
 uv run python src/docx_compare/processors/processador_modelo_contrato.py --single-run --verbose
 ```
 
 3. **Via Orquestrador:**
+
 ```bash
 make run-orquestrador-single-verbose
 ```
@@ -122,6 +130,7 @@ make run-orquestrador-single-verbose
 ## 🔍 Verificação no Directus
 
 Após o processamento, verificar na coleção `modelo_contrato_tag`:
+
 - Campo `tag_nome`: Nome da tag extraída
 - Campo `conteudo`: ✅ **Agora preenchido com o texto entre as tags**
 - Campo `caminho_tag_inicio`: Posição de início
@@ -130,6 +139,7 @@ Após o processamento, verificar na coleção `modelo_contrato_tag`:
 ## 📝 Exemplo Prático
 
 **Arquivo com tags:**
+
 ```
 {{TAG-responsavel}}
 Nome: João Silva
@@ -139,6 +149,7 @@ Cargo: Gerente
 ```
 
 **Resultado no banco:**
+
 ```json
 {
   "tag_nome": "responsavel",
