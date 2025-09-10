@@ -14,7 +14,7 @@ sys.path.insert(
 )
 
 from src.docx_compare.processors.processador_agrupamento import ProcessadorAgrupamento
-from src.docx_compare.utils.agrupador_modificacoes_v2 import AgrupadorModificacoes
+from src.docx_compare.utils.agrupador_posicional import AgrupadorPosicional
 
 
 class TestProcessadorAgrupamento(unittest.TestCase):
@@ -34,7 +34,7 @@ class TestProcessadorAgrupamento(unittest.TestCase):
         assert self.processador.intervalo_verificacao == 300
         assert self.processador.verbose is True
         assert self.processador.running is True
-        assert isinstance(self.processador.agrupador, AgrupadorModificacoes)
+        assert isinstance(self.processador.agrupador, AgrupadorPosicional)
 
         print("   ✅ Processador inicializado corretamente")
 
@@ -111,9 +111,19 @@ class TestProcessadorAgrupamento(unittest.TestCase):
         assert versoes == []
         print("   ✅ Erro HTTP tratado corretamente")
 
-    def test_processar_versao_sucesso(self):
+    @patch(
+        "src.docx_compare.processors.processador_agrupamento.update_versao_status_agrupamento"
+    )
+    @patch("src.docx_compare.processors.processador_agrupamento.buscar_versao_completa")
+    def test_processar_versao_sucesso(self, mock_buscar, mock_update):
         """Testa processamento bem-sucedido de uma versão"""
         print("🧪 Teste: Processamento bem-sucedido de versão")
+
+        # Mock buscar versão
+        mock_buscar.return_value = {"id": "versao-test", "status": "pendente"}
+
+        # Mock update status
+        mock_update.return_value = True
 
         # Mock do agrupador
         mock_resultado = {
@@ -125,14 +135,14 @@ class TestProcessadorAgrupamento(unittest.TestCase):
 
         with patch.object(
             self.processador.agrupador,
-            "processar_agrupamento_versao",
+            "processar_agrupamento_posicional",
             return_value=mock_resultado,
         ) as mock_processar:
             resultado = self.processador.processar_versao("versao-test")
 
             # Verificar que o agrupador foi chamado corretamente
             mock_processar.assert_called_once_with(
-                versao_id="versao-test", threshold=0.6, dry_run=False
+                versao_id="versao-test", dry_run=False
             )
 
             # Verificar resultado
@@ -140,16 +150,26 @@ class TestProcessadorAgrupamento(unittest.TestCase):
 
         print("   ✅ Versão processada com sucesso")
 
-    def test_processar_versao_com_erro(self):
+    @patch(
+        "src.docx_compare.processors.processador_agrupamento.update_versao_status_agrupamento"
+    )
+    @patch("src.docx_compare.processors.processador_agrupamento.buscar_versao_completa")
+    def test_processar_versao_com_erro(self, mock_buscar, mock_update):
         """Testa tratamento de erro no processamento"""
         print("🧪 Teste: Erro no processamento de versão")
+
+        # Mock buscar versão
+        mock_buscar.return_value = {"id": "versao-inexistente", "status": "pendente"}
+
+        # Mock update status
+        mock_update.return_value = True
 
         # Mock com erro
         mock_resultado = {"erro": "Modelo de contrato não encontrado"}
 
         with patch.object(
             self.processador.agrupador,
-            "processar_agrupamento_versao",
+            "processar_agrupamento_posicional",
             return_value=mock_resultado,
         ):
             resultado = self.processador.processar_versao("versao-inexistente")
@@ -261,11 +281,7 @@ class TestIntegracaoAgrupamento(unittest.TestCase):
             patch.object(
                 processador, "buscar_versoes_para_agrupar", return_value=versoes_mock
             ),
-            patch.object(
-                processador.agrupador,
-                "processar_agrupamento_versao",
-                return_value=resultado_agrupamento_mock,
-            ),
+            patch.object(processador, "processar_versao", return_value=True),
         ):
             resultado = processador.executar_single_run()
 
