@@ -254,7 +254,9 @@ class AgrupadorPosicional:
                 maior_sobreposicao = sobreposicao
                 melhor_tag = tag
 
-        return melhor_tag if maior_sobreposicao > 0 else None  # Qualquer sobreposição > 0%
+        return (
+            melhor_tag if maior_sobreposicao > 0 else None
+        )  # Qualquer sobreposição > 0%
 
     def calcular_sobreposicao(self, intervalo1, intervalo2):
         """
