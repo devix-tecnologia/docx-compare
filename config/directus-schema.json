@@ -297,7 +297,7 @@
         "icon": null,
         "note": null,
         "display_template": null,
-        "hidden": true,
+        "hidden": false,
         "singleton": false,
         "translations": null,
         "archive_field": "status",
@@ -838,7 +838,7 @@
         "icon": null,
         "note": null,
         "display_template": null,
-        "hidden": false,
+        "hidden": true,
         "singleton": false,
         "translations": null,
         "archive_field": "status",
@@ -2410,8 +2410,10 @@
           "filter": null,
           "enableCreate": false
         },
-        "display": null,
-        "display_options": null,
+        "display": "related-values",
+        "display_options": {
+          "template": "{{tag_nome}}"
+        },
         "readonly": false,
         "hidden": false,
         "sort": 13,
@@ -3877,12 +3879,26 @@
           "template": "{{titulo}}"
         },
         "readonly": false,
-        "hidden": false,
+        "hidden": true,
         "sort": 1,
         "width": "full",
         "translations": null,
         "note": null,
-        "conditions": null,
+        "conditions": [
+          {
+            "name": "Se tem ID",
+            "rule": {
+              "_and": [
+                {
+                  "id": {
+                    "_nnull": true
+                  }
+                }
+              ]
+            },
+            "hidden": false
+          }
+        ],
         "required": false,
         "group": "div_cabecalho",
         "validation": null,
@@ -4402,8 +4418,8 @@
         "options": null,
         "display": "formatted-value",
         "display_options": null,
-        "readonly": true,
-        "hidden": true,
+        "readonly": false,
+        "hidden": false,
         "sort": 3,
         "width": "half",
         "translations": [
@@ -4708,77 +4724,6 @@
     },
     {
       "collection": "versao",
-      "field": "codigo",
-      "type": "string",
-      "schema": {
-        "name": "codigo",
-        "table": "versao",
-        "data_type": "character varying",
-        "default_value": null,
-        "generation_expression": null,
-        "max_length": 255,
-        "numeric_precision": null,
-        "numeric_scale": null,
-        "is_generated": false,
-        "is_nullable": true,
-        "is_unique": false,
-        "is_indexed": false,
-        "is_primary_key": false,
-        "has_auto_increment": false,
-        "foreign_key_schema": null,
-        "foreign_key_table": null,
-        "foreign_key_column": null,
-        "comment": null
-      },
-      "meta": {
-        "collection": "versao",
-        "field": "codigo",
-        "special": null,
-        "interface": "input",
-        "options": null,
-        "display": "formatted-value",
-        "display_options": null,
-        "readonly": true,
-        "hidden": true,
-        "sort": 4,
-        "width": "half",
-        "translations": [
-          {
-            "language": "pt-BR",
-            "translation": "Numero da versão"
-          }
-        ],
-        "note": null,
-        "conditions": [
-          {
-            "name": "Exibe campo",
-            "rule": {
-              "_and": [
-                {
-                  "versao": {
-                    "_nnull": true
-                  }
-                }
-              ]
-            },
-            "hidden": false,
-            "options": {
-              "font": "sans-serif",
-              "trim": false,
-              "masked": false,
-              "clear": false,
-              "slug": false
-            }
-          }
-        ],
-        "required": false,
-        "group": "div_cabecalho",
-        "validation": null,
-        "validation_message": null
-      }
-    },
-    {
-      "collection": "versao",
       "field": "versiona_ai_request_erro",
       "type": "text",
       "schema": {
@@ -5062,7 +5007,7 @@
         },
         "display": "file",
         "display_options": null,
-        "readonly": true,
+        "readonly": false,
         "hidden": false,
         "sort": 8,
         "width": "full",
@@ -6883,7 +6828,7 @@
             "_and": [
               {
                 "status": {
-                  "_eq": "published"
+                  "_eq": "publicado"
                 }
               }
             ]
@@ -7072,9 +7017,13 @@
         "field": "versoes",
         "special": ["o2m"],
         "interface": "list-o2m",
-        "options": null,
-        "display": null,
-        "display_options": null,
+        "options": {
+          "template": "{{versao}}"
+        },
+        "display": "related-values",
+        "display_options": {
+          "template": "{{versao}}"
+        },
         "readonly": false,
         "hidden": false,
         "sort": 16,
@@ -7688,7 +7637,7 @@
           "template": "Tag: {{numero}} - Retorno: {{referencias}}"
         },
         "readonly": true,
-        "hidden": true,
+        "hidden": false,
         "sort": 9,
         "width": "half",
         "translations": [
@@ -7873,6 +7822,96 @@
             "translation": "Nota do analista"
           }
         ],
+        "note": null,
+        "conditions": null,
+        "required": false,
+        "group": null,
+        "validation": null,
+        "validation_message": null
+      }
+    },
+    {
+      "collection": "modificacao",
+      "field": "caminho_inicio",
+      "type": "string",
+      "schema": {
+        "name": "caminho_inicio",
+        "table": "modificacao",
+        "data_type": "character varying",
+        "default_value": null,
+        "generation_expression": null,
+        "max_length": 255,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_generated": false,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "has_auto_increment": false,
+        "foreign_key_schema": null,
+        "foreign_key_table": null,
+        "foreign_key_column": null,
+        "comment": null
+      },
+      "meta": {
+        "collection": "modificacao",
+        "field": "caminho_inicio",
+        "special": null,
+        "interface": "input",
+        "options": null,
+        "display": null,
+        "display_options": null,
+        "readonly": false,
+        "hidden": false,
+        "sort": 13,
+        "width": "full",
+        "translations": null,
+        "note": null,
+        "conditions": null,
+        "required": false,
+        "group": null,
+        "validation": null,
+        "validation_message": null
+      }
+    },
+    {
+      "collection": "modificacao",
+      "field": "caminho_fim",
+      "type": "string",
+      "schema": {
+        "name": "caminho_fim",
+        "table": "modificacao",
+        "data_type": "character varying",
+        "default_value": null,
+        "generation_expression": null,
+        "max_length": 255,
+        "numeric_precision": null,
+        "numeric_scale": null,
+        "is_generated": false,
+        "is_nullable": true,
+        "is_unique": false,
+        "is_indexed": false,
+        "is_primary_key": false,
+        "has_auto_increment": false,
+        "foreign_key_schema": null,
+        "foreign_key_table": null,
+        "foreign_key_column": null,
+        "comment": null
+      },
+      "meta": {
+        "collection": "modificacao",
+        "field": "caminho_fim",
+        "special": null,
+        "interface": "input",
+        "options": null,
+        "display": null,
+        "display_options": null,
+        "readonly": false,
+        "hidden": false,
+        "sort": 14,
+        "width": "full",
+        "translations": null,
         "note": null,
         "conditions": null,
         "required": false,
