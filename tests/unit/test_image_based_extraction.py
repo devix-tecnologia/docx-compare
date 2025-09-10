@@ -61,10 +61,10 @@ def test_extract_content_based_on_image():
 
     # Verificar conteúdos específicos baseados na imagem
     expected_content = {
-        "1": 'CLÁUSULA 1ª. OBJETIVO\n\n    {{1.1}}\n    1.1. O presente CONTRATO tem por objeto a prestação de serviços de inserir "Serviços" a serem prestados em inserir.\n    {{/1.1}}\n\n    {{1.2}}\n    1.2. Fazem parte do CONTRATO os seguintes anexos:\n\n    Anexo I. [Planilha de Quantidades e Preços];\n    Anexo II. [Descrição de Escopo Técnico];\n    {{/1.2}}',
+        "1": 'CLÁUSULA 1ª. OBJETIVO {{1.1}} 1.1. O presente CONTRATO tem por objeto a prestação de serviços de inserir "Serviços" a serem prestados em inserir. {{/1.1}} {{1.2}} 1.2. Fazem parte do CONTRATO os seguintes anexos: Anexo I. [Planilha de Quantidades e Preços]; Anexo II. [Descrição de Escopo Técnico]; {{/1.2}}',
         "1.1": '1.1. O presente CONTRATO tem por objeto a prestação de serviços de inserir "Serviços" a serem prestados em inserir.',
-        "1.2": "1.2. Fazem parte do CONTRATO os seguintes anexos:\n\n    Anexo I. [Planilha de Quantidades e Preços];\n    Anexo II. [Descrição de Escopo Técnico];",
-        "2": "CLÁUSULA 2ª. CONDIÇÕES DE EXECUÇÃO\n    \n    {{2.1}}\n    2.1. A execução dos serviços será realizada conforme cronograma estabelecido.\n    {{/2.1}}",
+        "1.2": "1.2. Fazem parte do CONTRATO os seguintes anexos: Anexo I. [Planilha de Quantidades e Preços]; Anexo II. [Descrição de Escopo Técnico];",
+        "2": "CLÁUSULA 2ª. CONDIÇÕES DE EXECUÇÃO {{2.1}} 2.1. A execução dos serviços será realizada conforme cronograma estabelecido. {{/2.1}}",
         "2.1": "2.1. A execução dos serviços será realizada conforme cronograma estabelecido.",
     }
 
@@ -163,7 +163,7 @@ if __name__ == "__main__":
 
     processador_module.verbose_mode = True
 
-    result = test_extract_content_based_on_image()
+    test_extract_content_based_on_image()
     test_tag_content_for_database()
 
     print("\n🎯 Teste baseado na imagem concluído!")

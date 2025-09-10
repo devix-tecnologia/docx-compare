@@ -30,24 +30,25 @@ def test_numeric_tags_from_image():
     1.1. A CONTRATADA prestará à CONTRATANTE os serviços técnicos especializados detalhados no
     campo Serviços do QUADRO RESUMO, os quais serão prestados conforme disciplinado neste
     CONTRATO.
-    {{1}}
+    {{/1}}
 
     {{1.1}}
     A CONTRATADA prestará à CONTRATANTE os serviços técnicos especializados detalhados no
     campo Serviços do QUADRO RESUMO, os quais serão prestados conforme disciplinado neste
     CONTRATO.
-    {{1.1}}
+    {{/1.1}}
 
     {{1.2}}
     Este CONTRATO não implica em nenhum dever de exclusividade da CONTRATANTE, que poderá
     firmar contratos com outras empresas para os mesmos fins, de acordo com os seus interesses.
-    {{1.2}}
+    {{/1.2}}
 
     {{1.3}}
     Os ANEXOS "Documentos Contratuais Gerais" ficam dispensados de rubrica ou validação digital
     quando A CONTRATADA declara que os recebe por ANEXOS; prevalecem em vigor desde
     outra forma de acesso, que tem ciência do seu conteúdo e que concorda com os termos neles contidos,
     comprometendo-se a cumprir-los na sua integralidade.
+    {{/1.3}}
     {{1.3}}
     """
 

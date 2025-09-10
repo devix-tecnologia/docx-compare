@@ -95,8 +95,11 @@ def signal_handler(signum, _frame):
 
 def extract_content_between_tags(text: str) -> dict[str, str]:
     """
-    Extrai conteúdo entre tags considerando segunda ocorrência como fechamento.
-    Se encontrar {{1}} duas vezes, a segunda é considerada tag de fechamento.
+    Extrai conteúdo entre tags suportando dois padrões:
+    1. Tags de abertura/fechamento: {{tag}} ... {{/tag}}
+    2. Segunda ocorrência como fechamento: {{tag}} ... {{tag}}
+
+    Processa tags mais específicas primeiro para evitar conflitos de aninhamento.
 
     Args:
         text: Texto para analisar
@@ -106,50 +109,125 @@ def extract_content_between_tags(text: str) -> dict[str, str]:
     """
     content_map = {}
 
-    # Encontrar todas as tags (abertura e potenciais fechamentos)
-    tag_pattern = r"\{\{(?:TAG-)?([a-zA-Z_][a-zA-Z0-9_.]*|\d+(?:\.\d+)*)\s*\}\}"
-    all_matches = list(re.finditer(tag_pattern, text, re.IGNORECASE))
+    # Encontrar todas as possíveis tags (abertura, fechamento e duplas)
+    all_tags = []
 
-    # Agrupar matches por tag name
-    tag_groups = {}
-    for match in all_matches:
+    # Padrão para tags de abertura
+    opening_pattern = r"\{\{(?:TAG-)?([a-zA-Z_][a-zA-Z0-9_.]*|\d+(?:\.\d+)*)\s*\}\}"
+    for match in re.finditer(opening_pattern, text, re.IGNORECASE):
         tag_name = match.group(1).strip().lower()
-        if tag_name not in tag_groups:
-            tag_groups[tag_name] = []
-        tag_groups[tag_name].append(match)
+        all_tags.append(
+            {
+                "type": "opening",
+                "name": tag_name,
+                "start": match.start(),
+                "end": match.end(),
+                "match": match,
+            }
+        )
 
-    # Para cada tag, se tiver pelo menos 2 ocorrências, extrair conteúdo entre primeira e segunda
-    for tag_name, matches in tag_groups.items():
-        if len(matches) >= 2:
-            # Primeira ocorrência = abertura, segunda ocorrência = fechamento
-            opening_pos = matches[0].end()
-            closing_pos = matches[1].start()
+    # Padrão para tags de fechamento
+    closing_pattern = r"\{\{/(?:TAG-)?([a-zA-Z_][a-zA-Z0-9_.]*|\d+(?:\.\d+)*)\s*\}\}"
+    for match in re.finditer(closing_pattern, text, re.IGNORECASE):
+        tag_name = match.group(1).strip().lower()
+        all_tags.append(
+            {
+                "type": "closing",
+                "name": tag_name,
+                "start": match.start(),
+                "end": match.end(),
+                "match": match,
+            }
+        )
 
-            # Extrair conteúdo entre as tags
-            raw_content = text[opening_pos:closing_pos].strip()
+    # Ordenar tags por posição
+    all_tags.sort(key=lambda x: x["start"])
 
-            # Limpar HTML tags e normalizar texto
-            clean_content = re.sub(r"<[^>]+>", "", raw_content)  # Remove tags HTML
-            clean_content = re.sub(
-                r"\s+", " ", clean_content
-            ).strip()  # Normaliza espaços
+    # Processar pares de abertura/fechamento com /
+    used_positions = set()
 
-            if clean_content:
-                content_map[tag_name] = clean_content
-                if verbose_mode:
-                    print(
-                        f"📄 Conteúdo extraído para tag '{tag_name}': {clean_content[:100]}{'...' if len(clean_content) > 100 else ''}"
+    # Agrupar por nome de tag
+    tag_groups = {}
+    for tag in all_tags:
+        name = tag["name"]
+        if name not in tag_groups:
+            tag_groups[name] = {"opening": [], "closing": []}
+        tag_groups[name][tag["type"]].append(tag)
+
+    # Processar cada grupo de tags
+    for tag_name, group in tag_groups.items():
+        openings = group["opening"]
+        closings = group["closing"]
+
+        # Estratégia 1: Pares explícitos de abertura/fechamento {{tag}} ... {{/tag}}
+        for opening in openings:
+            if opening["start"] in used_positions:
+                continue
+
+            # Encontrar o fechamento correspondente mais próximo
+            matching_closing = None
+            for closing in closings:
+                if (
+                    closing["start"] > opening["end"]
+                    and closing["start"] not in used_positions
+                ):
+                    # Verificar se não há outro par no meio
+                    conflicts = any(
+                        other_pos > opening["end"] and other_pos < closing["start"]
+                        for other_pos in used_positions
                     )
-            else:
-                if verbose_mode:
-                    print(
-                        f"ℹ️ Tag '{tag_name}' encontrada em pares mas sem conteúdo entre elas"
-                    )
-        else:
-            if verbose_mode:
-                print(
-                    f"⚠️ Tag '{tag_name}' encontrada apenas {len(matches)} vez(es), precisa de pelo menos 2 para extração"
-                )
+                    if not conflicts:
+                        matching_closing = closing
+                        break
+
+            if matching_closing:
+                # Extrair conteúdo entre as tags
+                content_start = opening["end"]
+                content_end = matching_closing["start"]
+                raw_content = text[content_start:content_end].strip()
+
+                # Limpar e normalizar
+                clean_content = re.sub(r"<[^>]+>", "", raw_content)
+                clean_content = re.sub(r"\s+", " ", clean_content).strip()
+
+                if clean_content:
+                    content_map[tag_name] = clean_content
+                    used_positions.add(opening["start"])
+                    used_positions.add(matching_closing["start"])
+
+                    if verbose_mode:
+                        print(
+                            f"📄 Tag '{tag_name}' (abertura/fechamento): {clean_content[:80]}{'...' if len(clean_content) > 80 else ''}"
+                        )
+
+        # Estratégia 2: Segunda ocorrência como fechamento {{tag}} ... {{tag}}
+        # Só para tags que não foram processadas na estratégia 1
+        if tag_name not in content_map:
+            available_openings = [
+                op for op in openings if op["start"] not in used_positions
+            ]
+
+            if len(available_openings) >= 2:
+                first = available_openings[0]
+                second = available_openings[1]
+
+                content_start = first["end"]
+                content_end = second["start"]
+                raw_content = text[content_start:content_end].strip()
+
+                # Limpar e normalizar
+                clean_content = re.sub(r"<[^>]+>", "", raw_content)
+                clean_content = re.sub(r"\s+", " ", clean_content).strip()
+
+                if clean_content:
+                    content_map[tag_name] = clean_content
+                    used_positions.add(first["start"])
+                    used_positions.add(second["start"])
+
+                    if verbose_mode:
+                        print(
+                            f"📄 Tag '{tag_name}' (segunda ocorrência): {clean_content[:80]}{'...' if len(clean_content) > 80 else ''}"
+                        )
 
     return content_map
 

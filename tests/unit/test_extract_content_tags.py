@@ -49,7 +49,7 @@ def test_extract_content_basic():
     Rua das Flores, 123
     Bairro Centro - São Paulo/SP
     CEP: 01234-567
-    {{/endereco}}
+    {{endereco}}
     """
 
     # Testar extração
