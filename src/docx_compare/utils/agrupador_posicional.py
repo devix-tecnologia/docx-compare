@@ -178,7 +178,7 @@ class AgrupadorPosicional:
             params = {
                 "filter[versao][_eq]": versao_id,
                 "filter[clausula][_null]": "true",  # Só modificações sem cláusula
-                "fields": "id,categoria,conteudo,alteracao,caminho_inicio,caminho_fim",
+                "fields": "id,categoria,conteudo,alteracao,posicao_inicio,posicao_fim",
                 "limit": 1000,
             }
 
@@ -193,13 +193,11 @@ class AgrupadorPosicional:
                 modificacoes_processadas = []
 
                 for mod in modificacoes:
-                    # Extrair posições numéricas dos caminhos
-                    pos_inicio = self.extrair_posicao_numerica(
-                        mod.get("caminho_inicio", "")
-                    )
-                    pos_fim = self.extrair_posicao_numerica(mod.get("caminho_fim", ""))
+                    # Usar as posições numéricas dos novos campos
+                    pos_inicio = mod.get("posicao_inicio")
+                    pos_fim = mod.get("posicao_fim")
 
-                    if pos_inicio is not None:
+                    if pos_inicio is not None and pos_fim is not None:
                         modificacoes_processadas.append(
                             {
                                 "id": mod["id"],
@@ -207,11 +205,7 @@ class AgrupadorPosicional:
                                 "conteudo": mod.get("conteudo", ""),
                                 "alteracao": mod.get("alteracao", ""),
                                 "posicao_inicio_numero": pos_inicio,
-                                "posicao_fim_numero": pos_fim
-                                if pos_fim is not None
-                                else pos_inicio,
-                                "caminho_inicio": mod.get("caminho_inicio", ""),
-                                "caminho_fim": mod.get("caminho_fim", ""),
+                                "posicao_fim_numero": pos_fim,
                             }
                         )
 
@@ -787,9 +781,7 @@ class AgrupadorPosicional:
             print(f"\n🔍 Processando modificação {mod_id}")
             pos_inicio = modificacao.get("posicao_inicio_numero")
             pos_fim = modificacao.get("posicao_fim_numero")
-            print(
-                f"🧮 Caminho: '{modificacao['caminho_inicio']}' → posição numérica: {pos_inicio}"
-            )
+            print(f"📍 Posições: {pos_inicio}-{pos_fim}")
             print(f"📝 Conteúdo: {conteudo}")
 
             if not dry_run:

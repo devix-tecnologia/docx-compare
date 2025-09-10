@@ -840,6 +840,8 @@ def update_versao_status(
                     "status": "draft",
                     "caminho_inicio": mod.get("caminho_inicio", ""),
                     "caminho_fim": mod.get("caminho_fim", ""),
+                    "posicao_inicio": mod.get("posicao_inicio"),
+                    "posicao_fim": mod.get("posicao_fim"),
                 }
                 modifications_data.append(modification_data)
 

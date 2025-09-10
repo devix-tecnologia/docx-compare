@@ -87,6 +87,8 @@ def analyze_differences_detailed(original_text, modified_text):
                             "sort": modification_count,
                             "caminho_inicio": f"modificacao_{modification_count}_linha_{linha_aprox}_pos_{pos_inicio}",
                             "caminho_fim": f"modificacao_{modification_count}_linha_{linha_aprox}_pos_{pos_fim}",
+                            "posicao_inicio": pos_inicio,
+                            "posicao_fim": pos_fim,
                         }
                     )
                     i += 2  # Pular a próxima linha pois já processamos
@@ -100,6 +102,8 @@ def analyze_differences_detailed(original_text, modified_text):
                             "sort": modification_count,
                             "caminho_inicio": f"modificacao_{modification_count}_linha_{linha_aprox}_pos_{pos_inicio}",
                             "caminho_fim": f"modificacao_{modification_count}_linha_{linha_aprox}_pos_{pos_fim}",
+                            "posicao_inicio": pos_inicio,
+                            "posicao_fim": pos_fim,
                         }
                     )
                     i += 1
@@ -121,6 +125,8 @@ def analyze_differences_detailed(original_text, modified_text):
                         "sort": modification_count,
                         "caminho_inicio": f"modificacao_{modification_count}_linha_{linha_aprox}_pos_{pos_inicio}",
                         "caminho_fim": f"modificacao_{modification_count}_linha_{linha_aprox}_pos_{pos_fim}",
+                        "posicao_inicio": pos_inicio,
+                        "posicao_fim": pos_fim,
                     }
                 )
                 modification_count += 1
@@ -179,6 +185,8 @@ def analyze_differences(original_text: str, modified_text: str) -> dict:
             "modified": mod["alteracao"],
             "caminho_inicio": mod["caminho_inicio"],
             "caminho_fim": mod["caminho_fim"],
+            "posicao_inicio": mod["posicao_inicio"],
+            "posicao_fim": mod["posicao_fim"],
             "categoria": mod["categoria"],
             "sort": mod["sort"],
         }

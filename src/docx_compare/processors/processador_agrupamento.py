@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 # Adicionar o diretório raiz ao path para imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 
-from src.docx_compare.utils.agrupador_conteudo import AgrupadorConteudo
+from src.docx_compare.utils.agrupador_posicional import AgrupadorPosicional
 
 # Carregar configurações do environment
 load_dotenv()
@@ -140,7 +140,7 @@ class ProcessadorAgrupamento:
         self.intervalo_verificacao = intervalo_verificacao
         self.verbose = verbose
         self.running = True
-        self.agrupador = AgrupadorConteudo()  # Usar agrupador por conteúdo melhorado
+        self.agrupador = AgrupadorPosicional()  # Usar agrupador posicional
 
     def buscar_versoes_para_agrupar(self) -> list:
         """
@@ -175,10 +175,10 @@ class ProcessadorAgrupamento:
                         versao_id = versao.get("id")
                         status = versao.get("status", "")
 
-                        # Processar versões com status 'concluido' ou 'erro' (que podem ter modificações válidas)
+                        # Processar versões com status 'concluido' (que podem ter modificações sem cláusula)
                         if (
                             versao_id
-                            and status in ["concluido", "erro"]
+                            and status == "concluido"
                             and versao_id not in versoes_ids
                         ):
                             versoes_ids.append(versao_id)
