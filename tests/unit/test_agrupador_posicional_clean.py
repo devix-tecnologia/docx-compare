@@ -21,36 +21,46 @@ class TestAgrupadorPosicional:
         """Setup para cada teste."""
         self.agrupador = AgrupadorPosicional()
 
-    def test_modificacao_esta_dentro_da_tag_posicao_exata(self):
+    def test_associar_modificacao_a_tag_posicao_exata(self):
         """Testa se modificação dentro da tag é detectada corretamente."""
-        tag_info = {"posicao_inicio_texto": 100, "posicao_fim_texto": 200}
+        tags = [
+            {"posicao_inicio_texto": 100, "posicao_fim_texto": 200, "tag_nome": "PRAZO"}
+        ]
 
         # Modificação dentro do intervalo
-        modificacao = {"posicao_inicio": 150, "posicao_fim": 150}
-        assert self.agrupador.modificacao_esta_dentro_da_tag(modificacao, tag_info)
+        modificacao = {"posicao_inicio_numero": 150, "posicao_fim_numero": 150}
+        result = self.agrupador.associar_modificacao_a_tag(modificacao, tags)
+        assert result is not None
+        assert result["tag_nome"] == "PRAZO"
 
         # Modificação no início exato
-        modificacao = {"posicao_inicio": 100, "posicao_fim": 100}
-        assert self.agrupador.modificacao_esta_dentro_da_tag(modificacao, tag_info)
+        modificacao = {"posicao_inicio_numero": 100, "posicao_fim_numero": 100}
+        result = self.agrupador.associar_modificacao_a_tag(modificacao, tags)
+        assert result is not None
 
         # Modificação no final exato
-        modificacao = {"posicao_inicio": 200, "posicao_fim": 200}
-        assert self.agrupador.modificacao_esta_dentro_da_tag(modificacao, tag_info)
+        modificacao = {"posicao_inicio_numero": 200, "posicao_fim_numero": 200}
+        result = self.agrupador.associar_modificacao_a_tag(modificacao, tags)
+        assert result is not None
 
     def test_modificacao_fora_da_tag(self):
         """Testa se modificação fora da tag é rejeitada."""
-        tag_info = {"posicao_inicio_texto": 100, "posicao_fim_texto": 200}
+        tags = [
+            {"posicao_inicio_texto": 100, "posicao_fim_texto": 200, "tag_nome": "PRAZO"}
+        ]
 
         # Modificação antes da tag
-        modificacao = {"posicao_inicio": 50, "posicao_fim": 50}
-        assert not self.agrupador.modificacao_esta_dentro_da_tag(modificacao, tag_info)
+        modificacao = {"posicao_inicio_numero": 50, "posicao_fim_numero": 50}
+        result = self.agrupador.associar_modificacao_a_tag(modificacao, tags)
+        assert result is None
 
         # Modificação depois da tag
-        modificacao = {"posicao_inicio": 250, "posicao_fim": 250}
-        assert not self.agrupador.modificacao_esta_dentro_da_tag(modificacao, tag_info)
+        modificacao = {"posicao_inicio_numero": 250, "posicao_fim_numero": 250}
+        result = self.agrupador.associar_modificacao_a_tag(modificacao, tags)
+        assert result is None
 
-    def test_associar_modificacao_tag_sucesso(self):
-        """Testa associação bem-sucedida de modificação à tag."""
+    def test_associar_modificacao_clausula_sucesso(self):
+        """Testa associação bem-sucedida de modificação à cláusula."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {"data": {"id": "mod1"}}
@@ -59,10 +69,12 @@ class TestAgrupadorPosicional:
             "src.docx_compare.utils.agrupador_posicional.requests.patch"
         ) as mock_patch:
             mock_patch.return_value = mock_response
-            resultado = self.agrupador.associar_modificacao_tag("mod1", "tag1")
+            resultado = self.agrupador.associar_modificacao_clausula_api(
+                "mod1", "clausula1"
+            )
             assert resultado
 
-    def test_associar_modificacao_tag_erro(self):
+    def test_associar_modificacao_clausula_erro(self):
         """Testa tratamento de erro na associação."""
         mock_response = Mock()
         mock_response.status_code = 400
@@ -71,7 +83,9 @@ class TestAgrupadorPosicional:
             "src.docx_compare.utils.agrupador_posicional.requests.patch"
         ) as mock_patch:
             mock_patch.return_value = mock_response
-            resultado = self.agrupador.associar_modificacao_tag("mod1", "tag1")
+            resultado = self.agrupador.associar_modificacao_clausula_api(
+                "mod1", "clausula1"
+            )
             assert not resultado
 
 
@@ -82,13 +96,22 @@ class TestIntegracaoAgrupadorPosicional:
         """Setup para cada teste."""
         self.agrupador = AgrupadorPosicional()
 
-    @patch.object(AgrupadorPosicional, "buscar_tags_com_posicoes")
-    @patch.object(AgrupadorPosicional, "buscar_modificacoes_com_posicoes")
-    @patch.object(AgrupadorPosicional, "associar_modificacao_tag")
+    @patch.object(AgrupadorPosicional, "buscar_tags_com_posicoes_validas")
+    @patch.object(AgrupadorPosicional, "buscar_modificacoes_com_posicoes_validas")
+    @patch.object(AgrupadorPosicional, "associar_modificacao_clausula_api")
+    @patch("src.docx_compare.utils.agrupador_posicional.requests.get")
     def test_processar_agrupamento_posicional_sucesso(
-        self, mock_associar, mock_buscar_mods, mock_buscar_tags
+        self, mock_get, mock_associar, mock_buscar_mods, mock_buscar_tags
     ):
         """Testa processamento completo de agrupamento posicional."""
+        # Mock busca da versão
+        mock_response_versao = Mock()
+        mock_response_versao.status_code = 200
+        mock_response_versao.json.return_value = {
+            "data": {"contrato": {"modelo_contrato": {"id": "modelo1"}}}
+        }
+        mock_get.return_value = mock_response_versao
+
         # Mock dados de tags
         mock_buscar_tags.return_value = [
             {
@@ -104,9 +127,9 @@ class TestIntegracaoAgrupadorPosicional:
         mock_buscar_mods.return_value = [
             {
                 "id": "mod1",
-                "posicao_inicio": 150,
-                "posicao_fim": 170,
-                "categoria": "modificacao",
+                "posicao_inicio_numero": 150,
+                "posicao_fim_numero": 170,
+                "conteudo": "texto modificado",
             }
         ]
 
@@ -114,11 +137,11 @@ class TestIntegracaoAgrupadorPosicional:
         mock_associar.return_value = True
 
         resultado = self.agrupador.processar_agrupamento_posicional(
-            versao_id="v1", modelo_id="m1"
+            versao_id="v1", dry_run=True
         )
 
-        assert resultado["sucesso"]
-        assert resultado["estatisticas"]["associacoes_criadas"] == 1
+        assert resultado["associacoes_criadas"] == 1
+        assert resultado["total_modificacoes"] == 1
 
 
 if __name__ == "__main__":
