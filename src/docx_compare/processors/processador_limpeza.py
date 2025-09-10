@@ -50,9 +50,7 @@ class ProcessadorLimpeza:
 
         # Instanciar agrupador para usar suas funções
         self.agrupador = AgrupadorModificacoes(
-            self.directus_base_url,
-            self.directus_token,
-            self.request_timeout
+            self.directus_base_url, self.directus_token, self.request_timeout
         )
 
     def buscar_versoes_draft_com_modificacoes(self) -> list[dict]:
@@ -60,14 +58,16 @@ class ProcessadorLimpeza:
         Busca versões com status 'draft' que possuem modificações
         """
         try:
-            print(f"🔍 {datetime.now().strftime('%H:%M:%S')} - Buscando versões em draft com modificações...")
+            print(
+                f"🔍 {datetime.now().strftime('%H:%M:%S')} - Buscando versões em draft com modificações..."
+            )
 
             # Buscar versões em draft
             url = f"{self.directus_base_url}/items/versao"
             params = {
                 "filter[status][_eq]": "draft",
                 "fields": "id,versao,status",  # Removido contrato.nome que pode causar erro de permissão
-                "limit": 100
+                "limit": 100,
             }
 
             print(f"🔗 URL: {url}")
@@ -77,7 +77,7 @@ class ProcessadorLimpeza:
                 url,
                 headers=self.directus_headers,
                 params=params,
-                timeout=self.request_timeout
+                timeout=self.request_timeout,
             )
 
             print(f"📊 Response status: {response.status_code}")
@@ -104,14 +104,14 @@ class ProcessadorLimpeza:
                     "filter[versao][_eq]": versao_id,
                     "fields": "id",
                     "limit": 1,
-                    "meta": "filter_count"
+                    "meta": "filter_count",
                 }
 
                 mod_response = requests.get(
                     mod_url,
                     headers=self.directus_headers,
                     params=mod_params,
-                    timeout=self.request_timeout
+                    timeout=self.request_timeout,
                 )
 
                 if mod_response.status_code == 200:
@@ -123,7 +123,9 @@ class ProcessadorLimpeza:
                         versoes_com_modificacoes.append(versao)
 
             if versoes_com_modificacoes:
-                print(f"🎯 {len(versoes_com_modificacoes)} versões draft precisam de limpeza")
+                print(
+                    f"🎯 {len(versoes_com_modificacoes)} versões draft precisam de limpeza"
+                )
 
             return versoes_com_modificacoes
 
@@ -131,7 +133,9 @@ class ProcessadorLimpeza:
             print(f"❌ Erro ao buscar versões draft: {e}")
             return []
 
-    def processar_limpeza_versao(self, versao_data: dict, dry_run: bool = False) -> dict:
+    def processar_limpeza_versao(
+        self, versao_data: dict, dry_run: bool = False
+    ) -> dict:
         """
         Processa a limpeza de modificações de uma versão específica
         """
@@ -140,36 +144,50 @@ class ProcessadorLimpeza:
             versao_num = versao_data.get("versao", "N/A")
             total_mods = versao_data.get("total_modificacoes", 0)
 
-            print(f"🧹 Limpando versão {versao_num} ({versao_id[:8]}...) - {total_mods} modificações")
+            print(
+                f"🧹 Limpando versão {versao_num} ({versao_id[:8]}...) - {total_mods} modificações"
+            )
 
             # Usar o agrupador para limpar modificações
             resultado = self.agrupador.limpar_modificacoes_versao(versao_id, dry_run)
 
             if "erro" in resultado:
                 print(f"❌ Erro na limpeza: {resultado['erro']}")
-                return {"status": "erro", "versao_id": versao_id, "erro": resultado["erro"]}
+                return {
+                    "status": "erro",
+                    "versao_id": versao_id,
+                    "erro": resultado["erro"],
+                }
 
             total_removidas = resultado.get("total_removidas", 0)
-            print(f"✅ Versão {versao_num} limpa - {total_removidas} modificações removidas")
+            print(
+                f"✅ Versão {versao_num} limpa - {total_removidas} modificações removidas"
+            )
 
             return {
                 "status": "sucesso",
                 "versao_id": versao_id,
                 "versao_num": versao_num,
                 "total_removidas": total_removidas,
-                "detalhes": resultado
+                "detalhes": resultado,
             }
 
         except Exception as e:
             print(f"❌ Erro ao processar limpeza da versão: {e}")
-            return {"status": "erro", "versao_id": versao_data.get("id", "N/A"), "erro": str(e)}
+            return {
+                "status": "erro",
+                "versao_id": versao_data.get("id", "N/A"),
+                "erro": str(e),
+            }
 
     def processar_ciclo_limpeza(self, dry_run: bool = False) -> dict:
         """
         Executa um ciclo completo de limpeza
         """
         try:
-            print(f"\n🚀 Iniciando ciclo de limpeza - {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
+            print(
+                f"\n🚀 Iniciando ciclo de limpeza - {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}"
+            )
             if dry_run:
                 print("🏃‍♂️ Modo DRY-RUN ativo - nenhuma alteração será feita")
 
@@ -186,7 +204,7 @@ class ProcessadorLimpeza:
                 "sucessos": 0,
                 "erros": 0,
                 "total_modificacoes_removidas": 0,
-                "detalhes": []
+                "detalhes": [],
             }
 
             for versao in versoes:
@@ -196,7 +214,9 @@ class ProcessadorLimpeza:
 
                 if resultado["status"] == "sucesso":
                     estatisticas["sucessos"] += 1
-                    estatisticas["total_modificacoes_removidas"] += resultado.get("total_removidas", 0)
+                    estatisticas["total_modificacoes_removidas"] += resultado.get(
+                        "total_removidas", 0
+                    )
                 else:
                     estatisticas["erros"] += 1
 
@@ -205,7 +225,9 @@ class ProcessadorLimpeza:
 
             # Resumo final conciso
             if estatisticas["total_versoes"] > 0:
-                print(f"📊 Limpeza: {estatisticas['sucessos']}/{estatisticas['total_versoes']} versões, {estatisticas['total_modificacoes_removidas']} modificações removidas")
+                print(
+                    f"📊 Limpeza: {estatisticas['sucessos']}/{estatisticas['total_versoes']} versões, {estatisticas['total_modificacoes_removidas']} modificações removidas"
+                )
 
             return estatisticas
 
@@ -222,7 +244,7 @@ class ProcessadorLimpeza:
             dry_run: Modo de simulação
         """
         print("🎯 Iniciando monitoramento de limpeza")
-        print(f"   ⏰ Intervalo: {intervalo} segundos ({intervalo//60} minutos)")
+        print(f"   ⏰ Intervalo: {intervalo} segundos ({intervalo // 60} minutos)")
         print(f"   🏃‍♂️ Modo DRY-RUN: {'Ativo' if dry_run else 'Inativo'}")
 
         try:
@@ -231,7 +253,9 @@ class ProcessadorLimpeza:
                     resultado = self.processar_ciclo_limpeza(dry_run)
 
                     if "erro" not in resultado:
-                        print(f"✅ Ciclo concluído - próximo em {intervalo//60} minutos")
+                        print(
+                            f"✅ Ciclo concluído - próximo em {intervalo // 60} minutos"
+                        )
                     else:
                         print(f"❌ Erro no ciclo: {resultado['erro']}")
 
@@ -251,10 +275,21 @@ def main():
     """Função principal para execução standalone"""
     import argparse
 
-    parser = argparse.ArgumentParser(description="Processador de limpeza de modificações")
-    parser.add_argument("--single-run", action="store_true", help="Executar apenas um ciclo")
-    parser.add_argument("--dry-run", action="store_true", help="Modo simulação (não faz alterações)")
-    parser.add_argument("--intervalo", type=int, default=300, help="Intervalo entre verificações em segundos")
+    parser = argparse.ArgumentParser(
+        description="Processador de limpeza de modificações"
+    )
+    parser.add_argument(
+        "--single-run", action="store_true", help="Executar apenas um ciclo"
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Modo simulação (não faz alterações)"
+    )
+    parser.add_argument(
+        "--intervalo",
+        type=int,
+        default=300,
+        help="Intervalo entre verificações em segundos",
+    )
 
     args = parser.parse_args()
 

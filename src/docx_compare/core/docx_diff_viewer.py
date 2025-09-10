@@ -6,14 +6,28 @@ import sys
 
 # Import das configurações - importar o módulo config.py da raiz
 
-# Encontrar o diretório raiz do projeto (onde está o config.py)
-current_dir = os.path.dirname(os.path.abspath(__file__))
-root_path = current_dir
-# Subir até encontrar o config.py
-for _ in range(4):  # src/docx_compare/core/ = 3 níveis + 1 extra
-    root_path = os.path.dirname(root_path)
-    if os.path.exists(os.path.join(root_path, "config.py")):
-        break
+
+# Encontrar o diretório raiz do projeto de forma mais robusta
+def find_project_root():
+    """Encontra o diretório raiz do projeto procurando por config.py"""
+    # Começar pelo diretório deste arquivo
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Procurar config.py subindo na hierarquia
+    search_dir = current_dir
+    for _ in range(10):  # Limite de segurança
+        if os.path.exists(os.path.join(search_dir, "config.py")):
+            return search_dir
+        parent_dir = os.path.dirname(search_dir)
+        if parent_dir == search_dir:  # Chegou na raiz do sistema
+            break
+        search_dir = parent_dir
+
+    # Se não encontrou, usar diretório atual
+    return os.getcwd()
+
+
+root_path = find_project_root()
 
 if root_path not in sys.path:
     sys.path.insert(0, root_path)
@@ -21,24 +35,46 @@ if root_path not in sys.path:
 try:
     # Importar especificamente o arquivo config.py
     import importlib.util
+
     config_path = os.path.join(root_path, "config.py")
     spec = importlib.util.spec_from_file_location("config_module", config_path)
     if spec and spec.loader:
         config = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(config)
 
-        # Usar getattr com fallback para evitar AttributeError
-        LUA_FILTER_PATH = getattr(config, "LUA_FILTER_PATH",
-                                  os.getenv("LUA_FILTER_PATH", "config/comments_html_filter_direct.lua"))
-        RESULTS_DIR = getattr(config, "RESULTS_DIR",
-                              os.getenv("RESULTS_DIR", "results"))
+        # Configurações baseadas em config.py
+        LUA_FILTER_PATH = getattr(
+            config,
+            "LUA_FILTER_PATH",
+            os.getenv("LUA_FILTER_PATH", "config/comments_html_filter_direct.lua"),
+        )
+        RESULTS_DIR = getattr(
+            config, "RESULTS_DIR", os.getenv("RESULTS_DIR", "results")
+        )
+
+        # Tornar caminhos absolutos relativos ao projeto root
+        if not os.path.isabs(LUA_FILTER_PATH):
+            LUA_FILTER_PATH = os.path.join(root_path, LUA_FILTER_PATH)
+        if not os.path.isabs(RESULTS_DIR):
+            RESULTS_DIR = os.path.join(root_path, RESULTS_DIR)
     else:
         raise ImportError("Não foi possível carregar o módulo config.py")
 except Exception as e:
     print(f"Aviso: Erro ao importar configurações ({e}), usando fallbacks")
     # Fallback para quando executado como módulo
-    LUA_FILTER_PATH = os.getenv("LUA_FILTER_PATH", "config/comments_html_filter_direct.lua")
-    RESULTS_DIR = os.getenv("RESULTS_DIR", "results")
+    lua_filter_fallback = os.getenv(
+        "LUA_FILTER_PATH", "config/comments_html_filter_direct.lua"
+    )
+    if not os.path.isabs(lua_filter_fallback):
+        LUA_FILTER_PATH = os.path.join(root_path, lua_filter_fallback)
+    else:
+        LUA_FILTER_PATH = lua_filter_fallback
+
+    results_fallback = os.getenv("RESULTS_DIR", "results")
+    if not os.path.isabs(results_fallback):
+        RESULTS_DIR = os.path.join(root_path, results_fallback)
+    else:
+        RESULTS_DIR = results_fallback
 
 # Tentar importar módulos utilitários com fallbacks para diferentes ambientes
 try:

@@ -84,7 +84,9 @@ def signal_handler(signum, _frame):
 
     # Se há uma versão sendo processada, resetar seu status
     if versao_em_processamento:
-        print(f"⚠️ Resetando versão {versao_em_processamento} que estava sendo processada...")
+        print(
+            f"⚠️ Resetando versão {versao_em_processamento} que estava sendo processada..."
+        )
         try:
             reset_stuck_versao(versao_em_processamento)
         except Exception as e:
@@ -119,10 +121,7 @@ def reset_stuck_versao(versao_id):
 
         observacao = f"Status resetado de 'processando' para 'processar' em {datetime.now().strftime('%d/%m/%Y %H:%M')} - versão estava travada"
 
-        update_data = {
-            "status": "processar",
-            "observacao": observacao
-        }
+        update_data = {"status": "processar", "observacao": observacao}
 
         update_url = f"{DIRECTUS_BASE_URL}/items/versao/{versao_id}"
         response = requests.patch(
@@ -153,6 +152,7 @@ def extrair_numero_tentativas(observacao):
         return 0
 
     import re
+
     match = re.search(r"\[TENT: (\d+)/3\]", observacao)
     return int(match.group(1)) if match else 0
 
@@ -169,7 +169,9 @@ def criar_observacao_com_tentativa(observacao_anterior, nova_tentativa):
 
     # Adicionar timestamp e nova tentativa
     timestamp = datetime.now().strftime("%d/%m/%Y %H:%M")
-    nova_observacao = f"Processamento iniciado em {timestamp} [TENT: {nova_tentativa}/3]"
+    nova_observacao = (
+        f"Processamento iniciado em {timestamp} [TENT: {nova_tentativa}/3]"
+    )
 
     # Se havia observação anterior, manter histórico
     if observacao_limpa.strip():
@@ -187,26 +189,31 @@ def deve_reprocessar_versao(versao_data):
     tentativas = extrair_numero_tentativas(observacao)
 
     if tentativas >= MAX_TENTATIVAS:
-        print(f"❌ Versão {versao_id} já tentou {tentativas} vezes - marcando como erro")
+        print(
+            f"❌ Versão {versao_id} já tentou {tentativas} vezes - marcando como erro"
+        )
         return False, tentativas
 
-    print(f"🔄 Versão {versao_id} será reprocessada (tentativa {tentativas + 1}/{MAX_TENTATIVAS})")
+    print(
+        f"🔄 Versão {versao_id} será reprocessada (tentativa {tentativas + 1}/{MAX_TENTATIVAS})"
+    )
     return True, tentativas
 
 
-def marcar_versao_erro_definitivo(versao_id, motivo="Excedeu número máximo de tentativas"):
+def marcar_versao_erro_definitivo(
+    versao_id, motivo="Excedeu número máximo de tentativas"
+):
     """
     Marca uma versão como erro definitivo quando excede o máximo de tentativas
     """
     try:
         print(f"🚫 Marcando versão {versao_id} como erro definitivo: {motivo}")
 
-        observacao = f"ERRO DEFINITIVO em {datetime.now().strftime('%d/%m/%Y %H:%M')}: {motivo}"
+        observacao = (
+            f"ERRO DEFINITIVO em {datetime.now().strftime('%d/%m/%Y %H:%M')}: {motivo}"
+        )
 
-        update_data = {
-            "status": "erro",
-            "observacao": observacao
-        }
+        update_data = {"status": "erro", "observacao": observacao}
 
         update_url = f"{DIRECTUS_BASE_URL}/items/versao/{versao_id}"
         response = requests.patch(
@@ -220,7 +227,9 @@ def marcar_versao_erro_definitivo(versao_id, motivo="Excedeu número máximo de 
             print(f"✅ Versão {versao_id} marcada como erro definitivo")
             return True
         else:
-            print(f"❌ Erro ao marcar versão {versao_id} como erro definitivo: HTTP {response.status_code}")
+            print(
+                f"❌ Erro ao marcar versão {versao_id} como erro definitivo: HTTP {response.status_code}"
+            )
             return False
 
     except Exception as e:
@@ -306,7 +315,9 @@ def buscar_versoes_para_processar():
                     json_processar = response_processar.json()
                     versoes_processar = json_processar.get("data", [])
                     if versoes_processar:
-                        print(f"📋 Encontradas {len(versoes_processar)} versões com status 'processar'")
+                        print(
+                            f"📋 Encontradas {len(versoes_processar)} versões com status 'processar'"
+                        )
                 except (ValueError, KeyError):
                     pass
 
@@ -335,18 +346,27 @@ def buscar_versoes_para_processar():
                     json_processando = response_processando.json()
                     versoes_processando = json_processando.get("data", [])
                     if versoes_processando:
-                        print(f"⚠️ Encontradas {len(versoes_processando)} versões em status 'processando'")
+                        print(
+                            f"⚠️ Encontradas {len(versoes_processando)} versões em status 'processando'"
+                        )
                         for versao_processando in versoes_processando:
                             versao_id = versao_processando["id"]
-                            pode_reprocessar, tentativas = deve_reprocessar_versao(versao_processando)
+                            pode_reprocessar, tentativas = deve_reprocessar_versao(
+                                versao_processando
+                            )
 
                             if pode_reprocessar:
-                                print(f"🔄 Versão {versao_id} será reprocessada (tentativa {tentativas + 1}/{MAX_TENTATIVAS})")
+                                print(
+                                    f"🔄 Versão {versao_id} será reprocessada (tentativa {tentativas + 1}/{MAX_TENTATIVAS})"
+                                )
                                 versoes_para_reprocessar.append(versao_processando)
                             else:
                                 # Já atingiu máximo de tentativas, marcar como erro definitivo
                                 if tentativas >= MAX_TENTATIVAS:
-                                    marcar_versao_erro_definitivo(versao_id, f"Máximo de {MAX_TENTATIVAS} tentativas excedido")
+                                    marcar_versao_erro_definitivo(
+                                        versao_id,
+                                        f"Máximo de {MAX_TENTATIVAS} tentativas excedido",
+                                    )
                 except (ValueError, KeyError):
                     pass
 
@@ -354,9 +374,13 @@ def buscar_versoes_para_processar():
             todas_versoes = versoes_processar + versoes_para_reprocessar
 
             if versoes_processar:
-                print(f"📋 Encontradas {len(versoes_processar)} versões novas para processar")
+                print(
+                    f"📋 Encontradas {len(versoes_processar)} versões novas para processar"
+                )
             if versoes_para_reprocessar:
-                print(f"🔄 Preparadas {len(versoes_para_reprocessar)} versões para reprocessamento")
+                print(
+                    f"🔄 Preparadas {len(versoes_para_reprocessar)} versões para reprocessamento"
+                )
 
             print(f"✅ Total: {len(todas_versoes)} versões para processar")
             return todas_versoes
@@ -738,7 +762,9 @@ def update_versao_status(
             if versao_data:
                 observacao_anterior = versao_data.get("observacao", "")
                 tentativa_atual = extrair_numero_tentativas(observacao_anterior) + 1
-                observacao = criar_observacao_com_tentativa(observacao_anterior, tentativa_atual)
+                observacao = criar_observacao_com_tentativa(
+                    observacao_anterior, tentativa_atual
+                )
             else:
                 observacao = f"Processamento iniciado em {datetime.now().strftime('%d/%m/%Y %H:%M')} [TENT: 1/3]"
         else:
@@ -759,16 +785,26 @@ def update_versao_status(
 
                 if response.status_code == 200:
                     versao_atualizada = response.json().get("data", {})
-                    modifica_arquivo_existente = versao_atualizada.get("modifica_arquivo")
+                    modifica_arquivo_existente = versao_atualizada.get(
+                        "modifica_arquivo"
+                    )
                 else:
-                    print(f"⚠️ Erro ao buscar versão atual (status: {response.status_code}), usando dados passados como parâmetro")
+                    print(
+                        f"⚠️ Erro ao buscar versão atual (status: {response.status_code}), usando dados passados como parâmetro"
+                    )
                     versao_atual = versao_data if versao_data else None
-                    modifica_arquivo_existente = versao_atual.get("modifica_arquivo") if versao_atual else None
+                    modifica_arquivo_existente = (
+                        versao_atual.get("modifica_arquivo") if versao_atual else None
+                    )
 
             except Exception as e:
-                print(f"⚠️ Erro ao buscar versão atual ({e}), usando dados passados como parâmetro")
+                print(
+                    f"⚠️ Erro ao buscar versão atual ({e}), usando dados passados como parâmetro"
+                )
                 versao_atual = versao_data if versao_data else None
-                modifica_arquivo_existente = versao_atual.get("modifica_arquivo") if versao_atual else None
+                modifica_arquivo_existente = (
+                    versao_atual.get("modifica_arquivo") if versao_atual else None
+                )
 
             # Só atualizar se o campo estiver vazio
             if not modifica_arquivo_existente:
@@ -925,7 +961,10 @@ def processar_versao(versao_data, dry_run=False):
                 except ImportError:
                     # Import absoluto usando sys.path
                     import sys
-                    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+
+                    sys.path.insert(
+                        0, os.path.join(os.path.dirname(__file__), "..", "..", "..")
+                    )
                     from src.docx_compare.core.docx_diff_viewer import (
                         generate_diff_html,
                     )
@@ -974,8 +1013,11 @@ def processar_versao(versao_data, dry_run=False):
 
             # Analisar diferenças usando a função que retorna os campos de caminho
             from src.docx_compare.utils.text_analysis_utils import analyze_differences
+
             stats_detailed = analyze_differences(original_text, modified_text)
-            modifications = stats_detailed["details"]  # Lista com caminho_inicio e caminho_fim
+            modifications = stats_detailed[
+                "details"
+            ]  # Lista com caminho_inicio e caminho_fim
 
             # 5. Atualizar status da versão para concluído e salvar modificações em uma única transação
             result_url = f"http://{FLASK_HOST}:{FLASK_PORT}/results/{result_filename}"
@@ -1040,7 +1082,9 @@ def processar_versao_com_garantia(versao_data, dry_run=False):
     try:
         # Mostrar informação sobre tentativas
         if tentativas_atuais > 0:
-            print(f"🔄 Processando versão {versao_id} - Tentativa {tentativas_atuais + 1}/{MAX_TENTATIVAS}")
+            print(
+                f"🔄 Processando versão {versao_id} - Tentativa {tentativas_atuais + 1}/{MAX_TENTATIVAS}"
+            )
 
         processar_versao(versao_data, dry_run)
 
@@ -1053,27 +1097,33 @@ def processar_versao_com_garantia(versao_data, dry_run=False):
         error_msg = str(e)
         tentativa_falhou = tentativas_atuais + 1
 
-        print(f"❌ Garantia: Erro na versão {versao_id} (tentativa {tentativa_falhou}/{MAX_TENTATIVAS}): {error_msg}")
+        print(
+            f"❌ Garantia: Erro na versão {versao_id} (tentativa {tentativa_falhou}/{MAX_TENTATIVAS}): {error_msg}"
+        )
 
         if not dry_run:
             # Decidir se marca como erro ou prepare para nova tentativa
             if tentativa_falhou >= MAX_TENTATIVAS:
                 # Excedeu tentativas - marcar como erro definitivo
                 try:
-                    marcar_versao_erro_definitivo(versao_id, f"Falhou após {tentativa_falhou} tentativas: {error_msg}")
+                    marcar_versao_erro_definitivo(
+                        versao_id,
+                        f"Falhou após {tentativa_falhou} tentativas: {error_msg}",
+                    )
                 except Exception as update_error:
-                    print(f"❌ CRÍTICO: Não foi possível marcar erro definitivo para {versao_id}: {update_error}")
+                    print(
+                        f"❌ CRÍTICO: Não foi possível marcar erro definitivo para {versao_id}: {update_error}"
+                    )
             else:
                 # Ainda pode tentar novamente - resetar para 'processar' com contador
                 try:
                     tentativa_atual = extrair_numero_tentativas(observacao_atual) + 1
-                    nova_observacao = criar_observacao_com_tentativa(observacao_atual, tentativa_atual)
+                    nova_observacao = criar_observacao_com_tentativa(
+                        observacao_atual, tentativa_atual
+                    )
                     nova_observacao = f"Erro na tentativa {tentativa_falhou} em {datetime.now().strftime('%d/%m/%Y %H:%M')}: {error_msg[:100]}... - {nova_observacao}"
 
-                    reset_data = {
-                        "status": "processar",
-                        "observacao": nova_observacao
-                    }
+                    reset_data = {"status": "processar", "observacao": nova_observacao}
 
                     update_url = f"{DIRECTUS_BASE_URL}/items/versao/{versao_id}"
                     reset_response = requests.patch(
@@ -1084,12 +1134,16 @@ def processar_versao_com_garantia(versao_data, dry_run=False):
                     )
 
                     if reset_response.status_code == 200:
-                        print(f"🔄 Versão {versao_id} preparada para nova tentativa ({tentativa_falhou}/{MAX_TENTATIVAS})")
+                        print(
+                            f"🔄 Versão {versao_id} preparada para nova tentativa ({tentativa_falhou}/{MAX_TENTATIVAS})"
+                        )
                     else:
                         print(f"❌ Erro ao preparar nova tentativa para {versao_id}")
 
                 except Exception as reset_error:
-                    print(f"❌ CRÍTICO: Versão {versao_id} pode estar travada em 'processando': {reset_error}")
+                    print(
+                        f"❌ CRÍTICO: Versão {versao_id} pode estar travada em 'processando': {reset_error}"
+                    )
         else:
             print("🏃‍♂️ DRY-RUN: Controle de tentativas não aplicado")
 

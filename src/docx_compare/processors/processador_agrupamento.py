@@ -26,21 +26,27 @@ DIRECTUS_BASE_URL = os.getenv("DIRECTUS_BASE_URL", "https://admin.devix.ai")
 DIRECTUS_TOKEN = os.getenv("DIRECTUS_TOKEN", "token_aqui")
 
 # Configurar logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 
 class ProcessadorAgrupamento:
     """Processador que agrupa modificações de versões por capítulos"""
 
-    def __init__(self, threshold: float = 0.6, intervalo_verificacao: int = 300, verbose: bool = False):
+    def __init__(
+        self,
+        threshold: float = 0.6,
+        intervalo_verificacao: int = 300,
+        verbose: bool = False,
+    ):
         self.threshold = threshold
         self.intervalo_verificacao = intervalo_verificacao
         self.verbose = verbose
         self.running = True
         self.agrupador = AgrupadorModificacoes(
-            directus_base_url=DIRECTUS_BASE_URL,
-            directus_token=DIRECTUS_TOKEN
+            directus_base_url=DIRECTUS_BASE_URL, directus_token=DIRECTUS_TOKEN
         )
 
     def buscar_versoes_para_agrupar(self) -> list:
@@ -63,7 +69,7 @@ class ProcessadorAgrupamento:
                 url,
                 headers={"Authorization": f"Bearer {DIRECTUS_TOKEN}"},
                 params=params,
-                timeout=30
+                timeout=30,
             )
 
             if response.status_code == 200:
@@ -77,11 +83,17 @@ class ProcessadorAgrupamento:
                         status = versao.get("status", "")
 
                         # Processar versões com status 'concluido' ou 'erro' (que podem ter modificações válidas)
-                        if versao_id and status in ["concluido", "erro"] and versao_id not in versoes_ids:
+                        if (
+                            versao_id
+                            and status in ["concluido", "erro"]
+                            and versao_id not in versoes_ids
+                        ):
                             versoes_ids.append(versao_id)
 
                 if self.verbose:
-                    print(f"✅ Encontradas {len(versoes_ids)} versões para agrupar: {versoes_ids}")
+                    print(
+                        f"✅ Encontradas {len(versoes_ids)} versões para agrupar: {versoes_ids}"
+                    )
 
                 return versoes_ids
             else:
@@ -102,13 +114,13 @@ class ProcessadorAgrupamento:
                 print("-" * 50)
 
             resultado = self.agrupador.processar_agrupamento_versao(
-                versao_id=versao_id,
-                threshold=self.threshold,
-                dry_run=False
+                versao_id=versao_id, threshold=self.threshold, dry_run=False
             )
 
             if "erro" in resultado:
-                logger.error(f"Erro no processamento da versão {versao_id}: {resultado['erro']}")
+                logger.error(
+                    f"Erro no processamento da versão {versao_id}: {resultado['erro']}"
+                )
                 return False
 
             # Log de estatísticas
@@ -124,7 +136,9 @@ class ProcessadorAgrupamento:
                 print(f"   ❌ Falharam: {falharam}")
                 print(f"   🔍 Sem correspondência: {sem_correspondencia}")
 
-            logger.info(f"Versão {versao_id}: {associadas}/{total} modificações agrupadas")
+            logger.info(
+                f"Versão {versao_id}: {associadas}/{total} modificações agrupadas"
+            )
 
             return True
 
@@ -173,7 +187,9 @@ class ProcessadorAgrupamento:
             fim = datetime.now()
             duracao = (fim - inicio).total_seconds()
 
-            logger.info(f"Ciclo concluído: {sucessos} sucessos, {erros} erros em {duracao:.1f}s")
+            logger.info(
+                f"Ciclo concluído: {sucessos} sucessos, {erros} erros em {duracao:.1f}s"
+            )
 
             if self.verbose:
                 print("\n📊 Resumo do ciclo:")
@@ -208,7 +224,9 @@ class ProcessadorAgrupamento:
                 # Aguardar próximo ciclo
                 if self.running:
                     if self.verbose:
-                        print(f"\n💤 Aguardando {self.intervalo_verificacao} segundos para próximo ciclo...")
+                        print(
+                            f"\n💤 Aguardando {self.intervalo_verificacao} segundos para próximo ciclo..."
+                        )
 
                     for _ in range(self.intervalo_verificacao):
                         if not self.running:
@@ -247,29 +265,25 @@ class ProcessadorAgrupamento:
 
 def main():
     """Função principal"""
-    parser = argparse.ArgumentParser(description="Processador de Agrupamento de Modificações")
+    parser = argparse.ArgumentParser(
+        description="Processador de Agrupamento de Modificações"
+    )
     parser.add_argument(
         "--threshold",
         type=float,
         default=0.6,
-        help="Threshold de similaridade (0.0-1.0, padrão: 0.6)"
+        help="Threshold de similaridade (0.0-1.0, padrão: 0.6)",
     )
     parser.add_argument(
         "--intervalo",
         type=int,
         default=300,
-        help="Intervalo entre verificações em segundos (padrão: 300)"
+        help="Intervalo entre verificações em segundos (padrão: 300)",
     )
     parser.add_argument(
-        "--single-run",
-        action="store_true",
-        help="Executa apenas um ciclo e encerra"
+        "--single-run", action="store_true", help="Executa apenas um ciclo e encerra"
     )
-    parser.add_argument(
-        "--verbose",
-        action="store_true",
-        help="Ativar modo verbose"
-    )
+    parser.add_argument("--verbose", action="store_true", help="Ativar modo verbose")
 
     args = parser.parse_args()
 
@@ -277,7 +291,7 @@ def main():
     processador = ProcessadorAgrupamento(
         threshold=args.threshold,
         intervalo_verificacao=args.intervalo,
-        verbose=args.verbose
+        verbose=args.verbose,
     )
 
     try:

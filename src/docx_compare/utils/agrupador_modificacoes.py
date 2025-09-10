@@ -16,7 +16,9 @@ class AgrupadorModificacoes:
     baseado na correspondência entre conteúdo das modificações e tags do modelo
     """
 
-    def __init__(self, directus_base_url: str, directus_token: str, request_timeout: int = 30):
+    def __init__(
+        self, directus_base_url: str, directus_token: str, request_timeout: int = 30
+    ):
         self.directus_base_url = directus_base_url
         self.directus_headers = {
             "Authorization": f"Bearer {directus_token}",
@@ -70,14 +72,14 @@ class AgrupadorModificacoes:
                 "filter[modelo_contrato][_eq]": modelo_contrato_id,
                 "fields": "id,tag_nome,conteudo,contexto,caminho_tag_inicio,caminho_tag_fim",
                 "limit": 1000,
-                "sort": "tag_nome"
+                "sort": "tag_nome",
             }
 
             response = requests.get(
                 url,
                 headers=self.directus_headers,
                 params=params,
-                timeout=self.request_timeout
+                timeout=self.request_timeout,
             )
 
             if response.status_code == 200:
@@ -101,21 +103,23 @@ class AgrupadorModificacoes:
             params = {
                 "filter[tag][_eq]": tag_id,
                 "fields": "id,numero,nome,conteudo,tag.tag_nome",
-                "limit": 1
+                "limit": 1,
             }
 
             response = requests.get(
                 url,
                 headers=self.directus_headers,
                 params=params,
-                timeout=self.request_timeout
+                timeout=self.request_timeout,
             )
 
             if response.status_code == 200:
                 clausulas = response.json().get("data", [])
                 return clausulas[0] if clausulas else None
             else:
-                print(f"⚠️ Erro ao buscar cláusula para tag {tag_id}: HTTP {response.status_code}")
+                print(
+                    f"⚠️ Erro ao buscar cláusula para tag {tag_id}: HTTP {response.status_code}"
+                )
                 return None
 
         except Exception as e:
@@ -123,10 +127,7 @@ class AgrupadorModificacoes:
             return None
 
     def encontrar_melhor_correspondencia(
-        self,
-        modificacao: dict,
-        tags_modelo: list[dict],
-        threshold: float = 0.6
+        self, modificacao: dict, tags_modelo: list[dict], threshold: float = 0.6
     ) -> tuple[dict | None, float]:
         """
         Encontra a tag do modelo que melhor corresponde à modificação usando análise ponderada:
@@ -161,26 +162,36 @@ class AgrupadorModificacoes:
             # 1. Similaridade de caminho (50% do peso) - Tags são posicionais por natureza
             score_caminho = 0.0
             if caminho_inicio_mod and caminho_inicio_tag:
-                score_caminho_inicio = self.calcular_similaridade(caminho_inicio_mod, caminho_inicio_tag)
+                score_caminho_inicio = self.calcular_similaridade(
+                    caminho_inicio_mod, caminho_inicio_tag
+                )
                 score_caminho_fim = 0.0
                 if caminho_fim_mod and caminho_fim_tag:
-                    score_caminho_fim = self.calcular_similaridade(caminho_fim_mod, caminho_fim_tag)
+                    score_caminho_fim = self.calcular_similaridade(
+                        caminho_fim_mod, caminho_fim_tag
+                    )
                 score_caminho = max(score_caminho_inicio, score_caminho_fim)
             peso_caminho = score_caminho * 0.5
 
             # 2. Similaridade de conteúdo (40% do peso)
-            score_conteudo = self.calcular_similaridade(conteudo_modificacao, tag_conteudo)
+            score_conteudo = self.calcular_similaridade(
+                conteudo_modificacao, tag_conteudo
+            )
             peso_conteudo = score_conteudo * 0.4
 
             # 3. Similaridade de contexto (10% do peso)
-            score_contexto = self.calcular_similaridade(conteudo_modificacao, tag_contexto)
+            score_contexto = self.calcular_similaridade(
+                conteudo_modificacao, tag_contexto
+            )
             peso_contexto = score_contexto * 0.1
 
             # Score final ponderado
             score_final = peso_conteudo + peso_caminho + peso_contexto
 
             # Log detalhado para debugging (ordem de prioridade: caminho, conteúdo, contexto)
-            print(f"    🔍 Tag '{tag.get('tag', 'sem_tag')}': caminho={score_caminho:.3f}, conteúdo={score_conteudo:.3f}, contexto={score_contexto:.3f}, final={score_final:.3f}")
+            print(
+                f"    🔍 Tag '{tag.get('tag', 'sem_tag')}': caminho={score_caminho:.3f}, conteúdo={score_conteudo:.3f}, contexto={score_contexto:.3f}, final={score_final:.3f}"
+            )
 
             if score_final > melhor_score and score_final >= threshold:
                 melhor_score = score_final
@@ -188,12 +199,16 @@ class AgrupadorModificacoes:
 
         return melhor_tag, melhor_score
 
-    def associar_modificacao_clausula(self, modificacao_id: str, clausula_id: str) -> bool:
+    def associar_modificacao_clausula(
+        self, modificacao_id: str, clausula_id: str
+    ) -> bool:
         """
         Associa uma modificação a uma cláusula específica
         """
         try:
-            print(f"🔗 Associando modificação {modificacao_id} à cláusula {clausula_id}")
+            print(
+                f"🔗 Associando modificação {modificacao_id} à cláusula {clausula_id}"
+            )
 
             url = f"{self.directus_base_url}/items/modificacao/{modificacao_id}"
             data = {"clausula": clausula_id}
@@ -202,7 +217,7 @@ class AgrupadorModificacoes:
                 url,
                 headers=self.directus_headers,
                 json=data,
-                timeout=self.request_timeout
+                timeout=self.request_timeout,
             )
 
             if response.status_code in [200, 204]:
@@ -242,19 +257,23 @@ class AgrupadorModificacoes:
                     "filter[versao][_eq]": versao_id,
                     "fields": "id",
                     "limit": limite_por_lote,
-                    "offset": offset
+                    "offset": offset,
                 }
 
                 response = requests.get(
                     url,
                     headers=self.directus_headers,
                     params=params,
-                    timeout=self.request_timeout
+                    timeout=self.request_timeout,
                 )
 
                 if response.status_code != 200:
-                    print(f"❌ Erro ao buscar modificações: HTTP {response.status_code}")
-                    return {"erro": f"Erro ao buscar modificações: HTTP {response.status_code}"}
+                    print(
+                        f"❌ Erro ao buscar modificações: HTTP {response.status_code}"
+                    )
+                    return {
+                        "erro": f"Erro ao buscar modificações: HTTP {response.status_code}"
+                    }
 
                 lote = response.json().get("data", [])
                 if not lote:
@@ -280,14 +299,16 @@ class AgrupadorModificacoes:
                 "total_encontradas": total_encontradas,
                 "total_removidas": 0,
                 "falhas": 0,
-                "detalhes": []
+                "detalhes": [],
             }
 
             if dry_run:
                 print("🏃‍♂️ DRY-RUN: Simulando remoção das modificações")
                 estatisticas["total_removidas"] = total_encontradas
                 # Apenas contar, sem logar cada item
-                estatisticas["detalhes"] = [{"status": "dry_run"} for _ in todas_modificacoes]
+                estatisticas["detalhes"] = [
+                    {"status": "dry_run"} for _ in todas_modificacoes
+                ]
             else:
                 print("🗑️ Removendo modificações...")
 
@@ -295,37 +316,49 @@ class AgrupadorModificacoes:
                     modificacao_id = mod["id"]
 
                     # Mostrar progresso apenas a cada 10% ou se há poucas modificações
-                    if total_encontradas <= 10 or i % max(1, total_encontradas // 10) == 0:
+                    if (
+                        total_encontradas <= 10
+                        or i % max(1, total_encontradas // 10) == 0
+                    ):
                         progresso = (i / total_encontradas) * 100
-                        print(f"   � Progresso: {i}/{total_encontradas} ({progresso:.0f}%)")
+                        print(
+                            f"   � Progresso: {i}/{total_encontradas} ({progresso:.0f}%)"
+                        )
 
                     # Deletar modificação
-                    delete_url = f"{self.directus_base_url}/items/modificacao/{modificacao_id}"
+                    delete_url = (
+                        f"{self.directus_base_url}/items/modificacao/{modificacao_id}"
+                    )
                     delete_response = requests.delete(
                         delete_url,
                         headers=self.directus_headers,
-                        timeout=self.request_timeout
+                        timeout=self.request_timeout,
                     )
 
                     if delete_response.status_code in [200, 204]:
                         estatisticas["total_removidas"] += 1
-                        estatisticas["detalhes"].append({
-                            "modificacao_id": modificacao_id,
-                            "status": "removida"
-                        })
+                        estatisticas["detalhes"].append(
+                            {"modificacao_id": modificacao_id, "status": "removida"}
+                        )
                     else:
                         estatisticas["falhas"] += 1
-                        estatisticas["detalhes"].append({
-                            "modificacao_id": modificacao_id,
-                            "status": "falha",
-                            "erro": f"HTTP {delete_response.status_code}"
-                        })
+                        estatisticas["detalhes"].append(
+                            {
+                                "modificacao_id": modificacao_id,
+                                "status": "falha",
+                                "erro": f"HTTP {delete_response.status_code}",
+                            }
+                        )
                         # Logar apenas os erros
-                        print(f"   ❌ Erro ao remover {modificacao_id}: HTTP {delete_response.status_code}")
+                        print(
+                            f"   ❌ Erro ao remover {modificacao_id}: HTTP {delete_response.status_code}"
+                        )
 
             # Resumo final
             print("\n📊 Limpeza concluída:")
-            print(f"   🔍 Modificações encontradas: {estatisticas['total_encontradas']}")
+            print(
+                f"   🔍 Modificações encontradas: {estatisticas['total_encontradas']}"
+            )
             print(f"   🗑️ Modificações removidas: {estatisticas['total_removidas']}")
             print(f"   ❌ Falhas: {estatisticas['falhas']}")
 
@@ -348,14 +381,14 @@ class AgrupadorModificacoes:
                 "filter[clausula][_null]": "true",  # Apenas modificações ainda não associadas
                 "fields": "id,categoria,conteudo,alteracao,sort,clausula,caminho_inicio,caminho_fim",
                 "limit": 1000,
-                "sort": "sort"
+                "sort": "sort",
             }
 
             response = requests.get(
                 url,
                 headers=self.directus_headers,
                 params=params,
-                timeout=self.request_timeout
+                timeout=self.request_timeout,
             )
 
             if response.status_code == 200:
@@ -378,15 +411,13 @@ class AgrupadorModificacoes:
             print(f"🔍 Obtendo modelo de contrato para versão {versao_id}")
 
             url = f"{self.directus_base_url}/items/versao/{versao_id}"
-            params = {
-                "fields": "contrato.modelo_contrato.id"
-            }
+            params = {"fields": "contrato.modelo_contrato.id"}
 
             response = requests.get(
                 url,
                 headers=self.directus_headers,
                 params=params,
-                timeout=self.request_timeout
+                timeout=self.request_timeout,
             )
 
             if response.status_code == 200:
@@ -410,7 +441,9 @@ class AgrupadorModificacoes:
             print(f"❌ Erro ao obter modelo de contrato: {e}")
             return None
 
-    def processar_agrupamento_versao(self, versao_id: str, threshold: float = 0.6, dry_run: bool = False) -> dict:
+    def processar_agrupamento_versao(
+        self, versao_id: str, threshold: float = 0.6, dry_run: bool = False
+    ) -> dict:
         """
         Processa o agrupamento de modificações por capítulo para uma versão específica
 
@@ -423,7 +456,9 @@ class AgrupadorModificacoes:
             Dicionário com estatísticas do processamento
         """
         try:
-            print(f"\n🎯 Processando agrupamento de modificações por capítulo - Versão: {versao_id}")
+            print(
+                f"\n🎯 Processando agrupamento de modificações por capítulo - Versão: {versao_id}"
+            )
 
             # 1. Obter modelo de contrato da versão
             modelo_contrato_id = self.obter_modelo_contrato_id(versao_id)
@@ -446,7 +481,7 @@ class AgrupadorModificacoes:
                 "associacoes_criadas": 0,
                 "associacoes_falharam": 0,
                 "modificacoes_sem_correspondencia": 0,
-                "detalhes": []
+                "detalhes": [],
             }
 
             for modificacao in modificacoes:
@@ -455,7 +490,9 @@ class AgrupadorModificacoes:
                 categoria = modificacao.get("categoria", "")
 
                 print(f"\n🔍 Processando modificação {modificacao_id} ({categoria})")
-                print(f"   Conteúdo: {conteudo[:100]}{'...' if len(conteudo) > 100 else ''}")
+                print(
+                    f"   Conteúdo: {conteudo[:100]}{'...' if len(conteudo) > 100 else ''}"
+                )
 
                 # Encontrar melhor correspondência
                 tag_correspondente, score = self.encontrar_melhor_correspondencia(
@@ -464,7 +501,9 @@ class AgrupadorModificacoes:
 
                 if tag_correspondente:
                     tag_nome = tag_correspondente.get("tag_nome", "N/A")
-                    print(f"   ✅ Correspondência encontrada: Tag '{tag_nome}' (score: {score:.2f})")
+                    print(
+                        f"   ✅ Correspondência encontrada: Tag '{tag_nome}' (score: {score:.2f})"
+                    )
 
                     # Buscar cláusula associada à tag
                     clausula = self.buscar_clausulas_por_tag(tag_correspondente["id"])
@@ -481,59 +520,75 @@ class AgrupadorModificacoes:
 
                             if sucesso:
                                 estatisticas["associacoes_criadas"] += 1
-                                estatisticas["detalhes"].append({
-                                    "modificacao_id": modificacao_id,
-                                    "tag_nome": tag_nome,
-                                    "clausula_nome": clausula_nome,
-                                    "score": score,
-                                    "status": "associada"
-                                })
+                                estatisticas["detalhes"].append(
+                                    {
+                                        "modificacao_id": modificacao_id,
+                                        "tag_nome": tag_nome,
+                                        "clausula_nome": clausula_nome,
+                                        "score": score,
+                                        "status": "associada",
+                                    }
+                                )
                             else:
                                 estatisticas["associacoes_falharam"] += 1
-                                estatisticas["detalhes"].append({
+                                estatisticas["detalhes"].append(
+                                    {
+                                        "modificacao_id": modificacao_id,
+                                        "tag_nome": tag_nome,
+                                        "clausula_nome": clausula_nome,
+                                        "score": score,
+                                        "status": "falha_associacao",
+                                    }
+                                )
+                        else:
+                            print(
+                                f"   🏃‍♂️ DRY-RUN: Associaria à cláusula '{clausula_nome}'"
+                            )
+                            estatisticas["associacoes_criadas"] += 1
+                            estatisticas["detalhes"].append(
+                                {
                                     "modificacao_id": modificacao_id,
                                     "tag_nome": tag_nome,
                                     "clausula_nome": clausula_nome,
                                     "score": score,
-                                    "status": "falha_associacao"
-                                })
-                        else:
-                            print(f"   🏃‍♂️ DRY-RUN: Associaria à cláusula '{clausula_nome}'")
-                            estatisticas["associacoes_criadas"] += 1
-                            estatisticas["detalhes"].append({
-                                "modificacao_id": modificacao_id,
-                                "tag_nome": tag_nome,
-                                "clausula_nome": clausula_nome,
-                                "score": score,
-                                "status": "dry_run"
-                            })
+                                    "status": "dry_run",
+                                }
+                            )
                     else:
                         print("   ⚠️ Tag encontrada mas sem cláusula associada")
                         estatisticas["modificacoes_sem_correspondencia"] += 1
-                        estatisticas["detalhes"].append({
-                            "modificacao_id": modificacao_id,
-                            "tag_nome": tag_nome,
-                            "clausula_nome": None,
-                            "score": score,
-                            "status": "sem_clausula"
-                        })
+                        estatisticas["detalhes"].append(
+                            {
+                                "modificacao_id": modificacao_id,
+                                "tag_nome": tag_nome,
+                                "clausula_nome": None,
+                                "score": score,
+                                "status": "sem_clausula",
+                            }
+                        )
                 else:
-                    print(f"   ❌ Nenhuma correspondência encontrada (threshold: {threshold})")
+                    print(
+                        f"   ❌ Nenhuma correspondência encontrada (threshold: {threshold})"
+                    )
                     estatisticas["modificacoes_sem_correspondencia"] += 1
-                    estatisticas["detalhes"].append({
-                        "modificacao_id": modificacao_id,
-                        "tag_nome": None,
-                        "clausula_nome": None,
-                        "score": 0.0,
-                        "status": "sem_correspondencia"
-                    })
+                    estatisticas["detalhes"].append(
+                        {
+                            "modificacao_id": modificacao_id,
+                            "tag_nome": None,
+                            "clausula_nome": None,
+                            "score": 0.0,
+                            "status": "sem_correspondencia",
+                        }
+                    )
 
             # 5. Resumo final
             print("\n📊 Processamento concluído:")
             print(f"   📝 Total de modificações: {estatisticas['total_modificacoes']}")
             print(f"   ✅ Associações criadas: {estatisticas['associacoes_criadas']}")
             print(f"   ❌ Associações falharam: {estatisticas['associacoes_falharam']}")
-            print(f"   🔍 Sem correspondência: {estatisticas['modificacoes_sem_correspondencia']}")
+            print(
+                f"   🔍 Sem correspondência: {estatisticas['modificacoes_sem_correspondencia']}"
+            )
 
             return estatisticas
 
@@ -553,14 +608,14 @@ class AgrupadorModificacoes:
                 "filter[versao][_eq]": versao_id,
                 "fields": "id,categoria,conteudo,alteracao,sort,clausula.id,clausula.nome,clausula.numero",
                 "limit": 1000,
-                "sort": "clausula.numero,sort"
+                "sort": "clausula.numero,sort",
             }
 
             response = requests.get(
                 url,
                 headers=self.directus_headers,
                 params=params,
-                timeout=self.request_timeout
+                timeout=self.request_timeout,
             )
 
             if response.status_code == 200:
@@ -581,34 +636,48 @@ class AgrupadorModificacoes:
                             agrupamentos[clausula_id] = {
                                 "clausula_nome": clausula_nome,
                                 "clausula_numero": clausula_numero,
-                                "modificacoes": []
+                                "modificacoes": [],
                             }
 
-                        agrupamentos[clausula_id]["modificacoes"].append({
-                            "id": mod["id"],
-                            "categoria": mod.get("categoria", "N/A"),
-                            "conteudo": mod.get("conteudo", "")[:100] + "..." if len(mod.get("conteudo", "")) > 100 else mod.get("conteudo", ""),
-                            "alteracao": mod.get("alteracao", "")[:100] + "..." if len(mod.get("alteracao", "")) > 100 else mod.get("alteracao", "")
-                        })
+                        agrupamentos[clausula_id]["modificacoes"].append(
+                            {
+                                "id": mod["id"],
+                                "categoria": mod.get("categoria", "N/A"),
+                                "conteudo": mod.get("conteudo", "")[:100] + "..."
+                                if len(mod.get("conteudo", "")) > 100
+                                else mod.get("conteudo", ""),
+                                "alteracao": mod.get("alteracao", "")[:100] + "..."
+                                if len(mod.get("alteracao", "")) > 100
+                                else mod.get("alteracao", ""),
+                            }
+                        )
                     else:
-                        sem_clausula.append({
-                            "id": mod["id"],
-                            "categoria": mod.get("categoria", "N/A"),
-                            "conteudo": mod.get("conteudo", "")[:100] + "..." if len(mod.get("conteudo", "")) > 100 else mod.get("conteudo", "")
-                        })
+                        sem_clausula.append(
+                            {
+                                "id": mod["id"],
+                                "categoria": mod.get("categoria", "N/A"),
+                                "conteudo": mod.get("conteudo", "")[:100] + "..."
+                                if len(mod.get("conteudo", "")) > 100
+                                else mod.get("conteudo", ""),
+                            }
+                        )
 
                 resultado = {
                     "agrupamentos": agrupamentos,
                     "sem_clausula": sem_clausula,
                     "total_modificacoes": len(modificacoes),
                     "clausulas_com_modificacoes": len(agrupamentos),
-                    "modificacoes_sem_clausula": len(sem_clausula)
+                    "modificacoes_sem_clausula": len(sem_clausula),
                 }
 
                 print("✅ Listagem concluída:")
                 print(f"   📝 Total de modificações: {resultado['total_modificacoes']}")
-                print(f"   📋 Cláusulas com modificações: {resultado['clausulas_com_modificacoes']}")
-                print(f"   🔍 Modificações sem cláusula: {resultado['modificacoes_sem_clausula']}")
+                print(
+                    f"   📋 Cláusulas com modificações: {resultado['clausulas_com_modificacoes']}"
+                )
+                print(
+                    f"   🔍 Modificações sem cláusula: {resultado['modificacoes_sem_clausula']}"
+                )
 
                 return resultado
             else:

@@ -7,9 +7,13 @@ import os
 import sys
 
 # Adicionar o diretório raiz ao path para importar o processador
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
 
-from processador_modelo_contrato import extract_tags_from_differences
+from src.docx_compare.processors.processador_modelo_contrato import (
+    extract_tags_from_differences,
+)
 
 
 def test_extract_tags_basic():
@@ -61,7 +65,8 @@ def test_extract_tags_with_spaces():
         }
     ]
 
-    tags = extract_tags_from_differences(modifications)
+    tags_info = extract_tags_from_differences(modifications)
+    tags = {tag["nome"] for tag in tags_info}
     expected_tags = {"cabecalho", "data_atual"}
 
     print(f"   Tags encontradas: {sorted(tags)}")
@@ -85,7 +90,8 @@ def test_extract_tags_self_closing():
         }
     ]
 
-    tags = extract_tags_from_differences(modifications)
+    tags_info = extract_tags_from_differences(modifications)
+    tags = {tag["nome"] for tag in tags_info}
     expected_tags = {"linha", "quebra_pagina"}
 
     print(f"   Tags encontradas: {sorted(tags)}")
@@ -109,7 +115,8 @@ def test_extract_tags_closing():
         }
     ]
 
-    tags = extract_tags_from_differences(modifications)
+    tags_info = extract_tags_from_differences(modifications)
+    tags = {tag["nome"] for tag in tags_info}
     expected_tags = {"inicio_secao"}
 
     print(f"   Tags encontradas: {sorted(tags)}")
@@ -139,7 +146,8 @@ def test_extract_tags_mixed():
         },
     ]
 
-    tags = extract_tags_from_differences(modifications)
+    tags_info = extract_tags_from_differences(modifications)
+    tags = {tag["nome"] for tag in tags_info}
     expected_tags = {
         "cabecalho",
         "nome_cliente",
@@ -170,7 +178,8 @@ def test_extract_tags_no_tags():
         }
     ]
 
-    tags = extract_tags_from_differences(modifications)
+    tags_info = extract_tags_from_differences(modifications)
+    tags = {tag["nome"] for tag in tags_info}
     expected_tags = set()
 
     print(f"   Tags encontradas: {sorted(tags)}")
@@ -194,7 +203,8 @@ def test_extract_tags_invalid_patterns():
         }
     ]
 
-    tags = extract_tags_from_differences(modifications)
+    tags_info = extract_tags_from_differences(modifications)
+    tags = {tag["nome"] for tag in tags_info}
     expected_tags = set()  # Nenhuma tag válida nesses padrões
 
     print(f"   Tags encontradas: {sorted(tags)}")
@@ -218,7 +228,8 @@ def test_extract_tags_case_insensitive():
         }
     ]
 
-    tags = extract_tags_from_differences(modifications)
+    tags_info = extract_tags_from_differences(modifications)
+    tags = {tag["nome"] for tag in tags_info}
     expected_tags = {"cabecalho", "nome_cliente", "data_atual"}
 
     print(f"   Tags encontradas: {sorted(tags)}")

@@ -237,9 +237,7 @@ class ProcessorOrchestrator:
         thread_modelo = threading.Thread(
             target=run_modelo_contrato, name="ProcessadorModelo"
         )
-        thread_limpeza = threading.Thread(
-            target=run_limpeza, name="ProcessadorLimpeza"
-        )
+        thread_limpeza = threading.Thread(target=run_limpeza, name="ProcessadorLimpeza")
 
         threads.extend([thread_automatico, thread_modelo, thread_limpeza])
 
@@ -262,9 +260,7 @@ class ProcessorOrchestrator:
             .get("sucesso", False)
         )
         limpeza_ok = (
-            self.stats["status_processadores"]
-            .get("limpeza", {})
-            .get("sucesso", False)
+            self.stats["status_processadores"].get("limpeza", {}).get("sucesso", False)
         )
 
         print("📊 Resultados paralelos:")
@@ -296,7 +292,9 @@ class ProcessorOrchestrator:
 
         if automatico_success:
             print("🎯 Executando processador de agrupamento...")
-            agrupamento_success, agrupamento_output = self._executar_processador_agrupamento()
+            agrupamento_success, agrupamento_output = (
+                self._executar_processador_agrupamento()
+            )
             self.stats["status_processadores"]["agrupamento"] = {
                 "sucesso": agrupamento_success,
                 "output": agrupamento_output,

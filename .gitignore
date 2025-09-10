@@ -41,6 +41,7 @@ htmlcov/
 .tox/
 coverage.xml
 *.cover
+*.coverage*
 
 # Configuração local
 .env
