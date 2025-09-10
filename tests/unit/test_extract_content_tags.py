@@ -7,7 +7,9 @@ import os
 import sys
 
 # Adicionar o diretório raiz ao path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(
+    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
 
 from src.docx_compare.processors.processador_modelo_contrato import (
     extract_content_between_tags,
@@ -81,12 +83,18 @@ def test_extract_content_basic():
     # Verificar conteúdo específico
     if "responsavel" in result:
         responsavel_content = result["responsavel"]
-        if "João Silva" in responsavel_content and "joao.silva@empresa.com" in responsavel_content:
+        if (
+            "João Silva" in responsavel_content
+            and "joao.silva@empresa.com" in responsavel_content
+        ):
             print("   ✅ Conteúdo da tag 'responsavel' está correto")
         else:
             print("   ❌ Conteúdo da tag 'responsavel' não está correto")
 
-    return result
+    # Verificações com assert para pytest
+    assert len(result) > 0, "Nenhuma tag foi extraída"
+    assert "responsavel" in result, "Tag 'responsavel' não foi encontrada"
+
 
 def test_extract_content_edge_cases():
     """Teste para casos especiais"""
@@ -122,6 +130,7 @@ def test_extract_content_edge_cases():
     print(f"📊 Tags aninhadas: {len(result_nested)} encontradas")
     for tag_name, content in result_nested.items():
         print(f"   🏷️  '{tag_name}': {content[:50]}...")
+
 
 if __name__ == "__main__":
     test_extract_content_basic()

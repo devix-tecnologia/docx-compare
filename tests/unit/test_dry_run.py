@@ -11,8 +11,11 @@ import sys
 import tempfile
 import unittest
 
-# Adicionar o diretório pai ao path para importar módulos
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Adicionar o diretório src ao path para importar módulos
+project_root = os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+)
+sys.path.insert(0, os.path.join(project_root, "src"))
 
 
 class TestDryRun(unittest.TestCase):
@@ -20,23 +23,34 @@ class TestDryRun(unittest.TestCase):
 
     def setUp(self):
         """Configuração inicial para os testes."""
-        self.script_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "docx_diff_viewer.py",
+        # Caminho para o projeto root
+        self.project_root = os.path.dirname(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         )
-        self.original_file = "documentos/doc-rafael-original.docx"
-        self.modified_file = "documentos/doc-rafael-alterado.docx"
+        # Arquivos de teste relativos ao projeto root
+        self.original_file = os.path.join(
+            self.project_root, "documentos", "doc-rafael-original.docx"
+        )
+        self.modified_file = os.path.join(
+            self.project_root, "documentos", "doc-rafael-alterado.docx"
+        )
 
         # Verificar se arquivos de teste existem
         self.files_exist = os.path.exists(self.original_file) and os.path.exists(
             self.modified_file
         )
 
+    def run_cli_command(self, args):
+        """Helper para executar comandos do CLI."""
+        cmd = [sys.executable, "-m", "docx_compare.core.docx_diff_viewer"] + args
+        env = {**os.environ, "PYTHONPATH": os.path.join(self.project_root, "src")}
+        return subprocess.run(
+            cmd, capture_output=True, text=True, cwd=self.project_root, env=env
+        )
+
     def test_help_option(self):
         """Testa se a opção --help funciona."""
-        result = subprocess.run(
-            [sys.executable, self.script_path, "--help"], capture_output=True, text=True
-        )
+        result = self.run_cli_command(["--help"])
 
         self.assertEqual(result.returncode, 0)
         self.assertIn("--dry-run", result.stdout)
@@ -56,17 +70,13 @@ class TestDryRun(unittest.TestCase):
         os.unlink(temp_output)
 
         # Executar dry-run
-        result = subprocess.run(
+        result = self.run_cli_command(
             [
-                sys.executable,
-                self.script_path,
                 self.original_file,
                 self.modified_file,
                 temp_output,
                 "--dry-run",
-            ],
-            capture_output=True,
-            text=True,
+            ]
         )
 
         # Verificar que comando foi bem-sucedido
@@ -86,17 +96,13 @@ class TestDryRun(unittest.TestCase):
         if not self.files_exist:
             self.skipTest("Arquivos de teste DOCX não encontrados")
 
-        result = subprocess.run(
+        result = self.run_cli_command(
             [
-                sys.executable,
-                self.script_path,
                 self.original_file,
                 self.modified_file,
                 "--dry-run",
                 "--verbose",
-            ],
-            capture_output=True,
-            text=True,
+            ]
         )
 
         self.assertEqual(result.returncode, 0)
@@ -113,16 +119,12 @@ class TestDryRun(unittest.TestCase):
             temp_output = temp_file.name
 
         try:
-            result = subprocess.run(
+            result = self.run_cli_command(
                 [
-                    sys.executable,
-                    self.script_path,
                     self.original_file,
                     self.modified_file,
                     temp_output,
-                ],
-                capture_output=True,
-                text=True,
+                ]
             )
 
             self.assertEqual(result.returncode, 0)
@@ -141,16 +143,12 @@ class TestDryRun(unittest.TestCase):
 
     def test_error_handling_missing_file(self):
         """Testa tratamento de erro para arquivo inexistente."""
-        result = subprocess.run(
+        result = self.run_cli_command(
             [
-                sys.executable,
-                self.script_path,
                 "arquivo_inexistente.docx",
                 "outro_inexistente.docx",
                 "--dry-run",
-            ],
-            capture_output=True,
-            text=True,
+            ]
         )
 
         self.assertNotEqual(result.returncode, 0)
@@ -169,18 +167,14 @@ class TestDryRun(unittest.TestCase):
                 temp_output = temp_file.name
 
             try:
-                result = subprocess.run(
+                result = self.run_cli_command(
                     [
-                        sys.executable,
-                        self.script_path,
                         self.original_file,
                         self.modified_file,
                         temp_output,
                         "--style",
                         style,
-                    ],
-                    capture_output=True,
-                    text=True,
+                    ]
                 )
 
                 self.assertEqual(result.returncode, 0, f"Estilo {style} falhou")
@@ -192,17 +186,13 @@ class TestDryRun(unittest.TestCase):
 
     def test_invalid_style(self):
         """Testa estilo inválido."""
-        result = subprocess.run(
+        result = self.run_cli_command(
             [
-                sys.executable,
-                self.script_path,
                 "--style",
                 "invalid_style",
                 "file1.docx",
                 "file2.docx",
-            ],
-            capture_output=True,
-            text=True,
+            ]
         )
 
         self.assertNotEqual(result.returncode, 0)
@@ -214,10 +204,15 @@ def run_cli_tests():
     print("🧪 Executando testes do CLI (dry-run)")
     print("=" * 50)
 
+    # Obter caminho do projeto
+    project_root = os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    )
+
     # Teste rápido da funcionalidade
     test_files = [
-        "documentos/doc-rafael-original.docx",
-        "documentos/doc-rafael-alterado.docx",
+        os.path.join(project_root, "documentos", "doc-rafael-original.docx"),
+        os.path.join(project_root, "documentos", "doc-rafael-alterado.docx"),
     ]
 
     if all(os.path.exists(f) for f in test_files):
@@ -226,14 +221,18 @@ def run_cli_tests():
         # Teste dry-run básico
         cmd = [
             sys.executable,
-            "docx_diff_viewer.py",
+            "-m",
+            "docx_compare.core.docx_diff_viewer",
             test_files[0],
             test_files[1],
             "--dry-run",
         ]
+        env = {**os.environ, "PYTHONPATH": os.path.join(project_root, "src")}
 
         print(f"🔄 Executando: {' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(
+            cmd, capture_output=True, text=True, cwd=project_root, env=env
+        )
 
         if result.returncode == 0:
             print("✅ Teste dry-run básico: PASSOU")
@@ -242,9 +241,19 @@ def run_cli_tests():
             print(f"   Erro: {result.stderr}")
 
         # Teste com verbose
-        cmd_verbose = cmd + ["--verbose"]
+        cmd_verbose = [
+            sys.executable,
+            "-m",
+            "docx_compare.core.docx_diff_viewer",
+            test_files[0],
+            test_files[1],
+            "--dry-run",
+            "--verbose",
+        ]
         print(f"🔄 Executando: {' '.join(cmd_verbose)}")
-        result_verbose = subprocess.run(cmd_verbose, capture_output=True, text=True)
+        result_verbose = subprocess.run(
+            cmd_verbose, capture_output=True, text=True, cwd=project_root, env=env
+        )
 
         if result_verbose.returncode == 0:
             print("✅ Teste dry-run verbose: PASSOU")
