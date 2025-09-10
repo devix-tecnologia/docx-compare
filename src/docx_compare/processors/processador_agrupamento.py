@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 # Adicionar o diretório raiz ao path para imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 
-from src.docx_compare.utils.agrupador_modificacoes_v2 import AgrupadorModificacoes
+from src.docx_compare.utils.agrupador_conteudo import AgrupadorConteudo
 
 # Carregar configurações do environment
 load_dotenv()
@@ -45,9 +45,7 @@ class ProcessadorAgrupamento:
         self.intervalo_verificacao = intervalo_verificacao
         self.verbose = verbose
         self.running = True
-        self.agrupador = AgrupadorModificacoes(
-            directus_base_url=DIRECTUS_BASE_URL, directus_token=DIRECTUS_TOKEN
-        )
+        self.agrupador = AgrupadorConteudo()  # Usar agrupador por conteúdo melhorado
 
     def buscar_versoes_para_agrupar(self) -> list:
         """
@@ -113,8 +111,8 @@ class ProcessadorAgrupamento:
                 print(f"\n🎯 Processando agrupamento da versão: {versao_id}")
                 print("-" * 50)
 
-            resultado = self.agrupador.processar_agrupamento_versao(
-                versao_id=versao_id, threshold=self.threshold, dry_run=False
+            resultado = self.agrupador.processar_agrupamento_posicional(
+                versao_id=versao_id, dry_run=False
             )
 
             if "erro" in resultado:

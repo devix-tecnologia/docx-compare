@@ -658,6 +658,138 @@ def limpar_tags_modelo_contrato(modelo_id: str, dry_run=False):
         return 0
 
 
+def calcular_posicao_exata(tag_info, texto_original):
+    """
+    Calcula posição exata da tag no texto limpo
+    Implementa a especificação da task-001 para extração de posições numéricas
+
+    Args:
+        tag_info: Dicionário com informações da tag
+        texto_original: Texto limpo sem tags para cálculo de posição
+
+    Returns:
+        tuple: (posicao_inicio, posicao_fim) em números de caracteres
+    """
+    try:
+        tag_nome = tag_info.get("nome", "")
+        conteudo = tag_info.get("conteudo", "")
+
+        if not conteudo or not texto_original:
+            return (0, 0)
+
+        # Procurar o conteúdo da tag no texto original
+        posicao_inicio = texto_original.find(conteudo)
+
+        if posicao_inicio != -1:
+            posicao_fim = posicao_inicio + len(conteudo)
+            print(
+                f"📍 Tag '{tag_nome}': posição {posicao_inicio}-{posicao_fim} ('{conteudo[:30]}...')"
+            )
+            return (posicao_inicio, posicao_fim)
+        else:
+            # Fallback: buscar por fragmentos do conteúdo
+            palavras = conteudo.split()[:5]  # Primeiras 5 palavras
+            for palavra in palavras:
+                if len(palavra) > 3:  # Ignorar palavras muito pequenas
+                    pos = texto_original.find(palavra)
+                    if pos != -1:
+                        # Estimar posição fim baseada no tamanho do conteúdo
+                        estimativa_fim = pos + len(conteudo)
+                        print(
+                            f"📍 Tag '{tag_nome}': posição estimada {pos}-{estimativa_fim} (palavra '{palavra}')"
+                        )
+                        return (pos, estimativa_fim)
+
+            print(f"⚠️ Tag '{tag_nome}': não foi possível calcular posição exata")
+            return (0, 0)
+
+    except Exception as e:
+        print(f"❌ Erro ao calcular posição da tag '{tag_info.get('nome', '')}': {e}")
+        return (0, 0)
+
+
+def atualizar_tag_com_posicao_numerica(
+    modelo_id,
+    tag_nome,
+    posicao_inicio_texto,
+    posicao_fim_texto,
+    conteudo="",
+    dry_run=False,
+):
+    """
+    Atualiza ou cria tag com posições numéricas via API Directus
+    Implementa a especificação da task-001
+
+    Args:
+        modelo_id: ID do modelo de contrato
+        tag_nome: Nome da tag
+        posicao_inicio_texto: Posição numérica de início
+        posicao_fim_texto: Posição numérica de fim
+        conteudo: Conteúdo da tag
+        dry_run: Se True, não executa alterações
+    """
+    try:
+        # Primeiro, verificar se a tag já existe
+        url_busca = f"{DIRECTUS_BASE_URL}/items/modelo_contrato_tag"
+        params = {
+            "filter[modelo_contrato][_eq]": modelo_id,
+            "filter[tag_nome][_eq]": tag_nome,
+            "fields": "id",
+            "limit": 1,
+        }
+
+        response = requests.get(
+            url_busca, headers=DIRECTUS_HEADERS, params=params, timeout=30
+        )
+
+        if response.status_code == 200:
+            tags_existentes = response.json().get("data", [])
+
+            if tags_existentes:
+                # Tag existe, fazer PATCH
+                tag_id = tags_existentes[0]["id"]
+                url_update = f"{DIRECTUS_BASE_URL}/items/modelo_contrato_tag/{tag_id}"
+
+                data_update = {
+                    "posicao_inicio_texto": posicao_inicio_texto,
+                    "posicao_fim_texto": posicao_fim_texto,
+                }
+
+                if conteudo:
+                    data_update["conteudo"] = conteudo
+
+                if dry_run:
+                    print(
+                        f"🏃‍♂️ DRY-RUN: Atualizaria tag '{tag_nome}' com posições {posicao_inicio_texto}-{posicao_fim_texto}"
+                    )
+                    return True
+
+                response_update = requests.patch(
+                    url_update, headers=DIRECTUS_HEADERS, json=data_update, timeout=30
+                )
+
+                if response_update.status_code == 200:
+                    print(
+                        f"📍 Tag '{tag_nome}': atualizada com posições {posicao_inicio_texto}-{posicao_fim_texto}"
+                    )
+                    return True
+                else:
+                    print(
+                        f"❌ Erro ao atualizar tag '{tag_nome}': {response_update.status_code}"
+                    )
+                    return False
+            else:
+                print(f"⚠️ Tag '{tag_nome}' não encontrada para atualizar posições")
+                return False
+        else:
+            print(f"❌ Erro ao buscar tag '{tag_nome}': {response.status_code}")
+            return False
+
+    except Exception as e:
+        print(f"❌ Erro ao atualizar tag '{tag_nome}' com posições: {e}")
+        return False
+
+
 def salvar_tags_modelo_contrato(
     modelo_id: str, tags_encontradas: list[dict], dry_run=False
 ):
@@ -696,6 +828,12 @@ def salvar_tags_modelo_contrato(
                 "posicao_fim": tag_info.get("posicao_fim", 0),
                 "status": "published",
             }
+
+            # Adicionar posições numéricas se disponíveis (task-001)
+            if "posicao_inicio_texto" in tag_info:
+                tag_data["posicao_inicio_texto"] = tag_info["posicao_inicio_texto"]
+            if "posicao_fim_texto" in tag_info:
+                tag_data["posicao_fim_texto"] = tag_info["posicao_fim_texto"]
 
             if dry_run:
                 print(
@@ -750,17 +888,14 @@ def salvar_tags_modelo_contrato(
         return []
 
 
-def associar_tags_com_clausulas(
-    modelo_id: str, tags_criadas: list, tags_encontradas: list, dry_run=False
-):
+def associar_tags_com_clausulas(modelo_id: str, dry_run=False):
     """
     Associa tags com cláusulas: se tag.nome == clausula.nome, então clausula.tag = tag.id
     Busca as tags diretamente pelo nome, sem depender de ordem.
 
     Args:
         modelo_id: ID do modelo de contrato
-        tags_criadas: Lista de IDs das tags criadas (não usado - buscamos pelo nome)
-        tags_encontradas: Lista dos nomes das tags encontradas (usado apenas para referência)
+        dry_run: Se True, não executa alterações no banco
         dry_run: Se True, não executa alterações no banco
 
     Returns:
@@ -1032,6 +1167,15 @@ def processar_modelo_contrato(modelo_data, dry_run=False):
                     if verbose_mode:
                         print(f"ℹ️ Tag '{tag_nome}' sem conteúdo correspondente")
 
+            # 6.1. Calcular posições exatas no texto (task-001)
+            print("📍 Calculando posições exatas das tags no texto original...")
+            for tag_info in tags_encontradas:
+                posicao_inicio, posicao_fim = calcular_posicao_exata(
+                    tag_info, original_text
+                )
+                tag_info["posicao_inicio_texto"] = posicao_inicio
+                tag_info["posicao_fim_texto"] = posicao_fim
+
             tag_names = [tag["nome"] for tag in tags_encontradas]
             print(
                 f"🏷️  Extraídas {len(tags_encontradas)} tags únicas: {sorted(tag_names)}"
@@ -1042,10 +1186,25 @@ def processar_modelo_contrato(modelo_data, dry_run=False):
                 modelo_id, tags_encontradas, dry_run
             )
 
+            # 7.1. Atualizar tags com posições numéricas (task-001)
+            print("📍 Atualizando tags com posições numéricas...")
+            for tag_info in tags_encontradas:
+                tag_nome = tag_info["nome"]
+                posicao_inicio = tag_info.get("posicao_inicio_texto", 0)
+                posicao_fim = tag_info.get("posicao_fim_texto", 0)
+                conteudo = tag_info.get("conteudo", "")
+
+                atualizar_tag_com_posicao_numerica(
+                    modelo_id=modelo_id,
+                    tag_nome=tag_nome,
+                    posicao_inicio_texto=posicao_inicio,
+                    posicao_fim_texto=posicao_fim,
+                    conteudo=conteudo,
+                    dry_run=dry_run,
+                )
+
             # 8. Associar tags com cláusulas correspondentes
-            associacoes_criadas = associar_tags_com_clausulas(
-                modelo_id, tags_criadas, tags_encontradas, dry_run
-            )
+            associacoes_criadas = associar_tags_com_clausulas(modelo_id, dry_run)
 
             # 9. Atualizar status do modelo para concluído
             update_modelo_status(
@@ -1384,7 +1543,7 @@ if __name__ == "__main__":
 
         # Iniciar o servidor Flask para monitoramento
         try:
-            app.run(host=args.host, port=args.port, debug=True)
+            app.run(host=args.host, port=args.port, debug=False)
         except KeyboardInterrupt:
             print("\n🛑 Parando processador...")
         processador_ativo = False

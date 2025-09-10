@@ -169,9 +169,7 @@ def analyze_differences(original_text: str, modified_text: str) -> dict:
     # Contar tipos de modificações
     adicoes = sum(1 for mod in modifications if mod["categoria"] == "adicao")
     remocoes = sum(1 for mod in modifications if mod["categoria"] == "remocao")
-    modificacoes_count = sum(
-        1 for mod in modifications if mod["categoria"] == "modificacao"
-    )
+    modificacoes = sum(1 for mod in modifications if mod["categoria"] == "modificacao")
 
     # Converter para formato esperado pelo docx_diff_viewer
     modifications_for_viewer = []
@@ -190,6 +188,7 @@ def analyze_differences(original_text: str, modified_text: str) -> dict:
         "total_modifications": len(modifications),
         "total_additions": adicoes,
         "total_deletions": remocoes,
+        "total_changes": modificacoes,
         "additions": adicoes,
         "deletions": remocoes,
         "modifications": modifications_for_viewer,

@@ -63,7 +63,7 @@ def processar_modelo_contrato():
     # 3. Para cada tag, calcular posição exata no texto limpo
     for tag in tags_encontradas:
         inicio, fim = calcular_posicao_exata(tag, html_original)
-        
+
         # 4. Atualizar registro existente ou criar novo
         atualizar_tag_com_posicao_numerica(
             modelo_contrato_id=modelo_id,
@@ -117,13 +117,13 @@ def processar_agrupamento_posicional(versao_id):
     for modificacao in modificacoes:
         pos_inicio = extrair_posicao_numerica(modificacao.caminho_inicio)
         pos_fim = extrair_posicao_numerica(modificacao.caminho_fim)
-        
+
         # 4. Atualizar modificação com posições numéricas
         api_directus.patch(f'modificacao/{modificacao.id}', {
             'posicao_inicio_numero': pos_inicio,
             'posicao_fim_numero': pos_fim
         })
-        
+
         # 5. Encontrar tag que contém a modificação
         tag_correspondente = encontrar_tag_por_posicao(modificacao, tags)
         if tag_correspondente and tag_correspondente.clausulas:
@@ -155,6 +155,7 @@ clausulas: ALIAS (o2m) → clausula.tag ✅ EXISTENTE
 ```
 
 **⚠️ CAMPOS FALTANTES NECESSÁRIOS:**
+
 - `posicao_inicio_texto: INTEGER` (posição numérica no texto)
 - `posicao_fim_texto: INTEGER` (posição numérica no texto)
 
@@ -177,6 +178,7 @@ clausula: UUID (FK → clausula.id) ✅ EXISTENTE -- SERÁ PREENCHIDO pelo agrup
 ```
 
 **⚠️ CAMPOS FALTANTES NECESSÁRIOS:**
+
 - `posicao_inicio_numero: INTEGER` (extraído do caminho para uso posicional)
 - `posicao_fim_numero: INTEGER` (extraído do caminho para uso posicional)
 
@@ -242,13 +244,13 @@ def associar_modificacao_a_tag(modificacao, tags):
     # Usar posições numéricas extraídas dos caminhos
     mod_inicio = modificacao.posicao_inicio_numero
     mod_fim = modificacao.posicao_fim_numero
-    
+
     if mod_inicio is None or mod_fim is None:
         return None
 
     # Procurar tag que contém completamente a modificação
     for tag in tags:
-        if (tag.posicao_inicio_texto <= mod_inicio and 
+        if (tag.posicao_inicio_texto <= mod_inicio and
             mod_fim <= tag.posicao_fim_texto):
             return tag  # Modificação está dentro da tag
 
@@ -274,19 +276,19 @@ def extrair_posicao_numerica(caminho):
     """
     if not caminho:
         return None
-    
+
     # Extrair números dos índices do caminho
     numeros = re.findall(r'\[(\d+)\]', caminho)
     if not numeros:
         return 0
-    
+
     # Calcular posição aproximada baseada na estrutura
     posicao = 0
     for i, num in enumerate(numeros):
         # Peso decrescente para níveis mais profundos
         peso = 1000 ** (len(numeros) - i - 1)
         posicao += int(num) * peso
-    
+
     return posicao
 ```
 
@@ -311,7 +313,7 @@ tags = [
 ```python
 # Input
 modificacao = {
-    'id': 'mod1', 
+    'id': 'mod1',
     'caminho_inicio': 'blocks[0].c[1].c',
     'caminho_fim': 'blocks[0].c[1].c',
     'posicao_inicio_numero': 1000,  # calculado do caminho
@@ -319,8 +321,8 @@ modificacao = {
 }
 tags = [
     {
-        'nome': 'locador', 
-        'posicao_inicio_texto': 0, 
+        'nome': 'locador',
+        'posicao_inicio_texto': 0,
         'posicao_fim_texto': 16,
         'clausulas': [{'id': 'clause1', 'numero': '1.1'}]
     }
@@ -367,7 +369,7 @@ params = {
 # - posicao_inicio_texto: INTEGER
 # - posicao_fim_texto: INTEGER
 
-# 2. Adicionar campos ao modificacao via Directus Admin  
+# 2. Adicionar campos ao modificacao via Directus Admin
 # - posicao_inicio_numero: INTEGER
 # - posicao_fim_numero: INTEGER
 ```
@@ -462,10 +464,10 @@ POST /fields/modelo_contrato_tag
   }
 }
 
-POST /fields/modelo_contrato_tag  
+POST /fields/modelo_contrato_tag
 {
   "field": "posicao_fim_texto",
-  "type": "integer", 
+  "type": "integer",
   "meta": {
     "note": "Posição numérica de fim do bloco no texto"
   }
@@ -483,7 +485,7 @@ POST /fields/modificacao
 
 POST /fields/modificacao
 {
-  "field": "posicao_fim_numero", 
+  "field": "posicao_fim_numero",
   "type": "integer",
   "meta": {
     "note": "Posição numérica extraída do caminho_fim"
