@@ -11,13 +11,18 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 import os
+import sys
 import tempfile
+from pathlib import Path
 
-from .implementacoes_directus import (
+# Adicionar o diretório versiona-ai ao path para imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from core.implementacoes_directus import (
     ConfiguracaoDirectus,
     FactoryImplementacoes,
 )
-from .pipeline_funcional import (
+from core.pipeline_funcional import (
     ConteudoTexto,
     ContextoProcessamento,
     ModeloContrato,
@@ -198,8 +203,8 @@ def demonstrar_inversao_dependencia():
         resultados = executar_pipeline_completo(
             documentos_originais=[caminho_original],
             documentos_modificados=[caminho_modificado],
-            modelos=[modelo],
-            contexto=contexto,
+            _modelos=[modelo],
+            _contexto=contexto,
             processador=processador,  # Implementação Directus injetada
             analisador=analisador,  # Implementação Directus injetada
             comparador=comparador,  # Implementação Directus injetada

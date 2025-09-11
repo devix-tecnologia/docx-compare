@@ -73,7 +73,7 @@ def verificar_estrutura():
 
     # Calcular tamanho total
     tamanho_total = 0
-    for root, dirs, files in os.walk(base_path):
+    for root, _dirs, files in os.walk(base_path):
         for file in files:
             tamanho_total += os.path.getsize(os.path.join(root, file))
 

@@ -406,10 +406,6 @@ def gerar_html_modificacao(mod: Any) -> str:
     """
     Gera HTML para uma modificação individual.
     """
-    confidence_class = (
-        "high" if mod.confianca >= 0.9 else "medium" if mod.confianca >= 0.7 else "low"
-    )
-
     return f"""
     <div class="modification-item">
         <div class="mod-header">

@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "timestamp": "2025-09-11T12:10:12.240132",
+    "timestamp": "2025-09-11T12:49:19.703972",
     "total_documentos": 1,
     "versao_sistema": "1.0.0"
   },
@@ -10,7 +10,7 @@
       "estatisticas": {
         "total_modificacoes": 3,
         "total_blocos": 1,
-        "tempo_processamento": 0.022160053253173828
+        "tempo_processamento": 0.002679109573364258
       },
       "modificacoes": [
         {
@@ -26,10 +26,7 @@
             "novo": "{{preco}}"
           },
           "confianca": 0.95,
-          "tags_relacionadas": [
-            "valor",
-            "preco"
-          ],
+          "tags_relacionadas": ["valor", "preco"],
           "css_class": "diff-alteracao",
           "destaque_cor": "#ff6b6b"
         },
@@ -46,9 +43,7 @@
             "novo": "dias corridos"
           },
           "confianca": 0.9,
-          "tags_relacionadas": [
-            "prazo"
-          ],
+          "tags_relacionadas": ["prazo"],
           "css_class": "diff-alteracao",
           "destaque_cor": "#ff6b6b"
         },
@@ -85,8 +80,8 @@
         }
       ],
       "conteudo_comparacao": {
-        "original": "CONTRATO DE PRESTAÇÃO DE SERVIÇOS\n        \n        Entre {{contratante}} e {{contratada}}, fica estabelecido:\n        \n        1. OBJETO: Prestação de serviços de {{tipo_servico}}\n        2. VALOR: R$ {{valor}} reais\n        3. PRAZO: {{prazo}} dias úteis\n        4. PAGAMENTO: Em {{forma_pagamento}}\n        \n        Documento original gerado em {{data_geracao}}.",
-        "modificado": "CONTRATO DE PRESTAÇÃO DE SERVIÇOS ALTERADO\n        \n        Entre {{contratante}} e {{contratada}}, fica estabelecido:\n        \n        1. OBJETO: Prestação de serviços de {{tipo_servico}}\n        2. VALOR: R$ {{preco}} reais  \n        3. PRAZO: {{prazo}} dias corridos\n        4. PAGAMENTO: Em {{forma_pagamento}}\n        5. REAJUSTE: Aplicável conforme índice {{indice_reajuste}}\n        \n        Documento modificado gerado em {{data_geracao}}.",
+        "original": "CONTRATO DE PRESTAÇÃO DE SERVIÇOS\n\n        Entre {{contratante}} e {{contratada}}, fica estabelecido:\n\n        1. OBJETO: Prestação de serviços de {{tipo_servico}}\n        2. VALOR: R$ {{valor}} reais\n        3. PRAZO: {{prazo}} dias úteis\n        4. PAGAMENTO: Em {{forma_pagamento}}\n\n        Documento original gerado em {{data_geracao}}.",
+        "modificado": "CONTRATO DE PRESTAÇÃO DE SERVIÇOS ALTERADO\n\n        Entre {{contratante}} e {{contratada}}, fica estabelecido:\n\n        1. OBJETO: Prestação de serviços de {{tipo_servico}}\n        2. VALOR: R$ {{preco}} reais\n        3. PRAZO: {{prazo}} dias corridos\n        4. PAGAMENTO: Em {{forma_pagamento}}\n        5. REAJUSTE: Aplicável conforme índice {{indice_reajuste}}\n\n        Documento modificado gerado em {{data_geracao}}.",
         "diff_highlights": [
           {
             "inicio": 25,
