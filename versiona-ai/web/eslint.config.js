@@ -1,7 +1,7 @@
 import js from '@eslint/js'
 import vue from 'eslint-plugin-vue'
-import vueParser from 'vue-eslint-parser'
 import globals from 'globals'
+import vueParser from 'vue-eslint-parser'
 
 export default [
   // Ignorar arquivos
