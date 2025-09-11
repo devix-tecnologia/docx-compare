@@ -60,8 +60,8 @@ def criar_modelo_teste() -> ModeloContrato:
     return ModeloContrato(
         id=ModeloId("modelo_teste"),
         nome="Modelo de Teste",
-        template=ConteudoTexto("Template com {{nome}} e {{valor}}"),
-        tags_obrigatorias={TagId("nome"), TagId("valor")},
+        template=ConteudoTexto("Template com {{nome}} e {{valor.total}}"),
+        tags_obrigatorias={TagId("nome"), TagId("valor.total")},
         tags_opcionais={TagId("data"), TagId("local")},
         validacoes=["nome_obrigatorio", "valor_numerico"],
     )
@@ -161,6 +161,11 @@ def teste_analisador_tags_directus():
 
     # Testar validação de tags
     modelo = criar_modelo_teste()
+
+    # Debug: mostrar as tags
+    print(f"Tags encontradas: {nomes_tags}")
+    print(f"Tags obrigatórias do modelo: {list(modelo.tags_obrigatorias)}")
+
     valido = analisador.validar_tags(tags, modelo)
     print(f"Validação: {'✅ Válido' if valido else '❌ Inválido'}")
 
@@ -291,8 +296,8 @@ def teste_pipeline_completo_com_directus():
         resultados = executar_pipeline_completo(
             documentos_originais=[caminho_original],
             documentos_modificados=[caminho_modificado],
-            modelos=modelos,
-            contexto=contexto,
+            _modelos=modelos,
+            _contexto=contexto,
             processador=processador,
             analisador=analisador,
             comparador=comparador,
