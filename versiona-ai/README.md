@@ -35,24 +35,28 @@ versiona-ai/
 ## 🎯 Funcionalidades Principais
 
 ### ✅ **Comparação Inteligente**
+
 - **Detecção de modificações**: Inserções, alterações e remoções
 - **Análise de tags**: Identificação de campos `{{variável}}`
 - **Cálculo de confiança**: Score de 0-100% para cada modificação
 - **Agrupamento por proximidade**: Organização inteligente das mudanças
 
 ### ✅ **Inversão de Dependência**
+
 - **Protocols Python**: Interfaces bem definidas
 - **Implementações intercambiáveis**: Mock vs Real
 - **Factory Pattern**: Criação automatizada de dependências
 - **Testabilidade**: Testes rápidos e isolados
 
 ### ✅ **Integração Directus**
+
 - **API REST**: Comunicação com Directus CMS
 - **Configuração flexível**: URL, token, timeout
 - **Fallback gracioso**: Funcionamento local se API falhar
 - **Logs estruturados**: Registro de todas as operações
 
 ### ✅ **Visualização Web**
+
 - **HTML responsivo**: Interface limpa e moderna
 - **Destaque de diferenças**: Cores por tipo e confiança
 - **Componente Vue 3**: Reutilizável e customizável
@@ -98,7 +102,7 @@ print(f"✅ {len(resultados[0].modificacoes)} modificações encontradas")
 
 ```python
 from versiona_ai.core.implementacoes_directus import (
-    ConfiguracaoDirectus, 
+    ConfiguracaoDirectus,
     FactoryImplementacoes
 )
 
@@ -192,23 +196,25 @@ python versiona-ai/tests/teste_implementacoes_directus.py
 
 ## 📈 Performance
 
-| Operação | Mock | Directus |
-|----------|------|----------|
-| Processamento texto | ~1ms | ~50ms |
-| Análise tags | ~2ms | ~100ms |
-| Comparação docs | ~5ms | ~200ms |
-| Agrupamento | ~1ms | ~50ms |
+| Operação              | Mock      | Directus   |
+| --------------------- | --------- | ---------- |
+| Processamento texto   | ~1ms      | ~50ms      |
+| Análise tags          | ~2ms      | ~100ms     |
+| Comparação docs       | ~5ms      | ~200ms     |
+| Agrupamento           | ~1ms      | ~50ms      |
 | **Pipeline completo** | **~15ms** | **~500ms** |
 
 ## 🎨 Visualização Web
 
 ### **HTML Responsivo**
+
 - Layout side-by-side
 - Destaque por cores (tipo + confiança)
 - Estatísticas detalhadas
 - Legenda visual
 
 ### **Componente Vue 3**
+
 - Totalmente reativo
 - Props tipadas
 - Customizável via CSS
@@ -217,6 +223,7 @@ python versiona-ai/tests/teste_implementacoes_directus.py
 ## 🛠️ Extensibilidade
 
 ### **Novas Implementações**
+
 ```python
 class ProcessadorTextoIA(ProcessadorTexto):
     """Implementação com IA para análise semântica"""
@@ -226,13 +233,14 @@ class ProcessadorTextoIA(ProcessadorTexto):
 ```
 
 ### **Configurações por Ambiente**
+
 ```python
 # Desenvolvimento
 factory_dev = FactoryImplementacoes(ConfiguracaoDirectus(
     url_base="https://dev.contract.local"
 ))
 
-# Produção  
+# Produção
 factory_prod = FactoryImplementacoes(ConfiguracaoDirectus(
     url_base="https://contract.prod.com"
 ))
@@ -259,5 +267,5 @@ Sistema de **produção** pronto para versionamento inteligente de documentos DO
 
 ---
 
-**Versiona AI** - Inteligência artificial para versionamento de documentos  
-*Desenvolvido com ❤️ e muito ☕*
+**Versiona AI** - Inteligência artificial para versionamento de documentos
+_Desenvolvido com ❤️ e muito ☕_

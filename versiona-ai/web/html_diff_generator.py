@@ -9,16 +9,17 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-# Adicionar o diretório src ao path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+# Adicionar o diretório versiona-ai ao path
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from docx_compare.core.implementacoes_mock import FactoryImplementacoesMock
-from docx_compare.core.pipeline_funcional import (
+from core.implementacoes_mock import FactoryImplementacoesMock
+from core.pipeline_funcional import (
     ContextoProcessamento,
     PrioridadeProcessamento,
     executar_pipeline_completo,
 )
-from docx_compare.core.teste_implementacoes_mock import criar_modelo_teste
+
+from tests.teste_implementacoes_mock import criar_modelo_teste
 
 
 def gerar_html_diff(

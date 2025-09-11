@@ -14,10 +14,10 @@ Principais características:
 Exemplo de uso básico:
     from versiona_ai.core.implementacoes_mock import FactoryImplementacoesMock
     from versiona_ai.core.pipeline_funcional import executar_pipeline_completo
-    
+
     factory = FactoryImplementacoesMock()
     processador, analisador, comparador, agrupador = factory.criar_todos()
-    
+
     resultados = executar_pipeline_completo(
         documentos_originais=[original_docx],
         documentos_modificados=[modificado_docx],
@@ -36,30 +36,30 @@ __description__ = "Sistema de Versionamento Inteligente de Documentos"
 
 # Importações principais para facilitar o uso
 try:
-    from .core.pipeline_funcional import (
-        executar_pipeline_completo,
-        ProcessadorTexto,
-        AnalisadorTags,
-        ComparadorDocumentos,
-        AgrupadorModificacoes,
+    from .core.implementacoes_directus import (
+        ConfiguracaoDirectus,
+        FactoryImplementacoes,
     )
     from .core.implementacoes_mock import FactoryImplementacoesMock
-    from .core.implementacoes_directus import (
-        FactoryImplementacoes,
-        ConfiguracaoDirectus,
+    from .core.pipeline_funcional import (
+        AgrupadorModificacoes,
+        AnalisadorTags,
+        ComparadorDocumentos,
+        ProcessadorTexto,
+        executar_pipeline_completo,
     )
-    
+
     __all__ = [
         "executar_pipeline_completo",
         "ProcessadorTexto",
-        "AnalisadorTags", 
+        "AnalisadorTags",
         "ComparadorDocumentos",
         "AgrupadorModificacoes",
         "FactoryImplementacoesMock",
         "FactoryImplementacoes",
         "ConfiguracaoDirectus",
     ]
-    
+
 except ImportError:
     # Importações podem falhar dependendo da configuração do PYTHONPATH
     # Em produção, isso deve ser configurado adequadamente

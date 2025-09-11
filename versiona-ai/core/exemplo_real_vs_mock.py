@@ -14,14 +14,14 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from dotenv import load_dotenv
 
-from docx_compare.core.implementacoes_directus import (
+from .implementacoes_directus import (
     ConfiguracaoDirectus,
 )
-from docx_compare.core.implementacoes_directus import (
+from .implementacoes_directus import (
     FactoryImplementacoes as FactoryDirectus,
 )
-from docx_compare.core.implementacoes_mock import FactoryImplementacoesMock
-from docx_compare.core.pipeline_funcional import (
+from .implementacoes_mock import FactoryImplementacoesMock
+from .pipeline_funcional import (
     ConteudoTexto,
     ContextoProcessamento,
     ModeloContrato,

@@ -11,20 +11,20 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
             color: #333;
             background-color: #f8f9fa;
         }
-        
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
         }
-        
+
         .header {
             background: white;
             padding: 20px;
@@ -32,46 +32,46 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             margin-bottom: 20px;
         }
-        
+
         .header h1 {
             color: #2c3e50;
             margin-bottom: 10px;
         }
-        
+
         .stats {
             display: flex;
             gap: 20px;
             flex-wrap: wrap;
         }
-        
+
         .stat-item {
             background: #e9ecef;
             padding: 8px 16px;
             border-radius: 4px;
             font-size: 14px;
         }
-        
+
         .diff-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
             margin-bottom: 30px;
         }
-        
+
         .document-panel {
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             overflow: hidden;
         }
-        
+
         .panel-header {
             background: #495057;
             color: white;
             padding: 15px 20px;
             font-weight: bold;
         }
-        
+
         .panel-content {
             padding: 20px;
             max-height: 600px;
@@ -81,30 +81,30 @@
             line-height: 1.8;
             white-space: pre-wrap;
         }
-        
+
         .modifications-panel {
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             margin-bottom: 20px;
         }
-        
+
         .modification-item {
             border-bottom: 1px solid #e9ecef;
             padding: 15px 20px;
         }
-        
+
         .modification-item:last-child {
             border-bottom: none;
         }
-        
+
         .mod-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 10px;
         }
-        
+
         .mod-type {
             background: #007bff;
             color: white;
@@ -113,99 +113,99 @@
             font-size: 12px;
             text-transform: uppercase;
         }
-        
+
         .mod-type.alteracao { background: #dc3545; }
         .mod-type.insercao { background: #28a745; }
         .mod-type.remocao { background: #fd7e14; }
-        
+
         .mod-confidence {
             color: #6c757d;
             font-size: 14px;
         }
-        
+
         .mod-content {
             font-family: 'Courier New', monospace;
             margin-bottom: 8px;
         }
-        
+
         .mod-original {
             background: #f8d7da;
             padding: 2px 6px;
             border-radius: 3px;
             margin-right: 10px;
         }
-        
+
         .mod-new {
             background: #d4edda;
             padding: 2px 6px;
             border-radius: 3px;
         }
-        
+
         .mod-position {
             font-size: 12px;
             color: #6c757d;
         }
-        
+
         .highlight {
             padding: 2px 4px;
             border-radius: 3px;
             font-weight: bold;
         }
-        
+
         .highlight-alteracao {
             background-color: #ffe6e6;
             border-left: 3px solid #dc3545;
         }
-        
+
         .highlight-insercao {
             background-color: #e6ffe6;
             border-left: 3px solid #28a745;
         }
-        
+
         .highlight-remocao {
             background-color: #fff4e6;
             border-left: 3px solid #fd7e14;
         }
-        
+
         .confidence-high { border-left-width: 4px; }
         .confidence-medium { border-left-width: 3px; }
         .confidence-low { border-left-width: 2px; }
-        
+
         .legend {
             background: white;
             padding: 15px 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        
+
         .legend-items {
             display: flex;
             gap: 20px;
             flex-wrap: wrap;
         }
-        
+
         .legend-item {
             display: flex;
             align-items: center;
             gap: 8px;
             font-size: 14px;
         }
-        
+
         .legend-color {
             width: 16px;
             height: 16px;
             border-radius: 3px;
         }
-        
+
         @media (max-width: 768px) {
             .diff-container {
                 grid-template-columns: 1fr;
             }
-            
+
             .stats {
                 flex-direction: column;
             }
-            
+
             .legend-items {
                 flex-direction: column;
             }
@@ -219,11 +219,11 @@
             <div class="stats">
                 <div class="stat-item">📊 3 modificações encontradas</div>
                 <div class="stat-item">📦 1 blocos agrupados</div>
-                <div class="stat-item">⏱️ 0.015s processamento</div>
+                <div class="stat-item">⏱️ 0.002s processamento</div>
                 <div class="stat-item">🎯 Confiança média: 90.0%</div>
             </div>
         </div>
-        
+
         <div class="diff-container">
             <div class="document-panel">
                 <div class="panel-header">📄 Documento Original</div>
@@ -246,7 +246,7 @@ O pagamento será efetuado mediante {{forma_pagamento}}.
 
 Data: {{data_contrato}}</div>
             </div>
-            
+
             <div class="document-panel">
                 <div class="panel-header">📝 Documento Modificado</div>
                 <div class="panel-content" id="modified-content">CONTRATO DE PRESTAÇÃO DE SERVIÇOS ESPECIALIZADOS
@@ -272,7 +272,7 @@ Os valores serão reajustados conforme {{indice_reajuste}}.
 Data: {{data_contrato}}</div>
             </div>
         </div>
-        
+
         <div class="modifications-panel">
             <div class="panel-header">🔍 Modificações Detalhadas</div>
             
@@ -325,7 +325,7 @@ Data: {{data_contrato}}</div>
     </div>
     
         </div>
-        
+
         <div class="legend">
             <h3>📋 Legenda</h3>
             <div class="legend-items">
@@ -344,18 +344,18 @@ Data: {{data_contrato}}</div>
             </div>
         </div>
     </div>
-    
+
     <script>
         // Dados das modificações (gerados pelo Python)
         const modificacoes = [{"id": "mock_mod_1_valor_preco", "tipo": "alteracao", "original": "{{valor}}", "novo": "{{preco}}", "linha": 1, "coluna": 25, "confianca": 0.95, "tags": ["valor", "preco"]}, {"id": "mock_mod_2_dias_uteis_corridos", "tipo": "alteracao", "original": "dias úteis", "novo": "dias corridos", "linha": 3, "coluna": 15, "confianca": 0.9, "tags": ["prazo"]}, {"id": "mock_mod_3_insercao_alterado", "tipo": "insercao", "original": "", "novo": " alterado", "linha": 2, "coluna": 50, "confianca": 0.85, "tags": []}];
-        
+
         // Aplicar highlights aos documentos
         function aplicarHighlights() {
             // Esta função poderia aplicar highlights baseados nas posições
             // Por simplicidade, estamos mostrando as modificações em lista separada
             console.log('Modificações carregadas:', modificacoes.length);
         }
-        
+
         // Executar ao carregar a página
         document.addEventListener('DOMContentLoaded', aplicarHighlights);
     </script>

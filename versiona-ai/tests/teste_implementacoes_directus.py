@@ -11,9 +11,7 @@ from pathlib import Path
 # Adicionar o diretório src ao path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from dotenv import load_dotenv
-
-from docx_compare.core.implementacoes_directus import (
+from core.implementacoes_directus import (
     AgrupadorModificacoesDirectus,
     AnalisadorTagsDirectus,
     ComparadorDocumentosDirectus,
@@ -21,7 +19,7 @@ from docx_compare.core.implementacoes_directus import (
     FactoryImplementacoes,
     ProcessadorTextoDirectus,
 )
-from docx_compare.core.pipeline_funcional import (
+from core.pipeline_funcional import (
     ConteudoTexto,
     ContextoProcessamento,
     Documento,
@@ -34,6 +32,7 @@ from docx_compare.core.pipeline_funcional import (
     TagId,
     executar_pipeline_completo,
 )
+from dotenv import load_dotenv
 
 # Carregar variáveis de ambiente do .env
 # Carregar .env do diretório raiz do projeto

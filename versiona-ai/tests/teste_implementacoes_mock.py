@@ -9,17 +9,17 @@ import tempfile
 from datetime import datetime
 from pathlib import Path
 
-# Adicionar o diretório src ao path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+# Adicionar o diretório versiona-ai ao path
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from docx_compare.core.implementacoes_mock import (
+from core.implementacoes_mock import (
     AgrupadorModificacoesMock,
     AnalisadorTagsMock,
     ComparadorDocumentosMock,
     FactoryImplementacoesMock,
     ProcessadorTextoMock,
 )
-from docx_compare.core.pipeline_funcional import (
+from core.pipeline_funcional import (
     ConteudoTexto,
     ContextoProcessamento,
     Documento,

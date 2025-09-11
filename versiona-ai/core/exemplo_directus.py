@@ -13,11 +13,11 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 import os
 import tempfile
 
-from docx_compare.core.implementacoes_directus import (
+from .implementacoes_directus import (
     ConfiguracaoDirectus,
     FactoryImplementacoes,
 )
-from docx_compare.core.pipeline_funcional import (
+from .pipeline_funcional import (
     ConteudoTexto,
     ContextoProcessamento,
     ModeloContrato,

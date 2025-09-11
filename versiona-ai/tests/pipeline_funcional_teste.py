@@ -6,7 +6,7 @@ Demonstra as funções implementadas funcionando com dados reais.
 
 from pathlib import Path
 
-from src.docx_compare.core.pipeline_funcional import (
+from core.pipeline_funcional import (
     ConteudoTexto,
     ContextoProcessamento,
     ModeloContrato,
@@ -240,7 +240,7 @@ def teste_processar_modelos_pendentes():
     # Processador mock simples
     from datetime import datetime
 
-    from src.docx_compare.core.pipeline_funcional import HashDocumento, Metadados
+    from core.pipeline_funcional import HashDocumento, Metadados
 
     class ProcessadorMock:
         def extrair_texto(self, caminho: Path) -> ConteudoTexto:

@@ -13,7 +13,7 @@ from typing import Any
 
 import requests
 
-from src.docx_compare.core.pipeline_funcional import (
+from .pipeline_funcional import (
     AgrupadorModificacoes,
     AnalisadorTags,
     BlocoId,
