@@ -98,7 +98,7 @@ def test_integration_content_extraction():
     # Mock das requests para simular dry-run
     with patch(
         "src.docx_compare.processors.processador_modelo_contrato.requests"
-    ) as mock_requests:
+    ) as _mock_requests:
         tags_criadas = salvar_tags_modelo_contrato(
             modelo_id, tags_encontradas, dry_run=True
         )

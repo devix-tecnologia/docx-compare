@@ -70,7 +70,7 @@ def test_extract_content_based_on_image():
 
     print("\n🔍 Verificando conteúdos específicos:")
 
-    for tag_name, expected in expected_content.items():
+    for tag_name, _expected in expected_content.items():
         if tag_name in result:
             actual = result[tag_name].strip()
             # Mostrar preview do conteúdo
