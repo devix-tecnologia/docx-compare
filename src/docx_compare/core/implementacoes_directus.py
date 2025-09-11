@@ -4,38 +4,39 @@ Implementações reais dos Protocols para acesso ao Directus
 Inversão de dependência com implementações concretas.
 """
 
+import os
 import re
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import Any
+
 import requests
-import os
-from dataclasses import dataclass
 
 from src.docx_compare.core.pipeline_funcional import (
-    ProcessadorTexto,
-    AnalisadorTags,
-    ComparadorDocumentos,
     AgrupadorModificacoes,
-    Documento,
-    Modificacao,
-    BlocoModificacao,
-    Tag,
-    Metadados,
-    ConteudoTexto,
-    TagId,
-    PosicaoTexto,
-    TipoModificacao,
+    AnalisadorTags,
     BlocoId,
+    BlocoModificacao,
+    ComparadorDocumentos,
+    ConteudoTexto,
+    Documento,
     HashDocumento,
-    DocumentoId,
+    Metadados,
     ModeloContrato,
+    Modificacao,
+    PosicaoTexto,
+    ProcessadorTexto,
+    Tag,
+    TagId,
+    TipoModificacao,
 )
 
 
 @dataclass
 class ConfiguracaoDirectus:
     """Configuração de conexão com Directus."""
+
     url_base: str
     token: str
     timeout: int = 30
@@ -46,7 +47,7 @@ class ConfiguracaoDirectus:
         return cls(
             url_base=os.getenv("DIRECTUS_URL", "https://contract.devix.co"),
             token=os.getenv("DIRECTUS_TOKEN", ""),
-            timeout=int(os.getenv("DIRECTUS_TIMEOUT", "30"))
+            timeout=int(os.getenv("DIRECTUS_TIMEOUT", "30")),
         )
 
 
@@ -56,10 +57,12 @@ class ProcessadorTextoDirectus:
     def __init__(self, config: ConfiguracaoDirectus):
         self.config = config
         self.session = requests.Session()
-        self.session.headers.update({
-            "Authorization": f"Bearer {config.token}",
-            "Content-Type": "application/json"
-        })
+        self.session.headers.update(
+            {
+                "Authorization": f"Bearer {config.token}",
+                "Content-Type": "application/json",
+            }
+        )
 
     def extrair_texto(self, caminho: Path) -> ConteudoTexto:
         """
@@ -79,7 +82,7 @@ class ProcessadorTextoDirectus:
                 ["pandoc", str(caminho), "-t", "plain"],
                 capture_output=True,
                 text=True,
-                check=True
+                check=True,
             )
 
             return ConteudoTexto(resultado.stdout.strip())
@@ -87,7 +90,7 @@ class ProcessadorTextoDirectus:
         except (subprocess.CalledProcessError, FileNotFoundError):
             # Fallback: tentar ler como texto simples
             try:
-                with open(caminho, 'r', encoding='utf-8') as f:
+                with open(caminho, encoding="utf-8") as f:
                     return ConteudoTexto(f.read())
             except Exception:
                 return ConteudoTexto("")
@@ -107,7 +110,8 @@ class ProcessadorTextoDirectus:
 
             # Calcular hash do arquivo
             import hashlib
-            with open(caminho, 'rb') as f:
+
+            with open(caminho, "rb") as f:
                 hash_conteudo = hashlib.md5(f.read()).hexdigest()
 
             return Metadados(
@@ -116,7 +120,7 @@ class ProcessadorTextoDirectus:
                 data_modificacao=datetime.fromtimestamp(stat.st_mtime),
                 versao="1.0",
                 tamanho_bytes=stat.st_size,
-                hash_conteudo=HashDocumento(hash_conteudo)
+                hash_conteudo=HashDocumento(hash_conteudo),
             )
 
         except Exception:
@@ -127,7 +131,7 @@ class ProcessadorTextoDirectus:
                 data_modificacao=datetime.now(),
                 versao="1.0",
                 tamanho_bytes=0,
-                hash_conteudo=HashDocumento("error")
+                hash_conteudo=HashDocumento("error"),
             )
 
 
@@ -137,12 +141,14 @@ class AnalisadorTagsDirectus:
     def __init__(self, config: ConfiguracaoDirectus):
         self.config = config
         self.session = requests.Session()
-        self.session.headers.update({
-            "Authorization": f"Bearer {config.token}",
-            "Content-Type": "application/json"
-        })
+        self.session.headers.update(
+            {
+                "Authorization": f"Bearer {config.token}",
+                "Content-Type": "application/json",
+            }
+        )
 
-    def extrair_tags(self, texto: ConteudoTexto) -> List[Tag]:
+    def extrair_tags(self, texto: ConteudoTexto) -> list[Tag]:
         """
         Extrai tags do texto usando regex e validação via Directus.
 
@@ -157,8 +163,8 @@ class AnalisadorTagsDirectus:
         # Padrões para diferentes tipos de tags
         padroes = [
             r"\{\{([a-zA-Z_][a-zA-Z0-9_.]*)\}\}",  # {{tag}}
-            r"\{\{([0-9]+(?:\.[0-9]+)*)\}\}",      # {{1.2.3}}
-            r"\{\{TAG-([a-zA-Z0-9_.]+)\}\}",       # {{TAG-xyz}}
+            r"\{\{([0-9]+(?:\.[0-9]+)*)\}\}",  # {{1.2.3}}
+            r"\{\{TAG-([a-zA-Z0-9_.]+)\}\}",  # {{TAG-xyz}}
         ]
 
         for padrao in padroes:
@@ -167,14 +173,14 @@ class AnalisadorTagsDirectus:
             for match in matches:
                 nome_tag = match.group(1).strip().lower()
                 posicao_inicio = PosicaoTexto(
-                    linha=texto[:match.start()].count('\n') + 1,
-                    coluna=match.start() - texto.rfind('\n', 0, match.start()),
-                    offset=match.start()
+                    linha=texto[: match.start()].count("\n") + 1,
+                    coluna=match.start() - texto.rfind("\n", 0, match.start()),
+                    offset=match.start(),
                 )
                 posicao_fim = PosicaoTexto(
-                    linha=texto[:match.end()].count('\n') + 1,
-                    coluna=match.end() - texto.rfind('\n', 0, match.end()),
-                    offset=match.end()
+                    linha=texto[: match.end()].count("\n") + 1,
+                    coluna=match.end() - texto.rfind("\n", 0, match.end()),
+                    offset=match.end(),
                 )
 
                 tag = Tag(
@@ -184,14 +190,14 @@ class AnalisadorTagsDirectus:
                     posicao_inicio=posicao_inicio,
                     posicao_fim=posicao_fim,
                     tipo="automatica",
-                    aninhada=False
+                    aninhada=False,
                 )
 
                 tags.append(tag)
 
         return tags
 
-    def validar_tags(self, tags: List[Tag], modelo: ModeloContrato) -> bool:
+    def validar_tags(self, tags: list[Tag], modelo: ModeloContrato) -> bool:
         """
         Valida tags contra um modelo de contrato via Directus.
 
@@ -223,7 +229,9 @@ class AnalisadorTagsDirectus:
         except Exception:
             # Em caso de erro, fazer validação básica
             tags_encontradas = {tag.nome for tag in tags}
-            return len(modelo.tags_obrigatorias) == 0 or modelo.tags_obrigatorias.issubset(tags_encontradas)
+            return len(
+                modelo.tags_obrigatorias
+            ) == 0 or modelo.tags_obrigatorias.issubset(tags_encontradas)
 
 
 class ComparadorDocumentosDirectus:
@@ -232,12 +240,14 @@ class ComparadorDocumentosDirectus:
     def __init__(self, config: ConfiguracaoDirectus):
         self.config = config
         self.session = requests.Session()
-        self.session.headers.update({
-            "Authorization": f"Bearer {config.token}",
-            "Content-Type": "application/json"
-        })
+        self.session.headers.update(
+            {
+                "Authorization": f"Bearer {config.token}",
+                "Content-Type": "application/json",
+            }
+        )
 
-    def comparar(self, original: Documento, modificado: Documento) -> List[Modificacao]:
+    def comparar(self, original: Documento, modificado: Documento) -> list[Modificacao]:
         """
         Compara dois documentos e registra no Directus.
 
@@ -264,45 +274,51 @@ class ComparadorDocumentosDirectus:
             diff = difflib.unified_diff(
                 linhas_original,
                 linhas_modificado,
-                lineterm='',
-                n=0  # Sem contexto
+                lineterm="",
+                n=0,  # Sem contexto
             )
 
             linha_atual = 0
             for linha_diff in diff:
-                if linha_diff.startswith('@@'):
+                if linha_diff.startswith("@@"):
                     # Extrair número da linha do cabeçalho @@
-                    match = re.search(r'-(\d+)', linha_diff)
+                    match = re.search(r"-(\d+)", linha_diff)
                     if match:
                         linha_atual = int(match.group(1))
 
-                elif linha_diff.startswith('-'):
+                elif linha_diff.startswith("-"):
                     # Linha removida
                     conteudo = linha_diff[1:]
                     modificacao = Modificacao(
                         id=f"mod_rem_{hash(conteudo)}_{linha_atual}",
                         tipo=TipoModificacao.REMOCAO,
-                        posicao_original=PosicaoTexto(linha=linha_atual, coluna=0, offset=0),
+                        posicao_original=PosicaoTexto(
+                            linha=linha_atual, coluna=0, offset=0
+                        ),
                         posicao_nova=None,
                         conteudo_original=ConteudoTexto(conteudo),
                         conteudo_novo=None,
                         confianca=0.9,
-                        tags_relacionadas=set()
+                        tags_relacionadas=set(),
                     )
                     modificacoes.append(modificacao)
 
-                elif linha_diff.startswith('+'):
+                elif linha_diff.startswith("+"):
                     # Linha adicionada
                     conteudo = linha_diff[1:]
                     modificacao = Modificacao(
                         id=f"mod_add_{hash(conteudo)}_{linha_atual}",
                         tipo=TipoModificacao.INSERCAO,
-                        posicao_original=PosicaoTexto(linha=linha_atual, coluna=0, offset=0),
-                        posicao_nova=PosicaoTexto(linha=linha_atual, coluna=0, offset=0),
+                        posicao_original=PosicaoTexto(
+                            linha=linha_atual, coluna=0, offset=0
+                        ),
+                        posicao_nova=PosicaoTexto(
+                            linha=linha_atual, coluna=0, offset=0
+                        ),
                         conteudo_original=ConteudoTexto(""),  # Vazio para inserção
                         conteudo_novo=ConteudoTexto(conteudo),
                         confianca=0.9,
-                        tags_relacionadas=set()
+                        tags_relacionadas=set(),
                     )
                     modificacoes.append(modificacao)
 
@@ -318,7 +334,12 @@ class ComparadorDocumentosDirectus:
             print(f"Erro na comparação: {e}")
             return []
 
-    def _registrar_comparacao(self, original: Documento, modificado: Documento, modificacoes: List[Modificacao]):
+    def _registrar_comparacao(
+        self,
+        original: Documento,
+        modificado: Documento,
+        modificacoes: list[Modificacao],
+    ):
         """Registra a comparação no Directus para auditoria."""
         try:
             dados_log = {
@@ -329,7 +350,7 @@ class ComparadorDocumentosDirectus:
                 "tipos_modificacao": {
                     tipo.value: len([m for m in modificacoes if m.tipo == tipo])
                     for tipo in TipoModificacao
-                }
+                },
             }
 
             url = f"{self.config.url_base}/items/logs_comparacao"
@@ -346,12 +367,16 @@ class AgrupadorModificacoesDirectus:
     def __init__(self, config: ConfiguracaoDirectus):
         self.config = config
         self.session = requests.Session()
-        self.session.headers.update({
-            "Authorization": f"Bearer {config.token}",
-            "Content-Type": "application/json"
-        })
+        self.session.headers.update(
+            {
+                "Authorization": f"Bearer {config.token}",
+                "Content-Type": "application/json",
+            }
+        )
 
-    def agrupar_por_proximidade(self, modificacoes: List[Modificacao]) -> List[BlocoModificacao]:
+    def agrupar_por_proximidade(
+        self, modificacoes: list[Modificacao]
+    ) -> list[BlocoModificacao]:
         """
         Agrupa modificações por proximidade usando configurações do Directus.
 
@@ -370,7 +395,11 @@ class AgrupadorModificacoesDirectus:
         blocos = []
         modificacoes_ordenadas = sorted(
             modificacoes,
-            key=lambda m: m.posicao_original.linha if m.posicao_original else m.posicao_nova.linha if m.posicao_nova else 0
+            key=lambda m: m.posicao_original.linha
+            if m.posicao_original
+            else m.posicao_nova.linha
+            if m.posicao_nova
+            else 0,
         )
 
         bloco_atual = []
@@ -383,9 +412,10 @@ class AgrupadorModificacoesDirectus:
                 continue
 
             # Verificar se deve criar novo bloco
-            if (posicao_anterior is None or
-                abs(posicao_atual.linha - posicao_anterior.linha) > distancia_maxima):
-
+            if (
+                posicao_anterior is None
+                or abs(posicao_atual.linha - posicao_anterior.linha) > distancia_maxima
+            ):
                 # Finalizar bloco anterior se existir
                 if bloco_atual:
                     blocos.append(self._criar_bloco(bloco_atual))
@@ -421,7 +451,7 @@ class AgrupadorModificacoesDirectus:
         except Exception:
             return valor_padrao
 
-    def _criar_bloco(self, modificacoes: List[Modificacao]) -> BlocoModificacao:
+    def _criar_bloco(self, modificacoes: list[Modificacao]) -> BlocoModificacao:
         """Cria um bloco de modificações."""
         if not modificacoes:
             raise ValueError("Lista de modificações não pode estar vazia")
@@ -454,14 +484,14 @@ class AgrupadorModificacoesDirectus:
             posicao_inicio=posicao_inicio,
             posicao_fim=posicao_fim,
             tipo_predominante=tipo_predominante,
-            relevancia=relevancia
+            relevancia=relevancia,
         )
 
 
 class FactoryImplementacoes:
     """Factory para criar implementações com configuração do Directus."""
 
-    def __init__(self, config: Optional[ConfiguracaoDirectus] = None):
+    def __init__(self, config: ConfiguracaoDirectus | None = None):
         self.config = config or ConfiguracaoDirectus.from_env()
 
     def criar_processador_texto(self) -> ProcessadorTexto:
@@ -480,11 +510,15 @@ class FactoryImplementacoes:
         """Cria implementação do AgrupadorModificacoes."""
         return AgrupadorModificacoesDirectus(self.config)
 
-    def criar_todos(self) -> tuple[ProcessadorTexto, AnalisadorTags, ComparadorDocumentos, AgrupadorModificacoes]:
+    def criar_todos(
+        self,
+    ) -> tuple[
+        ProcessadorTexto, AnalisadorTags, ComparadorDocumentos, AgrupadorModificacoes
+    ]:
         """Cria todas as implementações de uma vez."""
         return (
             self.criar_processador_texto(),
             self.criar_analisador_tags(),
             self.criar_comparador_documentos(),
-            self.criar_agrupador_modificacoes()
+            self.criar_agrupador_modificacoes(),
         )

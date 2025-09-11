@@ -4,21 +4,13 @@ Exemplo de uso do Pipeline Funcional para Processamento de Documentos DOCX
 Demonstra como compor e usar as funções do pipeline_funcional.py
 """
 
-from pathlib import Path
-from typing import Any, Dict, List
 
 from src.docx_compare.core.pipeline_funcional import (
     ContextoProcessamento,
     PrioridadeProcessamento,
     StatusProcessamento,
     TipoModificacao,
-    agrupar_modificacoes_por_bloco,
-    calcular_estatisticas,
-    executar_em_lote,
-    filtrar_por_tipo,
     pipeline_sequencial,
-    processar_modelos_pendentes,
-    processar_versoes_pendentes,
 )
 
 
@@ -62,7 +54,9 @@ def exemplo_processamento_versoes() -> None:
     )
 
     print(f"Contexto configurado: timeout={contexto.timeout_segundos}s")
-    print("Função: processar_versoes_pendentes(versoes, contexto, processador, analisador)")
+    print(
+        "Função: processar_versoes_pendentes(versoes, contexto, processador, analisador)"
+    )
     print("- Múltiplos parâmetros tipados")
     print("- Protocols para abstração")
     print("- Retorna List[Tuple[VersaoDocumento, StatusProcessamento]]")

@@ -5,32 +5,31 @@ Demonstra as funções implementadas funcionando com dados reais.
 """
 
 from pathlib import Path
-from typing import List
-from dataclasses import replace
 
 from src.docx_compare.core.pipeline_funcional import (
+    ConteudoTexto,
     ContextoProcessamento,
-    PrioridadeProcessamento,
-    StatusProcessamento,
-    TipoModificacao,
+    ModeloContrato,
+    ModeloId,
     Modificacao,
     PosicaoTexto,
-    ModeloContrato,
+    PrioridadeProcessamento,
+    StatusProcessamento,
     TagId,
-    ConteudoTexto,
-    ModeloId,
+    TipoModificacao,
+    aplicar_paralelo,
     calcular_estatisticas,
+    compor_pipeline,
     executar_em_lote,
     filtrar_por_tipo,
     pipeline_sequencial,
-    validar_documento,
-    aplicar_paralelo,
-    compor_pipeline,
     processar_modelos_pendentes,
 )
 
 
-def criar_modificacao_mock(tipo: TipoModificacao, conteudo: str, confianca: float) -> Modificacao:
+def criar_modificacao_mock(
+    tipo: TipoModificacao, conteudo: str, confianca: float
+) -> Modificacao:
     """Cria uma modificação mock para teste."""
     return Modificacao(
         id=f"mod_{tipo.value}_{hash(conteudo)}",
@@ -64,11 +63,11 @@ def teste_calcular_estatisticas():
     print(f"  🎯 Confiança média: {stats['confianca_media']:.2f}")
     print(f"  ✅ Status: {stats['status']}")
 
-    assert stats['total'] == 4
-    assert stats['tipos']['insercao'] == 2
-    assert stats['tipos']['alteracao'] == 1
-    assert stats['tipos']['remocao'] == 1
-    assert 0.8 <= stats['confianca_media'] <= 0.85
+    assert stats["total"] == 4
+    assert stats["tipos"]["insercao"] == 2
+    assert stats["tipos"]["alteracao"] == 1
+    assert stats["tipos"]["remocao"] == 1
+    assert 0.8 <= stats["confianca_media"] <= 0.85
 
     print("  ✅ Teste passou!")
 
@@ -137,10 +136,12 @@ def teste_pipeline_sequencial():
         return f"resultado_{x}"
 
     # Executar pipeline: 5 -> 10 -> 20 -> "resultado_20"
-    resultado = pipeline_sequencial(5, multiplicar_por_2, adicionar_10, converter_para_string)
+    resultado = pipeline_sequencial(
+        5, multiplicar_por_2, adicionar_10, converter_para_string
+    )
 
-    print(f"  📥 Entrada: 5")
-    print(f"  🔄 Pipeline: x2 -> +10 -> to_string")
+    print("  📥 Entrada: 5")
+    print("  🔄 Pipeline: x2 -> +10 -> to_string")
     print(f"  📤 Resultado: {resultado}")
 
     assert resultado == "resultado_20"
@@ -153,7 +154,7 @@ def teste_aplicar_paralelo():
     print("\n⚡ Testando aplicar_paralelo...")
 
     def elevar_ao_quadrado(x: int) -> int:
-        return x ** 2
+        return x**2
 
     # Lista de números
     numeros = [1, 2, 3, 4, 5]
@@ -193,8 +194,8 @@ def teste_compor_pipeline():
     # Testar pipeline: 3 -> 6 -> 7 -> "valor_7"
     resultado = pipeline(3)
 
-    print(f"  📥 Entrada: 3")
-    print(f"  🔄 Pipeline composto: dobrar -> +1 -> to_string")
+    print("  📥 Entrada: 3")
+    print("  🔄 Pipeline composto: dobrar -> +1 -> to_string")
     print(f"  📤 Resultado: {resultado}")
 
     assert resultado == "valor_7"
@@ -238,7 +239,8 @@ def teste_processar_modelos_pendentes():
 
     # Processador mock simples
     from datetime import datetime
-    from src.docx_compare.core.pipeline_funcional import Metadados, HashDocumento
+
+    from src.docx_compare.core.pipeline_funcional import HashDocumento, Metadados
 
     class ProcessadorMock:
         def extrair_texto(self, caminho: Path) -> ConteudoTexto:
@@ -263,11 +265,11 @@ def teste_processar_modelos_pendentes():
     print(f"  ⚡ Prioridade: {contexto.prioridade.value}")
 
     for i, (modelo, status) in enumerate(resultados):
-        print(f"  📋 Modelo {i+1}: {modelo.nome} -> {status.value}")
+        print(f"  📋 Modelo {i + 1}: {modelo.nome} -> {status.value}")
 
     assert len(resultados) == 2
     assert resultados[0][1] == StatusProcessamento.CONCLUIDO  # Modelo com tags
-    assert resultados[1][1] == StatusProcessamento.ERRO      # Modelo sem tags
+    assert resultados[1][1] == StatusProcessamento.ERRO  # Modelo sem tags
 
     print("  ✅ Teste passou!")
 
@@ -294,6 +296,7 @@ def main():
     except Exception as e:
         print(f"\n❌ ERRO NOS TESTES: {e}")
         import traceback
+
         traceback.print_exc()
 
 

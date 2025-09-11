@@ -11,30 +11,27 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 import tempfile
 from datetime import datetime
-from typing import List
-
-from docx_compare.core.pipeline_funcional import (
-    executar_pipeline_completo,
-    Documento,
-    Metadados,
-    DocumentoId,
-    HashDocumento,
-    ConteudoTexto,
-    ModeloContrato,
-    ModeloId,
-    TagId,
-    ContextoProcessamento,
-    StatusProcessamento,
-    PrioridadeProcessamento,
-)
 
 from docx_compare.core.implementacoes_directus import (
+    AgrupadorModificacoesDirectus,
+    AnalisadorTagsDirectus,
+    ComparadorDocumentosDirectus,
     ConfiguracaoDirectus,
     FactoryImplementacoes,
     ProcessadorTextoDirectus,
-    AnalisadorTagsDirectus,
-    ComparadorDocumentosDirectus,
-    AgrupadorModificacoesDirectus,
+)
+from docx_compare.core.pipeline_funcional import (
+    ConteudoTexto,
+    ContextoProcessamento,
+    Documento,
+    DocumentoId,
+    HashDocumento,
+    Metadados,
+    ModeloContrato,
+    ModeloId,
+    PrioridadeProcessamento,
+    TagId,
+    executar_pipeline_completo,
 )
 
 
@@ -52,9 +49,9 @@ def criar_documento_teste(conteudo: str, nome: str = "teste.docx") -> Documento:
             data_modificacao=datetime.now(),
             versao="1.0",
             tamanho_bytes=len(conteudo),
-            hash_conteudo=hash_conteudo
+            hash_conteudo=hash_conteudo,
         ),
-        hash=hash_conteudo
+        hash=hash_conteudo,
     )
 
 
@@ -66,7 +63,7 @@ def criar_modelo_teste() -> ModeloContrato:
         template=ConteudoTexto("Template com {{nome}} e {{valor}}"),
         tags_obrigatorias={TagId("nome"), TagId("valor")},
         tags_opcionais={TagId("data"), TagId("local")},
-        validacoes=["nome_obrigatorio", "valor_numerico"]
+        validacoes=["nome_obrigatorio", "valor_numerico"],
     )
 
 
@@ -76,8 +73,7 @@ def teste_configuracao_directus():
 
     # Teste configuração padrão
     config = ConfiguracaoDirectus(
-        url_base="https://test.directus.com",
-        token="test_token_123"
+        url_base="https://test.directus.com", token="test_token_123"
     )
 
     assert config.url_base == "https://test.directus.com"
@@ -88,6 +84,7 @@ def teste_configuracao_directus():
 
     # Teste configuração a partir de env (mock)
     import os
+
     os.environ["DIRECTUS_URL"] = "https://env.directus.com"
     os.environ["DIRECTUS_TOKEN"] = "env_token_456"
     os.environ["DIRECTUS_TIMEOUT"] = "60"
@@ -110,8 +107,10 @@ def teste_processador_texto_directus():
     processador = ProcessadorTextoDirectus(config)
 
     # Criar arquivo temporário para teste
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
-        f.write("Este é um texto de teste\ncom múltiplas linhas\ne {{tags}} para processar.")
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
+        f.write(
+            "Este é um texto de teste\ncom múltiplas linhas\ne {{tags}} para processar."
+        )
         caminho_teste = Path(f.name)
 
     try:
@@ -177,13 +176,11 @@ def teste_comparador_documentos_directus():
 
     # Criar documentos de teste
     doc_original = criar_documento_teste(
-        "Primeira linha\nSegunda linha\nTerceira linha",
-        "original.txt"
+        "Primeira linha\nSegunda linha\nTerceira linha", "original.txt"
     )
 
     doc_modificado = criar_documento_teste(
-        "Primeira linha modificada\nSegunda linha\nQuarta linha nova",
-        "modificado.txt"
+        "Primeira linha modificada\nSegunda linha\nQuarta linha nova", "modificado.txt"
     )
 
     # Testar comparação
@@ -208,7 +205,9 @@ def teste_agrupador_modificacoes_directus():
 
     # Criar documentos de teste para gerar modificações
     doc_original = criar_documento_teste("Linha 1\nLinha 2\nLinha 3\nLinha 4\nLinha 5")
-    doc_modificado = criar_documento_teste("Linha 1 alterada\nLinha 2\nLinha 3 alterada\nLinha 4\nLinha 6")
+    doc_modificado = criar_documento_teste(
+        "Linha 1 alterada\nLinha 2\nLinha 3 alterada\nLinha 4\nLinha 6"
+    )
 
     comparador = ComparadorDocumentosDirectus(config)
     modificacoes = comparador.comparar(doc_original, doc_modificado)
@@ -220,7 +219,7 @@ def teste_agrupador_modificacoes_directus():
     print(f"Blocos agrupados: {len(blocos)}")
 
     for i, bloco in enumerate(blocos):
-        print(f"  Bloco {i+1}: {len(bloco.modificacoes)} modificações")
+        print(f"  Bloco {i + 1}: {len(bloco.modificacoes)} modificações")
         print(f"    Tipo predominante: {bloco.tipo_predominante.value}")
         print(f"    Relevância: {bloco.relevancia:.2f}")
 
@@ -269,11 +268,11 @@ def teste_pipeline_completo_com_directus():
     processador, analisador, comparador, agrupador = factory.criar_todos()
 
     # Criar arquivos temporários para teste
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f1:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f1:
         f1.write("Documento original com {{nome}} e {{valor}}")
         caminho_original = Path(f1.name)
 
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f2:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f2:
         f2.write("Documento modificado com {{nome}} e {{preco}}")
         caminho_modificado = Path(f2.name)
 
@@ -285,7 +284,7 @@ def teste_pipeline_completo_com_directus():
             timeout_segundos=30,
             modo_paralelo=True,
             filtros_ativos=set(),
-            configuracoes={}
+            configuracoes={},
         )
 
         # Executar pipeline
@@ -297,14 +296,16 @@ def teste_pipeline_completo_com_directus():
             processador=processador,
             analisador=analisador,
             comparador=comparador,
-            agrupador=agrupador
+            agrupador=agrupador,
         )
 
-        print(f"Pipeline executado com sucesso!")
+        print("Pipeline executado com sucesso!")
         print(f"Resultados gerados: {len(resultados)}")
 
         for i, resultado in enumerate(resultados):
-            print(f"  Resultado {i+1}: {len(resultado.blocos_agrupados)} blocos de modificações")
+            print(
+                f"  Resultado {i + 1}: {len(resultado.blocos_agrupados)} blocos de modificações"
+            )
             print(f"    Modificações: {len(resultado.modificacoes)}")
             print(f"    Tempo: {resultado.tempo_processamento:.2f}s")
 

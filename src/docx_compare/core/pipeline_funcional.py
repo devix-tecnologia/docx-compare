@@ -6,26 +6,20 @@ Abordagem funcional pura com tipagem máxima e assinaturas sem implementação.
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from datetime import datetime
 from enum import Enum
-from pathlib import Path
 from typing import (
+    TYPE_CHECKING,
     Any,
-    Callable,
-    Dict,
-    Generic,
-    Iterable,
-    List,
     NewType,
-    Optional,
     Protocol,
-    Set,
-    Tuple,
     TypeVar,
-    Union,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+    from datetime import datetime
+    from pathlib import Path
 
 # Type Aliases para maior clareza
 DocumentoId = NewType("DocumentoId", str)
@@ -112,11 +106,11 @@ class Modificacao:
     id: str
     tipo: TipoModificacao
     posicao_original: PosicaoTexto
-    posicao_nova: Optional[PosicaoTexto]
+    posicao_nova: PosicaoTexto | None
     conteudo_original: ConteudoTexto
-    conteudo_novo: Optional[ConteudoTexto]
+    conteudo_novo: ConteudoTexto | None
     confianca: float
-    tags_relacionadas: Set[TagId]
+    tags_relacionadas: set[TagId]
 
 
 @dataclass(frozen=True)
@@ -124,7 +118,7 @@ class BlocoModificacao:
     """Bloco agrupado de modificações relacionadas."""
 
     id: BlocoId
-    modificacoes: List[Modificacao]
+    modificacoes: list[Modificacao]
     posicao_inicio: PosicaoTexto
     posicao_fim: PosicaoTexto
     tipo_predominante: TipoModificacao
@@ -138,7 +132,7 @@ class Documento:
     id: DocumentoId
     caminho: Path
     conteudo_texto: ConteudoTexto
-    tags: List[Tag]
+    tags: list[Tag]
     metadados: Metadados
     hash: HashDocumento
 
@@ -162,9 +156,9 @@ class ModeloContrato:
     id: ModeloId
     nome: str
     template: ConteudoTexto
-    tags_obrigatorias: Set[TagId]
-    tags_opcionais: Set[TagId]
-    validacoes: List[str]
+    tags_obrigatorias: set[TagId]
+    tags_opcionais: set[TagId]
+    validacoes: list[str]
 
 
 @dataclass(frozen=True)
@@ -173,9 +167,9 @@ class ResultadoComparacao:
 
     documento_original: Documento
     documento_modificado: Documento
-    modificacoes: List[Modificacao]
-    blocos_agrupados: List[BlocoModificacao]
-    estatisticas: Dict[str, Any]
+    modificacoes: list[Modificacao]
+    blocos_agrupados: list[BlocoModificacao]
+    estatisticas: dict[str, Any]
     tempo_processamento: float
 
 
@@ -186,8 +180,8 @@ class ContextoProcessamento:
     prioridade: PrioridadeProcessamento
     timeout_segundos: int
     modo_paralelo: bool
-    filtros_ativos: Set[str]
-    configuracoes: Dict[str, Any]
+    filtros_ativos: set[str]
+    configuracoes: dict[str, Any]
 
 
 # Protocols para Dependency Injection
@@ -206,11 +200,11 @@ class ProcessadorTexto(Protocol):
 class AnalisadorTags(Protocol):
     """Protocol para análise de tags."""
 
-    def extrair_tags(self, texto: ConteudoTexto) -> List[Tag]:
+    def extrair_tags(self, texto: ConteudoTexto) -> list[Tag]:
         """Extrai tags do texto."""
         ...
 
-    def validar_tags(self, tags: List[Tag], modelo: ModeloContrato) -> bool:
+    def validar_tags(self, tags: list[Tag], modelo: ModeloContrato) -> bool:
         """Valida tags contra um modelo."""
         ...
 
@@ -218,7 +212,7 @@ class AnalisadorTags(Protocol):
 class ComparadorDocumentos(Protocol):
     """Protocol para comparação de documentos."""
 
-    def comparar(self, original: Documento, modificado: Documento) -> List[Modificacao]:
+    def comparar(self, original: Documento, modificado: Documento) -> list[Modificacao]:
         """Compara dois documentos."""
         ...
 
@@ -227,8 +221,8 @@ class AgrupadorModificacoes(Protocol):
     """Protocol para agrupamento de modificações."""
 
     def agrupar_por_proximidade(
-        self, modificacoes: List[Modificacao]
-    ) -> List[BlocoModificacao]:
+        self, modificacoes: list[Modificacao]
+    ) -> list[BlocoModificacao]:
         """Agrupa modificações por proximidade."""
         ...
 
@@ -237,10 +231,10 @@ class AgrupadorModificacoes(Protocol):
 
 
 def processar_modelos_pendentes(
-    modelos: List[ModeloContrato],
+    modelos: list[ModeloContrato],
     contexto: ContextoProcessamento,
-    processador: ProcessadorTexto,
-) -> List[Tuple[ModeloContrato, StatusProcessamento]]:
+    _processador: ProcessadorTexto,
+) -> list[tuple[ModeloContrato, StatusProcessamento]]:
     """
     Processa modelos de contrato pendentes.
 
@@ -277,11 +271,11 @@ def processar_modelos_pendentes(
 
 
 def processar_versoes_pendentes(
-    versoes: List[VersaoDocumento],
+    versoes: list[VersaoDocumento],
     contexto: ContextoProcessamento,
     processador: ProcessadorTexto,
     analisador: AnalisadorTags,
-) -> List[Tuple[VersaoDocumento, StatusProcessamento]]:
+) -> list[tuple[VersaoDocumento, StatusProcessamento]]:
     """
     Processa versões de documentos pendentes.
 
@@ -326,10 +320,10 @@ def processar_versoes_pendentes(
 
 
 def agrupar_modificacoes_por_bloco(
-    modificacoes: List[Modificacao],
-    criterios_agrupamento: Dict[str, Any],
+    modificacoes: list[Modificacao],
+    _criterios_agrupamento: dict[str, Any],
     agrupador: AgrupadorModificacoes,
-) -> List[BlocoModificacao]:
+) -> list[BlocoModificacao]:
     """
     Agrupa modificações em blocos lógicos.
 
@@ -348,8 +342,8 @@ def agrupar_modificacoes_por_bloco(
     blocos_proximidade = agrupador.agrupar_por_proximidade(modificacoes)
 
     # Aplicar critérios adicionais
-    distancia_maxima = criterios_agrupamento.get("distancia_maxima", 100)
-    threshold_similaridade = criterios_agrupamento.get("threshold_similaridade", 0.7)
+    # distancia_maxima = criterios_agrupamento.get("distancia_maxima", 100)
+    # threshold_similaridade = criterios_agrupamento.get("threshold_similaridade", 0.7)
 
     blocos_filtrados = []
     for bloco in blocos_proximidade:
@@ -376,9 +370,9 @@ def agrupar_modificacoes_por_bloco(
 
 
 def filtrar_por_tipo(
-    modificacoes: List[Modificacao],
-    tipos_permitidos: Set[TipoModificacao],
-) -> List[Modificacao]:
+    modificacoes: list[Modificacao],
+    tipos_permitidos: set[TipoModificacao],
+) -> list[Modificacao]:
     """
     Filtra modificações por tipo.
 
@@ -412,9 +406,9 @@ def transformar_para_relatorio(
 
 
 def mapear_documentos(
-    caminhos: List[Path],
+    caminhos: list[Path],
     mapeador: Callable[[Path], Documento],
-) -> List[Documento]:
+) -> list[Documento]:
     """
     Mapeia caminhos para documentos.
 
@@ -451,6 +445,7 @@ def compor_pipeline(
     Returns:
         Função composta
     """
+
     def pipeline_composto(entrada: Any) -> Any:
         resultado = entrada
         for funcao in funcoes:
@@ -461,10 +456,10 @@ def compor_pipeline(
 
 
 def executar_em_lote(
-    itens: List[T],
+    itens: list[T],
     processador: Callable[[T], U],
     tamanho_lote: int,
-) -> List[U]:
+) -> list[U]:
     """
     Executa processamento em lotes.
 
@@ -480,7 +475,7 @@ def executar_em_lote(
 
     # Processar em lotes
     for i in range(0, len(itens), tamanho_lote):
-        lote = itens[i:i + tamanho_lote]
+        lote = itens[i : i + tamanho_lote]
 
         # Processar cada item do lote
         for item in lote:
@@ -495,10 +490,10 @@ def executar_em_lote(
 
 
 def aplicar_paralelo(
-    itens: List[T],
+    itens: list[T],
     funcao: Callable[[T], U],
     max_workers: int,
-) -> List[U]:
+) -> list[U]:
     """
     Aplica função em paralelo sobre lista de itens.
 
@@ -535,8 +530,8 @@ def aplicar_paralelo(
 
 def validar_documento(
     documento: Documento,
-    regras_validacao: List[Callable[[Documento], bool]],
-) -> Tuple[bool, List[str]]:
+    regras_validacao: list[Callable[[Documento], bool]],
+) -> tuple[bool, list[str]]:
     """
     Valida documento contra regras.
 
@@ -560,9 +555,9 @@ def validar_documento(
 
 
 def verificar_integridade(
-    documentos: List[Documento],
-    verificador: Callable[[List[Documento]], Dict[str, Any]],
-) -> Dict[str, Any]:
+    documentos: list[Documento],
+    verificador: Callable[[list[Documento]], dict[str, Any]],
+) -> dict[str, Any]:
     """
     Verifica integridade de conjunto de documentos.
 
@@ -580,8 +575,8 @@ def verificar_integridade(
 
 
 def calcular_estatisticas(
-    modificacoes: List[Modificacao],
-) -> Dict[str, Any]:
+    modificacoes: list[Modificacao],
+) -> dict[str, Any]:
     """
     Calcula estatísticas das modificações.
 
@@ -592,12 +587,7 @@ def calcular_estatisticas(
         Dicionário com estatísticas
     """
     if not modificacoes:
-        return {
-            "total": 0,
-            "tipos": {},
-            "confianca_media": 0.0,
-            "status": "vazio"
-        }
+        return {"total": 0, "tipos": {}, "confianca_media": 0.0, "status": "vazio"}
 
     # Contar por tipo
     tipos_count = {}
@@ -615,14 +605,14 @@ def calcular_estatisticas(
         "total": len(modificacoes),
         "tipos": tipos_count,
         "confianca_media": confianca_media,
-        "status": "calculado"
+        "status": "calculado",
     }
 
 
 def analisar_tendencias(
-    historico_modificacoes: List[List[Modificacao]],
-    analisador: Callable[[List[List[Modificacao]]], Dict[str, Any]],
-) -> Dict[str, Any]:
+    historico_modificacoes: list[list[Modificacao]],
+    analisador: Callable[[list[list[Modificacao]]], dict[str, Any]],
+) -> dict[str, Any]:
     """
     Analisa tendências em histórico de modificações.
 
@@ -642,7 +632,7 @@ def analisar_tendencias(
 def aplicar_cache(
     funcao: Callable[[T], U],
     chave_geradora: Callable[[T], str],
-    cache: Dict[str, U],
+    cache: dict[str, U],
 ) -> Callable[[T], U]:
     """
     Aplica cache a uma função.
@@ -679,9 +669,9 @@ def otimizar_processamento(
 
 
 def carregar_documentos(
-    caminhos: List[Path],
-    carregador: Callable[[Path], Optional[Documento]],
-) -> List[Documento]:
+    caminhos: list[Path],
+    carregador: Callable[[Path], Documento | None],
+) -> list[Documento]:
     """
     Carrega documentos de caminhos.
 
@@ -696,9 +686,9 @@ def carregar_documentos(
 
 
 def salvar_resultados(
-    resultados: List[ResultadoComparacao],
+    resultados: list[ResultadoComparacao],
     destino: Path,
-    salvador: Callable[[List[ResultadoComparacao], Path], bool],
+    salvador: Callable[[list[ResultadoComparacao], Path], bool],
 ) -> bool:
     """
     Salva resultados em destino.
@@ -718,15 +708,15 @@ def salvar_resultados(
 
 
 def executar_pipeline_completo(
-    documentos_originais: List[Path],
-    documentos_modificados: List[Path],
-    modelos: List[ModeloContrato],
-    contexto: ContextoProcessamento,
+    documentos_originais: list[Path],
+    documentos_modificados: list[Path],
+    _modelos: list[ModeloContrato],
+    _contexto: ContextoProcessamento,
     processador: ProcessadorTexto,
     analisador: AnalisadorTags,
     comparador: ComparadorDocumentos,
     agrupador: AgrupadorModificacoes,
-) -> List[ResultadoComparacao]:
+) -> list[ResultadoComparacao]:
     """
     Executa pipeline completo de processamento.
 
@@ -752,7 +742,9 @@ def executar_pipeline_completo(
         return resultados
 
     # Processar cada par de documentos
-    for original_path, modificado_path in zip(documentos_originais, documentos_modificados):
+    for original_path, modificado_path in zip(
+        documentos_originais, documentos_modificados, strict=False
+    ):
         try:
             inicio = time.time()
 
@@ -770,6 +762,7 @@ def executar_pipeline_completo(
 
             # 4. Criar objetos Documento (simplificado)
             from hashlib import md5
+
             hash_original = HashDocumento(md5(texto_original.encode()).hexdigest())
             hash_modificado = HashDocumento(md5(texto_modificado.encode()).hexdigest())
 
@@ -849,9 +842,9 @@ def pipeline_sequencial(
 
 
 def pipeline_paralelo(
-    entradas: List[T],
+    entradas: list[T],
     processador: Callable[[T], U],
-    agregador: Callable[[List[U]], V],
+    agregador: Callable[[list[U]], V],
     max_workers: int,
 ) -> V:
     """

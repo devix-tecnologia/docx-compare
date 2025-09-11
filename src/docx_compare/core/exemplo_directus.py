@@ -12,21 +12,19 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 import os
 import tempfile
-from typing import List
-
-from docx_compare.core.pipeline_funcional import (
-    executar_pipeline_completo,
-    ModeloContrato,
-    ModeloId,
-    TagId,
-    ConteudoTexto,
-    ContextoProcessamento,
-    PrioridadeProcessamento,
-)
 
 from docx_compare.core.implementacoes_directus import (
     ConfiguracaoDirectus,
     FactoryImplementacoes,
+)
+from docx_compare.core.pipeline_funcional import (
+    ConteudoTexto,
+    ContextoProcessamento,
+    ModeloContrato,
+    ModeloId,
+    PrioridadeProcessamento,
+    TagId,
+    executar_pipeline_completo,
 )
 
 
@@ -98,11 +96,15 @@ ______________________     ______________________
 """
 
     # Criar arquivos temporários
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False, encoding='utf-8') as f_orig:
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".txt", delete=False, encoding="utf-8"
+    ) as f_orig:
         f_orig.write(conteudo_original)
         caminho_original = Path(f_orig.name)
 
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False, encoding='utf-8') as f_mod:
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".txt", delete=False, encoding="utf-8"
+    ) as f_mod:
         f_mod.write(conteudo_modificado)
         caminho_modificado = Path(f_mod.name)
 
@@ -124,19 +126,19 @@ def criar_modelo_contrato():
             TagId("objeto_contrato"),
             TagId("valor_total"),
             TagId("data_inicio"),
-            TagId("data_fim")
+            TagId("data_fim"),
         },
         tags_opcionais={
             TagId("documento_contratado"),
             TagId("forma_pagamento"),
             TagId("local_assinatura"),
-            TagId("data_assinatura")
+            TagId("data_assinatura"),
         },
         validacoes=[
             "nome_contratante_obrigatorio",
             "valor_total_numerico",
-            "datas_validas"
-        ]
+            "datas_validas",
+        ],
     )
 
 
@@ -184,8 +186,8 @@ def demonstrar_inversao_dependencia():
             configuracoes={
                 "directus_logging": True,
                 "cache_resultados": True,
-                "debug_mode": False
-            }
+                "debug_mode": False,
+            },
         )
 
         print(f"⚙️ Contexto configurado: prioridade {contexto.prioridade.value}")
@@ -198,14 +200,14 @@ def demonstrar_inversao_dependencia():
             documentos_modificados=[caminho_modificado],
             modelos=[modelo],
             contexto=contexto,
-            processador=processador,      # Implementação Directus injetada
-            analisador=analisador,        # Implementação Directus injetada
-            comparador=comparador,        # Implementação Directus injetada
-            agrupador=agrupador          # Implementação Directus injetada
+            processador=processador,  # Implementação Directus injetada
+            analisador=analisador,  # Implementação Directus injetada
+            comparador=comparador,  # Implementação Directus injetada
+            agrupador=agrupador,  # Implementação Directus injetada
         )
 
         # 8. Analisar resultados
-        print(f"\n📊 Resultados do Pipeline:")
+        print("\n📊 Resultados do Pipeline:")
         print(f"   Total de comparações: {len(resultados)}")
 
         for i, resultado in enumerate(resultados, 1):
@@ -216,26 +218,26 @@ def demonstrar_inversao_dependencia():
 
             # Estatísticas detalhadas
             stats = resultado.estatisticas
-            print(f"      📈 Estatísticas:")
+            print("      📈 Estatísticas:")
             for chave, valor in stats.items():
-                if isinstance(valor, (int, float)):
+                if isinstance(valor, int | float):
                     print(f"         {chave}: {valor}")
 
             # Detalhes dos blocos
-            print(f"      🧩 Blocos de modificações:")
+            print("      🧩 Blocos de modificações:")
             for j, bloco in enumerate(resultado.blocos_agrupados, 1):
                 print(f"         Bloco {j}: {len(bloco.modificacoes)} modificações")
                 print(f"           Tipo predominante: {bloco.tipo_predominante.value}")
                 print(f"           Relevância: {bloco.relevancia:.2f}")
 
-        print(f"\n✅ Pipeline executado com sucesso usando implementações Directus!")
-        print(f"💡 Todas as operações foram registradas no Directus via API")
+        print("\n✅ Pipeline executado com sucesso usando implementações Directus!")
+        print("💡 Todas as operações foram registradas no Directus via API")
 
         return resultados
 
     except Exception as e:
         print(f"❌ Erro na demonstração: {e}")
-        print(f"💡 Verifique a configuração do Directus e conectividade")
+        print("💡 Verifique a configuração do Directus e conectividade")
         return None
 
     finally:
@@ -243,8 +245,8 @@ def demonstrar_inversao_dependencia():
         try:
             caminho_original.unlink()
             caminho_modificado.unlink()
-            print(f"🧹 Arquivos temporários removidos")
-        except:
+            print("🧹 Arquivos temporários removidos")
+        except Exception:
             pass
 
 
@@ -255,25 +257,23 @@ def demonstrar_diferentes_configuracoes():
 
     # Configuração para desenvolvimento
     config_dev = ConfiguracaoDirectus(
-        url_base="https://dev.contract.local",
-        token="dev_token",
-        timeout=30
+        url_base="https://dev.contract.local", token="dev_token", timeout=30
     )
 
     # Configuração para produção
     config_prod = ConfiguracaoDirectus(
         url_base="https://contract.devix.co",
         token=os.getenv("DIRECTUS_PROD_TOKEN", "prod_token"),
-        timeout=60
+        timeout=60,
     )
 
     print("🔧 Configurações disponíveis:")
     print(f"   Desenvolvimento: {config_dev.url_base}")
     print(f"   Produção: {config_prod.url_base}")
 
-    # Criar factories para diferentes ambientes
-    factory_dev = FactoryImplementacoes(config_dev)
-    factory_prod = FactoryImplementacoes(config_prod)
+    # Criar factories para diferentes ambientes (exemplo)
+    # factory_dev = FactoryImplementacoes(config_dev)
+    # factory_prod = FactoryImplementacoes(config_prod)
 
     print("✅ Factories criadas para diferentes ambientes")
     print("💡 Use a factory apropriada baseada no ambiente de execução")
@@ -289,7 +289,7 @@ def main():
     configurar_ambiente()
 
     # Demonstrar inversão de dependência
-    resultados = demonstrar_inversao_dependencia()
+    demonstrar_inversao_dependencia()
 
     # Demonstrar diferentes configurações
     demonstrar_diferentes_configuracoes()
