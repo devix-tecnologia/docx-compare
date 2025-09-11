@@ -14,10 +14,36 @@
             <span class="stat">⏱️ {{ stats.tempo_processamento.toFixed(3) }}s</span>
             <span class="stat">🎯 {{ stats.total_blocos }} blocos</span>
           </div>
+          
+          <!-- Abas de Navegação -->
+          <div class="tabs">
+            <button 
+              class="tab" 
+              :class="{ active: activeTab === 'lista' }"
+              @click="activeTab = 'lista'"
+            >
+              📋 Lista de Modificações
+            </button>
+            <button 
+              class="tab" 
+              :class="{ active: activeTab === 'lado-a-lado' }"
+              @click="activeTab = 'lado-a-lado'"
+            >
+              🔍 Comparação Lado a Lado
+            </button>
+            <button 
+              class="tab" 
+              :class="{ active: activeTab === 'vue-diff' }"
+              @click="activeTab = 'vue-diff'"
+            >
+              ⚡ Vue-Diff Avançado
+            </button>
+          </div>
         </div>
 
         <div class="diff-content">
-          <div class="modifications-list">
+          <!-- Vista Lista -->
+          <div v-if="activeTab === 'lista'" class="modifications-list">
             <div
               v-for="modificacao in modificacoes"
               :key="modificacao.id"
@@ -51,9 +77,20 @@
               </div>
             </div>
           </div>
+          
+          <!-- Vista Lado a Lado -->
+          <div v-else-if="activeTab === 'lado-a-lado'">
+            <DiffVisualizerSideBySide :dados="sampleData" />
+          </div>
+          
+          <!-- Vista Vue-Diff -->
+          <div v-else-if="activeTab === 'vue-diff'">
+            <VueDiffViewer :dados="sampleData" />
+          </div>
         </div>
 
-        <div class="diff-legend">
+        <!-- Legenda apenas para a vista lista -->
+        <div v-if="activeTab === 'lista'" class="diff-legend">
           <div class="legend-item alteracao">
             <span class="legend-color"></span>
             <span>Alteração</span>
@@ -77,11 +114,19 @@
 </template>
 
 <script>
+  import DiffVisualizerSideBySide from './DiffVisualizerSideBySide.vue'
+  import VueDiffViewer from './VueDiffViewer.vue'
+  
   export default {
     name: 'App',
+    components: {
+      DiffVisualizerSideBySide,
+      VueDiffViewer
+    },
     data() {
       return {
         titulo: 'Demonstração - Contrato v1.0 vs v2.0',
+        activeTab: 'lista', // 'lista', 'lado-a-lado', ou 'vue-diff'
         sampleData: {
           metadata: {
             timestamp: new Date().toISOString(),
@@ -95,6 +140,44 @@
                 total_modificacoes: 3,
                 total_blocos: 1,
                 tempo_processamento: 0.015,
+              },
+              conteudo_comparacao: {
+                original: `Contrato de Prestação de Serviços
+
+O presente contrato estabelece que o prazo para entrega será de 30 dias úteis a partir da assinatura, com {{valor}} especificado no anexo I.
+
+As condições de pagamento seguem o cronograma estabelecido no documento principal.`,
+                modificado: `Contrato de Prestação de Serviços
+
+O presente contrato estabelece que o prazo para entrega alterado será de 30 dias corridos a partir da assinatura, com {{preco}} especificado no anexo I.
+
+As condições de pagamento seguem o cronograma estabelecido no documento principal.`,
+                diff_highlights: [
+                  {
+                    tipo: 'alteracao',
+                    inicio: 95,
+                    fim: 103,
+                    texto_original: '{{valor}}',
+                    texto_novo: '{{preco}}',
+                    confianca: 0.95
+                  },
+                  {
+                    tipo: 'alteracao', 
+                    inicio: 70,
+                    fim: 80,
+                    texto_original: 'dias úteis',
+                    texto_novo: 'dias corridos',
+                    confianca: 0.9
+                  },
+                  {
+                    tipo: 'insercao',
+                    inicio: 65,
+                    fim: 65,
+                    texto_original: '',
+                    texto_novo: ' alterado',
+                    confianca: 0.85
+                  }
+                ]
               },
               modificacoes: [
                 {
@@ -237,6 +320,40 @@
     border-radius: 20px;
     font-size: 0.9rem;
     backdrop-filter: blur(10px);
+  }
+
+  /* Estilos das Abas */
+  .tabs {
+    display: flex;
+    justify-content: center;
+    gap: 0.4rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .tab {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+    min-width: fit-content;
+  }
+
+  .tab:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+  }
+
+  .tab.active {
+    background: white;
+    color: #4f46e5;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   }
 
   .diff-content {
