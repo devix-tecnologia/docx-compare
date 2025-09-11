@@ -44,9 +44,17 @@ class ConfiguracaoDirectus:
     @classmethod
     def from_env(cls) -> "ConfiguracaoDirectus":
         """Cria configuração a partir de variáveis de ambiente."""
+        url_base = os.getenv("DIRECTUS_BASE_URL")
+        token = os.getenv("DIRECTUS_TOKEN")
+
+        if not url_base:
+            raise ValueError("DIRECTUS_BASE_URL deve ser definida no arquivo .env")
+        if not token:
+            raise ValueError("DIRECTUS_TOKEN deve ser definido no arquivo .env")
+
         return cls(
-            url_base=os.getenv("DIRECTUS_URL", "https://contract.devix.co"),
-            token=os.getenv("DIRECTUS_TOKEN", ""),
+            url_base=url_base,
+            token=token,
             timeout=int(os.getenv("DIRECTUS_TIMEOUT", "30")),
         )
 
@@ -207,31 +215,32 @@ class AnalisadorTagsDirectus:
 
         Returns:
             True se as tags são válidas
+
+        Raises:
+            requests.RequestException: Se houver erro na comunicação com Directus
         """
-        try:
-            # Buscar validações do modelo no Directus
-            url = f"{self.config.url_base}/items/contratos_modelos/{modelo.id}"
-            response = self.session.get(url, timeout=self.config.timeout)
+        # Buscar validações do modelo no Directus
+        url = f"{self.config.url_base}/items/contratos_modelos/{modelo.id}"
+        response = self.session.get(url, timeout=self.config.timeout)
 
-            if response.status_code == 200:
-                dados_modelo = response.json().get("data", {})
-                tags_obrigatorias = set(dados_modelo.get("tags_obrigatorias", []))
+        if response.status_code == 200:
+            dados_modelo = response.json().get("data", {})
+            tags_obrigatorias = set(dados_modelo.get("tags_obrigatorias", []))
 
-                # Verificar se todas as tags obrigatórias estão presentes
-                tags_encontradas = {tag.nome for tag in tags}
+            # Verificar se todas as tags obrigatórias estão presentes
+            tags_encontradas = {tag.nome for tag in tags}
 
-                return tags_obrigatorias.issubset(tags_encontradas)
+            return tags_obrigatorias.issubset(tags_encontradas)
 
-            # Fallback: validação básica local
+        # Se não encontrar o modelo, usar dados locais
+        elif response.status_code == 404:
             tags_encontradas = {tag.nome for tag in tags}
             return modelo.tags_obrigatorias.issubset(tags_encontradas)
 
-        except Exception:
-            # Em caso de erro, fazer validação básica
-            tags_encontradas = {tag.nome for tag in tags}
-            return len(
-                modelo.tags_obrigatorias
-            ) == 0 or modelo.tags_obrigatorias.issubset(tags_encontradas)
+        # Para outros erros, lançar exceção
+        else:
+            response.raise_for_status()
+            return False  # Never reached, but satisfies type checker
 
 
 class ComparadorDocumentosDirectus:
@@ -340,25 +349,26 @@ class ComparadorDocumentosDirectus:
         modificado: Documento,
         modificacoes: list[Modificacao],
     ):
-        """Registra a comparação no Directus para auditoria."""
-        try:
-            dados_log = {
-                "documento_original_id": original.id,
-                "documento_modificado_id": modificado.id,
-                "total_modificacoes": len(modificacoes),
-                "data_comparacao": datetime.now().isoformat(),
-                "tipos_modificacao": {
-                    tipo.value: len([m for m in modificacoes if m.tipo == tipo])
-                    for tipo in TipoModificacao
-                },
-            }
+        """
+        Registra a comparação no Directus para auditoria.
 
-            url = f"{self.config.url_base}/items/logs_comparacao"
-            self.session.post(url, json=dados_log, timeout=self.config.timeout)
+        Raises:
+            requests.RequestException: Se houver erro na comunicação com Directus
+        """
+        dados_log = {
+            "documento_original_id": original.id,
+            "documento_modificado_id": modificado.id,
+            "total_modificacoes": len(modificacoes),
+            "data_comparacao": datetime.now().isoformat(),
+            "tipos_modificacao": {
+                tipo.value: len([m for m in modificacoes if m.tipo == tipo])
+                for tipo in TipoModificacao
+            },
+        }
 
-        except Exception:
-            # Falha silenciosa no log
-            pass
+        url = f"{self.config.url_base}/items/logs_comparacao"
+        response = self.session.post(url, json=dados_log, timeout=self.config.timeout)
+        response.raise_for_status()
 
 
 class AgrupadorModificacoesDirectus:
@@ -435,21 +445,23 @@ class AgrupadorModificacoesDirectus:
         return blocos
 
     def _obter_configuracao(self, chave: str, valor_padrao: Any) -> Any:
-        """Obtém configuração do Directus ou retorna valor padrão."""
-        try:
-            url = f"{self.config.url_base}/items/configuracoes"
-            params = {"filter[chave][_eq]": chave}
-            response = self.session.get(url, params=params, timeout=self.config.timeout)
+        """
+        Obtém configuração do Directus ou retorna valor padrão.
 
-            if response.status_code == 200:
-                dados = response.json().get("data", [])
-                if dados:
-                    return dados[0].get("valor", valor_padrao)
+        Raises:
+            requests.RequestException: Se houver erro na comunicação com Directus
+        """
+        url = f"{self.config.url_base}/items/configuracoes"
+        params = {"filter[chave][_eq]": chave}
+        response = self.session.get(url, params=params, timeout=self.config.timeout)
+        response.raise_for_status()
 
-            return valor_padrao
+        if response.status_code == 200:
+            dados = response.json().get("data", [])
+            if dados:
+                return dados[0].get("valor", valor_padrao)
 
-        except Exception:
-            return valor_padrao
+        return valor_padrao
 
     def _criar_bloco(self, modificacoes: list[Modificacao]) -> BlocoModificacao:
         """Cria um bloco de modificações."""

@@ -4,7 +4,6 @@ Exemplo de uso do Pipeline Funcional para Processamento de Documentos DOCX
 Demonstra como compor e usar as funções do pipeline_funcional.py
 """
 
-
 from src.docx_compare.core.pipeline_funcional import (
     ContextoProcessamento,
     PrioridadeProcessamento,

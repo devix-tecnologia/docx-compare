@@ -4,13 +4,14 @@ Testes para as implementações Directus com inversão de dependência.
 """
 
 import sys
+import tempfile
+from datetime import datetime
 from pathlib import Path
 
 # Adicionar o diretório src ao path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-import tempfile
-from datetime import datetime
+from dotenv import load_dotenv
 
 from docx_compare.core.implementacoes_directus import (
     AgrupadorModificacoesDirectus,
@@ -33,6 +34,11 @@ from docx_compare.core.pipeline_funcional import (
     TagId,
     executar_pipeline_completo,
 )
+
+# Carregar variáveis de ambiente do .env
+# Carregar .env do diretório raiz do projeto
+env_path = Path(__file__).parent.parent.parent / ".env"
+load_dotenv(env_path)
 
 
 def criar_documento_teste(conteudo: str, nome: str = "teste.docx") -> Documento:
@@ -85,7 +91,7 @@ def teste_configuracao_directus():
     # Teste configuração a partir de env (mock)
     import os
 
-    os.environ["DIRECTUS_URL"] = "https://env.directus.com"
+    os.environ["DIRECTUS_BASE_URL"] = "https://env.directus.com"
     os.environ["DIRECTUS_TOKEN"] = "env_token_456"
     os.environ["DIRECTUS_TIMEOUT"] = "60"
 
@@ -103,7 +109,7 @@ def teste_processador_texto_directus():
     """Testa ProcessadorTexto com implementação Directus."""
     print("=== Teste: ProcessadorTexto Directus ===")
 
-    config = ConfiguracaoDirectus(url_base="https://test.com", token="test")
+    config = ConfiguracaoDirectus.from_env()
     processador = ProcessadorTextoDirectus(config)
 
     # Criar arquivo temporário para teste
@@ -138,7 +144,7 @@ def teste_analisador_tags_directus():
     """Testa AnalisadorTags com implementação Directus."""
     print("=== Teste: AnalisadorTags Directus ===")
 
-    config = ConfiguracaoDirectus(url_base="https://test.com", token="test")
+    config = ConfiguracaoDirectus.from_env()
     analisador = AnalisadorTagsDirectus(config)
 
     # Texto com diferentes tipos de tags
@@ -176,7 +182,7 @@ def teste_comparador_documentos_directus():
     """Testa ComparadorDocumentos com implementação Directus."""
     print("=== Teste: ComparadorDocumentos Directus ===")
 
-    config = ConfiguracaoDirectus(url_base="https://test.com", token="test")
+    config = ConfiguracaoDirectus.from_env()
     comparador = ComparadorDocumentosDirectus(config)
 
     # Criar documentos de teste
@@ -205,7 +211,7 @@ def teste_agrupador_modificacoes_directus():
     """Testa AgrupadorModificacoes com implementação Directus."""
     print("=== Teste: AgrupadorModificacoes Directus ===")
 
-    config = ConfiguracaoDirectus(url_base="https://test.com", token="test")
+    config = ConfiguracaoDirectus.from_env()
     agrupador = AgrupadorModificacoesDirectus(config)
 
     # Criar documentos de teste para gerar modificações
@@ -236,9 +242,8 @@ def teste_factory_implementacoes():
     """Testa Factory para criar implementações."""
     print("=== Teste: Factory de Implementações ===")
 
-    # Testar criação com configuração customizada
-    config = ConfiguracaoDirectus(url_base="https://custom.com", token="custom_token")
-    factory = FactoryImplementacoes(config)
+    # Testar criação com configuração a partir do .env
+    factory = FactoryImplementacoes()  # Usa ConfiguracaoDirectus.from_env() por padrão
 
     # Criar implementações individuais
     processador = factory.criar_processador_texto()
@@ -265,9 +270,8 @@ def teste_pipeline_completo_com_directus():
     """Testa pipeline completo usando implementações Directus."""
     print("=== Teste: Pipeline Completo com Directus ===")
 
-    # Configurar factory
-    config = ConfiguracaoDirectus(url_base="https://test.com", token="test")
-    factory = FactoryImplementacoes(config)
+    # Configurar factory com configuração do .env
+    factory = FactoryImplementacoes()  # Usa ConfiguracaoDirectus.from_env() por padrão
 
     # Criar implementações
     processador, analisador, comparador, agrupador = factory.criar_todos()
