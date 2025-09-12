@@ -16,18 +16,10 @@
     <div class="diff-info">
       <h3>Informações do Diff</h3>
       <div class="info-grid">
-        <div class="info-item">
-          <strong>Linhas Originais:</strong> {{ linhasOriginais }}
-        </div>
-        <div class="info-item">
-          <strong>Linhas Modificadas:</strong> {{ linhasModificadas }}
-        </div>
-        <div class="info-item">
-          <strong>Diferenças:</strong> {{ totalDiferencas }}
-        </div>
-        <div class="info-item">
-          <strong>Similaridade:</strong> {{ porcentagemSimilaridade }}%
-        </div>
+        <div class="info-item"><strong>Linhas Originais:</strong> {{ linhasOriginais }}</div>
+        <div class="info-item"><strong>Linhas Modificadas:</strong> {{ linhasModificadas }}</div>
+        <div class="info-item"><strong>Diferenças:</strong> {{ totalDiferencas }}</div>
+        <div class="info-item"><strong>Similaridade:</strong> {{ porcentagemSimilaridade }}%</div>
       </div>
     </div>
   </div>
@@ -46,21 +38,26 @@
 
   // Computed
   const documento = computed(() => props.dados.documentos[0])
-  
+
   const conteudoOriginal = computed(() => {
-    return documento.value.conteudo_comparacao?.original || `Contrato de Prestação de Serviços
+    return (
+      documento.value.conteudo_comparacao?.original ||
+      `Contrato de Prestação de Serviços
 
 O presente contrato estabelece que o prazo para entrega será de 30 dias úteis a partir da assinatura, com {{valor}} especificado no anexo I.
 
 As condições de pagamento seguem o cronograma estabelecido no documento principal.
 
 Cláusula 1: Objeto do contrato
-Cláusula 2: Prazo de execução  
+Cláusula 2: Prazo de execução
 Cláusula 3: Valor e forma de pagamento`
+    )
   })
 
   const conteudoModificado = computed(() => {
-    return documento.value.conteudo_comparacao?.modificado || `Contrato de Prestação de Serviços
+    return (
+      documento.value.conteudo_comparacao?.modificado ||
+      `Contrato de Prestação de Serviços
 
 O presente contrato estabelece que o prazo para entrega alterado será de 30 dias corridos a partir da assinatura, com {{preco}} especificado no anexo I.
 
@@ -70,6 +67,7 @@ Cláusula 1: Objeto do contrato revisado
 Cláusula 2: Prazo de execução estendido
 Cláusula 3: Valor e forma de pagamento atualizada
 Cláusula 4: Nova cláusula de garantias`
+    )
   })
 
   const diffHtml = computed(() => {
@@ -77,15 +75,15 @@ Cláusula 4: Nova cláusula de garantias`
       // Simular um diff básico sem dependências externas
       const original = conteudoOriginal.value.split('\n')
       const modified = conteudoModificado.value.split('\n')
-      
+
       let diffOutput = '<div class="simple-diff">'
-      
+
       const maxLines = Math.max(original.length, modified.length)
-      
+
       for (let i = 0; i < maxLines; i++) {
         const origLine = original[i] || ''
         const modLine = modified[i] || ''
-        
+
         if (origLine === modLine) {
           diffOutput += `<div class="diff-line unchanged">
             <span class="line-number">${i + 1}</span>
@@ -106,7 +104,7 @@ Cláusula 4: Nova cláusula de garantias`
           }
         }
       }
-      
+
       diffOutput += '</div>'
       return diffOutput
     } catch (error) {
@@ -117,7 +115,7 @@ Cláusula 4: Nova cláusula de garantias`
 
   const linhasOriginais = computed(() => conteudoOriginal.value.split('\n').length)
   const linhasModificadas = computed(() => conteudoModificado.value.split('\n').length)
-  
+
   const totalDiferencas = computed(() => {
     return documento.value.modificacoes?.length || 3
   })
@@ -126,7 +124,7 @@ Cláusula 4: Nova cláusula de garantias`
     const original = conteudoOriginal.value
     const modificado = conteudoModificado.value
     const maxLength = Math.max(original.length, modificado.length)
-    const similarity = 1 - (Math.abs(original.length - modificado.length) / maxLength)
+    const similarity = 1 - Math.abs(original.length - modificado.length) / maxLength
     return Math.round(similarity * 100)
   })
 </script>
