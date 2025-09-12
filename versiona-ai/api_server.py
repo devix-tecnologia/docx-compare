@@ -74,11 +74,7 @@ class ProcessadorTags:
 
     def processar_documento(self, conteudo_original, conteudo_modificado):
         """Simula processamento de documento"""
-        return {
-            "success": True,
-            "modificacoes": [],
-            "documento_id": "mock_doc"
-        }
+        return {"success": True, "modificacoes": [], "documento_id": "mock_doc"}
 
 
 class AgrupadorPosicional:
