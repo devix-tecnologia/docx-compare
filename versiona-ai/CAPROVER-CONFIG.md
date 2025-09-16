@@ -16,16 +16,19 @@ LOG_LEVEL=INFO
 ```
 
 ## 🐳 Imagem Docker
+
 ```
 docker-registry.de.vix.br/versiona-ai:latest
 ```
 
 ## 🌐 Configuração de Rede
+
 - **Container Port**: 8001
 - **Enable HTTPS**: ✅ Sim
 - **Force HTTPS**: ✅ Sim
 
 ## 📊 Health Check
+
 - **Path**: `/health`
 - **Port**: 8001
 - **Expected Response**: JSON com `"status": "ok"`
@@ -33,19 +36,23 @@ docker-registry.de.vix.br/versiona-ai:latest
 ## 🔄 Deploy Steps
 
 1. **Criar App no Caprover**
+
    - Nome: `versiona-ai`
    - Deploy via: `Deploy via ImageName`
 
 2. **Configurar Imagem**
+
    ```
    docker-registry.de.vix.br/versiona-ai:latest
    ```
 
 3. **Adicionar Variáveis de Ambiente**
+
    - Ir em "App Configs" → "Environment Variables"
    - Adicionar as variáveis listadas acima
 
 4. **Ativar HTTPS**
+
    - Ir em "HTTP Settings"
    - Marcar "Enable HTTPS"
    - Marcar "Force HTTPS by redirecting all HTTP traffic to HTTPS"
@@ -61,4 +68,4 @@ Após deploy bem-sucedido:
 - **API Base**: `https://versiona-ai.sua-instancia.com`
 - **Health Check**: `https://versiona-ai.sua-instancia.com/health`
 - **Versões**: `https://versiona-ai.sua-instancia.com/api/versoes`
-- **Exemplo**: `https://versiona-ai.sua-instancia.com/version/c2b1dfa0-c664-48b8-a5ff-84b70041b428`
+- **Exemplo**: `https://versiona-ai.sua-instancia.com/versao/c2b1dfa0-c664-48b8-a5ff-84b70041b428`

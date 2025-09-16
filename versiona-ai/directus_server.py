@@ -948,7 +948,7 @@ def get_versao_by_id(versao_id):
                 "versao": versao_data,
                 "diff_data": result,
                 "status": "success",
-                "view_url": f"http://localhost:{FLASK_PORT}/version/{versao_id}",
+                "view_url": f"http://localhost:{FLASK_PORT}/versao/{versao_id}",
                 "api_url": f"http://localhost:{FLASK_PORT}/api/versoes/{versao_id}",
             }
         )
@@ -1012,7 +1012,7 @@ def _get_mock_versao_by_id(versao_id):
     return mock_versoes.get(versao_id)
 
 
-@app.route("/version/<versao_id>", methods=["GET"])
+@app.route("/versao/<versao_id>", methods=["GET"])
 def view_version(versao_id):
     """Visualiza uma versão específica com suas diferenças"""
     try:
