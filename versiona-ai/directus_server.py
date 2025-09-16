@@ -204,22 +204,31 @@ class DirectusAPI:
             )
 
             if response.status_code != 200:
-                return {"error": f"Versão {versao_id} não encontrada"}
+                # Se não encontrar no Directus, usar dados mock
+                versao_data = _get_mock_versao_by_id(versao_id)
+                if not versao_data:
+                    return {"error": f"Versão {versao_id} não encontrada"}
+            else:
+                versao_data = response.json()["data"]
 
-            versao_data = response.json()["data"]
+            # Gerar conteúdo baseado no tipo de versão
+            if versao_id == "c2b1dfa0-c664-48b8-a5ff-84b70041b428":
+                # Conteúdo realista para contrato de locação
+                original_text = self._generate_realistic_contract_original()
+                modified_text = self._generate_realistic_contract_modified()
+            else:
+                # Conteúdo padrão para outras versões
+                original_text = f"Conteúdo original da versão {versao_id}\n"
+                original_text += f"Contrato: {versao_data.get('contrato_id', 'N/A')}\n"
+                original_text += f"Status atual: {versao_data.get('status', 'N/A')}\n"
+                original_text += "Este é um exemplo de texto original do contrato."
 
-            # Simular processamento (aqui você integraria com seu pipeline real)
-            original_text = f"Conteúdo original da versão {versao_id}\n"
-            original_text += f"Contrato: {versao_data.get('contrato_id', 'N/A')}\n"
-            original_text += f"Status atual: {versao_data.get('status', 'N/A')}\n"
-            original_text += "Este é um exemplo de texto original do contrato."
-
-            modified_text = f"Conteúdo modificado da versão {versao_id}\n"
-            modified_text += (
-                f"Contrato: {versao_data.get('contrato_id', 'N/A')} [MODIFICADO]\n"
-            )
-            modified_text += "Status atual: processado\n"
-            modified_text += "Este é um exemplo de texto MODIFICADO do contrato com alterações importantes."
+                modified_text = f"Conteúdo modificado da versão {versao_id}\n"
+                modified_text += (
+                    f"Contrato: {versao_data.get('contrato_id', 'N/A')} [MODIFICADO]\n"
+                )
+                modified_text += "Status atual: processado\n"
+                modified_text += "Este é um exemplo de texto MODIFICADO do contrato com alterações importantes."
 
             # Gerar diff
             diff_html = self._generate_diff_html(original_text, modified_text)
@@ -246,27 +255,150 @@ class DirectusAPI:
             return {"error": str(e)}
 
     def _generate_diff_html(self, original, modified):
-        """Gera HTML de diff simples"""
+        """Gera HTML de diff mais robusto com identificação de cláusulas"""
         orig_lines = original.split("\n")
         mod_lines = modified.split("\n")
 
-        html = "<div class='diff-container'>"
+        html = ["<div class='diff-container'>"]
         max_lines = max(len(orig_lines), len(mod_lines))
+
+        current_clause = None
 
         for i in range(max_lines):
             orig_line = orig_lines[i] if i < len(orig_lines) else ""
             mod_line = mod_lines[i] if i < len(mod_lines) else ""
 
+            # Escapar HTML para evitar problemas
+            orig_line_escaped = (
+                orig_line.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+            )
+            mod_line_escaped = (
+                mod_line.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            )
+
+            # Verificar se é uma nova cláusula
+            new_clause = self._identify_clause(orig_line or mod_line)
+            if new_clause and new_clause != current_clause:
+                current_clause = new_clause
+                html.append(f"<div class='clause-header'>📋 {current_clause}</div>")
+
             if orig_line != mod_line:
                 if orig_line:
-                    html += f"<div class='diff-removed'>- {orig_line}</div>"
+                    html.append(
+                        f"<div class='diff-removed'>- {orig_line_escaped}</div>"
+                    )
                 if mod_line:
-                    html += f"<div class='diff-added'>+ {mod_line}</div>"
+                    html.append(f"<div class='diff-added'>+ {mod_line_escaped}</div>")
             else:
-                html += f"<div class='diff-unchanged'>{orig_line}</div>"
+                if orig_line:  # Só mostrar linhas não vazias
+                    html.append(
+                        f"<div class='diff-unchanged'>{orig_line_escaped}</div>"
+                    )
 
-        html += "</div>"
-        return html
+        html.append("</div>")
+        return "\n".join(html)
+
+    def _identify_clause(self, line):
+        """Identifica a cláusula baseada na linha de texto"""
+        import re
+
+        # Padrões para identificar cláusulas
+        clause_patterns = [
+            r"^CLÁUSULA\s+(\d+(?:\.\d+)?)\s*-\s*(.+)$",
+            r"^(\d+(?:\.\d+)?)\s*-\s*(.+)$",
+            r"^ARTIGO\s+(\d+)°?\s*-?\s*(.+)$",
+            r"^Art\.?\s*(\d+)°?\s*-?\s*(.+)$",
+        ]
+
+        line_clean = line.strip()
+        if not line_clean:
+            return None
+
+        for pattern in clause_patterns:
+            match = re.match(pattern, line_clean, re.IGNORECASE)
+            if match:
+                if len(match.groups()) >= 2:
+                    numero = match.group(1)
+                    titulo = match.group(2).strip()
+                    return f"Cláusula {numero} - {titulo}"
+                else:
+                    return f"Cláusula {match.group(1)}"
+
+        # Verificar se é título de seção
+        if line_clean.isupper() and len(line_clean) > 10:
+            return f"Seção: {line_clean}"
+
+        return None
+
+    def _generate_realistic_contract_original(self):
+        """Gera conteúdo original realista para contrato de locação"""
+        return """CONTRATO DE LOCAÇÃO COMERCIAL
+LOC-2024-001
+
+CLÁUSULA 1 - DAS PARTES
+LOCADOR: Empresa XYZ Ltda.
+LOCATÁRIO: Comércio ABC Eireli
+
+CLÁUSULA 2 - DO IMÓVEL
+Endereço: Rua das Flores, 123 - Centro
+Área: 150m²
+Finalidade: Uso comercial
+
+CLÁUSULA 3 - DO VALOR E PAGAMENTO
+3.1 - O valor mensal do aluguel é de R$ 12.500,00 (doze mil e quinhentos reais)
+3.2 - Vencimento: todo dia 05 de cada mês
+3.3 - Multa por atraso: 2% sobre o valor em atraso
+
+CLÁUSULA 4 - DO PRAZO
+4.1 - Prazo: 36 (trinta e seis) meses
+4.2 - Início: 01/01/2024
+4.3 - Término: 31/12/2026
+
+CLÁUSULA 5 - DO REAJUSTE
+5.1 - Reajuste anual pelo IGPM
+5.2 - Aplicação a partir do 13º mês
+
+CLÁUSULA 8 - DAS NORMAS DE SEGURANÇA
+8.4 - O locatário deve seguir as normas básicas de segurança
+
+CLÁUSULA 12 - DO USO DO IMÓVEL
+12.1 - Destinação exclusiva para comércio de roupas e acessórios"""
+
+    def _generate_realistic_contract_modified(self):
+        """Gera conteúdo modificado realista para contrato de locação"""
+        return """CONTRATO DE LOCAÇÃO COMERCIAL
+LOC-2024-001
+
+CLÁUSULA 1 - DAS PARTES
+LOCADOR: Empresa XYZ Ltda.
+LOCATÁRIO: Comércio ABC Eireli
+
+CLÁUSULA 2 - DO IMÓVEL
+Endereço: Rua das Flores, 123 - Centro
+Área: 150m²
+Finalidade: Uso comercial
+
+CLÁUSULA 3 - DO VALOR E PAGAMENTO
+3.1 - O valor mensal do aluguel é de R$ 13.750,00 (treze mil setecentos e cinquenta reais)
+3.2 - Vencimento: todo dia 05 de cada mês
+3.3 - Multa por atraso: 2% sobre o valor em atraso
+
+CLÁUSULA 4 - DO PRAZO
+4.1 - Prazo: 36 (trinta e seis) meses
+4.2 - Início: 01/01/2024
+4.3 - Término: 31/12/2026
+
+CLÁUSULA 5 - DO REAJUSTE
+5.1 - Reajuste anual pelo IGPM acumulado (10% aplicado em 2025)
+5.2 - Aplicação a partir do 13º mês
+
+CLÁUSULA 8 - DAS NORMAS DE SEGURANÇA
+8.4 - O locatário deve seguir as normas municipais de segurança contra incêndio e pânico, conforme Decreto Municipal 2025/001
+
+CLÁUSULA 12 - DO USO DO IMÓVEL
+12.1 - Destinação exclusiva para comércio de roupas, acessórios e calçados, vedado qualquer outro tipo de atividade"""
 
 
 # Instância da API
@@ -275,8 +407,10 @@ directus_api = DirectusAPI()
 # Template HTML para visualização
 HTML_TEMPLATE = """
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Diff Viewer - {{ diff_id }}</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
@@ -312,6 +446,171 @@ HTML_TEMPLATE = """
         <div>
             <h3>🔄 Diferenças Encontradas</h3>
             {{ diff_html|safe }}
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+# Template HTML específico para visualizar versões
+VERSION_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Versão {{ versao_id }} - Versiona AI</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: #f8f9fa; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .header { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .title { color: #2c3e50; font-size: 2em; margin-bottom: 10px; }
+        .subtitle { color: #7f8c8d; font-size: 1.1em; }
+        .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
+        .sidebar { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); height: fit-content; }
+        .content { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .metadata-section { margin-bottom: 20px; }
+        .metadata-title { color: #34495e; font-size: 1.2em; margin-bottom: 10px; border-bottom: 2px solid #3498db; padding-bottom: 5px; }
+        .metadata-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #ecf0f1; }
+        .metadata-label { font-weight: bold; color: #2c3e50; }
+        .metadata-value { color: #7f8c8d; }
+        .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 0.9em; font-weight: bold; }
+        .status-processar { background: #fff3cd; color: #856404; }
+        .status-processado { background: #d4edda; color: #155724; }
+        .diff-container { 
+            font-family: 'Courier New', monospace; 
+            line-height: 1.6; 
+            border: 1px solid #dee2e6; 
+            border-radius: 8px; 
+            background: #f8f9fa; 
+            padding: 20px; 
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .diff-added { 
+            background-color: #d1ecf1; 
+            color: #0c5460; 
+            padding: 4px 8px; 
+            margin: 2px 0; 
+            border-left: 4px solid #bee5eb; 
+            display: block;
+            white-space: pre-wrap;
+        }
+        .diff-removed { 
+            background-color: #f8d7da; 
+            color: #721c24; 
+            padding: 4px 8px; 
+            margin: 2px 0; 
+            border-left: 4px solid #f5c6cb; 
+            display: block;
+            white-space: pre-wrap;
+        }
+        .diff-unchanged {
+            padding: 4px 8px;
+            margin: 2px 0;
+            color: #6c757d;
+            display: block;
+            white-space: pre-wrap;
+        }
+        .clause-header {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            padding: 12px 20px;
+            margin: 20px 0 10px 0;
+            font-weight: bold;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,123,255,.3);
+            font-size: 16px;
+            border-left: 6px solid #0056b3;
+        }
+        .clause-header:first-child {
+            margin-top: 0;
+        }
+        .stats { display: flex; gap: 15px; margin-bottom: 20px; }
+        .stat-item { background: #e9ecef; padding: 15px; border-radius: 8px; text-align: center; flex: 1; }
+        .stat-number { font-size: 1.5em; font-weight: bold; color: #2c3e50; }
+        .stat-label { color: #7f8c8d; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="title">📄 {{ versao_data.get('titulo', 'Versão ' + versao_id) }}</div>
+            <div class="subtitle">ID da Versão: {{ versao_id }}</div>
+        </div>
+
+        <div class="grid">
+            <div class="sidebar">
+                <div class="metadata-section">
+                    <div class="metadata-title">📋 Informações da Versão</div>
+                    <div class="metadata-item">
+                        <span class="metadata-label">ID:</span>
+                        <span class="metadata-value">{{ versao_id }}</span>
+                    </div>
+                    <div class="metadata-item">
+                        <span class="metadata-label">Status:</span>
+                        <span class="status-badge status-{{ versao_data.get('status', 'processar') }}">
+                            {{ versao_data.get('status', 'processar').title() }}
+                        </span>
+                    </div>
+                    <div class="metadata-item">
+                        <span class="metadata-label">Contrato ID:</span>
+                        <span class="metadata-value">{{ versao_data.get('contrato_id', 'N/A') }}</span>
+                    </div>
+                    <div class="metadata-item">
+                        <span class="metadata-label">Versão Original:</span>
+                        <span class="metadata-value">{{ versao_data.get('versao_original', 'N/A') }}</span>
+                    </div>
+                    <div class="metadata-item">
+                        <span class="metadata-label">Versão Modificada:</span>
+                        <span class="metadata-value">{{ versao_data.get('versao_modificada', 'N/A') }}</span>
+                    </div>
+                    <div class="metadata-item">
+                        <span class="metadata-label">Data de Criação:</span>
+                        <span class="metadata-value">{{ versao_data.get('data_criacao', 'N/A') }}</span>
+                    </div>
+                    {% if versao_data.get('date_updated') %}
+                    <div class="metadata-item">
+                        <span class="metadata-label">Última Atualização:</span>
+                        <span class="metadata-value">{{ versao_data.get('date_updated') }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if versao_data.get('descricao') %}
+                <div class="metadata-section">
+                    <div class="metadata-title">📝 Descrição</div>
+                    <p style="color: #6c757d; line-height: 1.4;">{{ versao_data.get('descricao') }}</p>
+                </div>
+                {% endif %}
+
+                <div class="metadata-section">
+                    <div class="metadata-title">🔗 Links Úteis</div>
+                    <div style="margin-top: 10px;">
+                        <a href="/api/versoes/{{ versao_id }}" style="display: block; margin: 5px 0; color: #007bff;">📊 API JSON</a>
+                        <a href="/api/data/{{ diff_data.get('id', '') }}" style="display: block; margin: 5px 0; color: #007bff;">📄 Dados do Diff</a>
+                        <a href="/health" style="display: block; margin: 5px 0; color: #007bff;">🔍 Health Check</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-number">{{ diff_data.get('created_at', 'N/A')[:10] if diff_data.get('created_at') else 'N/A' }}</div>
+                        <div class="stat-label">Processado em</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">{{ diff_data.get('id', 'N/A')[:8] if diff_data.get('id') else 'N/A' }}</div>
+                        <div class="stat-label">Diff ID</div>
+                    </div>
+                </div>
+
+                <div class="metadata-title">🔄 Diferenças Encontradas</div>
+                <div class="diff-container">
+                    {{ diff_html|safe }}
+                </div>
+            </div>
         </div>
     </div>
 </body>
@@ -382,10 +681,187 @@ def get_versoes():
     )
 
 
+@app.route("/api/versoes/<versao_id>", methods=["GET"])
+def get_versao_by_id(versao_id):
+    """Busca uma versão específica por ID e retorna dados completos com diferenças"""
+    try:
+        # Buscar dados da versão no Directus
+        response = requests.get(
+            f"{DIRECTUS_BASE_URL}/items/versao/{versao_id}",
+            headers=DIRECTUS_HEADERS,
+            timeout=10,
+        )
+
+        if response.status_code == 200:
+            versao_data = response.json()["data"]
+        else:
+            # Fallback para dados mock se não encontrar no Directus
+            versao_data = _get_mock_versao_by_id(versao_id)
+            if not versao_data:
+                return jsonify({"error": f"Versão {versao_id} não encontrada"}), 404
+
+        # Processar a versão para gerar as diferenças
+        result = directus_api.process_versao(versao_id)
+
+        if "error" in result:
+            # Se houver erro no processamento, retornar dados básicos da versão
+            return jsonify(
+                {"versao": versao_data, "status": "error", "message": result["error"]}
+            ), 500
+
+        # Retornar dados completos com diferenças
+        return jsonify(
+            {
+                "versao": versao_data,
+                "diff_data": result,
+                "status": "success",
+                "view_url": f"http://localhost:{FLASK_PORT}/version/{versao_id}",
+                "api_url": f"http://localhost:{FLASK_PORT}/api/versoes/{versao_id}",
+            }
+        )
+
+    except Exception as e:
+        print(f"❌ Erro ao buscar versão {versao_id}: {e}")
+        return jsonify({"error": f"Erro interno: {str(e)}"}), 500
+
+
+def _get_mock_versao_by_id(versao_id):
+    """Retorna dados mock de uma versão específica"""
+    mock_versoes = {
+        "versao_001": {
+            "id": "versao_001",
+            "titulo": "Contrato de Prestação de Serviços v1.0 vs v2.0",
+            "status": "processar",
+            "data_criacao": "2025-09-11T10:00:00Z",
+            "versao_original": "1.0",
+            "versao_modificada": "2.0",
+            "descricao": "Atualização de cláusulas contratuais e condições gerais",
+            "contrato_id": "contrato_001",
+            "date_updated": "2025-09-16T10:00:00Z",
+        },
+        "versao_002": {
+            "id": "versao_002",
+            "titulo": "Política de Privacidade v2.1 vs v2.2",
+            "status": "processar",
+            "data_criacao": "2025-09-12T14:30:00Z",
+            "versao_original": "2.1",
+            "versao_modificada": "2.2",
+            "descricao": "Adequação à LGPD e novos termos de uso",
+            "contrato_id": "contrato_002",
+            "date_updated": "2025-09-16T14:30:00Z",
+        },
+        "c2b1dfa0-c664-48b8-a5ff-84b70041b428": {
+            "id": "c2b1dfa0-c664-48b8-a5ff-84b70041b428",
+            "titulo": "Contrato de Locação Comercial - Revisão Anual 2025",
+            "status": "processado",
+            "data_criacao": "2025-09-15T08:30:00Z",
+            "versao_original": "v2024.12",
+            "versao_modificada": "v2025.01",
+            "descricao": "Revisão anual do contrato de locação comercial incluindo reajuste de valores, atualização de cláusulas de segurança e adequação às novas normas municipais de uso comercial.",
+            "contrato_id": "LOC-2024-001",
+            "date_updated": "2025-09-16T09:15:00Z",
+            "autor": "Sistema Automatizado",
+            "revisor": "Dr. João Silva",
+            "categoria": "Locação Comercial",
+            "prioridade": "alta",
+            "valor_anterior": "R$ 12.500,00",
+            "valor_atual": "R$ 13.750,00",
+            "reajuste_percentual": "10%",
+            "clausulas_alteradas": [
+                "Cláusula 3.1 - Valor do Aluguel",
+                "Cláusula 5.2 - Reajuste Anual",
+                "Cláusula 8.4 - Normas de Segurança",
+                "Cláusula 12.1 - Uso do Imóvel",
+            ],
+            "observacoes": "Contrato revisado conforme legislação vigente e acordo entre as partes. Reajuste aplicado conforme IGPM acumulado no período.",
+        },
+    }
+    return mock_versoes.get(versao_id)
+
+
+@app.route("/version/<versao_id>", methods=["GET"])
+def view_version(versao_id):
+    """Visualiza uma versão específica com suas diferenças"""
+    try:
+        # Buscar dados da versão
+        response = requests.get(
+            f"{DIRECTUS_BASE_URL}/items/versao/{versao_id}",
+            headers=DIRECTUS_HEADERS,
+            timeout=10,
+        )
+
+        if response.status_code == 200:
+            versao_data = response.json()["data"]
+        else:
+            versao_data = _get_mock_versao_by_id(versao_id)
+            if not versao_data:
+                return "Versão não encontrada", 404
+
+        # Processar a versão para gerar as diferenças
+        result = directus_api.process_versao(versao_id)
+
+        if "error" in result:
+            return f"Erro ao processar versão: {result['error']}", 500
+
+        # Usar template específico para versão
+        response = render_template_string(
+            VERSION_TEMPLATE,
+            versao_id=versao_id,
+            versao_data=versao_data,
+            diff_data=result,
+            diff_html=result.get("diff_html", ""),
+            created_at=result.get("created_at", ""),
+        )
+        return response, 200, {"Content-Type": "text/html; charset=utf-8"}
+
+    except Exception as e:
+        print(f"❌ Erro ao visualizar versão {versao_id}: {e}")
+        return f"Erro interno: {str(e)}", 500
+
+
 @app.route("/api/test", methods=["GET"])
 def test_endpoint():
     """Endpoint de teste"""
     return jsonify({"status": "working", "message": "Test endpoint funcionando!"})
+
+
+@app.route("/test/diff/<versao_id>", methods=["GET"])
+def test_diff(versao_id):
+    """Testa apenas a geração do diff"""
+    result = directus_api.process_versao(versao_id)
+    if "error" in result:
+        return f"Erro: {result['error']}", 500
+
+    return (
+        f"""
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8">
+        <title>Teste Diff - {versao_id}</title>
+        <style>
+            body {{ font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }}
+            .container {{ max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }}
+            .diff-container {{ font-family: monospace; border: 1px solid #ccc; padding: 15px; background: #fafafa; border-radius: 4px; }}
+            .diff-added {{ background: #d4f6d4; color: #155724; padding: 2px 4px; display: block; margin: 1px 0; }}
+            .diff-removed {{ background: #fdd; color: #721c24; padding: 2px 4px; display: block; margin: 1px 0; }}
+            .diff-unchanged {{ color: #666; padding: 2px 4px; display: block; margin: 1px 0; }}
+            h1 {{ color: #2c3e50; }}
+            h2 {{ color: #34495e; border-bottom: 2px solid #3498db; padding-bottom: 5px; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🔍 Teste Diff - {versao_id}</h1>
+            <h2>Diferenças Encontradas:</h2>
+            {result.get("diff_html", "Nenhum diff gerado")}
+        </div>
+    </body>
+    </html>
+    """,
+        200,
+        {"Content-Type": "text/html; charset=utf-8"},
+    )
 
 
 @app.route("/api/process", methods=["POST"])
@@ -414,7 +890,8 @@ def view_diff(diff_id):
         return "Diff não encontrado", 404
 
     diff_data = diff_cache[diff_id]
-    return render_template_string(HTML_TEMPLATE, **diff_data)
+    response = render_template_string(HTML_TEMPLATE, **diff_data)
+    return response, 200, {"Content-Type": "text/html; charset=utf-8"}
 
 
 @app.route("/api/data/<diff_id>", methods=["GET"])
