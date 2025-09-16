@@ -215,7 +215,17 @@ class DiffAPI:
                         "titulo": "Contrato v1.0 vs v2.0",
                         "data_criacao": "2025-09-11T10:00:00Z",
                         "status": "processado",
-                    }
+                        "versao_original": "1.0",
+                        "versao_modificada": "2.0",
+                    },
+                    {
+                        "id": "doc_002",
+                        "titulo": "Política de Privacidade v2.1 vs v2.2",
+                        "data_criacao": "2025-09-12T14:30:00Z",
+                        "status": "pendente",
+                        "versao_original": "2.1",
+                        "versao_modificada": "2.2",
+                    },
                 ],
             }
         except Exception as e:
@@ -363,6 +373,15 @@ def listar_documentos():
     """Lista documentos disponíveis do Directus"""
     resultado = diff_api.obter_documentos()
     return jsonify(resultado)
+
+
+@app.route("/api/versoes", methods=["GET"])
+def listar_versoes():
+    """Lista versões disponíveis (alias para documents)"""
+    # Retorna o mesmo formato que o frontend espera
+    resultado = diff_api.obter_documentos()
+    # Convertendo para o formato esperado pelo frontend
+    return jsonify({"versoes": resultado.get("documentos", [])})
 
 
 @app.route("/api/diff/<doc_id>", methods=["GET"])

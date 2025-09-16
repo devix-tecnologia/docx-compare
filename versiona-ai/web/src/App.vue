@@ -130,7 +130,7 @@
 
 <script>
   import DiffVisualizerSideBySide from './DiffVisualizerSideBySide.vue'
-  import VueDiffViewer from './VueDiffViewer.vue'
+import VueDiffViewer from './VueDiffViewer.vue'
 
   export default {
     name: 'App',
@@ -263,7 +263,7 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
     methods: {
       async verificarConexaoAPI() {
         try {
-          const response = await fetch('http://localhost:5002/health')
+          const response = await fetch('/api/health')
           if (response.ok) {
             this.isConnectedToAPI = true
             this.titulo = 'Versiona AI - Conectado ao API'
@@ -277,7 +277,7 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
       async carregarDiffDoAPI(diffId) {
         this.loading = true
         try {
-          const response = await fetch(`http://localhost:5002/api/data/${diffId}`)
+          const response = await fetch(`/api/data/${diffId}`)
           if (response.ok) {
             const data = await response.json()
             this.sampleData = data
@@ -299,14 +299,14 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
 
       async processarNovoDocumento() {
         if (!this.isConnectedToAPI) {
-          alert('API não está conectada. Verifique se o servidor está rodando em localhost:5002')
+          alert('API não está conectada. Verifique se o servidor está rodando')
           return
         }
 
         this.loading = true
         try {
           // Primeiro, buscar versões disponíveis para processar
-          const versoesResponse = await fetch('http://localhost:5002/api/versoes')
+          const versoesResponse = await fetch('/api/versoes')
           if (!versoesResponse.ok) {
             throw new Error('Erro ao buscar versões disponíveis')
           }
@@ -322,7 +322,7 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
           const versaoId = versoesData.versoes[0].id
           console.log('🔄 Processando versão ID:', versaoId)
 
-          const response = await fetch('http://localhost:5002/api/process', {
+          const response = await fetch('/api/process', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

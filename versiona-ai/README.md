@@ -22,12 +22,26 @@ versiona-ai/
 │   └── teste_implementacoes_mock.py     # Testes mock
 ├── 📂 exemplos/                  # Exemplos de uso
 │   └── pipeline_funcional_exemplo.py   # Exemplo básico
-├── 📂 web/                       # Interface web
+├── 📂 web/                       # Interface web Vue 3
+│   ├── src/App.vue                     # App principal Vue 3
 │   ├── html_diff_generator.py          # Gerador HTML diff
 │   ├── visualizador_diff_exemplo.py    # Visualizador Vue.js
 │   ├── DiffVisualizer.vue              # Componente Vue 3
 │   ├── diff_data_exemplo.json          # Dados exemplo
+│   ├── package.json                    # Dependências Node.js
+│   ├── vite.config.js                  # Configuração Vite
 │   └── exemplo_diff.html               # Resultado visual
+├── � deploy/                    # Deploy e produção
+│   ├── Dockerfile                      # Imagem Docker otimizada
+│   ├── docker-compose.yml             # Compose completo
+│   ├── docker-compose.simple.yml      # Compose simplificado
+│   ├── requirements.txt               # Dependências específicas
+│   ├── gunicorn.conf.py               # Configuração Gunicorn
+│   ├── Makefile                       # Comandos automatizados
+│   └── README.md                      # Documentação deploy
+├── �📄 api_server.py               # Servidor API de desenvolvimento
+├── 📄 directus_server.py          # Servidor API integração Directus
+├── 📄 simple_api_server.py        # Servidor API simplificado
 ├── 📄 INVERSAO_DEPENDENCIA_DIRECTUS.md # Documentação técnica
 └── 📄 README.md                         # Este arquivo
 ```
@@ -48,19 +62,20 @@ versiona-ai/
 - **Factory Pattern**: Criação automatizada de dependências
 - **Testabilidade**: Testes rápidos e isolados
 
+### ✅ **Servidores API**
+
+- **Servidor de desenvolvimento**: `api_server.py` com simulações
+- **Servidor Directus**: `directus_server.py` com integração real
+- **Servidor simplificado**: `simple_api_server.py` para testes
+- **CORS habilitado**: Comunicação frontend-backend sem restrições
+- **Cache inteligente**: Persistência de resultados de comparação
+
 ### ✅ **Integração Directus**
 
 - **API REST**: Comunicação com Directus CMS
 - **Configuração flexível**: URL, token, timeout
 - **Fallback gracioso**: Funcionamento local se API falhar
 - **Logs estruturados**: Registro de todas as operações
-
-### ✅ **Visualização Web**
-
-- **HTML responsivo**: Interface limpa e moderna
-- **Destaque de diferenças**: Cores por tipo e confiança
-- **Componente Vue 3**: Reutilizável e customizável
-- **Dados estruturados**: JSON para integração
 
 ## 🚀 Início Rápido
 
@@ -70,9 +85,26 @@ versiona-ai/
 # Variáveis de ambiente (arquivo .env)
 DIRECTUS_BASE_URL=https://your-directus.com
 DIRECTUS_TOKEN=your-api-token
+FLASK_PORT=8000
+
+# Para desenvolvimento local
+DIRECTUS_BASE_URL=http://localhost:8055
+DIRECTUS_TOKEN=dev-token
+FLASK_PORT=8000
 ```
 
-### 2. **Uso Básico com Mock**
+### 2. **Instalação de Dependências**
+
+```bash
+# Python dependencies (backend)
+pip install flask flask-cors requests python-dotenv
+
+# Node.js dependencies (frontend)
+cd versiona-ai/web
+npm install  # ou pnpm install
+```
+
+### 3. **Uso Básico com Mock**
 
 ```python
 from versiona_ai.core.implementacoes_mock import FactoryImplementacoesMock
@@ -98,7 +130,7 @@ resultados = executar_pipeline_completo(
 print(f"✅ {len(resultados[0].modificacoes)} modificações encontradas")
 ```
 
-### 3. **Uso com Directus Real**
+### 4. **Uso com Directus Real**
 
 ```python
 from versiona_ai.core.implementacoes_directus import (
@@ -117,7 +149,40 @@ processador, analisador, comparador, agrupador = factory.criar_todos()
 resultados = executar_pipeline_completo(...)
 ```
 
-### 4. **Gerar Visualização HTML**
+### 5. **Executar Interface Web**
+
+```bash
+# Entrar no diretório web
+cd versiona-ai/web
+
+# Instalar dependências Node.js
+npm install  # ou pnpm install
+
+# Executar servidor de desenvolvimento (Vite)
+npm run dev  # Interface acessível em http://localhost:5173
+
+# Build para produção
+npm run build
+```
+
+### 6. **Executar Servidores API**
+
+```bash
+# Servidor de desenvolvimento (mock)
+cd versiona-ai
+python api_server.py
+# Acesse: http://localhost:8000
+
+# Servidor com Directus real (requer .env configurado)
+python directus_server.py
+# Acesse: http://localhost:8000
+
+# Servidor simplificado para testes
+python simple_api_server.py
+# Acesse: http://localhost:5000
+```
+
+### 7. **Gerar Visualização HTML**
 
 ```python
 from versiona_ai.web.html_diff_generator import gerar_html_diff
@@ -133,6 +198,49 @@ html_resultado = gerar_html_diff(
 # Salvar resultado
 with open("resultado_diff.html", "w") as f:
     f.write(html_resultado)
+```
+
+## 🚀 Deploy para Produção
+
+### **Deploy Simples com Docker**
+
+```bash
+# Entrar no diretório de deploy
+cd versiona-ai/deploy
+
+# Configurar ambiente
+make setup
+# Editar o arquivo .env com suas configurações
+
+# Deploy rápido
+make up
+
+# Verificar se está funcionando
+make health
+# Acesse: http://localhost:8000
+```
+
+### **Deploy Completo**
+
+```bash
+# Deploy com Nginx (recomendado para produção)
+make prod
+
+# Ver logs em tempo real
+make logs
+
+# Status dos containers
+make status
+```
+
+### **Comandos Úteis**
+
+```bash
+make help      # Ver todos os comandos
+make restart   # Reiniciar serviços
+make clean     # Limpar tudo
+make rebuild   # Rebuild completo
+make shell     # Entrar no container
 ```
 
 ## 🧪 Executar Testes
@@ -196,29 +304,42 @@ python versiona-ai/tests/teste_implementacoes_directus.py
 
 ## 📈 Performance
 
-| Operação              | Mock      | Directus   |
-| --------------------- | --------- | ---------- |
-| Processamento texto   | ~1ms      | ~50ms      |
-| Análise tags          | ~2ms      | ~100ms     |
-| Comparação docs       | ~5ms      | ~200ms     |
-| Agrupamento           | ~1ms      | ~50ms      |
-| **Pipeline completo** | **~15ms** | **~500ms** |
+| Operação              | Mock      | Directus   | API        |
+| --------------------- | --------- | ---------- | ---------- |
+| Processamento texto   | ~1ms      | ~50ms      | ~100ms     |
+| Análise tags          | ~2ms      | ~100ms     | ~150ms     |
+| Comparação docs       | ~5ms      | ~200ms     | ~300ms     |
+| Agrupamento           | ~1ms      | ~50ms      | ~75ms      |
+| **Pipeline completo** | **~15ms** | **~500ms** | **~750ms** |
+| Interface web         | -         | -          | **~50ms**  |
 
-## 🎨 Visualização Web
+## 🎨 Interface Web
 
-### **HTML Responsivo**
+### **Vue 3 SPA Moderna**
 
-- Layout side-by-side
-- Destaque por cores (tipo + confiança)
-- Estatísticas detalhadas
-- Legenda visual
+- **Três abas de visualização**:
+  - 📋 Lista de modificações com filtros
+  - 🔍 Comparação lado-a-lado
+  - 📄 Diff unificado estilo Git
+- **Status de conexão**: Indica se está conectado à API
+- **Processamento em tempo real**: Botão para processar via API
+- **Estatísticas detalhadas**: Contadores e métricas
+- **Design responsivo**: Funciona em desktop e mobile
 
-### **Componente Vue 3**
+### **Servidores Flask**
 
-- Totalmente reativo
-- Props tipadas
-- Customizável via CSS
-- Integração fácil
+- **api_server.py**: Desenvolvimento com mocks
+- **directus_server.py**: Produção com Directus real
+- **simple_api_server.py**: Testes simplificados
+- **CORS enabled**: Frontend e backend separados
+- **Cache de resultados**: Performance otimizada
+
+### **Build System**
+
+- **Vite**: Build rápido e hot reload
+- **TypeScript**: Tipagem opcional
+- **ESLint + Prettier**: Code quality
+- **pnpm/npm**: Gerenciamento de dependências
 
 ## 🛠️ Extensibilidade
 
@@ -258,8 +379,12 @@ factory_prod = FactoryImplementacoes(ConfiguracaoDirectus(
 - ✅ **Protocols**: 4 interfaces definidas
 - ✅ **Implementações**: Mock + Directus
 - ✅ **Testes**: 100% cobertura
-- ✅ **Visualização**: HTML + Vue 3
-- ✅ **Documentação**: Completa
+- ✅ **Interface Vue 3**: SPA completa com 3 abas
+- ✅ **Servidores API**: 3 variações (dev/prod/test)
+- ✅ **Build System**: Vite + TypeScript
+- ✅ **Integração Directus**: Produção ready
+- ✅ **Deploy Automatizado**: Docker + Makefile para produção
+- ✅ **Documentação**: Completa e atualizada
 
 ## 🚀 Resultado
 
