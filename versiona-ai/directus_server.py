@@ -477,31 +477,31 @@ VERSION_TEMPLATE = """
         .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 0.9em; font-weight: bold; }
         .status-processar { background: #fff3cd; color: #856404; }
         .status-processado { background: #d4edda; color: #155724; }
-        .diff-container { 
-            font-family: 'Courier New', monospace; 
-            line-height: 1.6; 
-            border: 1px solid #dee2e6; 
-            border-radius: 8px; 
-            background: #f8f9fa; 
-            padding: 20px; 
+        .diff-container {
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            background: #f8f9fa;
+            padding: 20px;
             max-height: 600px;
             overflow-y: auto;
         }
-        .diff-added { 
-            background-color: #d1ecf1; 
-            color: #0c5460; 
-            padding: 4px 8px; 
-            margin: 2px 0; 
-            border-left: 4px solid #bee5eb; 
+        .diff-added {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            padding: 4px 8px;
+            margin: 2px 0;
+            border-left: 4px solid #bee5eb;
             display: block;
             white-space: pre-wrap;
         }
-        .diff-removed { 
-            background-color: #f8d7da; 
-            color: #721c24; 
-            padding: 4px 8px; 
-            margin: 2px 0; 
-            border-left: 4px solid #f5c6cb; 
+        .diff-removed {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 4px 8px;
+            margin: 2px 0;
+            border-left: 4px solid #f5c6cb;
             display: block;
             white-space: pre-wrap;
         }
@@ -698,7 +698,7 @@ VERSION_TEMPLATE = """
             init() {
                 // Encontrar todas as diferenças (adicionadas e removidas)
                 this.diffs = document.querySelectorAll('.diff-added, .diff-removed');
-                
+
                 // Adicionar IDs únicos para cada diferença
                 this.diffs.forEach((diff, index) => {
                     diff.setAttribute('data-diff-id', index);
@@ -707,10 +707,10 @@ VERSION_TEMPLATE = """
 
                 // Configurar botões
                 this.setupButtons();
-                
+
                 // Configurar atalhos de teclado
                 this.setupKeyboardShortcuts();
-                
+
                 // Atualizar contador
                 this.updateCounter();
 
@@ -749,23 +749,23 @@ VERSION_TEMPLATE = """
 
             goToNext() {
                 if (this.diffs.length === 0) return;
-                
+
                 this.currentDiffIndex++;
                 if (this.currentDiffIndex >= this.diffs.length) {
                     this.currentDiffIndex = 0; // Volta para o primeiro
                 }
-                
+
                 this.focusDiff(this.currentDiffIndex);
             }
 
             goToPrev() {
                 if (this.diffs.length === 0) return;
-                
+
                 this.currentDiffIndex--;
                 if (this.currentDiffIndex < 0) {
                     this.currentDiffIndex = this.diffs.length - 1; // Vai para o último
                 }
-                
+
                 this.focusDiff(this.currentDiffIndex);
             }
 
@@ -779,7 +779,7 @@ VERSION_TEMPLATE = """
                 const currentDiff = this.diffs[index];
                 if (currentDiff) {
                     currentDiff.classList.add('diff-highlight');
-                    
+
                     // Scroll suave para a diferença
                     currentDiff.scrollIntoView({
                         behavior: 'smooth',
