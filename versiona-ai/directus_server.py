@@ -526,6 +526,67 @@ VERSION_TEMPLATE = """
         .clause-header:first-child {
             margin-top: 0;
         }
+        .diff-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .navigation-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .nav-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(40,167,69,0.3);
+        }
+        .nav-btn:hover {
+            background: linear-gradient(135deg, #218838, #1ea085);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(40,167,69,0.4);
+        }
+        .nav-btn:active {
+            transform: translateY(0);
+        }
+        .nav-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .diff-counter {
+            background: #f8f9fa;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #495057;
+            border: 1px solid #dee2e6;
+            min-width: 80px;
+            text-align: center;
+        }
+        .diff-highlight {
+            background: #fff3cd !important;
+            border: 2px solid #ffc107 !important;
+            box-shadow: 0 0 10px rgba(255,193,7,0.5) !important;
+            animation: highlight-pulse 1s ease-in-out;
+        }
+        @keyframes highlight-pulse {
+            0% { box-shadow: 0 0 5px rgba(255,193,7,0.3); }
+            50% { box-shadow: 0 0 20px rgba(255,193,7,0.7); }
+            100% { box-shadow: 0 0 10px rgba(255,193,7,0.5); }
+        }
         .stats { display: flex; gap: 15px; margin-bottom: 20px; }
         .stat-item { background: #e9ecef; padding: 15px; border-radius: 8px; text-align: center; flex: 1; }
         .stat-number { font-size: 1.5em; font-weight: bold; color: #2c3e50; }
@@ -606,13 +667,185 @@ VERSION_TEMPLATE = """
                     </div>
                 </div>
 
-                <div class="metadata-title">🔄 Diferenças Encontradas</div>
-                <div class="diff-container">
+                <div class="diff-header">
+                    <div class="metadata-title">🔄 Diferenças Encontradas</div>
+                    <div class="navigation-controls">
+                        <button id="prevDiff" class="nav-btn" title="Diferença anterior (Alt + ←)">
+                            ⬅️ Anterior
+                        </button>
+                        <span id="diffCounter" class="diff-counter">-</span>
+                        <button id="nextDiff" class="nav-btn" title="Próxima diferença (Alt + →)">
+                            Próximo ➡️
+                        </button>
+                    </div>
+                </div>
+                <div class="diff-container" id="diffContainer">
                     {{ diff_html|safe }}
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        // Sistema de navegação entre diferenças
+        class DiffNavigator {
+            constructor() {
+                this.currentDiffIndex = -1;
+                this.diffs = [];
+                this.init();
+            }
+
+            init() {
+                // Encontrar todas as diferenças (adicionadas e removidas)
+                this.diffs = document.querySelectorAll('.diff-added, .diff-removed');
+                
+                // Adicionar IDs únicos para cada diferença
+                this.diffs.forEach((diff, index) => {
+                    diff.setAttribute('data-diff-id', index);
+                    diff.style.scrollMarginTop = '20px'; // Espaço para scroll suave
+                });
+
+                // Configurar botões
+                this.setupButtons();
+                
+                // Configurar atalhos de teclado
+                this.setupKeyboardShortcuts();
+                
+                // Atualizar contador
+                this.updateCounter();
+
+                // Focar na primeira diferença automaticamente
+                if (this.diffs.length > 0) {
+                    setTimeout(() => this.goToNext(), 500);
+                }
+            }
+
+            setupButtons() {
+                const prevBtn = document.getElementById('prevDiff');
+                const nextBtn = document.getElementById('nextDiff');
+
+                if (prevBtn) {
+                    prevBtn.addEventListener('click', () => this.goToPrev());
+                }
+                if (nextBtn) {
+                    nextBtn.addEventListener('click', () => this.goToNext());
+                }
+            }
+
+            setupKeyboardShortcuts() {
+                document.addEventListener('keydown', (e) => {
+                    // Alt + Seta Esquerda = Anterior
+                    if (e.altKey && e.key === 'ArrowLeft') {
+                        e.preventDefault();
+                        this.goToPrev();
+                    }
+                    // Alt + Seta Direita = Próximo
+                    if (e.altKey && e.key === 'ArrowRight') {
+                        e.preventDefault();
+                        this.goToNext();
+                    }
+                });
+            }
+
+            goToNext() {
+                if (this.diffs.length === 0) return;
+                
+                this.currentDiffIndex++;
+                if (this.currentDiffIndex >= this.diffs.length) {
+                    this.currentDiffIndex = 0; // Volta para o primeiro
+                }
+                
+                this.focusDiff(this.currentDiffIndex);
+            }
+
+            goToPrev() {
+                if (this.diffs.length === 0) return;
+                
+                this.currentDiffIndex--;
+                if (this.currentDiffIndex < 0) {
+                    this.currentDiffIndex = this.diffs.length - 1; // Vai para o último
+                }
+                
+                this.focusDiff(this.currentDiffIndex);
+            }
+
+            focusDiff(index) {
+                // Remover highlight anterior
+                this.diffs.forEach(diff => {
+                    diff.classList.remove('diff-highlight');
+                });
+
+                // Adicionar highlight na diferença atual
+                const currentDiff = this.diffs[index];
+                if (currentDiff) {
+                    currentDiff.classList.add('diff-highlight');
+                    
+                    // Scroll suave para a diferença
+                    currentDiff.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+
+                    // Atualizar contador e botões
+                    this.updateCounter();
+                    this.updateButtons();
+                }
+            }
+
+            updateCounter() {
+                const counter = document.getElementById('diffCounter');
+                if (counter && this.diffs.length > 0) {
+                    counter.textContent = `${this.currentDiffIndex + 1} / ${this.diffs.length}`;
+                } else if (counter) {
+                    counter.textContent = '0 / 0';
+                }
+            }
+
+            updateButtons() {
+                const prevBtn = document.getElementById('prevDiff');
+                const nextBtn = document.getElementById('nextDiff');
+
+                if (this.diffs.length === 0) {
+                    if (prevBtn) prevBtn.disabled = true;
+                    if (nextBtn) nextBtn.disabled = true;
+                } else {
+                    if (prevBtn) prevBtn.disabled = false;
+                    if (nextBtn) nextBtn.disabled = false;
+                }
+            }
+        }
+
+        // Inicializar quando a página carregar
+        document.addEventListener('DOMContentLoaded', () => {
+            new DiffNavigator();
+        });
+
+        // Adicionar indicador visual de atalhos
+        document.addEventListener('DOMContentLoaded', () => {
+            const style = document.createElement('style');
+            style.textContent = `
+                .nav-btn:hover::after {
+                    content: attr(title);
+                    position: absolute;
+                    bottom: -30px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: rgba(0,0,0,0.8);
+                    color: white;
+                    padding: 4px 8px;
+                    border-radius: 4px;
+                    font-size: 12px;
+                    white-space: nowrap;
+                    z-index: 1000;
+                    pointer-events: none;
+                }
+                .nav-btn {
+                    position: relative;
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
 </body>
 </html>
 """
