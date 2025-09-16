@@ -462,10 +462,84 @@ VERSION_TEMPLATE = """
     <title>Versão {{ versao_id }} - Versiona AI</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: #f8f9fa; }
-        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-        .header { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .title { color: #2c3e50; font-size: 2em; margin-bottom: 10px; }
-        .subtitle { color: #7f8c8d; font-size: 1.1em; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; padding-top: 160px; }
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px);
+            max-width: 1360px;
+            z-index: 1000;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .header.compact {
+            padding: 15px;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .header.hidden {
+            transform: translateX(-50%) translateY(-100%);
+            opacity: 0;
+            pointer-events: none;
+        }
+        .title {
+            color: #2c3e50;
+            font-size: 2em;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+        .header.compact .title {
+            font-size: 1.4em;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+        }
+        .header.compact .subtitle {
+            font-size: 0.9em;
+        }
+        .sticky-navigation {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 10px 20px;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1001;
+            width: calc(100% - 40px);
+            max-width: 1360px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .sticky-navigation.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        .sticky-nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .sticky-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0;
+        }
         .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
         .sidebar { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); height: fit-content; }
         .content { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
@@ -595,9 +669,21 @@ VERSION_TEMPLATE = """
 </head>
 <body>
     <div class="container">
-        <div class="header">
+        <div class="header" id="mainHeader">
             <div class="title">📄 {{ versao_data.get('titulo', 'Versão ' + versao_id) }}</div>
             <div class="subtitle">ID da Versão: {{ versao_id }}</div>
+        </div>
+
+        <!-- Navegação fixa para rolagem -->
+        <div class="sticky-navigation" id="stickyNav">
+            <div class="sticky-nav-content">
+                <div class="sticky-title">{{ versao_data.get('titulo', 'Versão ' + versao_id) }}</div>
+                <div class="nav-controls">
+                    <span id="stickyCounter" class="diff-counter">0 / 0</span>
+                    <button id="stickyPrevDiff" class="nav-btn" title="Anterior (Alt + ←)">⬅️</button>
+                    <button id="stickyNextDiff" class="nav-btn" title="Próximo (Alt + →)">➡️</button>
+                </div>
+            </div>
         </div>
 
         <div class="grid">
@@ -711,6 +797,9 @@ VERSION_TEMPLATE = """
                 // Configurar atalhos de teclado
                 this.setupKeyboardShortcuts();
 
+                // Configurar navegação fixa
+                this.setupStickyNavigation();
+
                 // Atualizar contador
                 this.updateCounter();
 
@@ -721,14 +810,25 @@ VERSION_TEMPLATE = """
             }
 
             setupButtons() {
+                // Botões principais
                 const prevBtn = document.getElementById('prevDiff');
                 const nextBtn = document.getElementById('nextDiff');
+
+                // Botões da navegação fixa
+                const stickyPrevBtn = document.getElementById('stickyPrevDiff');
+                const stickyNextBtn = document.getElementById('stickyNextDiff');
 
                 if (prevBtn) {
                     prevBtn.addEventListener('click', () => this.goToPrev());
                 }
                 if (nextBtn) {
                     nextBtn.addEventListener('click', () => this.goToNext());
+                }
+                if (stickyPrevBtn) {
+                    stickyPrevBtn.addEventListener('click', () => this.goToPrev());
+                }
+                if (stickyNextBtn) {
+                    stickyNextBtn.addEventListener('click', () => this.goToNext());
                 }
             }
 
@@ -743,6 +843,40 @@ VERSION_TEMPLATE = """
                     if (e.altKey && e.key === 'ArrowRight') {
                         e.preventDefault();
                         this.goToNext();
+                    }
+                });
+            }
+
+            setupStickyNavigation() {
+                const header = document.getElementById('mainHeader');
+                const stickyNav = document.getElementById('stickyNav');
+
+                if (!header || !stickyNav) return;
+
+                let headerHeight = header.offsetHeight;
+
+                window.addEventListener('scroll', () => {
+                    const scrollY = window.scrollY;
+
+                    // Recalcular altura do header quando compacto
+                    if (header.classList.contains('compact')) {
+                        headerHeight = header.offsetHeight;
+                    }
+
+                    if (scrollY > headerHeight + 20) {
+                        // Quando rola bastante, esconder header principal e mostrar sticky
+                        stickyNav.classList.add('visible');
+                        header.classList.add('hidden');
+                    } else if (scrollY > 100) {
+                        // Scroll moderado: header compacto mas visível
+                        stickyNav.classList.remove('visible');
+                        header.classList.remove('hidden');
+                        header.classList.add('compact');
+                    } else {
+                        // Topo da página: header normal
+                        stickyNav.classList.remove('visible');
+                        header.classList.remove('hidden');
+                        header.classList.remove('compact');
                     }
                 });
             }
@@ -794,23 +928,36 @@ VERSION_TEMPLATE = """
 
             updateCounter() {
                 const counter = document.getElementById('diffCounter');
-                if (counter && this.diffs.length > 0) {
-                    counter.textContent = `${this.currentDiffIndex + 1} / ${this.diffs.length}`;
-                } else if (counter) {
-                    counter.textContent = '0 / 0';
+                const stickyCounter = document.getElementById('stickyCounter');
+
+                const counterText = this.diffs.length > 0
+                    ? `${this.currentDiffIndex + 1} / ${this.diffs.length}`
+                    : '0 / 0';
+
+                if (counter) {
+                    counter.textContent = counterText;
+                }
+                if (stickyCounter) {
+                    stickyCounter.textContent = counterText;
                 }
             }
 
             updateButtons() {
                 const prevBtn = document.getElementById('prevDiff');
                 const nextBtn = document.getElementById('nextDiff');
+                const stickyPrevBtn = document.getElementById('stickyPrevDiff');
+                const stickyNextBtn = document.getElementById('stickyNextDiff');
 
                 if (this.diffs.length === 0) {
                     if (prevBtn) prevBtn.disabled = true;
                     if (nextBtn) nextBtn.disabled = true;
+                    if (stickyPrevBtn) stickyPrevBtn.disabled = true;
+                    if (stickyNextBtn) stickyNextBtn.disabled = true;
                 } else {
                     if (prevBtn) prevBtn.disabled = false;
                     if (nextBtn) nextBtn.disabled = false;
+                    if (stickyPrevBtn) stickyPrevBtn.disabled = false;
+                    if (stickyNextBtn) stickyNextBtn.disabled = false;
                 }
             }
         }
