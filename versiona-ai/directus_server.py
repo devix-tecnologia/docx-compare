@@ -4,18 +4,20 @@ Conecta com https://contract.devix.co usando as credenciais do .env
 """
 
 import os
+import signal
+import sys
 import uuid
 from datetime import datetime
 
 import requests
 from dotenv import load_dotenv
-from flask import Flask, jsonify, render_template_string, request
+from flask import Flask, jsonify, render_template, render_template_string, request
 from flask_cors import CORS
 
 # Carregar variáveis do .env
 load_dotenv()
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder="templates")
 CORS(app)
 
 # Cache de diffs para persistência
@@ -24,13 +26,36 @@ diff_cache = {}
 # Configurações do Directus
 DIRECTUS_BASE_URL = os.getenv("DIRECTUS_BASE_URL", "https://contract.devix.co")
 DIRECTUS_TOKEN = os.getenv("DIRECTUS_TOKEN")
-FLASK_PORT = int(os.getenv("FLASK_PORT", "8000"))
+FLASK_PORT = int(os.getenv("FLASK_PORT", "8001"))
+DEV_MODE = os.getenv("DEV_MODE", "false").lower() == "true"
 
 # Headers para Directus
 DIRECTUS_HEADERS = {
     "Authorization": f"Bearer {DIRECTUS_TOKEN}",
     "Content-Type": "application/json",
 }
+
+
+def setup_signal_handlers():
+    """Configura handlers para encerramento gracioso"""
+
+    def signal_handler(sig, _frame):
+        print(f"\n🛑 Recebido sinal {sig}. Encerrando servidor graciosamente...")
+        print("🔄 Limpando recursos...")
+
+        # Limpar cache se necessário
+        if diff_cache:
+            print(f"🗑️  Limpando {len(diff_cache)} items do cache...")
+            diff_cache.clear()
+
+        print("✅ Servidor encerrado com sucesso!")
+        sys.exit(0)
+
+    # Registrar handlers para sinais comuns
+    signal.signal(signal.SIGINT, signal_handler)  # Ctrl+C
+    signal.signal(signal.SIGTERM, signal_handler)  # Termination
+    if hasattr(signal, "SIGHUP"):  # Unix only
+        signal.signal(signal.SIGHUP, signal_handler)  # Hangup
 
 
 class DirectusAPI:
@@ -196,9 +221,10 @@ class DirectusAPI:
     def process_versao(self, versao_id):
         """Processa uma versão específica"""
         try:
-            # Buscar dados da versão
+            # Buscar dados da versão com campos específicos
+            fields = "id,titulo,status,data_criacao,versao_original,versao_modificada,descricao,contrato_id,date_updated"
             response = requests.get(
-                f"{self.base_url}/items/versao/{versao_id}",
+                f"{self.base_url}/items/versao/{versao_id}?fields={fields}",
                 headers=DIRECTUS_HEADERS,
                 timeout=10,
             )
@@ -212,13 +238,15 @@ class DirectusAPI:
                 versao_data = response.json()["data"]
 
             # Gerar conteúdo baseado no tipo de versão
-            if versao_id == "c2b1dfa0-c664-48b8-a5ff-84b70041b428":
+            if versao_id == "c2b1dfa0-c664-48b8-a5ff-84b70041b42833":
                 # Conteúdo realista para contrato de locação
                 original_text = self._generate_realistic_contract_original()
                 modified_text = self._generate_realistic_contract_modified()
             else:
                 # Conteúdo padrão para outras versões
-                original_text = f"Conteúdo original da versão {versao_id}\n"
+                original_text = "CLÁUSULA 1 - DAS PARTES\n"
+                original_text += f"Conteúdo original da versão {versao_id}\n"
+                original_text += "CLÁUSULA 2 - PARTICIPANTES\n"
                 original_text += f"Contrato: {versao_data.get('contrato_id', 'N/A')}\n"
                 original_text += f"Status atual: {versao_data.get('status', 'N/A')}\n"
                 original_text += "Este é um exemplo de texto original do contrato."
@@ -229,6 +257,8 @@ class DirectusAPI:
                 )
                 modified_text += "Status atual: processado\n"
                 modified_text += "Este é um exemplo de texto MODIFICADO do contrato com alterações importantes."
+
+                original_text = versao_data.get()
 
             # Gerar diff
             diff_html = self._generate_diff_html(original_text, modified_text)
@@ -452,551 +482,6 @@ HTML_TEMPLATE = """
 </html>
 """
 
-# Template HTML específico para visualizar versões
-VERSION_TEMPLATE = """
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Versão {{ versao_id }} - Versiona AI</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: #f8f9fa; }
-        .container { max-width: 1400px; margin: 0 auto; padding: 20px; padding-top: 160px; }
-        .header {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            position: fixed;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 40px);
-            max-width: 1360px;
-            z-index: 1000;
-            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .header.compact {
-            padding: 15px;
-            border-radius: 0 0 12px 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        }
-        .header.hidden {
-            transform: translateX(-50%) translateY(-100%);
-            opacity: 0;
-            pointer-events: none;
-        }
-        .title {
-            color: #2c3e50;
-            font-size: 2em;
-            margin-bottom: 10px;
-            transition: all 0.3s ease;
-        }
-        .header.compact .title {
-            font-size: 1.4em;
-            margin-bottom: 5px;
-        }
-        .subtitle {
-            color: #7f8c8d;
-            font-size: 1.1em;
-            transition: all 0.3s ease;
-        }
-        .header.compact .subtitle {
-            font-size: 0.9em;
-        }
-        .sticky-navigation {
-            position: fixed;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 10px 20px;
-            border-radius: 0 0 12px 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            z-index: 1001;
-            width: calc(100% - 40px);
-            max-width: 1360px;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .sticky-navigation.visible {
-            opacity: 1;
-            visibility: visible;
-        }
-        .sticky-nav-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .sticky-title {
-            font-size: 1.1em;
-            font-weight: 600;
-            color: #2c3e50;
-            margin: 0;
-        }
-        .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
-        .sidebar { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); height: fit-content; }
-        .content { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .metadata-section { margin-bottom: 20px; }
-        .metadata-title { color: #34495e; font-size: 1.2em; margin-bottom: 10px; border-bottom: 2px solid #3498db; padding-bottom: 5px; }
-        .metadata-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #ecf0f1; }
-        .metadata-label { font-weight: bold; color: #2c3e50; }
-        .metadata-value { color: #7f8c8d; }
-        .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 0.9em; font-weight: bold; }
-        .status-processar { background: #fff3cd; color: #856404; }
-        .status-processado { background: #d4edda; color: #155724; }
-        .diff-container {
-            font-family: 'Courier New', monospace;
-            line-height: 1.6;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            background: #f8f9fa;
-            padding: 20px;
-            max-height: 600px;
-            overflow-y: auto;
-        }
-        .diff-added {
-            background-color: #d1ecf1;
-            color: #0c5460;
-            padding: 4px 8px;
-            margin: 2px 0;
-            border-left: 4px solid #bee5eb;
-            display: block;
-            white-space: pre-wrap;
-        }
-        .diff-removed {
-            background-color: #f8d7da;
-            color: #721c24;
-            padding: 4px 8px;
-            margin: 2px 0;
-            border-left: 4px solid #f5c6cb;
-            display: block;
-            white-space: pre-wrap;
-        }
-        .diff-unchanged {
-            padding: 4px 8px;
-            margin: 2px 0;
-            color: #6c757d;
-            display: block;
-            white-space: pre-wrap;
-        }
-        .clause-header {
-            background: linear-gradient(135deg, #007bff, #0056b3);
-            color: white;
-            padding: 12px 20px;
-            margin: 20px 0 10px 0;
-            font-weight: bold;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,123,255,.3);
-            font-size: 16px;
-            border-left: 6px solid #0056b3;
-        }
-        .clause-header:first-child {
-            margin-top: 0;
-        }
-        .diff-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding: 10px 0;
-            border-bottom: 1px solid #dee2e6;
-        }
-        .navigation-controls {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .nav-btn {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 4px rgba(40,167,69,0.3);
-        }
-        .nav-btn:hover {
-            background: linear-gradient(135deg, #218838, #1ea085);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(40,167,69,0.4);
-        }
-        .nav-btn:active {
-            transform: translateY(0);
-        }
-        .nav-btn:disabled {
-            background: #6c757d;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        .diff-counter {
-            background: #f8f9fa;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 14px;
-            font-weight: bold;
-            color: #495057;
-            border: 1px solid #dee2e6;
-            min-width: 80px;
-            text-align: center;
-        }
-        .diff-highlight {
-            background: #fff3cd !important;
-            border: 2px solid #ffc107 !important;
-            box-shadow: 0 0 10px rgba(255,193,7,0.5) !important;
-            animation: highlight-pulse 1s ease-in-out;
-        }
-        @keyframes highlight-pulse {
-            0% { box-shadow: 0 0 5px rgba(255,193,7,0.3); }
-            50% { box-shadow: 0 0 20px rgba(255,193,7,0.7); }
-            100% { box-shadow: 0 0 10px rgba(255,193,7,0.5); }
-        }
-        .stats { display: flex; gap: 15px; margin-bottom: 20px; }
-        .stat-item { background: #e9ecef; padding: 15px; border-radius: 8px; text-align: center; flex: 1; }
-        .stat-number { font-size: 1.5em; font-weight: bold; color: #2c3e50; }
-        .stat-label { color: #7f8c8d; font-size: 0.9em; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header" id="mainHeader">
-            <div class="title">📄 {{ versao_data.get('titulo', 'Versão ' + versao_id) }}</div>
-            <div class="subtitle">ID da Versão: {{ versao_id }}</div>
-        </div>
-
-        <!-- Navegação fixa para rolagem -->
-        <div class="sticky-navigation" id="stickyNav">
-            <div class="sticky-nav-content">
-                <div class="sticky-title">{{ versao_data.get('titulo', 'Versão ' + versao_id) }}</div>
-                <div class="nav-controls">
-                    <span id="stickyCounter" class="diff-counter">0 / 0</span>
-                    <button id="stickyPrevDiff" class="nav-btn" title="Anterior (Alt + ←)">⬅️</button>
-                    <button id="stickyNextDiff" class="nav-btn" title="Próximo (Alt + →)">➡️</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="grid">
-            <div class="sidebar">
-                <div class="metadata-section">
-                    <div class="metadata-title">📋 Informações da Versão</div>
-                    <div class="metadata-item">
-                        <span class="metadata-label">ID:</span>
-                        <span class="metadata-value">{{ versao_id }}</span>
-                    </div>
-                    <div class="metadata-item">
-                        <span class="metadata-label">Status:</span>
-                        <span class="status-badge status-{{ versao_data.get('status', 'processar') }}">
-                            {{ versao_data.get('status', 'processar').title() }}
-                        </span>
-                    </div>
-                    <div class="metadata-item">
-                        <span class="metadata-label">Contrato ID:</span>
-                        <span class="metadata-value">{{ versao_data.get('contrato_id', 'N/A') }}</span>
-                    </div>
-                    <div class="metadata-item">
-                        <span class="metadata-label">Versão Original:</span>
-                        <span class="metadata-value">{{ versao_data.get('versao_original', 'N/A') }}</span>
-                    </div>
-                    <div class="metadata-item">
-                        <span class="metadata-label">Versão Modificada:</span>
-                        <span class="metadata-value">{{ versao_data.get('versao_modificada', 'N/A') }}</span>
-                    </div>
-                    <div class="metadata-item">
-                        <span class="metadata-label">Data de Criação:</span>
-                        <span class="metadata-value">{{ versao_data.get('data_criacao', 'N/A') }}</span>
-                    </div>
-                    {% if versao_data.get('date_updated') %}
-                    <div class="metadata-item">
-                        <span class="metadata-label">Última Atualização:</span>
-                        <span class="metadata-value">{{ versao_data.get('date_updated') }}</span>
-                    </div>
-                    {% endif %}
-                </div>
-
-                {% if versao_data.get('descricao') %}
-                <div class="metadata-section">
-                    <div class="metadata-title">📝 Descrição</div>
-                    <p style="color: #6c757d; line-height: 1.4;">{{ versao_data.get('descricao') }}</p>
-                </div>
-                {% endif %}
-
-                <div class="metadata-section">
-                    <div class="metadata-title">🔗 Links Úteis</div>
-                    <div style="margin-top: 10px;">
-                        <a href="/api/versoes/{{ versao_id }}" style="display: block; margin: 5px 0; color: #007bff;">📊 API JSON</a>
-                        <a href="/api/data/{{ diff_data.get('id', '') }}" style="display: block; margin: 5px 0; color: #007bff;">📄 Dados do Diff</a>
-                        <a href="/health" style="display: block; margin: 5px 0; color: #007bff;">🔍 Health Check</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="content">
-                <div class="stats">
-                    <div class="stat-item">
-                        <div class="stat-number">{{ diff_data.get('created_at', 'N/A')[:10] if diff_data.get('created_at') else 'N/A' }}</div>
-                        <div class="stat-label">Processado em</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number">{{ diff_data.get('id', 'N/A')[:8] if diff_data.get('id') else 'N/A' }}</div>
-                        <div class="stat-label">Diff ID</div>
-                    </div>
-                </div>
-
-                <div class="diff-header">
-                    <div class="metadata-title">🔄 Diferenças Encontradas</div>
-                    <div class="navigation-controls">
-                        <button id="prevDiff" class="nav-btn" title="Diferença anterior (Alt + ←)">
-                            ⬅️ Anterior
-                        </button>
-                        <span id="diffCounter" class="diff-counter">-</span>
-                        <button id="nextDiff" class="nav-btn" title="Próxima diferença (Alt + →)">
-                            Próximo ➡️
-                        </button>
-                    </div>
-                </div>
-                <div class="diff-container" id="diffContainer">
-                    {{ diff_html|safe }}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // Sistema de navegação entre diferenças
-        class DiffNavigator {
-            constructor() {
-                this.currentDiffIndex = -1;
-                this.diffs = [];
-                this.init();
-            }
-
-            init() {
-                // Encontrar todas as diferenças (adicionadas e removidas)
-                this.diffs = document.querySelectorAll('.diff-added, .diff-removed');
-
-                // Adicionar IDs únicos para cada diferença
-                this.diffs.forEach((diff, index) => {
-                    diff.setAttribute('data-diff-id', index);
-                    diff.style.scrollMarginTop = '20px'; // Espaço para scroll suave
-                });
-
-                // Configurar botões
-                this.setupButtons();
-
-                // Configurar atalhos de teclado
-                this.setupKeyboardShortcuts();
-
-                // Configurar navegação fixa
-                this.setupStickyNavigation();
-
-                // Atualizar contador
-                this.updateCounter();
-
-                // Focar na primeira diferença automaticamente
-                if (this.diffs.length > 0) {
-                    setTimeout(() => this.goToNext(), 500);
-                }
-            }
-
-            setupButtons() {
-                // Botões principais
-                const prevBtn = document.getElementById('prevDiff');
-                const nextBtn = document.getElementById('nextDiff');
-
-                // Botões da navegação fixa
-                const stickyPrevBtn = document.getElementById('stickyPrevDiff');
-                const stickyNextBtn = document.getElementById('stickyNextDiff');
-
-                if (prevBtn) {
-                    prevBtn.addEventListener('click', () => this.goToPrev());
-                }
-                if (nextBtn) {
-                    nextBtn.addEventListener('click', () => this.goToNext());
-                }
-                if (stickyPrevBtn) {
-                    stickyPrevBtn.addEventListener('click', () => this.goToPrev());
-                }
-                if (stickyNextBtn) {
-                    stickyNextBtn.addEventListener('click', () => this.goToNext());
-                }
-            }
-
-            setupKeyboardShortcuts() {
-                document.addEventListener('keydown', (e) => {
-                    // Alt + Seta Esquerda = Anterior
-                    if (e.altKey && e.key === 'ArrowLeft') {
-                        e.preventDefault();
-                        this.goToPrev();
-                    }
-                    // Alt + Seta Direita = Próximo
-                    if (e.altKey && e.key === 'ArrowRight') {
-                        e.preventDefault();
-                        this.goToNext();
-                    }
-                });
-            }
-
-            setupStickyNavigation() {
-                const header = document.getElementById('mainHeader');
-                const stickyNav = document.getElementById('stickyNav');
-
-                if (!header || !stickyNav) return;
-
-                let headerHeight = header.offsetHeight;
-
-                window.addEventListener('scroll', () => {
-                    const scrollY = window.scrollY;
-
-                    // Recalcular altura do header quando compacto
-                    if (header.classList.contains('compact')) {
-                        headerHeight = header.offsetHeight;
-                    }
-
-                    if (scrollY > headerHeight + 20) {
-                        // Quando rola bastante, esconder header principal e mostrar sticky
-                        stickyNav.classList.add('visible');
-                        header.classList.add('hidden');
-                    } else if (scrollY > 100) {
-                        // Scroll moderado: header compacto mas visível
-                        stickyNav.classList.remove('visible');
-                        header.classList.remove('hidden');
-                        header.classList.add('compact');
-                    } else {
-                        // Topo da página: header normal
-                        stickyNav.classList.remove('visible');
-                        header.classList.remove('hidden');
-                        header.classList.remove('compact');
-                    }
-                });
-            }
-
-            goToNext() {
-                if (this.diffs.length === 0) return;
-
-                this.currentDiffIndex++;
-                if (this.currentDiffIndex >= this.diffs.length) {
-                    this.currentDiffIndex = 0; // Volta para o primeiro
-                }
-
-                this.focusDiff(this.currentDiffIndex);
-            }
-
-            goToPrev() {
-                if (this.diffs.length === 0) return;
-
-                this.currentDiffIndex--;
-                if (this.currentDiffIndex < 0) {
-                    this.currentDiffIndex = this.diffs.length - 1; // Vai para o último
-                }
-
-                this.focusDiff(this.currentDiffIndex);
-            }
-
-            focusDiff(index) {
-                // Remover highlight anterior
-                this.diffs.forEach(diff => {
-                    diff.classList.remove('diff-highlight');
-                });
-
-                // Adicionar highlight na diferença atual
-                const currentDiff = this.diffs[index];
-                if (currentDiff) {
-                    currentDiff.classList.add('diff-highlight');
-
-                    // Scroll suave para a diferença
-                    currentDiff.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'center'
-                    });
-
-                    // Atualizar contador e botões
-                    this.updateCounter();
-                    this.updateButtons();
-                }
-            }
-
-            updateCounter() {
-                const counter = document.getElementById('diffCounter');
-                const stickyCounter = document.getElementById('stickyCounter');
-
-                const counterText = this.diffs.length > 0
-                    ? `${this.currentDiffIndex + 1} / ${this.diffs.length}`
-                    : '0 / 0';
-
-                if (counter) {
-                    counter.textContent = counterText;
-                }
-                if (stickyCounter) {
-                    stickyCounter.textContent = counterText;
-                }
-            }
-
-            updateButtons() {
-                const prevBtn = document.getElementById('prevDiff');
-                const nextBtn = document.getElementById('nextDiff');
-                const stickyPrevBtn = document.getElementById('stickyPrevDiff');
-                const stickyNextBtn = document.getElementById('stickyNextDiff');
-
-                if (this.diffs.length === 0) {
-                    if (prevBtn) prevBtn.disabled = true;
-                    if (nextBtn) nextBtn.disabled = true;
-                    if (stickyPrevBtn) stickyPrevBtn.disabled = true;
-                    if (stickyNextBtn) stickyNextBtn.disabled = true;
-                } else {
-                    if (prevBtn) prevBtn.disabled = false;
-                    if (nextBtn) nextBtn.disabled = false;
-                    if (stickyPrevBtn) stickyPrevBtn.disabled = false;
-                    if (stickyNextBtn) stickyNextBtn.disabled = false;
-                }
-            }
-        }
-
-        // Inicializar quando a página carregar
-        document.addEventListener('DOMContentLoaded', () => {
-            new DiffNavigator();
-        });
-
-        // Adicionar indicador visual de atalhos
-        document.addEventListener('DOMContentLoaded', () => {
-            const style = document.createElement('style');
-            style.textContent = `
-                .nav-btn:hover::after {
-                    content: attr(title);
-                    position: absolute;
-                    bottom: -30px;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    background: rgba(0,0,0,0.8);
-                    color: white;
-                    padding: 4px 8px;
-                    border-radius: 4px;
-                    font-size: 12px;
-                    white-space: nowrap;
-                    z-index: 1000;
-                    pointer-events: none;
-                }
-                .nav-btn {
-                    position: relative;
-                }
-            `;
-            document.head.appendChild(style);
-        });
-    </script>
-</body>
-</html>
-"""
-
 
 # Rotas da API
 @app.route("/health", methods=["GET"])
@@ -1170,6 +655,10 @@ def view_version(versao_id):
             timeout=10,
         )
 
+        print(f"🔍 Buscando versão {versao_id} no Directus...")
+        print(f"📡 URL: {DIRECTUS_BASE_URL}/items/versao/{versao_id}")
+        print("Resultado da requisição:", response.status_code, response.text)
+
         if response.status_code == 200:
             versao_data = response.json()["data"]
         else:
@@ -1184,8 +673,8 @@ def view_version(versao_id):
             return f"Erro ao processar versão: {result['error']}", 500
 
         # Usar template específico para versão
-        response = render_template_string(
-            VERSION_TEMPLATE,
+        response = render_template(
+            "version_template.html",
             versao_id=versao_id,
             versao_data=versao_data,
             diff_data=result,
@@ -1290,10 +779,34 @@ if __name__ == "__main__":
     print(f"📋 Documentos: http://localhost:{FLASK_PORT}/api/documents")
     print(f"🔄 Versões: http://localhost:{FLASK_PORT}/api/versoes")
 
+    # Configurar modo de desenvolvimento
+    if DEV_MODE:
+        print("🔧 Modo DEV ativo - Watch & Reload habilitado")
+        print("📝 Arquivos monitorados para auto-reload")
+    else:
+        print("🏭 Modo PRODUÇÃO")
+
+    # Configurar encerramento gracioso
+    setup_signal_handlers()
+
     # Testar conexão na inicialização
     if directus_api.test_connection():
         print("✅ Conexão com Directus estabelecida!")
     else:
         print("❌ Falha na conexão com Directus - verifique credenciais")
 
-    app.run(debug=True, host="0.0.0.0", port=FLASK_PORT)
+    try:
+        print(f"🎯 Iniciando servidor na porta {FLASK_PORT}...")
+        app.run(
+            debug=DEV_MODE,
+            host="0.0.0.0",
+            port=FLASK_PORT,
+            use_reloader=DEV_MODE,
+            use_debugger=DEV_MODE,
+        )
+    except KeyboardInterrupt:
+        print("\n🛑 Interrupção pelo usuário (Ctrl+C)")
+    except Exception as e:
+        print(f"❌ Erro ao iniciar servidor: {e}")
+    finally:
+        print("🔄 Encerrando servidor...")
