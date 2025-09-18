@@ -1,1 +1,0 @@
-# Testes de processamento integrado
