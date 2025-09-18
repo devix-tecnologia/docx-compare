@@ -18,6 +18,8 @@
     "ruff.enable": true,
     "ruff.path": ["uv", "run", "ruff"],
     "ruff.importStrategy": "fromEnvironment",
+    "ruff.fixAll": true,
+    "ruff.organizeImports": true,
     "[python]": {
         "editor.defaultFormatter": "charliermarsh.ruff",
         "editor.formatOnSave": true,
