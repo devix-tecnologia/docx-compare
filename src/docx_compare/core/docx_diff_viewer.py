@@ -4,23 +4,108 @@ import html
 import os
 import sys
 
-# Adicionar o diretório raiz ao path
-sys.path.insert(
-    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../"))
-)
+# Import das configurações - importar o módulo config.py da raiz
 
-# Definir constantes de configuração
-LUA_FILTER_PATH = os.getenv("LUA_FILTER_PATH", "config/comments_html_filter_direct.lua")
-RESULTS_DIR = os.getenv("RESULTS_DIR", "results")
 
-from src.docx_compare.core.docx_utils import (
-    analyze_differences,
-    convert_docx_to_html,
-    extract_body_content,
-    get_css_styles,
-    html_to_text,
-    sanitize_html_for_csp,
-)
+# Encontrar o diretório raiz do projeto de forma mais robusta
+def find_project_root():
+    """Encontra o diretório raiz do projeto procurando por config.py"""
+    # Começar pelo diretório deste arquivo
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Procurar config.py subindo na hierarquia
+    search_dir = current_dir
+    for _ in range(10):  # Limite de segurança
+        if os.path.exists(os.path.join(search_dir, "config.py")):
+            return search_dir
+        parent_dir = os.path.dirname(search_dir)
+        if parent_dir == search_dir:  # Chegou na raiz do sistema
+            break
+        search_dir = parent_dir
+
+    # Se não encontrou, usar diretório atual
+    return os.getcwd()
+
+
+root_path = find_project_root()
+
+if root_path not in sys.path:
+    sys.path.insert(0, root_path)
+
+try:
+    # Importar especificamente o arquivo config.py
+    import importlib.util
+
+    config_path = os.path.join(root_path, "config.py")
+    spec = importlib.util.spec_from_file_location("config_module", config_path)
+    if spec and spec.loader:
+        config = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(config)
+
+        # Configurações baseadas em config.py
+        LUA_FILTER_PATH = getattr(
+            config,
+            "LUA_FILTER_PATH",
+            os.getenv("LUA_FILTER_PATH", "config/comments_html_filter_direct.lua"),
+        )
+        RESULTS_DIR = getattr(
+            config, "RESULTS_DIR", os.getenv("RESULTS_DIR", "results")
+        )
+
+        # Tornar caminhos absolutos relativos ao projeto root
+        if not os.path.isabs(LUA_FILTER_PATH):
+            LUA_FILTER_PATH = os.path.join(root_path, LUA_FILTER_PATH)
+        if not os.path.isabs(RESULTS_DIR):
+            RESULTS_DIR = os.path.join(root_path, RESULTS_DIR)
+    else:
+        raise ImportError("Não foi possível carregar o módulo config.py")
+except Exception as e:
+    print(f"Aviso: Erro ao importar configurações ({e}), usando fallbacks")
+    # Fallback para quando executado como módulo
+    lua_filter_fallback = os.getenv(
+        "LUA_FILTER_PATH", "config/comments_html_filter_direct.lua"
+    )
+    if not os.path.isabs(lua_filter_fallback):
+        LUA_FILTER_PATH = os.path.join(root_path, lua_filter_fallback)
+    else:
+        LUA_FILTER_PATH = lua_filter_fallback
+
+    results_fallback = os.getenv("RESULTS_DIR", "results")
+    if not os.path.isabs(results_fallback):
+        RESULTS_DIR = os.path.join(root_path, results_fallback)
+    else:
+        RESULTS_DIR = results_fallback
+
+# Tentar importar módulos utilitários com fallbacks para diferentes ambientes
+try:
+    from src.docx_compare.core.docx_utils import (
+        analyze_differences,
+        convert_docx_to_html,
+        extract_body_content,
+        get_css_styles,
+        html_to_text,
+        sanitize_html_for_csp,
+    )
+except ImportError:
+    try:
+        from docx_compare.core.docx_utils import (
+            analyze_differences,
+            convert_docx_to_html,
+            extract_body_content,
+            get_css_styles,
+            html_to_text,
+            sanitize_html_for_csp,
+        )
+    except ImportError:
+        # Fallback relativo
+        from .docx_utils import (
+            analyze_differences,
+            convert_docx_to_html,
+            extract_body_content,
+            get_css_styles,
+            html_to_text,
+            sanitize_html_for_csp,
+        )
 
 
 def generate_diff_html(original_docx, modified_docx, output_html, dry_run=False):
@@ -285,7 +370,14 @@ Exemplos de uso:
         # Configurar estilo CSS se não for dry-run
         if not args.dry_run:
             # Temporariamente modificar get_css_styles para usar o estilo escolhido
-            from src.docx_compare.core import docx_utils
+            try:
+                from src.docx_compare.core import docx_utils
+            except ImportError:
+                try:
+                    from docx_compare.core import docx_utils
+                except ImportError:
+                    # Usar import relativo como fallback
+                    from . import docx_utils
 
             original_get_css = docx_utils.get_css_styles
             docx_utils.get_css_styles = lambda style_type="default": original_get_css(

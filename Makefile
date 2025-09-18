@@ -1,4 +1,4 @@
-.PHONY: help install lint lint-fix format test test-coverage check run-processor run-api clean
+.PHONY: help install lint lint-fix format test test-coverage check run-processor run-api clean dev-server prod-server kill-server health-check
 .DEFAULT_GOAL := help
 
 # Configuração
@@ -40,10 +40,19 @@ help: ## Mostrar esta ajuda
 	@echo "    docker-logs                     # Ver logs do container"
 	@echo "    docker-down                     # Parar containers"
 	@echo ""
+	@echo "  🌐 Servidor Web (Versiona AI):"
+	@echo "    dev-server                      # Modo desenvolvimento com watch ⭐"
+	@echo "    prod-server                     # Modo produção"
+	@echo "    restart-dev                     # Reiniciar em modo dev"
+	@echo "    kill-server                     # Parar servidor"
+	@echo "    health-check                    # Verificar status"
+	@echo "    test-version                    # Testar versão específica"
+	@echo ""
 	@echo "  📊 Monitoramento:"
 	@echo "    Orquestrador:    http://localhost:5007"
 	@echo "    Proc. Versões:   http://localhost:5005"
 	@echo "    Proc. Modelos:   http://localhost:5006"
+	@echo "    Versiona AI:     http://localhost:8001"
 
 install: ## Instalar dependências do projeto
 	@echo "📦 Instalando dependências..."
@@ -250,3 +259,29 @@ docker-benchmark: ## Comparar tamanhos das imagens Docker
 	@docker images docx-compare:alpine --format "table {{.Repository}}:{{.Tag}}\t{{.Size}}" 2>/dev/null || echo "  Não encontrada"
 	@echo "⚡ Dockerfile.optimized:"
 	@docker images docx-compare:optimized --format "table {{.Repository}}:{{.Tag}}\t{{.Size}}" 2>/dev/null || echo "  Não encontrada"
+
+# Comandos para servidor de desenvolvimento
+dev-server: ## Rodar servidor em modo desenvolvimento com watch & reload
+	@echo "🔧 Iniciando servidor em modo DESENVOLVIMENTO"
+	@echo "📝 Watch & Reload ativo - alterações serão detectadas automaticamente"
+	@DEV_MODE=true FLASK_PORT=8001 $(UV) run python versiona-ai/directus_server.py
+
+prod-server: ## Rodar servidor em modo produção
+	@echo "🏭 Iniciando servidor em modo PRODUÇÃO"
+	@DEV_MODE=false FLASK_PORT=8001 $(UV) run python versiona-ai/directus_server.py
+
+kill-server: ## Matar processos do servidor na porta 8001
+	@echo "🛑 Encerrando processos na porta 8001..."
+	@lsof -ti:8001 | xargs kill -9 2>/dev/null || echo "✅ Nenhum processo encontrado"
+
+health-check: ## Verificar status do servidor
+	@echo "🔍 Verificando status do servidor..."
+	@curl -s http://localhost:8001/health | jq . || echo "❌ Servidor não está respondendo"
+
+test-version: ## Testar versão específica no servidor
+	@echo "🧪 Testando versão c2b1dfa0-c664-48b8-a5ff-84b70041b428..."
+	@curl -s "http://localhost:8001/versao/c2b1dfa0-c664-48b8-a5ff-84b70041b428" | head -10
+
+restart-dev: kill-server ## Reiniciar servidor em modo dev (mata processo anterior e inicia novo)
+	@sleep 1
+	@make dev-server

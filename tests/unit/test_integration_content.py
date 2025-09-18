@@ -98,7 +98,7 @@ def test_integration_content_extraction():
     # Mock das requests para simular dry-run
     with patch(
         "src.docx_compare.processors.processador_modelo_contrato.requests"
-    ) as mock_requests:
+    ) as _mock_requests:
         tags_criadas = salvar_tags_modelo_contrato(
             modelo_id, tags_encontradas, dry_run=True
         )
@@ -119,7 +119,8 @@ def test_integration_content_extraction():
                 f"      📄 {content_preview}{'...' if len(tag_info['conteudo']) > 50 else ''}"
             )
 
-    return tags_encontradas
+    # Verificações com assert para pytest
+    assert len(tags_encontradas) > 0, "Nenhuma tag foi encontrada"
 
 
 if __name__ == "__main__":
@@ -128,6 +129,5 @@ if __name__ == "__main__":
 
     processador_module.verbose_mode = True
 
-    result = test_integration_content_extraction()
+    test_integration_content_extraction()
     print("\n✅ Teste de integração concluído!")
-    print(f"📊 Resultado final: {len(result)} tags processadas com conteúdo")

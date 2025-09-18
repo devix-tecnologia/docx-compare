@@ -71,6 +71,11 @@ def analyze_differences_detailed(original_text, modified_text):
             # Linha removida
             original_content = line[1:].strip()
             if original_content:  # Ignorar linhas vazias
+                # Calcular posição no texto original
+                linha_aprox = _calculate_line_position(original_text, original_content)
+                pos_inicio = _calculate_text_position(original_text, original_content)
+                pos_fim = pos_inicio + len(original_content)
+
                 # Verificar se a próxima linha é uma adição (modificação)
                 if i + 1 < len(diff) and diff[i + 1].startswith("+"):
                     modified_content = diff[i + 1][1:].strip()
@@ -80,6 +85,10 @@ def analyze_differences_detailed(original_text, modified_text):
                             "conteudo": original_content,
                             "alteracao": modified_content,
                             "sort": modification_count,
+                            "caminho_inicio": f"modificacao_{modification_count}_linha_{linha_aprox}_pos_{pos_inicio}",
+                            "caminho_fim": f"modificacao_{modification_count}_linha_{linha_aprox}_pos_{pos_fim}",
+                            "posicao_inicio": pos_inicio,
+                            "posicao_fim": pos_fim,
                         }
                     )
                     i += 2  # Pular a próxima linha pois já processamos
@@ -91,6 +100,10 @@ def analyze_differences_detailed(original_text, modified_text):
                             "conteudo": original_content,
                             "alteracao": "",
                             "sort": modification_count,
+                            "caminho_inicio": f"modificacao_{modification_count}_linha_{linha_aprox}_pos_{pos_inicio}",
+                            "caminho_fim": f"modificacao_{modification_count}_linha_{linha_aprox}_pos_{pos_fim}",
+                            "posicao_inicio": pos_inicio,
+                            "posicao_fim": pos_fim,
                         }
                     )
                     i += 1
@@ -99,12 +112,21 @@ def analyze_differences_detailed(original_text, modified_text):
             # Linha adicionada (que não foi processada como modificação)
             added_content = line[1:].strip()
             if added_content:  # Ignorar linhas vazias
+                # Para adições, calcular posição no texto modificado
+                linha_aprox = _calculate_line_position(modified_text, added_content)
+                pos_inicio = _calculate_text_position(modified_text, added_content)
+                pos_fim = pos_inicio + len(added_content)
+
                 modifications.append(
                     {
                         "categoria": "adicao",
                         "conteudo": "",
                         "alteracao": added_content,
                         "sort": modification_count,
+                        "caminho_inicio": f"modificacao_{modification_count}_linha_{linha_aprox}_pos_{pos_inicio}",
+                        "caminho_fim": f"modificacao_{modification_count}_linha_{linha_aprox}_pos_{pos_fim}",
+                        "posicao_inicio": pos_inicio,
+                        "posicao_fim": pos_fim,
                     }
                 )
                 modification_count += 1
@@ -113,6 +135,26 @@ def analyze_differences_detailed(original_text, modified_text):
             i += 1
 
     return modifications
+
+
+def _calculate_line_position(text: str, content: str) -> int:
+    """Calcula a linha aproximada onde o conteúdo aparece no texto"""
+    try:
+        pos = text.find(content)
+        if pos != -1:
+            return text[:pos].count("\n") + 1
+    except Exception:
+        pass
+    return 1
+
+
+def _calculate_text_position(text: str, content: str) -> int:
+    """Calcula a posição do caractere no texto"""
+    try:
+        pos = text.find(content)
+        return pos if pos != -1 else 0
+    except Exception:
+        return 0
 
 
 def analyze_differences_for_directus(original_text, modified_text):
@@ -135,10 +177,28 @@ def analyze_differences(original_text: str, modified_text: str) -> dict:
     remocoes = sum(1 for mod in modifications if mod["categoria"] == "remocao")
     modificacoes = sum(1 for mod in modifications if mod["categoria"] == "modificacao")
 
+    # Converter para formato esperado pelo docx_diff_viewer
+    modifications_for_viewer = []
+    for mod in modifications:
+        mod_dict = {
+            "original": mod["conteudo"],
+            "modified": mod["alteracao"],
+            "caminho_inicio": mod["caminho_inicio"],
+            "caminho_fim": mod["caminho_fim"],
+            "posicao_inicio": mod["posicao_inicio"],
+            "posicao_fim": mod["posicao_fim"],
+            "categoria": mod["categoria"],
+            "sort": mod["sort"],
+        }
+        modifications_for_viewer.append(mod_dict)
+
     return {
         "total_modifications": len(modifications),
+        "total_additions": adicoes,
+        "total_deletions": remocoes,
+        "total_changes": modificacoes,
         "additions": adicoes,
         "deletions": remocoes,
-        "modifications": modificacoes,
+        "modifications": modifications_for_viewer,
         "details": modifications,
     }

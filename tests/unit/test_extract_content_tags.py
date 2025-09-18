@@ -49,7 +49,7 @@ def test_extract_content_basic():
     Rua das Flores, 123
     Bairro Centro - São Paulo/SP
     CEP: 01234-567
-    {{/endereco}}
+    {{endereco}}
     """
 
     # Testar extração
@@ -91,7 +91,10 @@ def test_extract_content_basic():
         else:
             print("   ❌ Conteúdo da tag 'responsavel' não está correto")
 
-    return result
+    # Verificações com assert para pytest
+    assert len(result) > 0, "Nenhuma tag foi extraída"
+    assert "responsavel" in result, "Tag 'responsavel' não foi encontrada"
+
 
 
 def test_extract_content_edge_cases():

@@ -49,6 +49,7 @@ def test_numeric_tags_from_image():
     outra forma de acesso, que tem ciência do seu conteúdo e que concorda com os termos neles contidos,
     comprometendo-se a cumprir-los na sua integralidade.
     {{/1.3}}
+    {{1.3}}
     """
 
     # Testar extração
@@ -82,7 +83,9 @@ def test_numeric_tags_from_image():
         else:
             print(f"❌ Tag {{{{ {tag} }}}} não encontrada")
 
-    return result
+    # Verificações com assert para pytest
+    assert len(result) > 0, "Nenhuma tag foi extraída"
+
 
 
 def test_edge_cases_numeric():
@@ -93,11 +96,11 @@ def test_edge_cases_numeric():
     texto_com_espacos = """
     {{ 2 }}
     Conteúdo da seção 2 com espaços
-    {{ /2 }}
+    {{ 2 }}
 
     {{3.1 }}
     Subseção 3.1 com espaço após
-    {{/3.1}}
+    {{3.1}}
     """
 
     result = extract_content_between_tags(texto_com_espacos)
@@ -112,6 +115,6 @@ if __name__ == "__main__":
 
     processador_module.verbose_mode = True
 
-    result = test_numeric_tags_from_image()
+    test_numeric_tags_from_image()
     test_edge_cases_numeric()
-    print(f"\n✅ Testes concluídos! Total de tags extraídas: {len(result)}")
+    print("\n✅ Testes concluídos!")

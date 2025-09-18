@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Versiona AI - Teste Estático</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        h1 { color: #fff; margin-bottom: 20px; }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 16px;
+        }
+        button:hover { background: #45a049; }
+        #resultado {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Versiona AI - Teste de Conectividade</h1>
+        <p>Esta é uma página de teste estática para verificar se o servidor está funcionando.</p>
+
+        <div>
+            <button onclick="testarAPI()">🔌 Testar API</button>
+            <button onclick="testarFrontend()">⚙️ Testar Frontend</button>
+            <button onclick="location.reload()">🔄 Recarregar</button>
+        </div>
+
+        <div id="resultado"></div>
+    </div>
+
+    <script>
+        console.log('✅ JavaScript carregado com sucesso!');
+
+        async function testarAPI() {
+            const resultado = document.getElementById('resultado');
+            resultado.style.display = 'block';
+            resultado.innerHTML = '<p>🔄 Testando API...</p>';
+
+            try {
+                console.log('Fazendo chamada para /api/health...');
+                const response = await fetch('/api/health');
+                console.log('Response status:', response.status);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('API Response:', data);
+                    resultado.innerHTML = `
+                        <h3 class="success">✅ API Funcionando!</h3>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                console.error('Erro na API:', error);
+                resultado.innerHTML = `
+                    <h3 class="error">❌ Erro na API</h3>
+                    <p>Erro: ${error.message}</p>
+                `;
+            }
+        }
+
+        function testarFrontend() {
+            const resultado = document.getElementById('resultado');
+            resultado.style.display = 'block';
+            resultado.innerHTML = `
+                <h3 class="success">✅ Frontend Funcionando!</h3>
+                <p>JavaScript: OK</p>
+                <p>DOM: OK</p>
+                <p>Fetch API: ${typeof fetch !== 'undefined' ? 'OK' : 'ERRO'}</p>
+                <p>User Agent: ${navigator.userAgent}</p>
+                <p>URL: ${window.location.href}</p>
+            `;
+        }
+
+        // Testar automaticamente ao carregar
+        window.addEventListener('load', () => {
+            console.log('✅ Página carregada completamente');
+            testarFrontend();
+        });
+    </script>
+</body>
+</html>
