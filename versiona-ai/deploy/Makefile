@@ -51,7 +51,7 @@ status: ## Ver status dos containers
 health: ## Verificar saúde da aplicação
 	@echo "🩺 Verificando saúde..."
 	@curl -f http://localhost:8000/health || echo "❌ API não está respondendo"
-	@wget --spider -q http://localhost:3000/health || echo "❌ Frontend não está respondendo"
+	@curl -f http://localhost:3000/ >/dev/null 2>&1 || echo "❌ Frontend não está respondendo"
 
 restart: ## Reiniciar serviços
 	@echo "🔄 Reiniciando..."
