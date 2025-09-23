@@ -436,28 +436,55 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
           })
 
           if (response.ok) {
-            const data = await response.json()
-            this.sampleData = data
-            this.titulo = `Versão ${versaoId.substring(0, 8)} - Processada`
-            console.log('✅ Versão processada com sucesso')
+            const resultado = await response.json()
+            console.log('✅ Versão processada com sucesso:', resultado)
 
-            // Marcar como versão processada
-            this.hasProcessedVersion = true
+            if (resultado.id) {
+              // Extrair modificações reais do diff HTML
+              const resultadoExtracao = this.extrairModificacoesDoDiff(resultado.diff_html)
 
-            // Atualizar estatísticas
-            this.stats = {
-              total_modificacoes: data.modificacoes?.length || 0,
-              tempo_processamento: 0.1,
-              total_blocos: 1
-            }
+              const diffData = {
+                documentos: [
+                  {
+                    nome: `Versão ${resultado.versao_id}`,
+                    conteudo_comparacao: {
+                      original: resultado.original,
+                      modificado: resultado.modified,
+                    },
+                    estatisticas: {
+                      total_modificacoes: resultadoExtracao.total_modificacoes,
+                      tempo_processamento: 0.015,
+                      total_blocos: resultadoExtracao.total_blocos,
+                    },
+                    modificacoes: resultadoExtracao.modificacoes,
+                  },
+                ],
+              }
 
-            // Ocultar lista de versões após processar
-            this.showVersionsList = false
+              this.sampleData = diffData
+              this.titulo = `Versão ${versaoId.substring(0, 8)} - Processada`
 
-            // Atualizar URL com diff_id se disponível
-            if (data.id) {
-              const newUrl = `${window.location.pathname}?diff_id=${data.id}&mock=${this.useMockData}`
+              // Marcar como versão processada
+              this.hasProcessedVersion = true
+
+              // Atualizar estatísticas baseado nos dados reais
+              this.stats = {
+                total_modificacoes: resultadoExtracao.total_modificacoes,
+                tempo_processamento: 0.015,
+                total_blocos: resultadoExtracao.total_blocos
+              }
+
+              // Extrair modificações para exibição na lista
+              this.modificacoes = resultadoExtracao.modificacoes
+
+              // Ocultar lista de versões após processar
+              this.showVersionsList = false
+
+              // Atualizar URL com diff_id se disponível
+              const newUrl = `${window.location.pathname}?diff_id=${resultado.id}&mock=${this.useMockData}`
               window.history.pushState({}, '', newUrl)
+            } else {
+              throw new Error('Dados incompletos recebidos da API')
             }
           } else {
             throw new Error('Erro ao processar versão')
@@ -541,7 +568,7 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
               console.log('📋 Dados completos da API:', resultado)
 
               // Extrair modificações reais do diff HTML
-              const modificacoesExtraidas = this.extrairModificacoesDoDiff(resultado.diff_html)
+              const resultadoExtracao = this.extrairModificacoesDoDiff(resultado.diff_html)
 
               const diffData = {
                 documentos: [
@@ -552,11 +579,11 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
                       modificado: resultado.modified,
                     },
                     estatisticas: {
-                      total_modificacoes: modificacoesExtraidas.length,
+                      total_modificacoes: resultadoExtracao.total_modificacoes,
                       tempo_processamento: 0.015,
-                      total_blocos: 1,
+                      total_blocos: resultadoExtracao.total_blocos,
                     },
-                    modificacoes: modificacoesExtraidas,
+                    modificacoes: resultadoExtracao.modificacoes,
                   },
                 ],
               }
@@ -568,6 +595,16 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
 
               // Marcar como versão processada
               this.hasProcessedVersion = true
+
+              // Atualizar estatísticas baseado nos dados reais
+              this.stats = {
+                total_modificacoes: resultadoExtracao.total_modificacoes,
+                tempo_processamento: 0.015,
+                total_blocos: resultadoExtracao.total_blocos
+              }
+
+              // Extrair modificações para exibição na lista
+              this.modificacoes = resultadoExtracao.modificacoes
 
               // Atualizar URL com diff_id
               const newUrl = new URL(window.location)
@@ -599,6 +636,10 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
         // Parse do HTML usando DOMParser
         const parser = new DOMParser()
         const doc = parser.parseFromString(`<div>${diffHtml}</div>`, 'text/html')
+
+        // Contar blocos (cláusulas/seções) identificados
+        const clauseHeaders = doc.querySelectorAll('.clause-header')
+        console.log('📋 Blocos (cláusulas) encontrados:', clauseHeaders.length)
 
         // Buscar elementos de remoção e adição
         const removedElements = doc.querySelectorAll('.diff-removed')
@@ -661,7 +702,13 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
         }
 
         console.log('✅ Modificações extraídas:', modificacoes)
-        return modificacoes
+
+        // Retornar objeto com modificações e estatísticas
+        return {
+          modificacoes,
+          total_blocos: clauseHeaders.length || 1, // Mínimo 1 bloco
+          total_modificacoes: modificacoes.length
+        }
       },
 
       extrairPalavrasChave(texto) {
