@@ -89,6 +89,13 @@
             </button>
             <button
               class="tab"
+              :class="{ active: activeTab === 'blocos' }"
+              @click="activeTab = 'blocos'"
+            >
+              🎯 Blocos Agrupados
+            </button>
+            <button
+              class="tab"
               :class="{ active: activeTab === 'lado-a-lado' }"
               @click="activeTab = 'lado-a-lado'"
             >
@@ -159,6 +166,57 @@
                 <span v-for="tag in modificacao.tags_relacionadas" :key="tag" class="tag">
                   🏷️ {{ tag }}
                 </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vista Blocos Agrupados -->
+          <div v-else-if="activeTab === 'blocos'" class="blocks-view">
+            <div v-if="blocosDetalhados && blocosDetalhados.length > 0" class="blocks-container">
+              <div class="blocks-header">
+                <h3>🎯 Agrupamento Posicional</h3>
+                <p>Modificações organizadas por blocos baseado na análise de tags e proximidade posicional</p>
+              </div>
+
+              <div
+                v-for="(bloco, index) in blocosDetalhados"
+                :key="bloco.nome || index"
+                class="block-item"
+              >
+                <div class="block-header">
+                  <div class="block-title">
+                    <h4>📋 Bloco {{ index + 1 }}: {{ bloco.nome || 'Sem nome' }}</h4>
+                    <span class="block-type" :class="bloco.tipo">{{ bloco.tipo || 'indefinido' }}</span>
+                  </div>
+                  <div class="block-position">
+                    📍 Posição: {{ bloco.posicao_inicio || 'N/A' }} - {{ bloco.posicao_fim || 'N/A' }}
+                  </div>
+                </div>
+
+                <div class="block-content">
+                  <div class="block-preview">
+                    <strong>Conteúdo:</strong>
+                    <span class="content-preview">{{ bloco.conteudo_estimado || 'Conteúdo não disponível' }}</span>
+                  </div>
+
+                  <!-- Aqui seriam mostradas as modificações que pertencem a este bloco -->
+                  <div class="block-modifications">
+                    <small>💡 Modificações relacionadas a este bloco serão implementadas na próxima versão</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div v-else class="no-blocks">
+              <div class="no-blocks-message">
+                <h3>🔍 Nenhum Bloco Detalhado Encontrado</h3>
+                <p>Esta versão foi processada usando método fallback. Os blocos detalhados serão disponibilizados quando:</p>
+                <ul>
+                  <li>📍 As tags tiverem informações de posição no banco de dados</li>
+                  <li>🏷️ O sistema conseguir extrair tags das diferenças entre documentos</li>
+                  <li>📊 O agrupamento posicional identificar seções estruturadas</li>
+                </ul>
+                <p><strong>Total de blocos identificados:</strong> {{ stats.total_blocos }}</p>
               </div>
             </div>
           </div>
@@ -323,6 +381,10 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
         const doc = this.sampleData.documentos?.[0] || {}
         return doc.modificacoes || []
       },
+      blocosDetalhados() {
+        const doc = this.sampleData.documentos?.[0] || {}
+        return doc.blocos_detalhados || []
+      },
     },
     watch: {
       // Observar mudanças no modo mock e atualizar URL
@@ -454,9 +516,10 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
                     estatisticas: {
                       total_modificacoes: resultadoExtracao.total_modificacoes,
                       tempo_processamento: 0.015,
-                      total_blocos: resultadoExtracao.total_blocos,
+                      total_blocos: resultado.total_blocos || resultadoExtracao.total_blocos,
                     },
                     modificacoes: resultadoExtracao.modificacoes,
+                    blocos_detalhados: resultado.blocos_detalhados || [],
                   },
                 ],
               }
@@ -581,9 +644,10 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
                     estatisticas: {
                       total_modificacoes: resultadoExtracao.total_modificacoes,
                       tempo_processamento: 0.015,
-                      total_blocos: resultadoExtracao.total_blocos,
+                      total_blocos: resultado.total_blocos || resultadoExtracao.total_blocos,
                     },
                     modificacoes: resultadoExtracao.modificacoes,
+                    blocos_detalhados: resultado.blocos_detalhados || [],
                   },
                 ],
               }
@@ -1304,6 +1368,153 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
     background: #ffd43b;
   }
 
+  /* Estilos para a vista de blocos */
+  .blocks-view {
+    padding: 1rem;
+  }
+
+  .blocks-container {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .blocks-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #f1f3f4;
+    padding-bottom: 1rem;
+  }
+
+  .blocks-header h3 {
+    color: #1f2937;
+    margin: 0 0 0.5rem 0;
+    font-size: 1.5rem;
+  }
+
+  .blocks-header p {
+    color: #6b7280;
+    margin: 0;
+    font-size: 0.95rem;
+  }
+
+  .block-item {
+    background: #f8f9fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .block-item:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+
+  .block-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1rem 1.5rem;
+  }
+
+  .block-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .block-title h4 {
+    margin: 0;
+    font-size: 1.1rem;
+  }
+
+  .block-type {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .block-type.existente {
+    background: rgba(34, 197, 94, 0.2);
+  }
+
+  .block-type.extraida {
+    background: rgba(251, 191, 36, 0.2);
+  }
+
+  .block-position {
+    font-size: 0.9rem;
+    opacity: 0.9;
+  }
+
+  .block-content {
+    padding: 1.5rem;
+  }
+
+  .block-preview {
+    margin-bottom: 1rem;
+  }
+
+  .content-preview {
+    display: block;
+    background: #f1f3f4;
+    padding: 1rem;
+    border-radius: 6px;
+    font-family: 'Monaco', 'Consolas', monospace;
+    font-size: 0.9rem;
+    color: #374151;
+    margin-top: 0.5rem;
+    border-left: 4px solid #667eea;
+  }
+
+  .block-modifications {
+    background: #e3f2fd;
+    padding: 1rem;
+    border-radius: 6px;
+    border-left: 4px solid #2196f3;
+  }
+
+  .block-modifications small {
+    color: #1565c0;
+    font-style: italic;
+  }
+
+  .no-blocks {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .no-blocks-message h3 {
+    color: #1f2937;
+    margin-bottom: 1rem;
+  }
+
+  .no-blocks-message p {
+    color: #6b7280;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+  }
+
+  .no-blocks-message ul {
+    text-align: left;
+    max-width: 500px;
+    margin: 1rem auto;
+    color: #374151;
+  }
+
+  .no-blocks-message li {
+    margin-bottom: 0.5rem;
+  }
+
   @media (max-width: 768px) {
     .stats {
       flex-direction: column;
@@ -1321,6 +1532,16 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
 
     .app-header h1 {
       font-size: 2rem;
+    }
+
+    .blocks-view {
+      padding: 0.5rem;
+    }
+
+    .block-title {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
     }
   }
 </style>

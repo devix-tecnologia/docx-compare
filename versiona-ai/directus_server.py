@@ -1,6 +1,7 @@
 """
 Servidor API para integração real com Directus
 Conecta com https://contract.devix.co usando as credenciais do .env
+Inclui agrupamento posicional para cálculo preciso de blocos
 """
 
 import os
@@ -11,8 +12,22 @@ from datetime import datetime
 
 import requests
 from dotenv import load_dotenv
-from flask import Flask, jsonify, render_template, render_template_string, request
+from flask import (
+    Flask,
+    jsonify,
+    render_template,
+    render_template_string,
+    request,
+    send_from_directory,
+)
 from flask_cors import CORS
+
+# Importar agrupador posicional
+try:
+    from agrupador_posicional import AgrupadorPosicional
+except ImportError:
+    print("⚠️ Agrupador posicional não disponível - usando contagem padrão")
+    AgrupadorPosicional = None
 
 # Carregar variáveis do .env
 load_dotenv()
@@ -268,6 +283,9 @@ class DirectusAPI:
             # Gerar diff
             diff_html = self._generate_diff_html(original_text, modified_text)
 
+            # Calcular blocos usando agrupamento posicional
+            resultado_blocos = self._calcular_blocos_avancado(versao_id, diff_html)
+
             # Criar registro de diff
             diff_id = str(uuid.uuid4())
             diff_data = {
@@ -277,6 +295,9 @@ class DirectusAPI:
                 "original": original_text,
                 "modified": modified_text,
                 "diff_html": diff_html,
+                "total_blocos": resultado_blocos.get("total_blocos", 1),
+                "blocos_detalhados": resultado_blocos.get("blocos_detalhados", []),
+                "metodo_calculo": resultado_blocos.get("metodo", "unknown"),
                 "created_at": datetime.now().isoformat(),
                 "url": f"http://localhost:{FLASK_PORT}/view/{diff_id}",
                 "mode": "mock" if mock else "real",
@@ -583,6 +604,50 @@ class DirectusAPI:
 
         return None
 
+    def _calcular_blocos_avancado(self, versao_id, diff_html):
+        """
+        Calcula blocos usando agrupamento posicional se disponível,
+        senão usa contagem de clause-headers do HTML
+        Retorna tanto o total quanto os detalhes dos blocos
+        """
+        try:
+            if AgrupadorPosicional:
+                print("🔍 Usando agrupamento posicional para cálculo de blocos")
+                agrupador = AgrupadorPosicional()
+                resultado = agrupador.processar_agrupamento_posicional_versao(versao_id)
+
+                if "erro" not in resultado:
+                    total_blocos = resultado.get("total_blocos", 1)
+                    blocos_detalhados = resultado.get("blocos", [])
+                    print(
+                        f"✅ Agrupamento posicional: {total_blocos} blocos identificados"
+                    )
+                    return {
+                        "total_blocos": max(total_blocos, 1),
+                        "blocos_detalhados": blocos_detalhados,
+                        "metodo": "agrupamento_posicional",
+                    }
+                else:
+                    print(f"⚠️ Erro no agrupamento posicional: {resultado['erro']}")
+
+            # Fallback: contar clause-headers no HTML
+            print("🔍 Usando contagem de clause-headers como fallback")
+            import re
+
+            clause_matches = re.findall(r"<div class='clause-header'>", diff_html)
+            total_blocos = len(clause_matches)
+            print(f"✅ Fallback: {total_blocos} clause-headers encontrados")
+
+            return {
+                "total_blocos": max(total_blocos, 1),
+                "blocos_detalhados": [],
+                "metodo": "clause_headers",
+            }
+
+        except Exception as e:
+            print(f"❌ Erro no cálculo de blocos: {e}")
+            return {"total_blocos": 1, "blocos_detalhados": [], "metodo": "fallback"}
+
     def _generate_realistic_contract_original(self):
         """Gera conteúdo original realista para contrato de locação"""
         return """CONTRATO DE LOCAÇÃO COMERCIAL
@@ -705,6 +770,41 @@ HTML_TEMPLATE = """
 
 
 # Rotas da API
+@app.route("/", methods=["GET"])
+def index():
+    """Página principal - serve a interface Vue.js"""
+    try:
+        # Caminho para o arquivo dist/index.html
+        dist_path = os.path.join(os.path.dirname(__file__), "web", "dist", "index.html")
+        if os.path.exists(dist_path):
+            with open(dist_path, encoding="utf-8") as f:
+                return f.read()
+        else:
+            return jsonify(
+                {
+                    "message": "Interface web não encontrada",
+                    "api_endpoints": {
+                        "health": "/health",
+                        "versoes": "/api/versoes",
+                        "documents": "/api/documents",
+                    },
+                }
+            )
+    except Exception as e:
+        return jsonify({"error": f"Erro ao carregar interface: {str(e)}"}), 500
+
+
+@app.route("/assets/<path:filename>", methods=["GET"])
+def serve_assets(filename):
+    """Serve arquivos estáticos CSS/JS da interface Vue.js"""
+    try:
+        assets_path = os.path.join(os.path.dirname(__file__), "web", "dist", "assets")
+        return send_from_directory(assets_path, filename)
+    except Exception as e:
+        return jsonify({"error": f"Asset não encontrado: {str(e)}"}), 404
+
+
+@app.route("/health", methods=["GET"])
 @app.route("/health", methods=["GET"])
 def health_check():
     """Health check com status do Directus"""
