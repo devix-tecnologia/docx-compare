@@ -70,6 +70,48 @@ versiona-ai/
 - **CORS habilitado**: Comunicação frontend-backend sem restrições
 - **Cache inteligente**: Persistência de resultados de comparação
 
+### 📡 **Endpoints da API**
+
+A API (`directus_server.py`) oferece os seguintes endpoints:
+
+#### **Health & Status**
+
+- `GET /health` - Status da API e conexão com Directus
+- `POST /api/connect` - Testa conexão com Directus
+- `GET /api/test` - Endpoint básico de teste
+
+#### **Documentos & Versões**
+
+- `GET /api/documents` - Lista contratos do Directus
+- `GET /api/versoes?mock=true|false` - Lista versões para processar
+- `POST /api/versoes` com `{"mock": true|false}` - Lista versões (via POST)
+- `GET /api/versoes/<versao_id>` - Busca versão específica com dados completos
+
+#### **Processamento**
+
+- `POST /api/process` - Processa versão específica
+  ```json
+  {
+    "versao_id": "id_da_versao",
+    "mock": true|false  // opcional, default: false
+  }
+  ```
+
+#### **Visualização**
+
+- `GET /versao/<versao_id>` - Visualiza versão com diferenças (HTML)
+- `GET /test/diff/<versao_id>` - Teste de geração de diff (HTML)
+- `GET /view/<diff_id>` - Visualiza diff gerado (HTML)
+- `GET /api/data/<diff_id>` - Dados JSON do diff
+
+#### **Parâmetro Mock**
+
+Todos os endpoints que suportam o parâmetro `mock`:
+
+- `mock=true`: Retorna dados simulados para testes
+- `mock=false` ou ausente: Usa dados reais do Directus
+- Sem fallback: Se `mock=false` e Directus falhar, retorna erro (não usa mock)
+
 ### ✅ **Integração Directus**
 
 - **API REST**: Comunicação com Directus CMS

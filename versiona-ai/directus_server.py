@@ -170,29 +170,29 @@ class DirectusAPI:
         return contratos
 
     def get_versoes_para_processar(self):
-        """Busca versões com status 'processar'"""
+        """Busca todas as versões (removido filtro de status)"""
         print("🚀 Iniciando get_versoes_para_processar")
         try:
-            # Buscar versões usando a função existente
+            # Buscar versões usando a função existente - sem filtro de status
             response = requests.get(
-                f"{self.base_url}/items/versao?filter[status][_eq]=processar&limit=50",
+                f"{self.base_url}/items/versao?limit=50",
                 headers=DIRECTUS_HEADERS,
                 timeout=15,
             )
 
             if response.status_code == 200:
                 versoes = response.json()["data"]
-                print(f"✅ Encontradas {len(versoes)} versões para processar")
+                print(f"✅ Encontradas {len(versoes)} versões disponíveis")
                 return versoes
             else:
                 print(f"❌ Erro ao buscar versões: {response.status_code}")
-                # Retornar dados mock de fallback quando falha a autenticação
-                return self._get_mock_versoes()
+                # No modo real, erro do Directus é erro - não usar mock como fallback
+                raise Exception(f"Falha no Directus: HTTP {response.status_code}")
 
         except Exception as e:
             print(f"❌ Erro ao buscar versões: {e}")
-            # Retornar dados mock de fallback quando há erro de conexão
-            return self._get_mock_versoes()
+            # No modo real, erro de conexão é erro - não usar mock como fallback
+            raise e
 
     def _get_mock_versoes(self):
         """Retorna dados mock quando não consegue conectar com Directus"""
@@ -218,47 +218,52 @@ class DirectusAPI:
             },
         ]
 
-    def process_versao(self, versao_id):
-        """Processa uma versão específica"""
-        try:
-            # Buscar dados da versão com campos específicos
-            fields = "id,titulo,status,data_criacao,versao_original,versao_modificada,descricao,contrato_id,date_updated"
-            response = requests.get(
-                f"{self.base_url}/items/versao/{versao_id}?fields={fields}",
-                headers=DIRECTUS_HEADERS,
-                timeout=10,
-            )
+    def process_versao(self, versao_id, mock=False):
+        """Processa uma versão específica
 
-            if response.status_code != 200:
-                # Se não encontrar no Directus, usar dados mock
+        Args:
+            versao_id: ID da versão a ser processada
+            mock: Se True, usa dados mockados. Se False ou não informado, usa dados reais do Directus
+        """
+        global diff_cache  # Declarar acesso à variável global
+
+        try:
+            if mock:
+                # Usar dados mock quando solicitado
+                print(f"🔧 Modo mock ativado - usando dados simulados para {versao_id}")
                 versao_data = _get_mock_versao_by_id(versao_id)
                 if not versao_data:
-                    return {"error": f"Versão {versao_id} não encontrada"}
+                    return {"error": f"Versão mock {versao_id} não encontrada"}
             else:
-                versao_data = response.json()["data"]
-
-            # Gerar conteúdo baseado no tipo de versão
-            if versao_id == "c2b1dfa0-c664-48b8-a5ff-84b70041b42833":
-                # Conteúdo realista para contrato de locação
-                original_text = self._generate_realistic_contract_original()
-                modified_text = self._generate_realistic_contract_modified()
-            else:
-                # Conteúdo padrão para outras versões
-                original_text = "CLÁUSULA 1 - DAS PARTES\n"
-                original_text += f"Conteúdo original da versão {versao_id}\n"
-                original_text += "CLÁUSULA 2 - PARTICIPANTES\n"
-                original_text += f"Contrato: {versao_data.get('contrato_id', 'N/A')}\n"
-                original_text += f"Status atual: {versao_data.get('status', 'N/A')}\n"
-                original_text += "Este é um exemplo de texto original do contrato."
-
-                modified_text = f"Conteúdo modificado da versão {versao_id}\n"
-                modified_text += (
-                    f"Contrato: {versao_data.get('contrato_id', 'N/A')} [MODIFICADO]\n"
+                # Buscar dados reais do Directus
+                # Usar apenas campos que sabemos que existem baseado na listagem
+                fields = "id,status,date_created,date_updated,versao,observacao,origem,arquivo,modifica_arquivo,contrato"
+                response = requests.get(
+                    f"{self.base_url}/items/versao/{versao_id}?fields={fields}",
+                    headers=DIRECTUS_HEADERS,
+                    timeout=10,
                 )
-                modified_text += "Status atual: processado\n"
-                modified_text += "Este é um exemplo de texto MODIFICADO do contrato com alterações importantes."
 
-                original_text = versao_data.get()
+                if response.status_code != 200:
+                    # No modo real, falha do Directus é erro (não usar mock como fallback)
+                    print(
+                        f"❌ Falha no Directus para versão {versao_id}: HTTP {response.status_code}"
+                    )
+                    return {
+                        "error": f"Versão {versao_id} não encontrada no Directus (HTTP {response.status_code})"
+                    }
+                else:
+                    versao_data = response.json()["data"]
+
+            # Gerar conteúdo baseado no modo (mock ou real)
+            if mock:
+                print("🔧 Gerando conteúdo mock...")
+                original_text, modified_text = self._generate_mock_content(
+                    versao_id, versao_data
+                )
+            else:
+                print("🔍 Processando arquivos reais...")
+                original_text, modified_text = self._process_real_documents(versao_data)
 
             # Gerar diff
             diff_html = self._generate_diff_html(original_text, modified_text)
@@ -274,15 +279,231 @@ class DirectusAPI:
                 "diff_html": diff_html,
                 "created_at": datetime.now().isoformat(),
                 "url": f"http://localhost:{FLASK_PORT}/view/{diff_id}",
+                "mode": "mock" if mock else "real",
             }
 
             diff_cache[diff_id] = diff_data
-
             return diff_data
 
         except Exception as e:
             print(f"❌ Erro ao processar versão {versao_id}: {e}")
             return {"error": str(e)}
+
+    def _generate_mock_content(self, versao_id, versao_data):
+        """Gera conteúdo mock para demonstração"""
+        if versao_id == "c2b1dfa0-c664-48b8-a5ff-84b70041b42833":
+            # Conteúdo realista para contrato de locação
+            original_text = self._generate_realistic_contract_original()
+            modified_text = self._generate_realistic_contract_modified()
+        else:
+            # Conteúdo padrão para outras versões
+            original_text = "CLÁUSULA 1 - DAS PARTES\n"
+            original_text += f"Conteúdo original da versão {versao_id}\n"
+            original_text += "CLÁUSULA 2 - PARTICIPANTES\n"
+            original_text += f"Contrato: {versao_data.get('contrato_id', 'N/A')}\n"
+            original_text += f"Status atual: {versao_data.get('status', 'N/A')}\n"
+            original_text += "Este é um exemplo de texto original do contrato."
+
+            modified_text = f"Conteúdo modificado da versão {versao_id}\n"
+            modified_text += (
+                f"Contrato: {versao_data.get('contrato_id', 'N/A')} [MODIFICADO]\n"
+            )
+            modified_text += "Status atual: processado\n"
+            modified_text += "Este é um exemplo de texto MODIFICADO do contrato com alterações importantes."
+
+        return original_text, modified_text
+
+    def _process_real_documents(self, versao_data):
+        """Processa documentos reais obtidos do Directus"""
+        try:
+            # LÓGICA CORRETA:
+            # versao.arquivo = NOVO/MODIFICADO (versão atual)
+            # Arquivo anterior = versão anterior (date_created menor) OU contrato.modelo_contrato.arquivo_original
+
+            arquivo_novo_id = versao_data.get("arquivo")  # Arquivo MODIFICADO/NOVO
+
+            if not arquivo_novo_id:
+                error_msg = "❌ ID do arquivo novo/modificado não encontrado nos dados da versão"
+                print(error_msg)
+                raise ValueError(
+                    "Arquivo novo não encontrado - use mock=true para dados simulados"
+                )
+
+            # Buscar arquivo original (anterior)
+            arquivo_original_id = self._get_arquivo_original(versao_data)
+
+            if not arquivo_original_id:
+                error_msg = "❌ Não foi possível determinar o arquivo original/anterior"
+                print(error_msg)
+                raise ValueError(
+                    "Arquivo original não encontrado - use mock=true para dados simulados"
+                )
+
+            print(f"📁 Arquivo Original (anterior): {arquivo_original_id}")
+            print(f"📁 Arquivo Modificado (novo): {arquivo_novo_id}")
+
+            # Baixar e processar arquivo original (anterior)
+            original_text = self._download_and_extract_text(arquivo_original_id)
+
+            # Baixar e processar arquivo modificado (novo)
+            modified_text = self._download_and_extract_text(arquivo_novo_id)
+
+            if not original_text:
+                error_msg = "❌ Falha ao extrair texto do arquivo original"
+                print(error_msg)
+                raise ValueError(
+                    "Não foi possível extrair texto do arquivo original - use mock=true para dados simulados"
+                )
+
+            if not modified_text:
+                error_msg = "❌ Falha ao extrair texto do arquivo modificado"
+                print(error_msg)
+                raise ValueError(
+                    "Não foi possível extrair texto do arquivo modificado - use mock=true para dados simulados"
+                )
+
+            return original_text, modified_text
+
+        except Exception as e:
+            print(f"❌ Erro ao processar documentos reais: {e}")
+            raise e
+
+    def _get_arquivo_original(self, versao_data):
+        """Busca o arquivo original/anterior baseado na lógica de negócio"""
+        try:
+            contrato_id = versao_data.get("contrato")
+            versao_atual_date = versao_data.get("date_created")
+
+            if not contrato_id or not versao_atual_date:
+                print("❌ Dados insuficientes para buscar arquivo original")
+                return None
+
+            # 1. Tentar buscar versão anterior (date_created menor)
+            print(f"🔍 Buscando versão anterior do contrato {contrato_id}")
+
+            # Buscar todas as versões do mesmo contrato, ordenadas por data
+            response = requests.get(
+                f"{self.base_url}/items/versao",
+                headers=DIRECTUS_HEADERS,
+                params={
+                    "filter[contrato][_eq]": contrato_id,
+                    "filter[date_created][_lt]": versao_atual_date,
+                    "sort": "-date_created",  # Mais recente primeiro
+                    "limit": 1,
+                    "fields": "id,arquivo,date_created",
+                },
+                timeout=10,
+            )
+
+            if response.status_code == 200:
+                versoes_anteriores = response.json().get("data", [])
+                if versoes_anteriores:
+                    versao_anterior = versoes_anteriores[0]
+                    arquivo_anterior_id = versao_anterior.get("arquivo")
+                    if arquivo_anterior_id:
+                        print(f"✅ Encontrada versão anterior: {versao_anterior['id']}")
+                        return arquivo_anterior_id
+
+            # 2. Se não encontrou versão anterior, buscar modelo_contrato.arquivo_original
+            print("🔍 Não encontrou versão anterior, buscando modelo do contrato")
+
+            response = requests.get(
+                f"{self.base_url}/items/contrato/{contrato_id}",
+                headers=DIRECTUS_HEADERS,
+                params={"fields": "modelo_contrato.arquivo_original"},
+                timeout=10,
+            )
+
+            if response.status_code == 200:
+                contrato_data = response.json().get("data", {})
+                modelo_contrato = contrato_data.get("modelo_contrato")
+                if modelo_contrato:
+                    arquivo_original_id = modelo_contrato.get("arquivo_original")
+                    if arquivo_original_id:
+                        print(
+                            f"✅ Encontrado arquivo original do modelo: {arquivo_original_id}"
+                        )
+                        return arquivo_original_id
+
+            print("❌ Não foi possível encontrar arquivo original/anterior")
+            return None
+
+        except Exception as e:
+            print(f"❌ Erro ao buscar arquivo original: {e}")
+            return None
+
+    def _download_and_extract_text(self, arquivo_id):
+        """Baixa um arquivo do Directus e extrai o texto"""
+        try:
+            # URL para download do arquivo
+            download_url = f"{self.base_url}/assets/{arquivo_id}"
+
+            response = requests.get(download_url, headers=DIRECTUS_HEADERS, timeout=30)
+
+            if response.status_code != 200:
+                print(f"❌ Erro ao baixar arquivo {arquivo_id}: {response.status_code}")
+                return None
+
+            # Salvar arquivo temporariamente
+            import os
+            import tempfile
+
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as temp_file:
+                temp_file.write(response.content)
+                temp_path = temp_file.name
+
+            try:
+                # Usar o módulo docx_utils existente para extrair texto
+                import sys
+
+                sys.path.append("/Users/sidarta/repositorios/docx-compare")
+                from docx_utils import convert_docx_to_text
+
+                text = convert_docx_to_text(temp_path)
+                return text
+            except ImportError as e:
+                print(f"❌ Erro ao importar docx_utils: {e}")
+                # Fallback: usar python-docx diretamente
+                try:
+                    from docx import Document
+
+                    doc = Document(temp_path)
+                    paragraphs = [p.text for p in doc.paragraphs if p.text.strip()]
+                    return "\n".join(paragraphs)
+                except ImportError:
+                    print("❌ python-docx não instalado, retornando None")
+                    return None
+            finally:
+                # Limpar arquivo temporário
+                os.unlink(temp_path)
+
+        except Exception as e:
+            print(f"❌ Erro ao processar arquivo {arquivo_id}: {e}")
+            return None
+
+    def _get_fallback_real_content(self, versao_data):
+        """Conteúdo de fallback quando não consegue processar arquivos reais"""
+        titulo = versao_data.get("titulo", "Documento")
+
+        original_text = f"DOCUMENTO ORIGINAL - {titulo}\n\n"
+        original_text += "CLÁUSULA 1 - DAS PARTES\n"
+        original_text += f"Contrato ID: {versao_data.get('contrato_id', 'N/A')}\n"
+        original_text += f"Versão: {versao_data.get('versao_original', '1.0')}\n"
+        original_text += "Status: ativo\n\n"
+        original_text += (
+            "Este é o conteúdo original do documento baseado nos metadados disponíveis."
+        )
+
+        modified_text = f"DOCUMENTO MODIFICADO - {titulo}\n\n"
+        modified_text += "CLÁUSULA 1 - DAS PARTES [ATUALIZADA]\n"
+        modified_text += f"Contrato ID: {versao_data.get('contrato_id', 'N/A')}\n"
+        modified_text += f"Versão: {versao_data.get('versao_modificada', '2.0')}\n"
+        modified_text += "Status: processado\n\n"
+        modified_text += (
+            "Este é o conteúdo modificado do documento com as alterações aplicadas."
+        )
+
+        return original_text, modified_text
 
     def _generate_diff_html(self, original, modified):
         """Gera HTML de diff mais robusto com identificação de cláusulas"""
@@ -517,33 +738,73 @@ def get_documents():
     return jsonify({"documents": contratos})
 
 
-@app.route("/api/versoes", methods=["GET"])
+@app.route("/api/versoes", methods=["GET", "POST"])
 def get_versoes():
-    """Lista versões para processar - MOCK DATA"""
-    return jsonify(
-        {
-            "versoes": [
+    """Lista versões para processar
+
+    Aceita parâmetro mock via:
+    - Query parameter: GET /api/versoes?mock=true
+    - JSON body: POST /api/versoes {"mock": true}
+    """
+    try:
+        # Verificar se mock foi solicitado
+        if request.method == "GET":
+            mock = request.args.get("mock", "false").lower() == "true"
+        else:  # POST
+            data = request.json or {}
+            mock = data.get("mock", False)
+
+        print(f"🔍 Buscando versões (modo: {'mock' if mock else 'real'})")
+
+        if mock:
+            print("🔧 Retornando dados mock conforme solicitado")
+            return jsonify(
                 {
-                    "id": "versao_001",
-                    "titulo": "Contrato de Prestação de Serviços v1.0 vs v2.0",
-                    "status": "processar",
-                    "data_criacao": "2025-09-11T10:00:00Z",
-                    "versao_original": "1.0",
-                    "versao_modificada": "2.0",
-                    "descricao": "Atualização de cláusulas contratuais e condições gerais",
-                },
-                {
-                    "id": "versao_002",
-                    "titulo": "Política de Privacidade v2.1 vs v2.2",
-                    "status": "processar",
-                    "data_criacao": "2025-09-12T14:30:00Z",
-                    "versao_original": "2.1",
-                    "versao_modificada": "2.2",
-                    "descricao": "Adequação à LGPD e novos termos de uso",
-                },
-            ]
-        }
-    )
+                    "versoes": [
+                        {
+                            "id": "versao_001",
+                            "titulo": "Contrato de Prestação de Serviços v1.0 vs v2.0",
+                            "status": "processar",
+                            "data_criacao": "2025-09-11T10:00:00Z",
+                            "versao_original": "1.0",
+                            "versao_modificada": "2.0",
+                            "descricao": "Atualização de cláusulas contratuais e condições gerais",
+                        },
+                        {
+                            "id": "versao_002",
+                            "titulo": "Política de Privacidade v2.1 vs v2.2",
+                            "status": "processar",
+                            "data_criacao": "2025-09-12T14:30:00Z",
+                            "versao_original": "2.1",
+                            "versao_modificada": "2.2",
+                            "descricao": "Adequação à LGPD e novos termos de uso",
+                        },
+                    ],
+                    "mode": "mock",
+                }
+            )
+        else:
+            # Buscar dados reais do Directus
+            versoes = directus_api.get_versoes_para_processar()
+
+            # Se conseguiu dados reais, usar eles
+            if versoes and len(versoes) > 0 and not _is_mock_data(versoes[0]):
+                print(f"✅ Retornando {len(versoes)} versões reais do Directus")
+                return jsonify({"versoes": versoes, "mode": "real"})
+            else:
+                print("❌ Falha ao obter dados reais do Directus")
+                return jsonify(
+                    {"error": "Não foi possível obter versões do Directus"}
+                ), 500
+
+    except Exception as e:
+        print(f"❌ Erro ao buscar versões: {e}")
+        return jsonify({"error": f"Erro ao buscar versões: {str(e)}"}), 500
+
+
+def _is_mock_data(versao):
+    """Verifica se uma versão é dados mock"""
+    return versao.get("id", "").startswith("versao_")
 
 
 @app.route("/api/versoes/<versao_id>", methods=["GET"])
@@ -735,19 +996,41 @@ def test_diff(versao_id):
 
 @app.route("/api/process", methods=["POST"])
 def process_document():
-    """Processa uma versão específica"""
+    """Processa uma versão específica
+
+    Body JSON esperado:
+    {
+        "versao_id": "id_da_versao",
+        "mock": true/false (opcional, default: false)
+    }
+    """
     data = request.json
     if not data:
         return jsonify({"error": "Nenhum dado JSON fornecido"}), 400
+
     versao_id = data.get("versao_id") or data.get("doc_id")
+    mock = data.get("mock", False)  # Default: usar dados reais
 
     if not versao_id:
         return jsonify({"error": "versao_id é obrigatório"}), 400
 
-    result = directus_api.process_versao(versao_id)
+    print(f"🔍 Processando versão {versao_id} (modo: {'mock' if mock else 'real'})")
+    result = directus_api.process_versao(versao_id, mock=mock)
 
     if "error" in result:
         return jsonify(result), 500
+
+    # Debug: verificar o resultado
+    print(
+        f"🔍 Resultado do processamento: {type(result)}, chaves: {list(result.keys()) if isinstance(result, dict) else 'não é dict'}"
+    )
+
+    # Garantir que o resultado seja armazenado no cache global
+    if "id" in result:
+        diff_cache[result["id"]] = result
+        print(f"💾 Diff {result['id']} salvo no cache (total: {len(diff_cache)} items)")
+    else:
+        print("⚠️  Resultado não tem campo 'id', não salvando no cache")
 
     return jsonify(result)
 
@@ -766,10 +1049,25 @@ def view_diff(diff_id):
 @app.route("/api/data/<diff_id>", methods=["GET"])
 def get_diff_data(diff_id):
     """Retorna dados JSON do diff"""
+    print(f"🔍 Buscando diff_id: {diff_id}")
+    print(f"📊 Cache atual tem {len(diff_cache)} items: {list(diff_cache.keys())}")
+
     if diff_id not in diff_cache:
         return jsonify({"error": "Diff não encontrado"}), 404
 
     return jsonify(diff_cache[diff_id])
+
+
+@app.route("/api/debug/cache", methods=["GET"])
+def debug_cache():
+    """Debug: mostra conteúdo do cache"""
+    return jsonify(
+        {
+            "total_items": len(diff_cache),
+            "cache_keys": list(diff_cache.keys()),
+            "timestamp": datetime.now().isoformat(),
+        }
+    )
 
 
 if __name__ == "__main__":

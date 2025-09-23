@@ -14,12 +14,22 @@
           <div class="connection-status">
             <span v-if="isConnectedToAPI" class="status connected"> 🟢 API Conectada </span>
             <span v-else class="status offline"> 🔴 Modo Offline </span>
+
+            <!-- Controle de Modo (Mock vs Real) -->
+            <div v-if="isConnectedToAPI" class="mode-control">
+              <label class="mode-toggle">
+                <input type="checkbox" v-model="useMockData" />
+                <span class="toggle-slider"></span>
+                <span class="toggle-label">{{ useMockData ? '🔧 Dados Mock' : '📊 Dados Reais' }}</span>
+              </label>
+            </div>
+
             <button
               v-if="isConnectedToAPI && !loading"
               @click="processarNovoDocumento"
               class="process-btn"
             >
-              🔄 Processar via API
+              🔄 {{ useMockData ? 'Processar Mock' : 'Processar Real' }}
             </button>
             <span v-if="loading" class="loading-indicator"> ⏳ Carregando... </span>
           </div>
@@ -144,6 +154,7 @@ import VueDiffViewer from './VueDiffViewer.vue'
         activeTab: 'lista', // 'lista', 'lado-a-lado', ou 'vue-diff'
         loading: false,
         isConnectedToAPI: false,
+        useMockData: false, // Controla se deve usar dados mock ou reais
         sampleData: {
           metadata: {
             timestamp: new Date().toISOString(),
@@ -249,28 +260,57 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
         return doc.modificacoes || []
       },
     },
+    watch: {
+      // Observar mudanças no modo mock e atualizar URL
+      useMockData(newValue) {
+        const url = new URL(window.location)
+        url.searchParams.set('mock', newValue.toString())
+        window.history.pushState({}, '', url)
+        console.log(`🔄 Modo alterado para: ${newValue ? 'Mock' : 'Real'}`)
+      },
+    },
     mounted() {
       // Verificar se há diff_id na URL
       const urlParams = new URLSearchParams(window.location.search)
       const diffId = urlParams.get('diff_id')
+      const mockParam = urlParams.get('mock')
+
+      // Definir modo mock baseado no parâmetro da URL
+      if (mockParam !== null) {
+        this.useMockData = mockParam === 'true'
+      }
 
       if (diffId) {
         this.carregarDiffDoAPI(diffId)
       } else {
         this.verificarConexaoAPI()
+        // Se mock=false, carregar dados reais automaticamente
+        if (mockParam === 'false') {
+          setTimeout(() => {
+            this.processarVersoes()
+          }, 1000) // Aguardar um segundo para conexão API
+        }
       }
     },
     methods: {
       async verificarConexaoAPI() {
+        console.log('🔍 Tentando conectar à API...')
         try {
-          const response = await fetch('/api/health')
+          const response = await fetch('/health')
+          console.log('📡 Resposta da API:', response.status, response.ok)
           if (response.ok) {
+            const data = await response.json()
+            console.log('📊 Dados da API:', data)
             this.isConnectedToAPI = true
             this.titulo = 'Versiona AI - Conectado ao API'
             console.log('✅ API conectada')
+          } else {
+            console.log('❌ API retornou erro:', response.status)
+            this.isConnectedToAPI = false
           }
-        } catch {
-          console.log('ℹ️ Modo offline - usando dados de demonstração')
+        } catch (error) {
+          console.log('ℹ️ Modo offline - usando dados de demonstração', error)
+          this.isConnectedToAPI = false
         }
       },
 
@@ -306,21 +346,25 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
         this.loading = true
         try {
           // Primeiro, buscar versões disponíveis para processar
-          const versoesResponse = await fetch('/api/versoes')
+          const versoesUrl = this.useMockData ? '/api/versoes?mock=true' : '/api/versoes?mock=false'
+          console.log(`🔍 Buscando versões: ${versoesUrl}`)
+
+          const versoesResponse = await fetch(versoesUrl)
           if (!versoesResponse.ok) {
             throw new Error('Erro ao buscar versões disponíveis')
           }
 
           const versoesData = await versoesResponse.json()
           if (!versoesData.versoes || versoesData.versoes.length === 0) {
-            alert('Nenhuma versão encontrada para processar no Directus')
+            const modoTexto = this.useMockData ? 'mock' : 'Directus'
+            alert(`Nenhuma versão encontrada para processar no modo ${modoTexto}`)
             this.loading = false
             return
           }
 
           // Usar a primeira versão disponível
           const versaoId = versoesData.versoes[0].id
-          console.log('🔄 Processando versão ID:', versaoId)
+          console.log(`🔄 Processando versão ID: ${versaoId} (modo: ${this.useMockData ? 'mock' : 'real'})`)
 
           const response = await fetch('/api/process', {
             method: 'POST',
@@ -329,6 +373,7 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
             },
             body: JSON.stringify({
               versao_id: versaoId,
+              mock: this.useMockData, // Enviar parâmetro mock baseado no controle
             }),
           })
 
@@ -360,7 +405,8 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
               }
 
               this.sampleData = diffData
-              this.titulo = `Versão ${resultado.versao_id} - Processado via Directus`
+              const modoTexto = this.useMockData ? 'Mock' : 'Directus'
+              this.titulo = `Versão ${resultado.versao_id} - Processado via ${modoTexto}`
               console.log('✅ Documento processado:', resultado)
 
               // Atualizar URL com diff_id
@@ -615,6 +661,67 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
     padding: 0.5rem 1rem;
     border-radius: 20px;
     font-size: 0.9rem;
+    backdrop-filter: blur(10px);
+  }
+
+  /* Controle de Modo (Mock vs Real) */
+  .mode-control {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .mode-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .mode-toggle input[type="checkbox"] {
+    display: none;
+  }
+
+  .toggle-slider {
+    position: relative;
+    width: 40px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+  }
+
+  .toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background: white;
+    border-radius: 50%;
+    top: 1px;
+    left: 1px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .mode-toggle input[type="checkbox"]:checked + .toggle-slider {
+    background: #fbbf24;
+    border-color: #f59e0b;
+  }
+
+  .mode-toggle input[type="checkbox"]:checked + .toggle-slider::before {
+    transform: translateX(20px);
+  }
+
+  .toggle-label {
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
     backdrop-filter: blur(10px);
   }
 
