@@ -26,6 +26,13 @@
 
             <button
               v-if="isConnectedToAPI && !loading"
+              @click="listarVersoes"
+              class="versions-btn"
+            >
+              📋 {{ showVersionsList ? 'Ocultar Versões' : 'Listar Versões' }}
+            </button>
+            <button
+              v-if="isConnectedToAPI && !loading"
               @click="processarNovoDocumento"
               class="process-btn"
             >
@@ -34,14 +41,45 @@
             <span v-if="loading" class="loading-indicator"> ⏳ Carregando... </span>
           </div>
 
-          <div class="stats">
+          <!-- Estatísticas - Apenas quando há versão processada -->
+          <div v-if="hasProcessedVersion" class="stats">
             <span class="stat">📊 {{ stats.total_modificacoes }} modificações</span>
             <span class="stat">⏱️ {{ stats.tempo_processamento.toFixed(3) }}s</span>
             <span class="stat">🎯 {{ stats.total_blocos }} blocos</span>
           </div>
 
-          <!-- Abas de Navegação -->
-          <div class="tabs">
+          <!-- Lista de Versões Disponíveis -->
+          <div v-if="showVersionsList" class="versions-section">
+            <h3>📋 Versões Disponíveis</h3>
+            <div v-if="loadingVersions" class="loading-versions">
+              ⏳ Carregando versões...
+            </div>
+            <div v-else-if="availableVersions.length > 0" class="versions-list">
+              <div
+                v-for="version in availableVersions"
+                :key="version.id"
+                class="version-item"
+                @click="processarVersaoEspecifica(version.id)"
+              >
+                <div class="version-header">
+                  <span class="version-id">🆔 {{ version.versao || version.id.substring(0, 8) }}</span>
+                  <span class="version-status" :class="version.status">{{ version.status }}</span>
+                </div>
+                <div class="version-details">
+                  <p><strong>Origem:</strong> {{ version.origem }}</p>
+                  <p><strong>Data:</strong> {{ new Date(version.date_created).toLocaleDateString('pt-BR') }}</p>
+                  <p v-if="version.observacao"><strong>Observação:</strong> {{ version.observacao.substring(0, 100) }}...</p>
+                </div>
+                <button class="version-process-btn">🔄 Processar Esta Versão</button>
+              </div>
+            </div>
+            <div v-else class="no-versions">
+              ℹ️ Nenhuma versão encontrada no modo {{ useMockData ? 'mock' : 'real' }}
+            </div>
+          </div>
+
+          <!-- Abas de Navegação - Apenas quando há versão processada -->
+          <div v-if="hasProcessedVersion" class="tabs">
             <button
               class="tab"
               :class="{ active: activeTab === 'lista' }"
@@ -66,7 +104,29 @@
           </div>
         </div>
 
-        <div class="diff-content">
+        <!-- Estado Inicial - Nenhuma Versão Processada -->
+        <div v-if="!hasProcessedVersion" class="initial-state">
+          <div class="welcome-message">
+            <h3>👋 Bem-vindo ao Versiona AI</h3>
+            <p>Para começar, você pode:</p>
+            <ul>
+              <li>📋 <strong>Listar Versões</strong> - Ver todas as versões disponíveis</li>
+              <li>🔄 <strong>Processar</strong> - Processar uma versão automaticamente</li>
+              <li>🎯 <strong>Escolher Específica</strong> - Selecionar uma versão da lista</li>
+            </ul>
+            <div class="quick-actions">
+              <button @click="listarVersoes" class="quick-action-btn">
+                📋 Ver Versões Disponíveis
+              </button>
+              <button @click="processarNovoDocumento" class="quick-action-btn primary">
+                🚀 Processar Primeira Versão
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Conteúdo das Diferenças - Apenas quando há versão processada -->
+        <div v-else class="diff-content">
           <!-- Vista Lista -->
           <div v-if="activeTab === 'lista'" class="modifications-list">
             <div
@@ -114,8 +174,8 @@
           </div>
         </div>
 
-        <!-- Legenda apenas para a vista lista -->
-        <div v-if="activeTab === 'lista'" class="diff-legend">
+        <!-- Legenda apenas para a vista lista e quando há versão processada -->
+        <div v-if="hasProcessedVersion && activeTab === 'lista'" class="diff-legend">
           <div class="legend-item alteracao">
             <span class="legend-color"></span>
             <span>Alteração</span>
@@ -150,11 +210,15 @@ import VueDiffViewer from './VueDiffViewer.vue'
     },
     data() {
       return {
-        titulo: 'Demonstração - Contrato v1.0 vs v2.0',
+        titulo: 'Versiona AI - Visualizador de Diferenças',
         activeTab: 'lista', // 'lista', 'lado-a-lado', ou 'vue-diff'
         loading: false,
         isConnectedToAPI: false,
         useMockData: false, // Controla se deve usar dados mock ou reais
+        showVersionsList: false, // Controla se mostra a lista de versões
+        availableVersions: [], // Lista de versões disponíveis
+        loadingVersions: false, // Controla loading da busca de versões
+        hasProcessedVersion: false, // Controla se há uma versão processada
         sampleData: {
           metadata: {
             timestamp: new Date().toISOString(),
@@ -314,6 +378,98 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
         }
       },
 
+      async listarVersoes() {
+        if (!this.isConnectedToAPI) {
+          alert('API não está conectada. Verifique se o servidor está rodando')
+          return
+        }
+
+        this.showVersionsList = !this.showVersionsList
+
+        if (this.showVersionsList && this.availableVersions.length === 0) {
+          await this.buscarVersoes()
+        }
+      },
+
+      async buscarVersoes() {
+        this.loadingVersions = true
+        try {
+          const versoesUrl = this.useMockData ? '/api/versoes?mock=true' : '/api/versoes?mock=false'
+          console.log(`🔍 Buscando versões: ${versoesUrl}`)
+
+          const response = await fetch(versoesUrl)
+          if (!response.ok) {
+            throw new Error('Erro ao buscar versões disponíveis')
+          }
+
+          const data = await response.json()
+          this.availableVersions = data.versoes || []
+          console.log(`📋 ${this.availableVersions.length} versões encontradas`)
+        } catch (error) {
+          console.error('❌ Erro ao buscar versões:', error)
+          alert('Erro ao buscar versões: ' + error.message)
+          this.availableVersions = []
+        } finally {
+          this.loadingVersions = false
+        }
+      },
+
+      async processarVersaoEspecifica(versaoId) {
+        if (!this.isConnectedToAPI) {
+          alert('API não está conectada')
+          return
+        }
+
+        this.loading = true
+        try {
+          console.log(`🔄 Processando versão específica: ${versaoId}`)
+
+          const response = await fetch('/api/process', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              versao_id: versaoId,
+              mock: this.useMockData,
+            }),
+          })
+
+          if (response.ok) {
+            const data = await response.json()
+            this.sampleData = data
+            this.titulo = `Versão ${versaoId.substring(0, 8)} - Processada`
+            console.log('✅ Versão processada com sucesso')
+
+            // Marcar como versão processada
+            this.hasProcessedVersion = true
+
+            // Atualizar estatísticas
+            this.stats = {
+              total_modificacoes: data.modificacoes?.length || 0,
+              tempo_processamento: 0.1,
+              total_blocos: 1
+            }
+
+            // Ocultar lista de versões após processar
+            this.showVersionsList = false
+
+            // Atualizar URL com diff_id se disponível
+            if (data.id) {
+              const newUrl = `${window.location.pathname}?diff_id=${data.id}&mock=${this.useMockData}`
+              window.history.pushState({}, '', newUrl)
+            }
+          } else {
+            throw new Error('Erro ao processar versão')
+          }
+        } catch (error) {
+          console.error('❌ Erro ao processar versão:', error)
+          alert('Erro ao processar versão: ' + error.message)
+        } finally {
+          this.loading = false
+        }
+      },
+
       async carregarDiffDoAPI(diffId) {
         this.loading = true
         try {
@@ -323,6 +479,7 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
             this.sampleData = data
             this.titulo = `Diff ${diffId} - Carregado do API`
             this.isConnectedToAPI = true
+            this.hasProcessedVersion = true
             console.log('✅ Diff carregado do API:', data)
           } else {
             throw new Error('Diff não encontrado')
@@ -408,6 +565,9 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
               const modoTexto = this.useMockData ? 'Mock' : 'Directus'
               this.titulo = `Versão ${resultado.versao_id} - Processado via ${modoTexto}`
               console.log('✅ Documento processado:', resultado)
+
+              // Marcar como versão processada
+              this.hasProcessedVersion = true
 
               // Atualizar URL com diff_id
               const newUrl = new URL(window.location)
@@ -627,6 +787,207 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
     background: white;
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .versions-btn {
+    background: rgba(255, 255, 255, 0.9);
+    color: #059669;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    margin-right: 0.5rem;
+  }
+
+  .versions-btn:hover {
+    background: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .versions-section {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .versions-section h3 {
+    margin: 0 0 1rem 0;
+    color: white;
+    font-size: 1.2rem;
+  }
+
+  .loading-versions {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+    padding: 2rem;
+    font-style: italic;
+  }
+
+  .versions-list {
+    display: grid;
+    gap: 1rem;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .version-item {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .version-item:hover {
+    background: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .version-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .version-id {
+    font-weight: 600;
+    color: #4f46e5;
+  }
+
+  .version-status {
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .version-status.fechada {
+    background: #dcfdf7;
+    color: #059669;
+  }
+
+  .version-status.em_processamento {
+    background: #fef3c7;
+    color: #d97706;
+  }
+
+  .version-status.aberta {
+    background: #dbeafe;
+    color: #2563eb;
+  }
+
+  .version-details {
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+  }
+
+  .version-details p {
+    margin: 0.25rem 0;
+    color: #6b7280;
+  }
+
+  .version-process-btn {
+    background: #4f46e5;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+    width: 100%;
+    transition: all 0.2s ease;
+  }
+
+  .version-process-btn:hover {
+    background: #4338ca;
+    transform: translateY(-1px);
+  }
+
+  .no-versions {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+    padding: 2rem;
+    font-style: italic;
+  }
+
+  .initial-state {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 3rem;
+    margin: 2rem 0;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .welcome-message h3 {
+    color: white;
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+  }
+
+  .welcome-message p {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .welcome-message ul {
+    text-align: left;
+    max-width: 400px;
+    margin: 0 auto 2rem auto;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .welcome-message li {
+    margin: 0.5rem 0;
+    font-size: 1rem;
+  }
+
+  .quick-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .quick-action-btn {
+    background: rgba(255, 255, 255, 0.9);
+    color: #4f46e5;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    min-width: 200px;
+  }
+
+  .quick-action-btn:hover {
+    background: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .quick-action-btn.primary {
+    background: #4f46e5;
+    color: white;
+  }
+
+  .quick-action-btn.primary:hover {
+    background: #4338ca;
   }
 
   .loading-indicator {
