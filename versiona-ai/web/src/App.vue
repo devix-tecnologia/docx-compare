@@ -172,14 +172,14 @@
 
           <!-- Vista Blocos Agrupados -->
           <div v-else-if="activeTab === 'blocos'" class="blocks-view">
-            <div v-if="blocosDetalhados && blocosDetalhados.length > 0" class="blocks-container">
+            <div v-if="blocosComModificacoes && blocosComModificacoes.length > 0" class="blocks-container">
               <div class="blocks-header">
                 <h3>🎯 Agrupamento Posicional</h3>
                 <p>Modificações organizadas por blocos baseado na análise de tags e proximidade posicional</p>
               </div>
 
               <div
-                v-for="(bloco, index) in blocosDetalhados"
+                v-for="(bloco, index) in blocosComModificacoes"
                 :key="bloco.nome || index"
                 class="block-item"
               >
@@ -190,6 +190,7 @@
                   </div>
                   <div class="block-position">
                     📍 Posição: {{ bloco.posicao_inicio || 'N/A' }} - {{ bloco.posicao_fim || 'N/A' }}
+                    <span class="modifications-count">{{ bloco.total_modificacoes || 0 }} modificações</span>
                   </div>
                 </div>
 
@@ -199,9 +200,33 @@
                     <span class="content-preview">{{ bloco.conteudo_estimado || 'Conteúdo não disponível' }}</span>
                   </div>
 
-                  <!-- Aqui seriam mostradas as modificações que pertencem a este bloco -->
+                  <!-- Modificações relacionadas a este bloco -->
                   <div class="block-modifications">
-                    <small>💡 Modificações relacionadas a este bloco serão implementadas na próxima versão</small>
+                    <div v-if="bloco.modificacoes && bloco.modificacoes.length > 0" class="modifications-list">
+                      <h5>� Modificações neste bloco ({{ bloco.modificacoes.length }}):</h5>
+                      <div
+                        v-for="modificacao in bloco.modificacoes"
+                        :key="modificacao.id"
+                        class="modification-summary"
+                        :class="modificacao.css_class"
+                      >
+                        <div class="mod-summary-header">
+                          <span class="mod-type-small">{{ modificacao.tipo.toUpperCase() }}</span>
+                          <span class="mod-confidence-small">{{ (modificacao.confianca * 100).toFixed(1) }}%</span>
+                        </div>
+                        <div class="mod-summary-content">
+                          <span class="mod-summary-text">
+                            "{{ modificacao.conteudo.original || 'N/A' }}" → "{{ modificacao.conteudo.novo || 'N/A' }}"
+                          </span>
+                        </div>
+                        <div class="mod-summary-position">
+                          📍 Linha {{ modificacao.posicao.linha }}, Coluna {{ modificacao.posicao.coluna }}
+                        </div>
+                      </div>
+                    </div>
+                    <div v-else class="no-modifications">
+                      <small>ℹ️ Nenhuma modificação identificada neste bloco baseado na análise atual</small>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -384,6 +409,42 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
       blocosDetalhados() {
         const doc = this.sampleData.documentos?.[0] || {}
         return doc.blocos_detalhados || []
+      },
+      blocosComModificacoes() {
+        const blocos = this.blocosDetalhados
+        const modificacoes = this.modificacoes
+
+        if (!blocos.length || !modificacoes.length) {
+          return blocos
+        }
+
+        return blocos.map(bloco => {
+          // Mapear modificações que estão dentro da faixa de posição do bloco
+          const modificacoesDoBloco = modificacoes.filter(mod => {
+            // Se a modificação tem posição e está dentro da faixa do bloco
+            if (mod.posicao && bloco.posicao_inicio && bloco.posicao_fim) {
+              // Converter posição de linha/coluna para posição aproximada no texto
+              const posicaoAprox = (mod.posicao.linha - 1) * 50 + mod.posicao.coluna
+              return posicaoAprox >= bloco.posicao_inicio && posicaoAprox <= bloco.posicao_fim
+            }
+
+            // Se não há posição exata, usar tags relacionadas
+            if (mod.tags_relacionadas && mod.tags_relacionadas.length > 0) {
+              return mod.tags_relacionadas.some(tag =>
+                tag.toLowerCase().includes(bloco.nome.toLowerCase()) ||
+                bloco.nome.toLowerCase().includes(tag.toLowerCase())
+              )
+            }
+
+            return false
+          })
+
+          return {
+            ...bloco,
+            modificacoes: modificacoesDoBloco,
+            total_modificacoes: modificacoesDoBloco.length
+          }
+        })
       },
     },
     watch: {
@@ -1515,6 +1576,111 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
     margin-bottom: 0.5rem;
   }
 
+  /* Estilos para modificações nos blocos */
+  .modifications-count {
+    background: #e3f2fd;
+    color: #1976d2;
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-left: 1rem;
+  }
+
+  .modifications-list {
+    margin-top: 1rem;
+  }
+
+  .modifications-list h5 {
+    color: #1f2937;
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 0.5rem;
+  }
+
+  .modification-summary {
+    background: #f8f9fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 0.8rem;
+    margin-bottom: 0.8rem;
+    transition: all 0.2s ease;
+  }
+
+  .modification-summary:hover {
+    background: #f1f3f4;
+    border-color: #d1d5db;
+  }
+
+  .modification-summary.diff-alteracao {
+    border-left: 4px solid #ff6b6b;
+  }
+
+  .modification-summary.diff-insercao {
+    border-left: 4px solid #51cf66;
+  }
+
+  .modification-summary.diff-remocao {
+    border-left: 4px solid #ffd43b;
+  }
+
+  .mod-summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .mod-type-small {
+    background: #6b7280;
+    color: white;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .mod-confidence-small {
+    background: #10b981;
+    color: white;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+
+  .mod-summary-content {
+    margin: 0.5rem 0;
+  }
+
+  .mod-summary-text {
+    font-family: 'Monaco', 'Consolas', monospace;
+    font-size: 0.85rem;
+    color: #374151;
+    line-height: 1.4;
+  }
+
+  .mod-summary-position {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 0.5rem;
+  }
+
+  .no-modifications {
+    text-align: center;
+    padding: 1.5rem;
+    background: #f9fafb;
+    border-radius: 6px;
+    border: 1px dashed #d1d5db;
+  }
+
+  .no-modifications small {
+    color: #6b7280;
+    font-style: italic;
+  }
+
   @media (max-width: 768px) {
     .stats {
       flex-direction: column;
@@ -1542,6 +1708,17 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
       flex-direction: column;
       align-items: flex-start;
       gap: 0.5rem;
+    }
+
+    .modifications-count {
+      margin-left: 0;
+      margin-top: 0.5rem;
+    }
+
+    .mod-summary-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.3rem;
     }
   }
 </style>
