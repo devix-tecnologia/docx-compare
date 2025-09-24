@@ -188,12 +188,24 @@ class DirectusAPI:
         """Busca todas as versões (removido filtro de status)"""
         print("🚀 Iniciando get_versoes_para_processar")
         try:
+            url = f"{self.base_url}/items/versao?limit=50"
+            print(f"📡 URL: {url}")
+            print(f"🔑 Headers: Authorization Bearer existe: {bool(DIRECTUS_TOKEN)}")
+
             # Buscar versões usando a função existente - sem filtro de status
             response = requests.get(
-                f"{self.base_url}/items/versao?limit=50",
+                url,
                 headers=DIRECTUS_HEADERS,
                 timeout=15,
             )
+
+            print(f"🔍 Status Code: {response.status_code}")
+            if response.status_code != 200:
+                try:
+                    error_data = response.json()
+                    print(f"📄 Erro detalhado: {error_data}")
+                except Exception:
+                    print(f"📄 Resposta raw: {response.text[:500]}")
 
             if response.status_code == 200:
                 versoes = response.json()["data"]
@@ -283,6 +295,9 @@ class DirectusAPI:
             # Gerar diff
             diff_html = self._generate_diff_html(original_text, modified_text)
 
+            # Extrair modificações do diff
+            modificacoes = self._extrair_modificacoes_do_diff(diff_html)
+
             # Calcular blocos usando agrupamento posicional
             resultado_blocos = self._calcular_blocos_avancado(versao_id, diff_html)
 
@@ -295,6 +310,7 @@ class DirectusAPI:
                 "original": original_text,
                 "modified": modified_text,
                 "diff_html": diff_html,
+                "modificacoes": modificacoes,
                 "total_blocos": resultado_blocos.get("total_blocos", 1),
                 "blocos_detalhados": resultado_blocos.get("blocos_detalhados", []),
                 "metodo_calculo": resultado_blocos.get("metodo", "unknown"),
@@ -527,50 +543,166 @@ class DirectusAPI:
         return original_text, modified_text
 
     def _generate_diff_html(self, original, modified):
-        """Gera HTML de diff mais robusto com identificação de cláusulas"""
-        orig_lines = original.split("\n")
-        mod_lines = modified.split("\n")
+        """Gera HTML de diff inteligente com agrupamento semântico"""
+        print("🔍 Iniciando geração de diff inteligente")
+
+        # Usar algoritmo de diff mais sofisticado
+        import difflib
+
+        # Dividir em parágrafos para melhor granularidade
+        orig_paragraphs = self._split_into_semantic_units(original)
+        mod_paragraphs = self._split_into_semantic_units(modified)
+
+        print(f"📝 Original: {len(orig_paragraphs)} unidades semânticas")
+        print(f"📝 Modificado: {len(mod_paragraphs)} unidades semânticas")
 
         html = ["<div class='diff-container'>"]
-        max_lines = max(len(orig_lines), len(mod_lines))
-
         current_clause = None
 
-        for i in range(max_lines):
-            orig_line = orig_lines[i] if i < len(orig_lines) else ""
-            mod_line = mod_lines[i] if i < len(mod_lines) else ""
+        # Usar SequenceMatcher para comparação mais inteligente
+        matcher = difflib.SequenceMatcher(None, orig_paragraphs, mod_paragraphs)
 
-            # Escapar HTML para evitar problemas
-            orig_line_escaped = (
-                orig_line.replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-            )
-            mod_line_escaped = (
-                mod_line.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-            )
+        for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+            if tag == "equal":
+                # Conteúdo inalterado
+                for i in range(i1, i2):
+                    para = orig_paragraphs[i]
+                    if para.strip():
+                        # Verificar se é nova cláusula
+                        new_clause = self._identify_clause(para)
+                        if new_clause and new_clause != current_clause:
+                            current_clause = new_clause
+                            html.append(
+                                f"<div class='clause-header'>📋 {current_clause}</div>"
+                            )
 
-            # Verificar se é uma nova cláusula
-            new_clause = self._identify_clause(orig_line or mod_line)
-            if new_clause and new_clause != current_clause:
-                current_clause = new_clause
-                html.append(f"<div class='clause-header'>📋 {current_clause}</div>")
+                        para_escaped = self._escape_html(para)
+                        html.append(f"<div class='diff-unchanged'>{para_escaped}</div>")
 
-            if orig_line != mod_line:
-                if orig_line:
-                    html.append(
-                        f"<div class='diff-removed'>- {orig_line_escaped}</div>"
-                    )
-                if mod_line:
-                    html.append(f"<div class='diff-added'>+ {mod_line_escaped}</div>")
-            else:
-                if orig_line:  # Só mostrar linhas não vazias
-                    html.append(
-                        f"<div class='diff-unchanged'>{orig_line_escaped}</div>"
-                    )
+            elif tag == "delete":
+                # Conteúdo removido
+                for i in range(i1, i2):
+                    para = orig_paragraphs[i]
+                    if para.strip():
+                        para_escaped = self._escape_html(para)
+                        html.append(f"<div class='diff-removed'>- {para_escaped}</div>")
+
+            elif tag == "insert":
+                # Conteúdo adicionado
+                for j in range(j1, j2):
+                    para = mod_paragraphs[j]
+                    if para.strip():
+                        # Verificar se é nova cláusula
+                        new_clause = self._identify_clause(para)
+                        if new_clause and new_clause != current_clause:
+                            current_clause = new_clause
+                            html.append(
+                                f"<div class='clause-header'>📋 {current_clause}</div>"
+                            )
+
+                        para_escaped = self._escape_html(para)
+                        html.append(f"<div class='diff-added'>+ {para_escaped}</div>")
+
+            elif tag == "replace":
+                # Conteúdo substituído - criar pares de modificação
+                orig_content = " ".join(orig_paragraphs[i1:i2]).strip()
+                mod_content = " ".join(mod_paragraphs[j1:j2]).strip()
+
+                if orig_content and mod_content:
+                    # Verificar se é preenchimento de campos (placeholders)
+                    if self._is_field_replacement(orig_content, mod_content):
+                        # Melhor apresentação para preenchimento de campos
+                        field_info = self._extract_field_info(orig_content, mod_content)
+                        html.append("<div class='diff-field-replacement'>")
+                        html.append(
+                            f"  <div class='field-name'>📝 {field_info['field_name']}</div>"
+                        )
+                        html.append(
+                            f"  <div class='diff-removed'>- {self._escape_html(orig_content)}</div>"
+                        )
+                        html.append(
+                            f"  <div class='diff-added'>+ {self._escape_html(mod_content)}</div>"
+                        )
+                        html.append("</div>")
+                    else:
+                        # Modificação normal
+                        html.append(
+                            f"<div class='diff-removed'>- {self._escape_html(orig_content)}</div>"
+                        )
+                        html.append(
+                            f"<div class='diff-added'>+ {self._escape_html(mod_content)}</div>"
+                        )
 
         html.append("</div>")
-        return "\n".join(html)
+        result = "\n".join(html)
+        print(f"✅ Diff HTML gerado: {len(result)} caracteres")
+        return result
+
+    def _split_into_semantic_units(self, text):
+        """Divide texto em unidades semânticas (frases, parágrafos)"""
+        import re
+
+        # Dividir por quebras de linha duplas (parágrafos)
+        paragraphs = text.split("\n\n")
+        units = []
+
+        for para in paragraphs:
+            para = para.strip()
+            if not para:
+                continue
+
+            # Se o parágrafo é muito longo, dividir por frases
+            if len(para) > 200:
+                sentences = re.split(r"[.!?]\s+", para)
+                for sentence in sentences:
+                    sentence = sentence.strip()
+                    if sentence and len(sentence) > 10:
+                        units.append(sentence)
+            else:
+                units.append(para)
+
+        return units
+
+    def _escape_html(self, text):
+        """Escapa caracteres HTML"""
+        return (
+            text.replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace('"', "&quot;")
+            .replace("'", "&#39;")
+        )
+
+    def _is_field_replacement(self, original, modified):
+        """Detecta se é preenchimento de campo (placeholder -> valor)"""
+        # Detectar padrões de placeholder
+        import re
+
+        placeholder_patterns = [
+            r"_+",  # Underscores
+            r"\[.*?\]",  # Colchetes
+            r"\{.*?\}",  # Chaves
+            r"____+",  # Múltiplos underscores
+        ]
+
+        return any(re.search(pattern, original) for pattern in placeholder_patterns)
+
+    def _extract_field_info(self, original, modified):
+        """Extrai informações sobre o campo sendo preenchido"""
+
+        # Tentar identificar o tipo de campo
+        field_type = "Campo"
+
+        if "R.G." in original or "RG" in original:
+            field_type = "RG"
+        elif "CPF" in original:
+            field_type = "CPF"
+        elif "residente" in original or "domiciliado" in original:
+            field_type = "Endereço"
+        elif "LOCADOR" in original or "LOCATÁRIO" in original:
+            field_type = "Identificação da Parte"
+
+        return {"field_name": field_type, "original": original, "modified": modified}
 
     def _identify_clause(self, line):
         """Identifica a cláusula baseada na linha de texto"""
@@ -647,6 +779,143 @@ class DirectusAPI:
         except Exception as e:
             print(f"❌ Erro no cálculo de blocos: {e}")
             return {"total_blocos": 1, "blocos_detalhados": [], "metodo": "fallback"}
+
+    def _extrair_modificacoes_do_diff(self, diff_html):
+        """Extrai modificações do HTML diff, similar ao algoritmo do frontend"""
+        modificacoes = []
+        modificacao_id = 1
+
+        print("🔍 Iniciando extração de modificações do diff HTML")
+
+        try:
+            # Usar regex para encontrar elementos de diff
+            import re
+
+            # Encontrar elementos removidos (usando aspas simples como no HTML real)
+            removed_pattern = r"<div class='diff-removed'>-\s*(.*?)</div>"
+            removed_matches = re.findall(removed_pattern, diff_html, re.DOTALL)
+            print(f"📝 Elementos removidos encontrados: {len(removed_matches)}")
+
+            # Encontrar elementos adicionados
+            added_pattern = r"<div class='diff-added'>\+\s*(.*?)</div>"
+            added_matches = re.findall(added_pattern, diff_html, re.DOTALL)
+            print(f"📝 Elementos adicionados encontrados: {len(added_matches)}")
+
+            # Processar pares de remoção/adição
+            max_elements = max(len(removed_matches), len(added_matches))
+
+            for i in range(max_elements):
+                removed_text = (
+                    removed_matches[i].strip() if i < len(removed_matches) else None
+                )
+                added_text = (
+                    added_matches[i].strip() if i < len(added_matches) else None
+                )
+
+                if removed_text and added_text:
+                    # Alteração
+                    modificacoes.append(
+                        {
+                            "id": modificacao_id,
+                            "tipo": "ALTERACAO",
+                            "css_class": "diff-alteracao",
+                            "confianca": 0.95,
+                            "posicao": {"linha": i + 1, "coluna": 1},
+                            "conteudo": {"original": removed_text, "novo": added_text},
+                            "tags_relacionadas": self._extrair_palavras_chave(
+                                removed_text + " " + added_text
+                            ),
+                        }
+                    )
+                elif added_text:
+                    # Inserção
+                    modificacoes.append(
+                        {
+                            "id": modificacao_id,
+                            "tipo": "INSERCAO",
+                            "css_class": "diff-insercao",
+                            "confianca": 0.9,
+                            "posicao": {"linha": i + 1, "coluna": 1},
+                            "conteudo": {"novo": added_text},
+                            "tags_relacionadas": self._extrair_palavras_chave(
+                                added_text
+                            ),
+                        }
+                    )
+                elif removed_text:
+                    # Remoção
+                    modificacoes.append(
+                        {
+                            "id": modificacao_id,
+                            "tipo": "REMOCAO",
+                            "css_class": "diff-remocao",
+                            "confianca": 0.85,
+                            "posicao": {"linha": i + 1, "coluna": 1},
+                            "conteudo": {"original": removed_text},
+                            "tags_relacionadas": self._extrair_palavras_chave(
+                                removed_text
+                            ),
+                        }
+                    )
+
+                modificacao_id += 1
+
+            print(f"✅ {len(modificacoes)} modificações extraídas do diff")
+            return modificacoes
+
+        except Exception as e:
+            print(f"❌ Erro ao extrair modificações: {e}")
+            return []
+
+    def _extrair_palavras_chave(self, texto):
+        """Extrai palavras-chave de um texto para tags relacionadas"""
+        if not texto:
+            return []
+
+        # Palavras comuns a ignorar
+        stop_words = {
+            "de",
+            "da",
+            "do",
+            "das",
+            "dos",
+            "a",
+            "o",
+            "as",
+            "os",
+            "e",
+            "ou",
+            "para",
+            "com",
+            "por",
+            "em",
+            "na",
+            "no",
+            "nas",
+            "nos",
+            "se",
+            "que",
+            "mais",
+            "será",
+            "são",
+            "foi",
+            "foram",
+            "tem",
+            "ter",
+            "uma",
+            "um",
+            "umas",
+            "uns",
+        }
+
+        # Extrair palavras significativas (mais de 3 caracteres, não números)
+        import re
+
+        palavras = re.findall(r"\b[a-záêçõã]{4,}\b", texto.lower())
+        palavras_filtradas = [p for p in palavras if p not in stop_words]
+
+        # Retornar até 5 palavras mais relevantes
+        return list(set(palavras_filtradas))[:5]
 
     def _generate_realistic_contract_original(self):
         """Gera conteúdo original realista para contrato de locação"""

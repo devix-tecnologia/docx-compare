@@ -1,13 +1,13 @@
 <template>
   <div class="app-container">
-    <header class="app-header">
+    <header v-if="!headless" class="app-header">
       <h1>🚀 Versiona AI</h1>
       <p>Visualizador de Diferenças em Documentos</p>
     </header>
 
     <main class="app-main">
       <div class="diff-visualizer">
-        <div class="diff-header">
+        <div v-if="!headless" class="diff-header">
           <h2>{{ titulo }}</h2>
 
           <!-- Status da Conexão -->
@@ -83,33 +83,33 @@
             <button
               class="tab"
               :class="{ active: activeTab === 'lista' }"
-              @click="activeTab = 'lista'"
+              @click="setActiveTab('lista')"
             >
               📋 Lista de Modificações
             </button>
             <button
               class="tab"
               :class="{ active: activeTab === 'blocos' }"
-              @click="activeTab = 'blocos'"
+              @click="setActiveTab('blocos')"
             >
               🎯 Blocos Agrupados
             </button>
             <button
               class="tab"
               :class="{ active: activeTab === 'lado-a-lado' }"
-              @click="activeTab = 'lado-a-lado'"
+              @click="setActiveTab('lado-a-lado')"
             >
               🔍 Comparação Lado a Lado
             </button>
             <button
               class="tab"
               :class="{ active: activeTab === 'vue-diff' }"
-              @click="activeTab = 'vue-diff'"
+              @click="setActiveTab('vue-diff')"
             >
               ⚡ Vue-Diff Avançado
             </button>
           </div>
-        </div>
+        </div> <!-- fim diff-header -->
 
         <!-- Estado Inicial - Nenhuma Versão Processada -->
         <div v-if="!hasProcessedVersion" class="initial-state">
@@ -203,7 +203,7 @@
                   <!-- Modificações relacionadas a este bloco -->
                   <div class="block-modifications">
                     <div v-if="bloco.modificacoes && bloco.modificacoes.length > 0" class="modifications-list">
-                      <h5>� Modificações neste bloco ({{ bloco.modificacoes.length }}):</h5>
+                      <h5>🔧 Modificações neste bloco ({{ bloco.modificacoes.length }}):</h5>
                       <div
                         v-for="modificacao in bloco.modificacoes"
                         :key="modificacao.id"
@@ -215,9 +215,16 @@
                           <span class="mod-confidence-small">{{ (modificacao.confianca * 100).toFixed(1) }}%</span>
                         </div>
                         <div class="mod-summary-content">
-                          <span class="mod-summary-text">
-                            "{{ modificacao.conteudo.original || 'N/A' }}" → "{{ modificacao.conteudo.novo || 'N/A' }}"
-                          </span>
+                          <div class="mod-content-comparison">
+                            <div v-if="modificacao.conteudo.original" class="mod-original">
+                              <label class="mod-label">Original:</label>
+                              <span class="mod-text">"{{ modificacao.conteudo.original }}"</span>
+                            </div>
+                            <div v-if="modificacao.conteudo.novo" class="mod-new">
+                              <label class="mod-label">Modificado:</label>
+                              <span class="mod-text">"{{ modificacao.conteudo.novo }}"</span>
+                            </div>
+                          </div>
                         </div>
                         <div class="mod-summary-position">
                           📍 Linha {{ modificacao.posicao.linha }}, Coluna {{ modificacao.posicao.coluna }}
@@ -275,7 +282,7 @@
       </div>
     </main>
 
-    <footer class="app-footer">
+    <footer v-if="!headless" class="app-footer">
       <p>Desenvolvido com ❤️ e Vue 3 • Versiona AI © 2025</p>
     </footer>
   </div>
@@ -302,6 +309,7 @@ import VueDiffViewer from './VueDiffViewer.vue'
         availableVersions: [], // Lista de versões disponíveis
         loadingVersions: false, // Controla loading da busca de versões
         hasProcessedVersion: false, // Controla se há uma versão processada
+        headless: false, // Controla se deve ocultar os cabeçalhos
         sampleData: {
           metadata: {
             timestamp: new Date().toISOString(),
@@ -393,6 +401,16 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
     },
     computed: {
       stats() {
+        // Se os dados vêm direto da API (estrutura nova)
+        if (this.sampleData.modificacoes && this.sampleData.total_blocos !== undefined) {
+          return {
+            total_modificacoes: this.sampleData.modificacoes?.length || 0,
+            tempo_processamento: this.sampleData.tempo_processamento || 0,
+            total_blocos: this.sampleData.total_blocos || 0,
+          }
+        }
+
+        // Estrutura antiga (dados mock)
         const doc = this.sampleData.documentos?.[0] || {}
         return (
           doc.estatisticas || {
@@ -403,10 +421,22 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
         )
       },
       modificacoes() {
+        // Se os dados vêm direto da API (estrutura nova)
+        if (this.sampleData.modificacoes) {
+          return this.sampleData.modificacoes || []
+        }
+
+        // Estrutura antiga (dados mock)
         const doc = this.sampleData.documentos?.[0] || {}
         return doc.modificacoes || []
       },
       blocosDetalhados() {
+        // Se os dados vêm direto da API (estrutura nova)
+        if (this.sampleData.blocos_detalhados) {
+          return this.sampleData.blocos_detalhados || []
+        }
+
+        // Estrutura antiga (dados mock)
         const doc = this.sampleData.documentos?.[0] || {}
         return doc.blocos_detalhados || []
       },
@@ -425,15 +455,17 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
             if (mod.posicao && bloco.posicao_inicio && bloco.posicao_fim) {
               // Converter posição de linha/coluna para posição aproximada no texto
               const posicaoAprox = (mod.posicao.linha - 1) * 50 + mod.posicao.coluna
-              return posicaoAprox >= bloco.posicao_inicio && posicaoAprox <= bloco.posicao_fim
+              const dentroDoBloco = posicaoAprox >= bloco.posicao_inicio && posicaoAprox <= bloco.posicao_fim
+              return dentroDoBloco
             }
 
             // Se não há posição exata, usar tags relacionadas
             if (mod.tags_relacionadas && mod.tags_relacionadas.length > 0) {
-              return mod.tags_relacionadas.some(tag =>
+              const temTagRelacionada = mod.tags_relacionadas.some(tag =>
                 tag.toLowerCase().includes(bloco.nome.toLowerCase()) ||
                 bloco.nome.toLowerCase().includes(tag.toLowerCase())
               )
+              return temTagRelacionada
             }
 
             return false
@@ -457,10 +489,20 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
       },
     },
     mounted() {
+      // Carregar tab da query string antes de qualquer outra coisa
+      this.loadTabFromQueryString()
+
       // Verificar se há diff_id na URL
       const urlParams = new URLSearchParams(window.location.search)
       const diffId = urlParams.get('diff_id')
       const mockParam = urlParams.get('mock')
+      const headlessParam = urlParams.get('headless')
+
+      // Definir modo headless baseado no parâmetro da URL
+      if (headlessParam !== null) {
+        this.headless = headlessParam === 'true'
+        console.log(`🖥️ Modo headless: ${this.headless}`)
+      }
 
       // Definir modo mock baseado no parâmetro da URL
       if (mockParam !== null) {
@@ -501,6 +543,34 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
         }
       },
 
+      // Métodos para controlar tab via query string
+      setActiveTab(tabName) {
+        console.log(`🔄 Mudando para tab: ${tabName}`)
+        this.activeTab = tabName
+        this.updateQueryString()
+      },
+
+      updateQueryString() {
+        const url = new URL(window.location)
+        url.searchParams.set('mode', this.activeTab)
+
+        // Preservar outros parâmetros existentes
+        window.history.pushState({}, '', url)
+        console.log(`🌐 Query string atualizada: mode=${this.activeTab}`)
+      },      loadTabFromQueryString() {
+        const urlParams = new URLSearchParams(window.location.search)
+        const mode = urlParams.get('mode')
+
+        // Validar se o mode é válido
+        const validTabs = ['lista', 'blocos', 'lado-a-lado', 'vue-diff']
+        if (mode && validTabs.includes(mode)) {
+          this.activeTab = mode
+          console.log(`📋 Tab carregada da URL: ${mode}`)
+        } else {
+          console.log(`📋 Usando tab padrão: ${this.activeTab}`)
+        }
+      },
+
       async listarVersoes() {
         if (!this.isConnectedToAPI) {
           alert('API não está conectada. Verifique se o servidor está rodando')
@@ -514,11 +584,11 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
         }
       },
 
-      async buscarVersoes() {
+      async buscarVersoes(retryCount = 0) {
         this.loadingVersions = true
         try {
           const versoesUrl = this.useMockData ? '/api/versoes?mock=true' : '/api/versoes?mock=false'
-          console.log(`🔍 Buscando versões: ${versoesUrl}`)
+          console.log(`🔍 Buscando versões (tentativa ${retryCount + 1}): ${versoesUrl}`)
 
           const response = await fetch(versoesUrl)
           if (!response.ok) {
@@ -528,10 +598,26 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
           const data = await response.json()
           this.availableVersions = data.versoes || []
           console.log(`📋 ${this.availableVersions.length} versões encontradas`)
+
+          // Se não encontrou versões e ainda há tentativas disponíveis, tentar novamente
+          if (this.availableVersions.length === 0 && retryCount < 2) {
+            console.log(`⏳ Nenhuma versão encontrada, tentando novamente em 1 segundo...`)
+            await new Promise(resolve => setTimeout(resolve, 1000))
+            return this.buscarVersoes(retryCount + 1)
+          }
         } catch (error) {
           console.error('❌ Erro ao buscar versões:', error)
-          alert('Erro ao buscar versões: ' + error.message)
-          this.availableVersions = []
+
+          // Se ainda há tentativas disponíveis, tentar novamente
+          if (retryCount < 2) {
+            console.log(`⏳ Erro na tentativa ${retryCount + 1}, tentando novamente em 1 segundo...`)
+            await new Promise(resolve => setTimeout(resolve, 1000))
+            return this.buscarVersoes(retryCount + 1)
+          } else {
+            // Última tentativa falhou
+            alert('Erro ao buscar versões: ' + error.message)
+            this.availableVersions = []
+          }
         } finally {
           this.loadingVersions = false
         }
@@ -657,15 +743,49 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
           const versoesUrl = this.useMockData ? '/api/versoes?mock=true' : '/api/versoes?mock=false'
           console.log(`🔍 Buscando versões: ${versoesUrl}`)
 
-          const versoesResponse = await fetch(versoesUrl)
-          if (!versoesResponse.ok) {
-            throw new Error('Erro ao buscar versões disponíveis')
+          let versoesData = null
+          let lastError = null
+          const maxRetries = 3
+
+          // Tentar buscar versões com retry automático
+          for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+              console.log(`📡 Tentativa ${attempt}/${maxRetries} de buscar versões`)
+
+              const versoesResponse = await fetch(versoesUrl)
+              if (!versoesResponse.ok) {
+                throw new Error(`HTTP ${versoesResponse.status}: ${versoesResponse.statusText}`)
+              }
+
+              versoesData = await versoesResponse.json()
+
+              // Verificar se encontrou versões
+              if (versoesData.versoes && versoesData.versoes.length > 0) {
+                console.log(`✅ Versões encontradas na tentativa ${attempt}: ${versoesData.versoes.length} registros`)
+                break
+              } else {
+                console.warn(`⚠️ Tentativa ${attempt}: Nenhuma versão encontrada`)
+                if (attempt < maxRetries) {
+                  console.log(`⏱️ Aguardando 1 segundo antes da próxima tentativa...`)
+                  await new Promise(resolve => setTimeout(resolve, 1000))
+                }
+              }
+            } catch (error) {
+              lastError = error
+              console.error(`❌ Erro na tentativa ${attempt}:`, error.message)
+
+              if (attempt < maxRetries) {
+                console.log(`⏱️ Aguardando 1 segundo antes da próxima tentativa...`)
+                await new Promise(resolve => setTimeout(resolve, 1000))
+              }
+            }
           }
 
-          const versoesData = await versoesResponse.json()
-          if (!versoesData.versoes || versoesData.versoes.length === 0) {
+          // Verificar se conseguiu buscar versões
+          if (!versoesData || !versoesData.versoes || versoesData.versoes.length === 0) {
             const modoTexto = this.useMockData ? 'mock' : 'Directus'
-            alert(`Nenhuma versão encontrada para processar no modo ${modoTexto}`)
+            const errorMsg = lastError ? `: ${lastError.message}` : ''
+            alert(`Nenhuma versão encontrada para processar no modo ${modoTexto} após ${maxRetries} tentativas${errorMsg}`)
             this.loading = false
             return
           }
@@ -1095,22 +1215,23 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
   }
 
   .initial-state {
-    background: rgba(255, 255, 255, 0.1);
+    background: white;
     border-radius: 12px;
     padding: 3rem;
     margin: 2rem 0;
     text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   }
 
   .welcome-message h3 {
-    color: white;
+    color: #1f2937;
     font-size: 1.8rem;
     margin-bottom: 1rem;
   }
 
   .welcome-message p {
-    color: rgba(255, 255, 255, 0.8);
+    color: #4b5563;
     font-size: 1.1rem;
     margin-bottom: 1.5rem;
   }
@@ -1119,7 +1240,7 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
     text-align: left;
     max-width: 400px;
     margin: 0 auto 2rem auto;
-    color: rgba(255, 255, 255, 0.9);
+    color: #374151;
   }
 
   .welcome-message li {
@@ -1653,6 +1774,56 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
 
   .mod-summary-content {
     margin: 0.5rem 0;
+  }
+
+  .mod-content-comparison {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .mod-original,
+  .mod-new {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .mod-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .mod-original .mod-label {
+    color: #dc2626;
+  }
+
+  .mod-new .mod-label {
+    color: #16a34a;
+  }
+
+  .mod-text {
+    font-family: 'Monaco', 'Consolas', monospace;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    word-wrap: break-word;
+  }
+
+  .mod-original .mod-text {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+  }
+
+  .mod-new .mod-text {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #166534;
   }
 
   .mod-summary-text {
