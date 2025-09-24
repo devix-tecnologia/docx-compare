@@ -1,0 +1,45 @@
+# Dockerfile All-in-One Simples - Usa frontend já buildado
+FROM python:3.13-slim
+
+# Instalar Nginx, Supervisor e dependências
+RUN apt-get update && apt-get install -y \
+    nginx \
+    supervisor \
+    curl \
+    wget \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install uv
+
+# Criar usuários
+RUN useradd --create-home --shell /bin/bash app && \
+    mkdir -p /var/log/supervisor /app/logs && \
+    chown -R app:app /app
+
+# Instalar dependências Python
+WORKDIR /app
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen
+
+# Copiar aplicação
+COPY versiona-ai/ ./versiona-ai/
+
+# Copiar frontend já buildado
+COPY versiona-ai/web/dist/ /usr/share/nginx/html/
+
+# Copiar configurações
+COPY versiona-ai/nginx.allinone.conf /etc/nginx/nginx.conf
+COPY versiona-ai/supervisord.allinone.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Permissões
+RUN chown -R app:app /app && \
+    chown -R www-data:www-data /usr/share/nginx/html
+
+# Expor porta
+EXPOSE 80
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost/health || exit 1
+
+# Iniciar supervisor
+CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

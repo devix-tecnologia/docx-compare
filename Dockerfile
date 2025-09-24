@@ -52,5 +52,5 @@ EXPOSE 8001
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8001/health || exit 1
 
-# Comando padrão para produção
-CMD ["uv", "run", "python", "directus_server.py"]
+# Comando padrão para produção com Gunicorn
+CMD ["uv", "run", "gunicorn", "--config", "/app/versiona-ai/deploy/gunicorn.conf.py", "versiona-ai.wsgi:app"]

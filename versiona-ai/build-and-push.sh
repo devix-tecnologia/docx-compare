@@ -44,9 +44,11 @@ if [ $? -eq 0 ]; then
     echo "   ${REGISTRY}/${IMAGE_NAME}:${VERSION}"
     echo "   ${REGISTRY}/${IMAGE_NAME}:${LATEST_TAG}"
     echo ""
-    echo "📋 Para usar no Caprover:"
-    echo "   Imagem: ${REGISTRY}/${IMAGE_NAME}:latest"
+    echo "📋 Para usar no CapRover:"
+    echo "   Imagem Específica: ${REGISTRY}/${IMAGE_NAME}:${VERSION}"
+    echo "   Imagem Latest: ${REGISTRY}/${IMAGE_NAME}:latest"
     echo "   Porta: 8001"
+    echo "   Health Check: /health"
 else
     echo "❌ Erro no push da imagem"
     exit 1

@@ -1,0 +1,15 @@
+# Dockerfile simples para servir frontend estático
+FROM 1.25-alpine
+
+# Copiar arquivos buildados do frontend
+COPY web/dist/ /usr/share/nginx/html/
+
+# Usar configuração padrão do nginx (apenas substitui o conteúdo da pasta)
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost/ || exit 1
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

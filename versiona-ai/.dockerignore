@@ -28,6 +28,33 @@ htmlcov/
 # Documentação e exemplos
 README.md
 docs/
+
+# Ignorar node_modules mas manter dist para build simples
+**/node_modules
+**/.next
+**/build
+**/coverage
+
+# Git e outros VCS
+.git
+.gitignore
+.gitattributes
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-*
+
+# Arquivos grandes de teste
+**/test-*.docx
+**/exemplo-*.docx
+documentos/
+exemplos/
+results/
+
+# Scripts de desenvolvimento
+*.sh
+!start*.sh
 exemplos/
 tests/
 *.md

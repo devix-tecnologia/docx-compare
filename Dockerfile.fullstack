@@ -1,0 +1,122 @@
+# Dockerfile Full-Stack para Versiona AI
+# API Python + Frontend Vue.js em uma única imagem
+
+# =======================
+# Stage 1: Build Frontend
+# =======================
+FROM node:22-alpine3.20 as frontend-builder
+
+# Instalar dependências do sistema
+RUN apk update && apk upgrade && \
+    apk add --no-cache \
+    curl \
+    ca-certificates
+
+# Instalar pnpm globalmente
+RUN npm install -g pnpm
+
+# Criar usuário não-root
+RUN addgroup -g 1001 -S nodeuser && \
+    adduser -S -D -H -u 1001 -h /home/nodeuser -G nodeuser nodeuser
+
+# Definir diretório de trabalho
+WORKDIR /app
+
+# Mudar ownership do diretório
+RUN chown nodeuser:nodeuser /app
+
+# Mudar para usuário não-root
+USER nodeuser
+
+# Copiar arquivos de dependência do frontend
+COPY --chown=nodeuser:nodeuser versiona-ai/web/package*.json versiona-ai/web/pnpm-lock.yaml ./
+
+# Instalar dependências
+RUN pnpm install --frozen-lockfile
+
+# Copiar código fonte do frontend
+COPY --chown=nodeuser:nodeuser versiona-ai/web/src/ ./src/
+COPY --chown=nodeuser:nodeuser versiona-ai/web/index.html versiona-ai/web/vite.config.js versiona-ai/web/tsconfig.json ./
+
+# Build do frontend
+RUN pnpm build:vite
+
+# =======================
+# Stage 2: Build Backend
+# =======================
+FROM python:3.13-slim as backend-builder
+
+# Metadados da imagem
+LABEL maintainer="Devix Tecnologia <dev@devix.co>"
+LABEL description="Versiona AI Full-Stack - API Python + Frontend Vue.js"
+LABEL version="2.0.0"
+
+# Variáveis de ambiente para Python
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Instalar dependências do sistema e UV
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    nginx \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install uv
+
+# Criar usuário não-root para segurança
+RUN useradd --create-home --shell /bin/bash app
+
+# Definir diretório de trabalho
+WORKDIR /app
+
+# Copiar arquivos de configuração do projeto Python
+COPY pyproject.toml uv.lock ./
+
+# Instalar dependências Python com UV
+RUN uv sync --frozen
+
+# Copiar código da aplicação Python
+COPY --chown=app:app versiona-ai/ ./versiona-ai/
+
+# Copiar frontend buildado do stage anterior
+COPY --from=frontend-builder --chown=app:app /app/dist ./versiona-ai/static
+
+# Criar diretório para arquivos estáticos do Nginx
+RUN mkdir -p /var/www/html && chown -R app:app /var/www/html
+
+# Copiar arquivos estáticos para Nginx
+COPY --from=frontend-builder --chown=app:app /app/dist /var/www/html/
+
+# Configuração do Nginx
+COPY --chown=app:app versiona-ai/deploy/nginx.conf /etc/nginx/sites-available/default
+
+# Definir permissões adequadas
+RUN chown -R app:app /app
+
+# Criar script de inicialização
+RUN echo '#!/bin/bash\n\
+    # Iniciar Nginx em background\n\
+    nginx -g "daemon off;" &\n\
+    \n\
+    # Iniciar API Python\n\
+    cd /app/versiona-ai\n\
+    exec uv run python directus_server.py\n\
+    ' > /app/start.sh && chmod +x /app/start.sh
+
+# Mudar para usuário não-root
+USER app
+
+# Definir diretório de trabalho para a aplicação
+WORKDIR /app/versiona-ai
+
+# Exposer portas (API + Frontend)
+EXPOSE 8001 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:8001/health || exit 1
+
+# Comando padrão para produção (Nginx + API)
+CMD ["/app/start.sh"]

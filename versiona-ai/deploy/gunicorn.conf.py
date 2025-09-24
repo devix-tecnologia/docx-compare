@@ -2,14 +2,14 @@
 import os
 
 # Server socket
-bind = f"0.0.0.0:{os.getenv('FLASK_PORT', '8000')}"
+bind = f"0.0.0.0:{os.getenv('FLASK_PORT', '8001')}"
 backlog = 2048
 
 # Worker processes
-workers = 1  # Usar apenas 1 worker para manter cache compartilhado
+workers = 2  # Ajustado para produção
 worker_class = "sync"
 worker_connections = 1000
-timeout = 30
+timeout = 300  # Aumentado para operações longas
 keepalive = 2
 
 # Restart workers
