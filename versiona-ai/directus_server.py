@@ -221,6 +221,54 @@ class DirectusAPI:
             # No modo real, erro de conexão é erro - não usar mock como fallback
             raise e
 
+    def _patch_versao(self, versao_id, payload, *, raise_on_error=True):
+        """Atualiza o registro da versão no Directus com os dados processados."""
+
+        if not self.token:
+            message = (
+                "DIRECTUS_TOKEN não configurado - impossível persistir modificações"
+            )
+            if raise_on_error:
+                raise RuntimeError(message)
+            print(f"⚠️ {message}")
+            return None
+
+        url = f"{self.base_url}/items/versao/{versao_id}"
+
+        try:
+            response = requests.patch(
+                url,
+                headers=DIRECTUS_HEADERS,
+                json=payload,
+                timeout=20,
+            )
+        except Exception as exc:
+            if raise_on_error:
+                raise RuntimeError(
+                    f"Erro ao enviar PATCH para versão {versao_id}: {exc}"
+                ) from exc
+            print(f"⚠️ Erro ao enviar PATCH para versão {versao_id}: {exc}")
+            return None
+
+        if response.status_code >= 400:
+            try:
+                detail = response.json()
+            except Exception:
+                detail = response.text[:500]
+
+            message = f"Falha ao atualizar versão {versao_id}: {response.status_code} - {detail}"
+
+            if raise_on_error:
+                raise RuntimeError(message)
+
+            print(f"⚠️ {message}")
+            return None
+
+        try:
+            return response.json()
+        except Exception:
+            return {"status_code": response.status_code}
+
     def _get_mock_versoes(self):
         """Retorna dados mock quando não consegue conectar com Directus"""
         print("🔧 Retornando dados mock de fallback")
@@ -318,6 +366,61 @@ class DirectusAPI:
                 "url": f"http://localhost:{FLASK_PORT}/view/{diff_id}",
                 "mode": "mock" if mock else "real",
             }
+
+            diff_data["directus_payload"] = None
+            diff_data["directus_response"] = None
+
+            if not mock:
+                print(f"💾 Persistindo resultado no Directus para versão {versao_id}")
+
+                metadata_payload = {
+                    "total_modificacoes": len(modificacoes),
+                    "total_blocos": resultado_blocos.get("total_blocos", 1),
+                    "metodo_blocos": resultado_blocos.get("metodo", "unknown"),
+                    "diff_id": diff_id,
+                    "gerado_em": diff_data["created_at"],
+                    "visualizacao_url": diff_data["url"],
+                }
+
+                processed_payload = {
+                    "modificacoes": modificacoes,
+                    "blocos_detalhados": resultado_blocos.get("blocos_detalhados", []),
+                }
+
+                raw_payload = {
+                    "diff_html": diff_html,
+                }
+
+                patch_payload = {
+                    "status": "concluido",
+                    "versiona_ai_metadata_json": metadata_payload,
+                    "versiona_ai_response_processed_json": processed_payload,
+                    "versiona_ai_response_raw_json": raw_payload,
+                }
+
+                diff_data["directus_payload"] = patch_payload
+
+                try:
+                    directus_response = self._patch_versao(versao_id, patch_payload)
+                    diff_data["directus_response"] = directus_response
+                    print("✅ Dados persistidos com sucesso no Directus")
+                except Exception as patch_error:
+                    error_message = f"Falha ao atualizar versão {versao_id} no Directus: {patch_error}"
+                    print(f"❌ {error_message}")
+
+                    # Tenta marcar status de erro para facilitar monitoramento no Directus
+                    self._patch_versao(
+                        versao_id,
+                        {
+                            "status": "erro",
+                            "versiona_ai_request_erro": str(patch_error),
+                        },
+                        raise_on_error=False,
+                    )
+
+                    return {"error": error_message}
+            else:
+                print("ℹ️ Modo mock ativo - persistência no Directus ignorada")
 
             diff_cache[diff_id] = diff_data
             return diff_data
