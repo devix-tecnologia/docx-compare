@@ -320,6 +320,15 @@ class DirectusAPI:
             }
 
             diff_cache[diff_id] = diff_data
+            
+            # Persistir modificações no Directus (somente em modo real)
+            if not mock:
+                try:
+                    self._persistir_modificacoes_directus(versao_id, modificacoes)
+                except Exception as persist_error:
+                    print(f"⚠️ Erro ao persistir modificações no Directus: {persist_error}")
+                    # Não falhar o processamento se a persistência falhar
+            
             return diff_data
 
         except Exception as e:
@@ -349,6 +358,146 @@ class DirectusAPI:
             modified_text += "Este é um exemplo de texto MODIFICADO do contrato com alterações importantes."
 
         return original_text, modified_text
+
+    def _persistir_modificacoes_directus(self, versao_id, modificacoes):
+        """
+        Persiste as modificações no Directus e atualiza o status da versão
+        
+        Args:
+            versao_id: ID da versão processada
+            modificacoes: Lista de modificações extraídas
+        """
+        print(f"💾 Iniciando persistência de {len(modificacoes)} modificações no Directus...")
+        
+        modificacoes_criadas = []
+        modificacoes_com_erro = []
+        
+        # 1. Criar cada modificação no Directus
+        for mod in modificacoes:
+            try:
+                modificacao_data = self._converter_modificacao_para_directus(versao_id, mod)
+                
+                response = requests.post(
+                    f"{self.base_url}/items/modificacao",
+                    headers=DIRECTUS_HEADERS,
+                    json=modificacao_data,
+                    timeout=15,
+                )
+                
+                if response.status_code in [200, 201]:
+                    modificacao_criada = response.json()["data"]
+                    modificacoes_criadas.append(modificacao_criada["id"])
+                    print(f"✅ Modificação {mod['id']} criada: {modificacao_criada['id']}")
+                else:
+                    error_msg = f"HTTP {response.status_code}"
+                    try:
+                        error_detail = response.json()
+                        error_msg = error_detail.get("errors", [{}])[0].get("message", error_msg)
+                    except:
+                        pass
+                    print(f"❌ Erro ao criar modificação {mod['id']}: {error_msg}")
+                    modificacoes_com_erro.append(mod['id'])
+                    
+            except Exception as e:
+                print(f"❌ Exceção ao criar modificação {mod['id']}: {e}")
+                modificacoes_com_erro.append(mod['id'])
+        
+        # 2. Atualizar status da versão para 'concluido'
+        try:
+            update_data = {
+                "status": "concluido",
+                "modificacoes": modificacoes_criadas,
+            }
+            
+            response = requests.patch(
+                f"{self.base_url}/items/versao/{versao_id}",
+                headers=DIRECTUS_HEADERS,
+                json=update_data,
+                timeout=15,
+            )
+            
+            if response.status_code == 200:
+                print(f"✅ Versão {versao_id} atualizada para status 'concluido'")
+                print(f"📊 Resumo: {len(modificacoes_criadas)} criadas, {len(modificacoes_com_erro)} com erro")
+            else:
+                print(f"⚠️ Erro ao atualizar status da versão: HTTP {response.status_code}")
+                
+        except Exception as e:
+            print(f"⚠️ Exceção ao atualizar versão: {e}")
+        
+        return {
+            "criadas": len(modificacoes_criadas),
+            "erros": len(modificacoes_com_erro),
+            "ids_criados": modificacoes_criadas
+        }
+
+    def _converter_modificacao_para_directus(self, versao_id, mod):
+        """
+        Converte uma modificação do formato interno para o formato do Directus
+        
+        Args:
+            versao_id: ID da versão
+            mod: Objeto de modificação no formato interno
+            
+        Returns:
+            dict: Objeto formatado para criação no Directus
+        """
+        # Mapear tipo interno para categoria do Directus
+        tipo_para_categoria = {
+            "ALTERACAO": "modificacao",
+            "INSERCAO": "inclusao",
+            "REMOCAO": "remocao",
+            "COMENTARIO": "comentario",
+            "FORMATACAO": "formatacao",
+        }
+        
+        categoria = tipo_para_categoria.get(mod.get("tipo", "ALTERACAO"), "modificacao")
+        
+        # Extrair conteúdo original e novo
+        conteudo_obj = mod.get("conteudo", {})
+        conteudo_original = conteudo_obj.get("original", "")
+        conteudo_novo = conteudo_obj.get("novo", "")
+        
+        # Extrair posição
+        posicao = mod.get("posicao", {})
+        linha = posicao.get("linha", 0)
+        coluna = posicao.get("coluna", 0)
+        
+        # Construir caminho (usando linha e coluna como referência)
+        caminho_inicio = f"L{linha}:C{coluna}"
+        # Para o fim, assumir que vai até o final do conteúdo
+        caminho_fim = f"L{linha}:C{coluna + len(conteudo_original)}"
+        
+        # Montar objeto para Directus
+        directus_mod = {
+            "versao": versao_id,
+            "status": "draft",
+            "categoria": categoria,
+            "conteudo": conteudo_original if conteudo_original else None,
+            "alteracao": conteudo_novo if conteudo_novo else None,
+            "caminho_inicio": caminho_inicio,
+            "caminho_fim": caminho_fim,
+            "posicao_inicio": linha * 1000 + coluna,  # Posição linear aproximada
+            "posicao_fim": linha * 1000 + coluna + len(conteudo_original),
+        }
+        
+        # Adicionar campos opcionais se disponíveis
+        if "confianca" in mod:
+            # Converter confiança (0-1) para percentual se necessário
+            confianca = mod["confianca"]
+            if confianca <= 1.0:
+                confianca = int(confianca * 100)
+            directus_mod["confianca"] = confianca
+            
+        if "tags_relacionadas" in mod and mod["tags_relacionadas"]:
+            # Juntar tags em string se for array
+            tags = mod["tags_relacionadas"]
+            if isinstance(tags, list):
+                directus_mod["tags"] = ", ".join(tags)
+            else:
+                directus_mod["tags"] = str(tags)
+        
+        return directus_mod
 
     def _process_real_documents(self, versao_data):
         """Processa documentos reais obtidos do Directus"""
