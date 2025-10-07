@@ -295,19 +295,24 @@ class DirectusAPI:
             # Buscar tags do modelo de contrato (somente em modo real)
             tags_modelo = []
             modelo_id = None
+            print(f"🔍 DEBUG: mock={mock}, verificando busca de tags")
             if not mock:
                 try:
                     # Buscar modelo_id da versão através do contrato
                     contrato_id = versao_data.get("contrato")
+                    print(f"🔍 DEBUG: contrato_id={contrato_id}")
                     if contrato_id:
+                        print(f"🔍 Buscando modelo do contrato {contrato_id}...")
                         contrato_response = requests.get(
                             f"{self.base_url}/items/contrato/{contrato_id}",
                             headers=DIRECTUS_HEADERS,
                             params={"fields": "modelo_contrato"},
                             timeout=10,
                         )
+                        print(f"🔍 DEBUG: contrato response status={contrato_response.status_code}")
                         if contrato_response.status_code == 200:
                             modelo_id = contrato_response.json()["data"].get("modelo_contrato")
+                            print(f"🔍 DEBUG: modelo_id encontrado={modelo_id}")
 
                     if modelo_id:
                         print(f"🔍 Buscando tags do modelo {modelo_id}...")
@@ -323,9 +328,13 @@ class DirectusAPI:
                         )
                         if tags_response.status_code == 200:
                             tags_modelo = tags_response.json().get("data", [])
-                            print(f"✅ Encontradas {len(tags_modelo)} tags do modelo")
+                            print(f"✅ Encontradas {len(tags_modelo)} tags do modelo para vinculação")
+                    else:
+                        print("⚠️ modelo_id não encontrado, não será possível vincular cláusulas")
                 except Exception as e:
                     print(f"⚠️ Erro ao buscar tags do modelo: {e}")
+                    import traceback
+                    traceback.print_exc()
 
             # Gerar diff
             diff_html = self._generate_diff_html(original_text, modified_text)
@@ -573,22 +582,74 @@ class DirectusAPI:
         tag_positions = []
         for tag in tags_modelo:
             tag_nome = tag.get("tag_nome")
-            conteudo = tag.get("conteudo", "")
+            conteudo_original = tag.get("conteudo", "")
             clausulas = tag.get("clausulas", [])
 
-            if not tag_nome or not conteudo:
+            if not tag_nome or not conteudo_original:
+                continue
+
+            # Remover as tags {{TAG-...}} e {{/TAG-...}} do conteúdo
+            # O conteúdo no Directus inclui as tags, mas o documento processado não tem mais as tags
+            conteudo_limpo = re.sub(r'\{\{TAG-.*?\}\}\s*', '', conteudo_original)
+            conteudo_limpo = re.sub(r'\s*\{\{/TAG-.*?\}\}', '', conteudo_limpo)
+            conteudo_limpo = conteudo_limpo.strip()
+
+            # Tentar também remover tags simples {{...}}
+            conteudo_limpo = re.sub(r'\{\{.*?\}\}\s*', '', conteudo_limpo)
+            conteudo_limpo = re.sub(r'\s*\{\{/.*?\}\}', '', conteudo_limpo)
+            conteudo_limpo = conteudo_limpo.strip()
+
+            if not conteudo_limpo:
+                print(f"⚠️  Tag '{tag_nome}': conteúdo vazio após limpeza")
                 continue
 
             # Encontrar posição do conteúdo da tag no texto
-            posicao = texto_documento.find(conteudo)
+            # Estratégia 1: Buscar o conteúdo completo
+            posicao = texto_documento.find(conteudo_limpo)
+
+            # Estratégia 2: Se não encontrou, tentar com primeiros 100 caracteres
+            if posicao < 0:
+                conteudo_busca = conteudo_limpo[:100] if len(conteudo_limpo) > 100 else conteudo_limpo
+                posicao = texto_documento.find(conteudo_busca)
+            else:
+                conteudo_busca = conteudo_limpo
+
+            # Estratégia 3: Se ainda não encontrou, normalizar espaços e tentar novamente
+            if posicao < 0:
+                # Normalizar espaços no conteúdo de busca e no documento
+                conteudo_normalizado = ' '.join(conteudo_limpo.split())
+                documento_normalizado = ' '.join(texto_documento.split())
+
+                # Buscar primeira linha significativa (mais de 10 caracteres)
+                primeira_linha = ''
+                for linha in conteudo_normalizado.split('\n'):
+                    if len(linha.strip()) > 10:
+                        primeira_linha = linha.strip()
+                        break
+
+                if primeira_linha:
+                    posicao_normalizada = documento_normalizado.find(primeira_linha)
+                    if posicao_normalizada >= 0:
+                        # Aproximar posição no texto original
+                        posicao = texto_documento.find(primeira_linha)
+                        conteudo_busca = primeira_linha
+
             if posicao >= 0:
+                # Calcular posição fim baseada no comprimento do conteúdo limpo ou busca
+                comprimento = len(conteudo_limpo) if posicao == texto_documento.find(conteudo_limpo) else len(conteudo_busca)
+
                 tag_info = {
                     "tag_nome": tag_nome,
                     "posicao_inicio": posicao,
-                    "posicao_fim": posicao + len(conteudo),
-                    "clausulas": clausulas if isinstance(clausulas, list) else []
+                    "posicao_fim": posicao + comprimento,
+                    "clausulas": clausulas if isinstance(clausulas, list) else [],
+                    "conteudo_referencia": conteudo_busca[:50]  # Para debug
                 }
                 tag_positions.append(tag_info)
+                print(f"✅ Tag '{tag_nome}' mapeada na posição {posicao} (comprimento: {comprimento})")
+            else:
+                print(f"⚠️  Tag '{tag_nome}' não encontrada no documento")
+                print(f"   Conteúdo limpo: '{conteudo_limpo[:80]}...'")
 
         # Ordenar tags por posição
         tag_positions.sort(key=lambda x: x["posicao_inicio"])
