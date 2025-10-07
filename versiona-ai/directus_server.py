@@ -292,11 +292,50 @@ class DirectusAPI:
                 print("🔍 Processando arquivos reais...")
                 original_text, modified_text = self._process_real_documents(versao_data)
 
+            # Buscar tags do modelo de contrato (somente em modo real)
+            tags_modelo = []
+            modelo_id = None
+            if not mock:
+                try:
+                    # Buscar modelo_id da versão através do contrato
+                    contrato_id = versao_data.get("contrato")
+                    if contrato_id:
+                        contrato_response = requests.get(
+                            f"{self.base_url}/items/contrato/{contrato_id}",
+                            headers=DIRECTUS_HEADERS,
+                            params={"fields": "modelo_contrato"},
+                            timeout=10,
+                        )
+                        if contrato_response.status_code == 200:
+                            modelo_id = contrato_response.json()["data"].get("modelo_contrato")
+
+                    if modelo_id:
+                        print(f"🔍 Buscando tags do modelo {modelo_id}...")
+                        tags_response = requests.get(
+                            f"{self.base_url}/items/modelo_contrato_tag",
+                            headers=DIRECTUS_HEADERS,
+                            params={
+                                "filter[modelo_contrato][_eq]": modelo_id,
+                                "fields": "id,tag_nome,caminho_tag_inicio,caminho_tag_fim,posicao_inicio_texto,posicao_fim_texto,conteudo,clausulas.id,clausulas.numero,clausulas.nome",
+                                "limit": 100
+                            },
+                            timeout=10,
+                        )
+                        if tags_response.status_code == 200:
+                            tags_modelo = tags_response.json().get("data", [])
+                            print(f"✅ Encontradas {len(tags_modelo)} tags do modelo")
+                except Exception as e:
+                    print(f"⚠️ Erro ao buscar tags do modelo: {e}")
+
             # Gerar diff
             diff_html = self._generate_diff_html(original_text, modified_text)
 
             # Extrair modificações do diff
             modificacoes = self._extrair_modificacoes_do_diff(diff_html)
+
+            # Vincular modificações às cláusulas usando tags (somente em modo real)
+            if not mock and tags_modelo:
+                modificacoes = self._vincular_modificacoes_clausulas(modificacoes, tags_modelo, modified_text)
 
             # Calcular blocos usando agrupamento posicional
             resultado_blocos = self._calcular_blocos_avancado(versao_id, diff_html)
@@ -478,6 +517,22 @@ class DirectusAPI:
             "posicao_fim": linha * 1000 + coluna + len(conteudo_original),
         }
 
+        # Adicionar cláusula se disponível (campo antigo, por compatibilidade)
+        if "clausula" in mod and mod["clausula"]:
+            directus_mod["clausula"] = mod["clausula"]
+            print(f"📋 Cláusula identificada para modificação {mod.get('id')}: {mod['clausula']}")
+
+        # Adicionar informações de tag e cláusula do modelo
+        if "tag_nome" in mod:
+            # Armazenar tag_nome em um campo (se existir no schema)
+            pass  # TODO: verificar se há campo específico no schema
+
+        if "clausula_id" in mod:
+            # TODO: Verificar nome correto do campo de relacionamento no Directus
+            # Pode ser "clausula" se for Many-to-One relationship
+            directus_mod["clausula"] = mod["clausula_id"]
+            print(f"📋 Cláusula vinculada para modificação {mod.get('id')}: {mod.get('clausula_numero')} - {mod.get('clausula_nome')}")
+
         # Adicionar campos opcionais se disponíveis
         if "confianca" in mod:
             # Converter confiança (0-1) para percentual se necessário
@@ -495,6 +550,89 @@ class DirectusAPI:
                 directus_mod["tags"] = str(tags)
 
         return directus_mod
+
+    def _vincular_modificacoes_clausulas(self, modificacoes, tags_modelo, texto_documento):
+        """
+        Vincula cada modificação à cláusula correspondente baseado nas tags do modelo
+
+        Args:
+            modificacoes: Lista de modificações extraídas
+            tags_modelo: Lista de tags do modelo de contrato com cláusulas
+            texto_documento: Texto completo do documento modificado
+
+        Returns:
+            Lista de modificações atualizada com informação de cláusula
+        """
+        print(f"\n🔗 Vinculando {len(modificacoes)} modificações às cláusulas...")
+
+        if not tags_modelo:
+            print("⚠️ Nenhuma tag do modelo disponível para vinculação")
+            return modificacoes
+
+        # Construir mapa de posições das tags no documento
+        tag_positions = []
+        for tag in tags_modelo:
+            tag_nome = tag.get("tag_nome")
+            conteudo = tag.get("conteudo", "")
+            clausulas = tag.get("clausulas", [])
+
+            if not tag_nome or not conteudo:
+                continue
+
+            # Encontrar posição do conteúdo da tag no texto
+            posicao = texto_documento.find(conteudo)
+            if posicao >= 0:
+                tag_info = {
+                    "tag_nome": tag_nome,
+                    "posicao_inicio": posicao,
+                    "posicao_fim": posicao + len(conteudo),
+                    "clausulas": clausulas if isinstance(clausulas, list) else []
+                }
+                tag_positions.append(tag_info)
+
+        # Ordenar tags por posição
+        tag_positions.sort(key=lambda x: x["posicao_inicio"])
+
+        print(f"📍 {len(tag_positions)} tags com posições identificadas no documento")
+
+        # Vincular cada modificação à tag/cláusula
+        for mod in modificacoes:
+            conteudo_mod = mod.get("conteudo", {})
+            texto_busca = conteudo_mod.get("novo") or conteudo_mod.get("original", "")
+
+            if not texto_busca:
+                continue
+
+            # Encontrar posição da modificação no documento
+            pos_mod = texto_documento.find(texto_busca)
+            if pos_mod < 0:
+                continue
+
+            # Encontrar a tag que contém esta posição
+            for tag_info in tag_positions:
+                if tag_info["posicao_inicio"] <= pos_mod <= tag_info["posicao_fim"]:
+                    # Modificação está dentro desta tag
+                    mod["tag_nome"] = tag_info["tag_nome"]
+
+                    # Se há cláusulas associadas, usar a primeira
+                    if tag_info["clausulas"]:
+                        primeira_clausula = tag_info["clausulas"][0]
+                        mod["clausula_id"] = primeira_clausula.get("id")
+                        mod["clausula_numero"] = primeira_clausula.get("numero")
+                        mod["clausula_nome"] = primeira_clausula.get("nome")
+
+                        print(f"✅ Modificação {mod['id']} → Tag '{tag_info['tag_nome']}' → Cláusula {primeira_clausula.get('numero')}")
+                    else:
+                        print(f"⚠️ Modificação {mod['id']} → Tag '{tag_info['tag_nome']}' (sem cláusula associada)")
+                    break
+            else:
+                print(f"⚠️ Modificação {mod['id']}: posição não encontrada em nenhuma tag")
+
+        # Resumo
+        mods_com_clausula = sum(1 for m in modificacoes if m.get("clausula_id"))
+        print(f"\n📊 Resumo: {mods_com_clausula}/{len(modificacoes)} modificações vinculadas a cláusulas")
+
+        return modificacoes
 
     def _process_real_documents(self, versao_data):
         """Processa documentos reais obtidos do Directus"""
@@ -937,26 +1075,54 @@ class DirectusAPI:
             # Usar regex para encontrar elementos de diff
             import re
 
+            # Encontrar cabeçalhos de cláusulas e suas posições
+            clause_pattern = r"<div class='clause-header'>📋 (.*?)</div>"
+            clause_matches = list(re.finditer(clause_pattern, diff_html))
+            print(f"📋 Cláusulas encontradas: {len(clause_matches)}")
+
+            # Criar mapa de posição -> cláusula
+            clause_map = {}
+            for match in clause_matches:
+                clause_pos = match.start()
+                clause_name = match.group(1)
+                clause_map[clause_pos] = clause_name
+
             # Encontrar elementos removidos (usando aspas simples como no HTML real)
             removed_pattern = r"<div class='diff-removed'>-\s*(.*?)</div>"
-            removed_matches = re.findall(removed_pattern, diff_html, re.DOTALL)
+            removed_matches = list(re.finditer(removed_pattern, diff_html, re.DOTALL))
             print(f"📝 Elementos removidos encontrados: {len(removed_matches)}")
 
             # Encontrar elementos adicionados
             added_pattern = r"<div class='diff-added'>\+\s*(.*?)</div>"
-            added_matches = re.findall(added_pattern, diff_html, re.DOTALL)
+            added_matches = list(re.finditer(added_pattern, diff_html, re.DOTALL))
             print(f"📝 Elementos adicionados encontrados: {len(added_matches)}")
+
+            # Função para encontrar cláusula mais próxima antes da posição
+            def _find_clause_for_position(pos):
+                clause = None
+                for clause_pos, clause_name in sorted(clause_map.items()):
+                    if clause_pos <= pos:
+                        clause = clause_name
+                    else:
+                        break
+                return clause
 
             # Processar pares de remoção/adição
             max_elements = max(len(removed_matches), len(added_matches))
 
             for i in range(max_elements):
-                removed_text = (
-                    removed_matches[i].strip() if i < len(removed_matches) else None
-                )
-                added_text = (
-                    added_matches[i].strip() if i < len(added_matches) else None
-                )
+                removed_match = removed_matches[i] if i < len(removed_matches) else None
+                added_match = added_matches[i] if i < len(added_matches) else None
+
+                removed_text = removed_match.group(1).strip() if removed_match else None
+                added_text = added_match.group(1).strip() if added_match else None
+
+                # Determinar a cláusula baseado na posição
+                clause = None
+                if removed_match:
+                    clause = _find_clause_for_position(removed_match.start())
+                elif added_match:
+                    clause = _find_clause_for_position(added_match.start())
 
                 if removed_text and added_text:
                     # Alteração
@@ -968,6 +1134,7 @@ class DirectusAPI:
                             "confianca": 0.95,
                             "posicao": {"linha": i + 1, "coluna": 1},
                             "conteudo": {"original": removed_text, "novo": added_text},
+                            "clausula": clause,
                             "tags_relacionadas": self._extrair_palavras_chave(
                                 removed_text + " " + added_text
                             ),
@@ -983,6 +1150,7 @@ class DirectusAPI:
                             "confianca": 0.9,
                             "posicao": {"linha": i + 1, "coluna": 1},
                             "conteudo": {"novo": added_text},
+                            "clausula": clause,
                             "tags_relacionadas": self._extrair_palavras_chave(
                                 added_text
                             ),
@@ -998,6 +1166,7 @@ class DirectusAPI:
                             "confianca": 0.85,
                             "posicao": {"linha": i + 1, "coluna": 1},
                             "conteudo": {"original": removed_text},
+                            "clausula": clause,
                             "tags_relacionadas": self._extrair_palavras_chave(
                                 removed_text
                             ),
@@ -1007,6 +1176,10 @@ class DirectusAPI:
                 modificacao_id += 1
 
             print(f"✅ {len(modificacoes)} modificações extraídas do diff")
+            # Log das cláusulas identificadas
+            clausulas_encontradas = set(m.get("clausula") for m in modificacoes if m.get("clausula"))
+            if clausulas_encontradas:
+                print(f"📋 Cláusulas identificadas nas modificações: {', '.join(sorted(clausulas_encontradas))}")
             return modificacoes
 
         except Exception as e:
