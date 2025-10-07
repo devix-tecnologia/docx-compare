@@ -362,6 +362,7 @@ class DirectusAPI:
     def _persistir_modificacoes_directus(self, versao_id, modificacoes):
         """
         Persiste as modificações no Directus e atualiza o status da versão
+        Cria todas as modificações de uma vez via PATCH na versão
         
         Args:
             versao_id: ID da versão processada
@@ -369,67 +370,63 @@ class DirectusAPI:
         """
         print(f"💾 Iniciando persistência de {len(modificacoes)} modificações no Directus...")
         
-        modificacoes_criadas = []
-        modificacoes_com_erro = []
-        
-        # 1. Criar cada modificação no Directus
-        for mod in modificacoes:
-            try:
-                modificacao_data = self._converter_modificacao_para_directus(versao_id, mod)
-                
-                response = requests.post(
-                    f"{self.base_url}/items/modificacao",
-                    headers=DIRECTUS_HEADERS,
-                    json=modificacao_data,
-                    timeout=15,
-                )
-                
-                if response.status_code in [200, 201]:
-                    modificacao_criada = response.json()["data"]
-                    modificacoes_criadas.append(modificacao_criada["id"])
-                    print(f"✅ Modificação {mod['id']} criada: {modificacao_criada['id']}")
-                else:
-                    error_msg = f"HTTP {response.status_code}"
-                    try:
-                        error_detail = response.json()
-                        error_msg = error_detail.get("errors", [{}])[0].get("message", error_msg)
-                    except:
-                        pass
-                    print(f"❌ Erro ao criar modificação {mod['id']}: {error_msg}")
-                    modificacoes_com_erro.append(mod['id'])
-                    
-            except Exception as e:
-                print(f"❌ Exceção ao criar modificação {mod['id']}: {e}")
-                modificacoes_com_erro.append(mod['id'])
-        
-        # 2. Atualizar status da versão para 'concluido'
         try:
+            # Converter todas as modificações para o formato Directus
+            modificacoes_directus = []
+            for mod in modificacoes:
+                try:
+                    modificacao_data = self._converter_modificacao_para_directus(versao_id, mod)
+                    modificacoes_directus.append(modificacao_data)
+                    print(f"✅ Modificação {mod['id']} convertida para Directus")
+                except Exception as e:
+                    print(f"❌ Erro ao converter modificação {mod['id']}: {e}")
+            
+            # Atualizar versão com todas as modificações de uma vez (transação única)
             update_data = {
                 "status": "concluido",
-                "modificacoes": modificacoes_criadas,
+                "modificacoes": {
+                    "create": modificacoes_directus
+                }
             }
+            
+            print(f"📡 Enviando PATCH para versão {versao_id} com {len(modificacoes_directus)} modificações...")
             
             response = requests.patch(
                 f"{self.base_url}/items/versao/{versao_id}",
                 headers=DIRECTUS_HEADERS,
                 json=update_data,
-                timeout=15,
+                timeout=30,  # Timeout maior para transação
             )
             
             if response.status_code == 200:
                 print(f"✅ Versão {versao_id} atualizada para status 'concluido'")
-                print(f"📊 Resumo: {len(modificacoes_criadas)} criadas, {len(modificacoes_com_erro)} com erro")
+                print(f"📊 Total: {len(modificacoes_directus)} modificações criadas em transação única")
+                
+                # Extrair IDs das modificações criadas da resposta
+                response_data = response.json().get("data", {})
+                modificacoes_criadas = response_data.get("modificacoes", [])
+                
+                return {
+                    "criadas": len(modificacoes_criadas),
+                    "erros": len(modificacoes) - len(modificacoes_directus),
+                    "ids_criados": [m if isinstance(m, str) else m.get("id") for m in modificacoes_criadas] if modificacoes_criadas else [],
+                    "metodo": "transacao_unica"
+                }
             else:
-                print(f"⚠️ Erro ao atualizar status da versão: HTTP {response.status_code}")
+                error_msg = f"HTTP {response.status_code}"
+                try:
+                    error_detail = response.json()
+                    error_msg = error_detail.get("errors", [{}])[0].get("message", error_msg)
+                    print(f"� Erro detalhado: {error_detail}")
+                except:
+                    print(f"📄 Resposta: {response.text[:500]}")
+                
+                print(f"❌ Erro ao atualizar versão: {error_msg}")
+                raise Exception(f"Falha ao persistir modificações: {error_msg}")
                 
         except Exception as e:
-            print(f"⚠️ Exceção ao atualizar versão: {e}")
-        
-        return {
-            "criadas": len(modificacoes_criadas),
-            "erros": len(modificacoes_com_erro),
-            "ids_criados": modificacoes_criadas
-        }
+            print(f"❌ Exceção ao persistir modificações: {e}")
+            raise e
 
     def _converter_modificacao_para_directus(self, versao_id, mod):
         """
