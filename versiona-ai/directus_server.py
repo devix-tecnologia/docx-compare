@@ -320,7 +320,7 @@ class DirectusAPI:
             }
 
             diff_cache[diff_id] = diff_data
-            
+
             # Persistir modificações no Directus (somente em modo real)
             if not mock:
                 try:
@@ -328,7 +328,7 @@ class DirectusAPI:
                 except Exception as persist_error:
                     print(f"⚠️ Erro ao persistir modificações no Directus: {persist_error}")
                     # Não falhar o processamento se a persistência falhar
-            
+
             return diff_data
 
         except Exception as e:
@@ -363,13 +363,13 @@ class DirectusAPI:
         """
         Persiste as modificações no Directus e atualiza o status da versão
         Cria todas as modificações de uma vez via PATCH na versão
-        
+
         Args:
             versao_id: ID da versão processada
             modificacoes: Lista de modificações extraídas
         """
         print(f"💾 Iniciando persistência de {len(modificacoes)} modificações no Directus...")
-        
+
         try:
             # Converter todas as modificações para o formato Directus
             modificacoes_directus = []
@@ -380,7 +380,7 @@ class DirectusAPI:
                     print(f"✅ Modificação {mod['id']} convertida para Directus")
                 except Exception as e:
                     print(f"❌ Erro ao converter modificação {mod['id']}: {e}")
-            
+
             # Atualizar versão com todas as modificações de uma vez (transação única)
             update_data = {
                 "status": "concluido",
@@ -388,24 +388,24 @@ class DirectusAPI:
                     "create": modificacoes_directus
                 }
             }
-            
+
             print(f"📡 Enviando PATCH para versão {versao_id} com {len(modificacoes_directus)} modificações...")
-            
+
             response = requests.patch(
                 f"{self.base_url}/items/versao/{versao_id}",
                 headers=DIRECTUS_HEADERS,
                 json=update_data,
                 timeout=30,  # Timeout maior para transação
             )
-            
+
             if response.status_code == 200:
                 print(f"✅ Versão {versao_id} atualizada para status 'concluido'")
                 print(f"📊 Total: {len(modificacoes_directus)} modificações criadas em transação única")
-                
+
                 # Extrair IDs das modificações criadas da resposta
                 response_data = response.json().get("data", {})
                 modificacoes_criadas = response_data.get("modificacoes", [])
-                
+
                 return {
                     "criadas": len(modificacoes_criadas),
                     "erros": len(modificacoes) - len(modificacoes_directus),
@@ -420,10 +420,10 @@ class DirectusAPI:
                     print(f"� Erro detalhado: {error_detail}")
                 except:
                     print(f"📄 Resposta: {response.text[:500]}")
-                
+
                 print(f"❌ Erro ao atualizar versão: {error_msg}")
                 raise Exception(f"Falha ao persistir modificações: {error_msg}")
-                
+
         except Exception as e:
             print(f"❌ Exceção ao persistir modificações: {e}")
             raise e
@@ -431,11 +431,11 @@ class DirectusAPI:
     def _converter_modificacao_para_directus(self, versao_id, mod):
         """
         Converte uma modificação do formato interno para o formato do Directus
-        
+
         Args:
             versao_id: ID da versão
             mod: Objeto de modificação no formato interno
-            
+
         Returns:
             dict: Objeto formatado para criação no Directus
         """
@@ -447,24 +447,24 @@ class DirectusAPI:
             "COMENTARIO": "comentario",
             "FORMATACAO": "formatacao",
         }
-        
+
         categoria = tipo_para_categoria.get(mod.get("tipo", "ALTERACAO"), "modificacao")
-        
+
         # Extrair conteúdo original e novo
         conteudo_obj = mod.get("conteudo", {})
         conteudo_original = conteudo_obj.get("original", "")
         conteudo_novo = conteudo_obj.get("novo", "")
-        
+
         # Extrair posição
         posicao = mod.get("posicao", {})
         linha = posicao.get("linha", 0)
         coluna = posicao.get("coluna", 0)
-        
+
         # Construir caminho (usando linha e coluna como referência)
         caminho_inicio = f"L{linha}:C{coluna}"
         # Para o fim, assumir que vai até o final do conteúdo
         caminho_fim = f"L{linha}:C{coluna + len(conteudo_original)}"
-        
+
         # Montar objeto para Directus
         directus_mod = {
             "versao": versao_id,
@@ -477,7 +477,7 @@ class DirectusAPI:
             "posicao_inicio": linha * 1000 + coluna,  # Posição linear aproximada
             "posicao_fim": linha * 1000 + coluna + len(conteudo_original),
         }
-        
+
         # Adicionar campos opcionais se disponíveis
         if "confianca" in mod:
             # Converter confiança (0-1) para percentual se necessário
@@ -485,7 +485,7 @@ class DirectusAPI:
             if confianca <= 1.0:
                 confianca = int(confianca * 100)
             directus_mod["confianca"] = confianca
-            
+
         if "tags_relacionadas" in mod and mod["tags_relacionadas"]:
             # Juntar tags em string se for array
             tags = mod["tags_relacionadas"]
@@ -493,7 +493,7 @@ class DirectusAPI:
                 directus_mod["tags"] = ", ".join(tags)
             else:
                 directus_mod["tags"] = str(tags)
-        
+
         return directus_mod
 
     def _process_real_documents(self, versao_data):
