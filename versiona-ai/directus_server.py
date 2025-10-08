@@ -1825,9 +1825,42 @@ def process_document():
 
 @app.route("/view/<diff_id>", methods=["GET"])
 def view_diff(diff_id):
-    """Visualiza diff gerado"""
+    """Visualiza diff gerado (somente leitura - não processa)
+
+    Este endpoint NÃO processa versões, apenas exibe diffs já processados no cache.
+
+    Fluxo correto:
+    1. Processar versão: GET /api/versoes/<versao_id>
+    2. Receber diff_id na resposta JSON
+    3. Visualizar: GET /view/<diff_id>
+    """
     if diff_id not in diff_cache:
-        return "Diff não encontrado", 404
+        return (
+            f"""
+        <!DOCTYPE html>
+        <html>
+        <head><meta charset="UTF-8"><title>Diff não encontrado</title></head>
+        <body>
+            <h1>❌ Diff não encontrado no cache</h1>
+            <p>O diff_id <code>{diff_id}</code> não existe no cache do servidor.</p>
+            
+            <h2>📝 Como processar e visualizar:</h2>
+            <ol>
+                <li><strong>Listar versões:</strong> <code>GET /api/versoes</code></li>
+                <li><strong>Processar versão:</strong> <code>GET /api/versoes/&lt;versao_id&gt;</code></li>
+                <li><strong>Usar o diff_id retornado para visualizar aqui</strong></li>
+            </ol>
+            
+            <h3>🔗 Links úteis:</h3>
+            <ul>
+                <li><a href="/api/debug/cache">Ver diffs disponíveis no cache</a></li>
+                <li><a href="/api/versoes">Ver versões disponíveis</a></li>
+            </ul>
+        </body>
+        </html>
+        """,
+            404,
+        )
 
     diff_data = diff_cache[diff_id]
     response = render_template_string(HTML_TEMPLATE, **diff_data)
