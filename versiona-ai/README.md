@@ -99,10 +99,10 @@ A API (`directus_server.py`) oferece os seguintes endpoints:
 
 #### **Visualização**
 
-- `GET /versao/<versao_id>` - Visualiza versão com diferenças (HTML)
+- `GET /versao/<versao_id>` - **PROCESSA** e visualiza versão com diferenças (HTML)
 - `GET /test/diff/<versao_id>` - Teste de geração de diff (HTML)
-- `GET /view/<diff_id>` - Visualiza diff gerado (HTML)
-- `GET /api/data/<diff_id>` - Dados JSON do diff
+- `GET /view/<diff_id>` - **SOMENTE VISUALIZAÇÃO** de diff já processado (cache em memória)
+- `GET /api/data/<diff_id>` - **SOMENTE VISUALIZAÇÃO** de dados JSON do diff (cache em memória)
 
 #### **Parâmetro Mock**
 
@@ -112,12 +112,235 @@ Todos os endpoints que suportam o parâmetro `mock`:
 - `mock=false` ou ausente: Usa dados reais do Directus
 - Sem fallback: Se `mock=false` e Directus falhar, retorna erro (não usa mock)
 
+#### **⚠️ IMPORTANTE: Diferença entre Processamento e Visualização**
+
+##### **Endpoints que PROCESSAM (fazem todo o trabalho):**
+
+- `/api/versoes/<versao_id>` - Busca no Directus, processa arquivos DOCX, gera diff, extrai modificações, vincula cláusulas, persiste no Directus
+- `/versao/<versao_id>` - Igual ao anterior, mas retorna HTML em vez de JSON
+- `POST /api/process` - Processa versão específica
+
+##### **Endpoints que APENAS VISUALIZAM (não processam nada):**
+
+- `/view/<diff_id>` - **Busca no cache em memória** e exibe HTML já gerado
+- `/api/data/<diff_id>` - **Busca no cache em memória** e retorna JSON já processado
+
+**Exemplo de uso correto:**
+
+```bash
+# 1️⃣ PRIMEIRO: Processar a versão (gera diff_id no cache)
+curl "http://localhost:8080/api/versoes/c2b1dfa0-c664-48b8-a5ff-84b70041b428"
+# Resposta inclui: "diff_data": {"id": "8b64cd50-6b47-4286-9c7e-049e74bbb65c", ...}
+
+# 2️⃣ DEPOIS: Visualizar usando o diff_id retornado
+curl "http://localhost:8080/view/8b64cd50-6b47-4286-9c7e-049e74bbb65c"
+# Retorna HTML renderizado do diff já processado
+```
+
+**❌ Erro comum:**
+
+```bash
+# Tentar visualizar com diff_id sem processar antes
+curl "http://localhost:8080/view/algum-id-aleatorio"
+# Retorna: "Diff não encontrado", 404
+```
+
+**💡 Dica:** O `diff_id` é gerado durante o processamento e só existe em memória (cache) enquanto o servidor estiver rodando. Se reiniciar o servidor, precisa processar novamente.
+
+### 🔑 **Entendendo os IDs**
+
+O sistema trabalha com diferentes tipos de IDs:
+
+| Tipo de ID           | Origem                      | Persistência                  | Uso                                                                  |
+| -------------------- | --------------------------- | ----------------------------- | -------------------------------------------------------------------- |
+| **`versao_id`**      | Directus (UUID)             | Permanente no banco           | Identifica uma versão de contrato no Directus                        |
+| **`diff_id`**        | Gerado pelo servidor (UUID) | Temporário (cache em memória) | Identifica um diff processado no cache                               |
+| **`relatorio_diff`** | Directus (UUID)             | Permanente no banco           | ID de relatório armazenado no Directus (não usado para visualização) |
+
+**Fluxo típico:**
+
+```
+1. versao_id (Directus)
+   → 2. Processar via /api/versoes/<versao_id>
+   → 3. Gera diff_id (cache)
+   → 4. Visualizar via /view/<diff_id>
+```
+
+### ⚠️ **Query Parameters NÃO Suportados**
+
+As rotas de visualização **NÃO** aceitam query parameters para modificar o comportamento:
+
+```bash
+# ❌ ERRADO - Query parameters são ignorados
+http://localhost:8080/view/<diff_id>?mock=true&headless=true
+http://localhost:8080/view/<diff_id>?versao_id=abc
+
+# ✅ CORRETO - Apenas o diff_id na URL
+http://localhost:8080/view/<diff_id>
+```
+
+**Por quê?**
+
+- `/view/<diff_id>` apenas **busca dados já processados** no cache
+- Não há como "reprocessar" com diferentes parâmetros
+- Para processar com parâmetros diferentes, use `/api/versoes/<versao_id>?mock=true`
+
+### 📝 **Exemplos Práticos de URLs**
+
+#### ✅ **URLs Corretas:**
+
+```bash
+# Processar versão e obter JSON completo
+GET http://localhost:8080/api/versoes/c2b1dfa0-c664-48b8-a5ff-84b70041b428
+
+# Processar versão e visualizar HTML
+GET http://localhost:8080/versao/c2b1dfa0-c664-48b8-a5ff-84b70041b428
+
+# Visualizar diff já processado (usando diff_id do cache)
+GET http://localhost:8080/view/8b64cd50-6b47-4286-9c7e-049e74bbb65c
+
+# Obter JSON de diff já processado
+GET http://localhost:8080/api/data/8b64cd50-6b47-4286-9c7e-049e74bbb65c
+
+# Processar com dados mock
+GET http://localhost:8080/api/versoes/algum-id?mock=true
+
+# Verificar saúde do servidor
+GET http://localhost:8080/health
+```
+
+#### ❌ **URLs Incorretas:**
+
+```bash
+# ❌ Porta errada (deve ser 8080 no container, não 80)
+GET http://localhost:80/api/versoes/...
+
+# ❌ Query parameters em /view (são ignorados)
+GET http://localhost:8080/view/7c99ea9d?diff_id=abc&mock=false&headless=true
+
+# ❌ Usar relatorio_diff ID do Directus para visualizar
+# (relatorio_diff é armazenado no Directus, não é o diff_id do cache)
+GET http://localhost:8080/view/7c99ea9d-6fed-4ae4-b7be-54aa821ebdaf
+
+# ❌ Tentar visualizar sem processar primeiro
+# (diff_id só existe após processar)
+GET http://localhost:8080/view/id-que-nao-existe
+
+# ❌ ID concatenado ou malformado
+GET http://localhost:8080/view/id1&headless=true&id2
+```
+
+### 🐛 **Debugging de URLs**
+
+Se você receber erro ao acessar uma URL, verifique:
+
+1. **Porta correta?**
+
+   - Container Docker: porta `8080` (mapeada de `80` interno)
+   - Desenvolvimento local: porta `8000` ou `8001` (verifique `FLASK_PORT` no `.env`)
+
+2. **ID correto?**
+
+   - Use `versao_id` para processar: `/api/versoes/<versao_id>`
+   - Use `diff_id` para visualizar: `/view/<diff_id>`
+   - O `diff_id` vem na resposta do processamento no campo `diff_data.id`
+
+3. **Processou antes de visualizar?**
+
+   ```bash
+   # Debug: Ver o cache atual
+   curl http://localhost:8080/api/debug/cache
+
+   # Resposta mostra os diff_ids disponíveis:
+   {
+     "total_items": 2,
+     "cache_keys": ["8b64cd50-...", "404f7a20-..."],
+     "timestamp": "2025-10-08T12:21:34.745345"
+   }
+   ```
+
+4. **Servidor está rodando?**
+
+   ```bash
+   # Health check
+   curl http://localhost:8080/health
+
+   # Deve retornar:
+   {
+     "status": "ok",
+     "directus_connected": true,
+     "directus_url": "https://contract.devix.co",
+     "timestamp": "..."
+   }
+   ```
+
 ### ✅ **Integração Directus**
 
 - **API REST**: Comunicação com Directus CMS
 - **Configuração flexível**: URL, token, timeout
 - **Fallback gracioso**: Funcionamento local se API falhar
 - **Logs estruturados**: Registro de todas as operações
+
+### 📊 **Fluxo de Processamento Completo**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    CLIENTE (Browser/curl)                        │
+└────────────────┬────────────────────────────────────────────────┘
+                 │
+                 │ GET /api/versoes/c2b1dfa0-...
+                 ▼
+┌─────────────────────────────────────────────────────────────────┐
+│              SERVIDOR API (directus_server.py)                   │
+│                                                                   │
+│  1. Busca versão no Directus (versao_id)                        │
+│  2. Busca arquivos DOCX (arquivo original + modificado)         │
+│  3. Baixa e extrai texto dos arquivos                           │
+│  4. Busca tags do modelo de contrato                            │
+│  5. Gera diff HTML (comparação)                                 │
+│  6. Extrai modificações do diff                                 │
+│  7. Vincula modificações às cláusulas via tags                  │
+│  8. Calcula blocos (agrupamento posicional)                     │
+│  9. Gera diff_id único (UUID)                                   │
+│  10. Armazena no CACHE em memória                               │
+│  11. Persiste modificações no Directus                          │
+│                                                                   │
+└────────────────┬────────────────────────────────────────────────┘
+                 │
+                 │ Retorna JSON com diff_id
+                 ▼
+┌─────────────────────────────────────────────────────────────────┐
+│              CLIENTE recebe resposta                             │
+│  {                                                               │
+│    "diff_data": {                                                │
+│      "id": "8b64cd50-...",  ← diff_id para visualização         │
+│      "versao_id": "c2b1dfa0-...",                               │
+│      "diff_html": "...",                                         │
+│      "modificacoes": [...],                                      │
+│      "total_blocos": 2                                           │
+│    }                                                             │
+│  }                                                               │
+└─────────────────────────────────────────────────────────────────┘
+                 │
+                 │ GET /view/8b64cd50-... (usar diff_id)
+                 ▼
+┌─────────────────────────────────────────────────────────────────┐
+│              SERVIDOR API - VISUALIZAÇÃO                         │
+│                                                                   │
+│  1. Busca diff_id no CACHE em memória                           │
+│  2. Se encontrado: renderiza HTML                               │
+│  3. Se não encontrado: retorna 404                              │
+│                                                                   │
+│  ⚠️ NÃO processa nada - apenas visualiza dados já prontos       │
+│                                                                   │
+└────────────────┬────────────────────────────────────────────────┘
+                 │
+                 │ Retorna HTML renderizado
+                 ▼
+┌─────────────────────────────────────────────────────────────────┐
+│              CLIENTE vê diff visualizado                         │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ## 🚀 Início Rápido
 
