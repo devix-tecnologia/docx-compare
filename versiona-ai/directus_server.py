@@ -5,6 +5,7 @@ Inclui agrupamento posicional para cálculo preciso de blocos
 """
 
 import os
+import re
 import signal
 import sys
 import uuid
@@ -309,9 +310,13 @@ class DirectusAPI:
                             params={"fields": "modelo_contrato"},
                             timeout=10,
                         )
-                        print(f"🔍 DEBUG: contrato response status={contrato_response.status_code}")
+                        print(
+                            f"🔍 DEBUG: contrato response status={contrato_response.status_code}"
+                        )
                         if contrato_response.status_code == 200:
-                            modelo_id = contrato_response.json()["data"].get("modelo_contrato")
+                            modelo_id = contrato_response.json()["data"].get(
+                                "modelo_contrato"
+                            )
                             print(f"🔍 DEBUG: modelo_id encontrado={modelo_id}")
 
                     if modelo_id:
@@ -322,18 +327,23 @@ class DirectusAPI:
                             params={
                                 "filter[modelo_contrato][_eq]": modelo_id,
                                 "fields": "id,tag_nome,caminho_tag_inicio,caminho_tag_fim,posicao_inicio_texto,posicao_fim_texto,conteudo,clausulas.id,clausulas.numero,clausulas.nome",
-                                "limit": 100
+                                "limit": 100,
                             },
                             timeout=10,
                         )
                         if tags_response.status_code == 200:
                             tags_modelo = tags_response.json().get("data", [])
-                            print(f"✅ Encontradas {len(tags_modelo)} tags do modelo para vinculação")
+                            print(
+                                f"✅ Encontradas {len(tags_modelo)} tags do modelo para vinculação"
+                            )
                     else:
-                        print("⚠️ modelo_id não encontrado, não será possível vincular cláusulas")
+                        print(
+                            "⚠️ modelo_id não encontrado, não será possível vincular cláusulas"
+                        )
                 except Exception as e:
                     print(f"⚠️ Erro ao buscar tags do modelo: {e}")
                     import traceback
+
                     traceback.print_exc()
 
             # Gerar diff
@@ -344,7 +354,9 @@ class DirectusAPI:
 
             # Vincular modificações às cláusulas usando tags (somente em modo real)
             if not mock and tags_modelo:
-                modificacoes = self._vincular_modificacoes_clausulas(modificacoes, tags_modelo, modified_text)
+                modificacoes = self._vincular_modificacoes_clausulas(
+                    modificacoes, tags_modelo, modified_text
+                )
 
             # Calcular blocos usando agrupamento posicional
             resultado_blocos = self._calcular_blocos_avancado(versao_id, diff_html)
@@ -374,7 +386,9 @@ class DirectusAPI:
                 try:
                     self._persistir_modificacoes_directus(versao_id, modificacoes)
                 except Exception as persist_error:
-                    print(f"⚠️ Erro ao persistir modificações no Directus: {persist_error}")
+                    print(
+                        f"⚠️ Erro ao persistir modificações no Directus: {persist_error}"
+                    )
                     # Não falhar o processamento se a persistência falhar
 
             return diff_data
@@ -416,14 +430,18 @@ class DirectusAPI:
             versao_id: ID da versão processada
             modificacoes: Lista de modificações extraídas
         """
-        print(f"💾 Iniciando persistência de {len(modificacoes)} modificações no Directus...")
+        print(
+            f"💾 Iniciando persistência de {len(modificacoes)} modificações no Directus..."
+        )
 
         try:
             # Converter todas as modificações para o formato Directus
             modificacoes_directus = []
             for mod in modificacoes:
                 try:
-                    modificacao_data = self._converter_modificacao_para_directus(versao_id, mod)
+                    modificacao_data = self._converter_modificacao_para_directus(
+                        versao_id, mod
+                    )
                     modificacoes_directus.append(modificacao_data)
                     print(f"✅ Modificação {mod['id']} convertida para Directus")
                 except Exception as e:
@@ -432,12 +450,12 @@ class DirectusAPI:
             # Atualizar versão com todas as modificações de uma vez (transação única)
             update_data = {
                 "status": "concluido",
-                "modificacoes": {
-                    "create": modificacoes_directus
-                }
+                "modificacoes": {"create": modificacoes_directus},
             }
 
-            print(f"📡 Enviando PATCH para versão {versao_id} com {len(modificacoes_directus)} modificações...")
+            print(
+                f"📡 Enviando PATCH para versão {versao_id} com {len(modificacoes_directus)} modificações..."
+            )
 
             response = requests.patch(
                 f"{self.base_url}/items/versao/{versao_id}",
@@ -448,7 +466,9 @@ class DirectusAPI:
 
             if response.status_code == 200:
                 print(f"✅ Versão {versao_id} atualizada para status 'concluido'")
-                print(f"📊 Total: {len(modificacoes_directus)} modificações criadas em transação única")
+                print(
+                    f"📊 Total: {len(modificacoes_directus)} modificações criadas em transação única"
+                )
 
                 # Extrair IDs das modificações criadas da resposta
                 response_data = response.json().get("data", {})
@@ -457,16 +477,23 @@ class DirectusAPI:
                 return {
                     "criadas": len(modificacoes_criadas),
                     "erros": len(modificacoes) - len(modificacoes_directus),
-                    "ids_criados": [m if isinstance(m, str) else m.get("id") for m in modificacoes_criadas] if modificacoes_criadas else [],
-                    "metodo": "transacao_unica"
+                    "ids_criados": [
+                        m if isinstance(m, str) else m.get("id")
+                        for m in modificacoes_criadas
+                    ]
+                    if modificacoes_criadas
+                    else [],
+                    "metodo": "transacao_unica",
                 }
             else:
                 error_msg = f"HTTP {response.status_code}"
                 try:
                     error_detail = response.json()
-                    error_msg = error_detail.get("errors", [{}])[0].get("message", error_msg)
+                    error_msg = error_detail.get("errors", [{}])[0].get(
+                        "message", error_msg
+                    )
                     print(f"� Erro detalhado: {error_detail}")
-                except:
+                except Exception:
                     print(f"📄 Resposta: {response.text[:500]}")
 
                 print(f"❌ Erro ao atualizar versão: {error_msg}")
@@ -526,21 +553,18 @@ class DirectusAPI:
             "posicao_fim": linha * 1000 + coluna + len(conteudo_original),
         }
 
-        # Adicionar cláusula se disponível (campo antigo, por compatibilidade)
-        if "clausula" in mod and mod["clausula"]:
-            directus_mod["clausula"] = mod["clausula"]
-            print(f"📋 Cláusula identificada para modificação {mod.get('id')}: {mod['clausula']}")
-
-        # Adicionar informações de tag e cláusula do modelo
-        if "tag_nome" in mod:
-            # Armazenar tag_nome em um campo (se existir no schema)
-            pass  # TODO: verificar se há campo específico no schema
-
-        if "clausula_id" in mod:
-            # TODO: Verificar nome correto do campo de relacionamento no Directus
-            # Pode ser "clausula" se for Many-to-One relationship
+        # Adicionar cláusula se disponível (UUID obtido via vinculação com tags)
+        if "clausula_id" in mod and mod["clausula_id"]:
+            # Campo clausula é uma FK para tabela clausula (tipo uuid)
             directus_mod["clausula"] = mod["clausula_id"]
-            print(f"📋 Cláusula vinculada para modificação {mod.get('id')}: {mod.get('clausula_numero')} - {mod.get('clausula_nome')}")
+            print(
+                f"📋 Cláusula vinculada para modificação {mod.get('id')}: {mod.get('clausula_numero')} - {mod.get('clausula_nome')}"
+            )
+        else:
+            # Se não há clausula_id, não enviar o campo (deixar null no banco)
+            print(
+                f"⚠️  Modificação {mod.get('id')} sem cláusula vinculada (nenhuma tag correspondente encontrada)"
+            )
 
         # Adicionar campos opcionais se disponíveis
         if "confianca" in mod:
@@ -560,7 +584,9 @@ class DirectusAPI:
 
         return directus_mod
 
-    def _vincular_modificacoes_clausulas(self, modificacoes, tags_modelo, texto_documento):
+    def _vincular_modificacoes_clausulas(
+        self, modificacoes, tags_modelo, texto_documento
+    ):
         """
         Vincula cada modificação à cláusula correspondente baseado nas tags do modelo
 
@@ -590,13 +616,13 @@ class DirectusAPI:
 
             # Remover as tags {{TAG-...}} e {{/TAG-...}} do conteúdo
             # O conteúdo no Directus inclui as tags, mas o documento processado não tem mais as tags
-            conteudo_limpo = re.sub(r'\{\{TAG-.*?\}\}\s*', '', conteudo_original)
-            conteudo_limpo = re.sub(r'\s*\{\{/TAG-.*?\}\}', '', conteudo_limpo)
+            conteudo_limpo = re.sub(r"\{\{TAG-.*?\}\}\s*", "", conteudo_original)
+            conteudo_limpo = re.sub(r"\s*\{\{/TAG-.*?\}\}", "", conteudo_limpo)
             conteudo_limpo = conteudo_limpo.strip()
 
             # Tentar também remover tags simples {{...}}
-            conteudo_limpo = re.sub(r'\{\{.*?\}\}\s*', '', conteudo_limpo)
-            conteudo_limpo = re.sub(r'\s*\{\{/.*?\}\}', '', conteudo_limpo)
+            conteudo_limpo = re.sub(r"\{\{.*?\}\}\s*", "", conteudo_limpo)
+            conteudo_limpo = re.sub(r"\s*\{\{/.*?\}\}", "", conteudo_limpo)
             conteudo_limpo = conteudo_limpo.strip()
 
             if not conteudo_limpo:
@@ -609,7 +635,11 @@ class DirectusAPI:
 
             # Estratégia 2: Se não encontrou, tentar com primeiros 100 caracteres
             if posicao < 0:
-                conteudo_busca = conteudo_limpo[:100] if len(conteudo_limpo) > 100 else conteudo_limpo
+                conteudo_busca = (
+                    conteudo_limpo[:100]
+                    if len(conteudo_limpo) > 100
+                    else conteudo_limpo
+                )
                 posicao = texto_documento.find(conteudo_busca)
             else:
                 conteudo_busca = conteudo_limpo
@@ -617,12 +647,12 @@ class DirectusAPI:
             # Estratégia 3: Se ainda não encontrou, normalizar espaços e tentar novamente
             if posicao < 0:
                 # Normalizar espaços no conteúdo de busca e no documento
-                conteudo_normalizado = ' '.join(conteudo_limpo.split())
-                documento_normalizado = ' '.join(texto_documento.split())
+                conteudo_normalizado = " ".join(conteudo_limpo.split())
+                documento_normalizado = " ".join(texto_documento.split())
 
                 # Buscar primeira linha significativa (mais de 10 caracteres)
-                primeira_linha = ''
-                for linha in conteudo_normalizado.split('\n'):
+                primeira_linha = ""
+                for linha in conteudo_normalizado.split("\n"):
                     if len(linha.strip()) > 10:
                         primeira_linha = linha.strip()
                         break
@@ -636,17 +666,23 @@ class DirectusAPI:
 
             if posicao >= 0:
                 # Calcular posição fim baseada no comprimento do conteúdo limpo ou busca
-                comprimento = len(conteudo_limpo) if posicao == texto_documento.find(conteudo_limpo) else len(conteudo_busca)
+                comprimento = (
+                    len(conteudo_limpo)
+                    if posicao == texto_documento.find(conteudo_limpo)
+                    else len(conteudo_busca)
+                )
 
                 tag_info = {
                     "tag_nome": tag_nome,
                     "posicao_inicio": posicao,
                     "posicao_fim": posicao + comprimento,
                     "clausulas": clausulas if isinstance(clausulas, list) else [],
-                    "conteudo_referencia": conteudo_busca[:50]  # Para debug
+                    "conteudo_referencia": conteudo_busca[:50],  # Para debug
                 }
                 tag_positions.append(tag_info)
-                print(f"✅ Tag '{tag_nome}' mapeada na posição {posicao} (comprimento: {comprimento})")
+                print(
+                    f"✅ Tag '{tag_nome}' mapeada na posição {posicao} (comprimento: {comprimento})"
+                )
             else:
                 print(f"⚠️  Tag '{tag_nome}' não encontrada no documento")
                 print(f"   Conteúdo limpo: '{conteudo_limpo[:80]}...'")
@@ -656,7 +692,18 @@ class DirectusAPI:
 
         print(f"📍 {len(tag_positions)} tags com posições identificadas no documento")
 
-        # Vincular cada modificação à tag/cláusula
+        # Construir mapa de todas as cláusulas disponíveis por tag_nome
+        # para referência e debug
+        clausulas_por_tag = {}
+        for tag in tags_modelo:
+            tag_nome = tag.get("tag_nome")
+            clausulas = tag.get("clausulas", [])
+            if tag_nome and isinstance(clausulas, list) and clausulas:
+                clausulas_por_tag[tag_nome] = clausulas
+
+        print(f"📚 {len(clausulas_por_tag)} tags com cláusulas vinculadas")
+
+        # Vincular cada modificação à tag/cláusula baseado na posição no documento
         for mod in modificacoes:
             conteudo_mod = mod.get("conteudo", {})
             texto_busca = conteudo_mod.get("novo") or conteudo_mod.get("original", "")
@@ -667,9 +714,18 @@ class DirectusAPI:
             # Encontrar posição da modificação no documento
             pos_mod = texto_documento.find(texto_busca)
             if pos_mod < 0:
+                # Tentar busca parcial se não encontrou completo
+                texto_busca_parcial = (
+                    texto_busca[:100] if len(texto_busca) > 100 else texto_busca
+                )
+                pos_mod = texto_documento.find(texto_busca_parcial)
+
+            if pos_mod < 0:
+                print(f"⚠️ Modificação {mod['id']}: texto não encontrado no documento")
                 continue
 
             # Encontrar a tag que contém esta posição
+            vinculada = False
             for tag_info in tag_positions:
                 if tag_info["posicao_inicio"] <= pos_mod <= tag_info["posicao_fim"]:
                     # Modificação está dentro desta tag
@@ -682,16 +738,26 @@ class DirectusAPI:
                         mod["clausula_numero"] = primeira_clausula.get("numero")
                         mod["clausula_nome"] = primeira_clausula.get("nome")
 
-                        print(f"✅ Modificação {mod['id']} → Tag '{tag_info['tag_nome']}' → Cláusula {primeira_clausula.get('numero')}")
+                        print(
+                            f"✅ Modificação {mod['id']} → Tag '{tag_info['tag_nome']}' → Cláusula '{primeira_clausula.get('numero')} - {primeira_clausula.get('nome')}'"
+                        )
+                        vinculada = True
                     else:
-                        print(f"⚠️ Modificação {mod['id']} → Tag '{tag_info['tag_nome']}' (sem cláusula associada)")
+                        print(
+                            f"⚠️ Modificação {mod['id']} → Tag '{tag_info['tag_nome']}' (sem cláusula associada)"
+                        )
                     break
-            else:
-                print(f"⚠️ Modificação {mod['id']}: posição não encontrada em nenhuma tag")
+
+            if not vinculada:
+                print(
+                    f"⚠️ Modificação {mod['id']}: posição {pos_mod} não encontrada em nenhuma tag"
+                )
 
         # Resumo
         mods_com_clausula = sum(1 for m in modificacoes if m.get("clausula_id"))
-        print(f"\n📊 Resumo: {mods_com_clausula}/{len(modificacoes)} modificações vinculadas a cláusulas")
+        print(
+            f"\n📊 Resumo: {mods_com_clausula}/{len(modificacoes)} modificações vinculadas a cláusulas via tags"
+        )
 
         return modificacoes
 
@@ -847,7 +913,7 @@ class DirectusAPI:
                 print(f"❌ Erro ao importar docx_utils: {e}")
                 # Fallback: usar python-docx diretamente
                 try:
-                    from docx import Document
+                    from docx import Document  # type: ignore
 
                     doc = Document(temp_path)
                     paragraphs = [p.text for p in doc.paragraphs if p.text.strip()]
@@ -1136,17 +1202,10 @@ class DirectusAPI:
             # Usar regex para encontrar elementos de diff
             import re
 
-            # Encontrar cabeçalhos de cláusulas e suas posições
+            # Encontrar cabeçalhos de cláusulas (mantido apenas para logs/debug)
             clause_pattern = r"<div class='clause-header'>📋 (.*?)</div>"
             clause_matches = list(re.finditer(clause_pattern, diff_html))
-            print(f"📋 Cláusulas encontradas: {len(clause_matches)}")
-
-            # Criar mapa de posição -> cláusula
-            clause_map = {}
-            for match in clause_matches:
-                clause_pos = match.start()
-                clause_name = match.group(1)
-                clause_map[clause_pos] = clause_name
+            print(f"📋 Cabeçalhos de cláusula no diff: {len(clause_matches)}")
 
             # Encontrar elementos removidos (usando aspas simples como no HTML real)
             removed_pattern = r"<div class='diff-removed'>-\s*(.*?)</div>"
@@ -1158,16 +1217,6 @@ class DirectusAPI:
             added_matches = list(re.finditer(added_pattern, diff_html, re.DOTALL))
             print(f"📝 Elementos adicionados encontrados: {len(added_matches)}")
 
-            # Função para encontrar cláusula mais próxima antes da posição
-            def _find_clause_for_position(pos):
-                clause = None
-                for clause_pos, clause_name in sorted(clause_map.items()):
-                    if clause_pos <= pos:
-                        clause = clause_name
-                    else:
-                        break
-                return clause
-
             # Processar pares de remoção/adição
             max_elements = max(len(removed_matches), len(added_matches))
 
@@ -1178,12 +1227,8 @@ class DirectusAPI:
                 removed_text = removed_match.group(1).strip() if removed_match else None
                 added_text = added_match.group(1).strip() if added_match else None
 
-                # Determinar a cláusula baseado na posição
-                clause = None
-                if removed_match:
-                    clause = _find_clause_for_position(removed_match.start())
-                elif added_match:
-                    clause = _find_clause_for_position(added_match.start())
+                # Não popular campo 'clausula' aqui - isso será feito pela vinculação com tags
+                # A vinculação correta acontece em _vincular_modificacoes_clausulas()
 
                 if removed_text and added_text:
                     # Alteração
@@ -1195,7 +1240,6 @@ class DirectusAPI:
                             "confianca": 0.95,
                             "posicao": {"linha": i + 1, "coluna": 1},
                             "conteudo": {"original": removed_text, "novo": added_text},
-                            "clausula": clause,
                             "tags_relacionadas": self._extrair_palavras_chave(
                                 removed_text + " " + added_text
                             ),
@@ -1211,7 +1255,6 @@ class DirectusAPI:
                             "confianca": 0.9,
                             "posicao": {"linha": i + 1, "coluna": 1},
                             "conteudo": {"novo": added_text},
-                            "clausula": clause,
                             "tags_relacionadas": self._extrair_palavras_chave(
                                 added_text
                             ),
@@ -1227,7 +1270,6 @@ class DirectusAPI:
                             "confianca": 0.85,
                             "posicao": {"linha": i + 1, "coluna": 1},
                             "conteudo": {"original": removed_text},
-                            "clausula": clause,
                             "tags_relacionadas": self._extrair_palavras_chave(
                                 removed_text
                             ),
@@ -1237,10 +1279,7 @@ class DirectusAPI:
                 modificacao_id += 1
 
             print(f"✅ {len(modificacoes)} modificações extraídas do diff")
-            # Log das cláusulas identificadas
-            clausulas_encontradas = set(m.get("clausula") for m in modificacoes if m.get("clausula"))
-            if clausulas_encontradas:
-                print(f"📋 Cláusulas identificadas nas modificações: {', '.join(sorted(clausulas_encontradas))}")
+            print("ℹ️  Vinculação com cláusulas será feita através das tags do modelo")
             return modificacoes
 
         except Exception as e:
