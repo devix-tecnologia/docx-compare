@@ -3,7 +3,7 @@
     <div class="diff-header">
       <h2>Comparação de Documentos</h2>
       <div class="diff-stats">
-        <span class="stat">{{ dados.metadata.total_documentos }} documentos</span>
+        <span class="stat">{{ totalDocumentos }} documentos</span>
         <span class="stat">{{ totalModificacoes }} modificações</span>
         <span class="stat">{{ tempoProcessamento }}s processamento</span>
       </div>
@@ -57,26 +57,55 @@
     },
   })
 
-  // Computed
-  const documento = computed(() => props.dados.documentos[0])
-  const modificacoes = computed(() => documento.value.modificacoes)
+  // Computed - Suporta ambas estruturas (antiga com documentos[] e nova direta)
+  const documento = computed(() => {
+    // Estrutura nova (API direta)
+    if (props.dados.modificacoes) {
+      return {
+        conteudo_comparacao: props.dados.conteudo_comparacao || { original: '', modificado: '', diff_highlights: [] },
+        modificacoes: props.dados.modificacoes || [],
+        estatisticas: {
+          tempo_processamento: props.dados.tempo_processamento || 0,
+        }
+      }
+    }
+    // Estrutura antiga (mock)
+    return props.dados.documentos?.[0] || { 
+      conteudo_comparacao: { original: '', modificado: '', diff_highlights: [] },
+      modificacoes: [],
+      estatisticas: { tempo_processamento: 0 }
+    }
+  })
+  
+  const totalDocumentos = computed(() => {
+    // Estrutura nova
+    if (props.dados.modificacoes) return 1
+    // Estrutura antiga
+    return props.dados.metadata?.total_documentos || 1
+  })
+  
+  const modificacoes = computed(() => documento.value.modificacoes || [])
   const totalModificacoes = computed(() => modificacoes.value.length)
   const tempoProcessamento = computed(() =>
-    documento.value.estatisticas.tempo_processamento.toFixed(3)
+    (documento.value.estatisticas?.tempo_processamento || 0).toFixed(3)
   )
 
   const conteudoOriginalComDestaque = computed(() => {
+    const conteudoComp = documento.value.conteudo_comparacao || {}
+    const highlights = conteudoComp.diff_highlights || []
     return aplicarDestaques(
-      documento.value.conteudo_comparacao.original,
-      documento.value.conteudo_comparacao.diff_highlights,
+      conteudoComp.original || '',
+      highlights,
       'original'
     )
   })
 
   const conteudoModificadoComDestaque = computed(() => {
+    const conteudoComp = documento.value.conteudo_comparacao || {}
+    const highlights = conteudoComp.diff_highlights || []
     return aplicarDestaques(
-      documento.value.conteudo_comparacao.modificado,
-      documento.value.conteudo_comparacao.diff_highlights,
+      conteudoComp.modificado || '',
+      highlights,
       'modificado'
     )
   })

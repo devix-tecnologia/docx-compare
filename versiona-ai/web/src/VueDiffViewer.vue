@@ -36,8 +36,19 @@
     },
   })
 
-  // Computed
-  const documento = computed(() => props.dados.documentos[0])
+  // Computed - Suporta ambas estruturas (antiga com documentos[] e nova direta)
+  const documento = computed(() => {
+    // Estrutura nova (API direta)
+    if (props.dados.modificacoes || props.dados.conteudo_comparacao) {
+      return {
+        conteudo_comparacao: props.dados.conteudo_comparacao || { original: '', modificado: '' }
+      }
+    }
+    // Estrutura antiga (mock)
+    return props.dados.documentos?.[0] || { 
+      conteudo_comparacao: { original: '', modificado: '' }
+    }
+  })
 
   const conteudoOriginal = computed(() => {
     return (
