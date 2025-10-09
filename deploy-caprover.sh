@@ -54,26 +54,53 @@ fi
 echo -e "${BLUE}📦 Configuração:${NC}"
 echo -e "  URL: $CAPROVER_URL"
 echo -e "  App: $CAPROVER_APP_NAME"
-echo -e "  Imagem: $DOCKER_IMAGE"
+echo -e "  Imagem base: $DOCKER_IMAGE"
 echo ""
+
+# Variável para armazenar a imagem final a ser deployada
+DEPLOY_IMAGE="$DOCKER_IMAGE"
 
 # Perguntar se deve fazer build antes
 read -p "$(echo -e ${YELLOW}🔨 Fazer build da imagem antes? [s/N]: ${NC})" -n 1 -r
 echo
 if [[ $REPLY =~ ^[Ss]$ ]]; then
     echo -e "${BLUE}🔨 Buildando imagem...${NC}"
-    ./versiona-ai/build-minimal.sh
+
+    # Capturar output do build
+    BUILD_OUTPUT=$(./versiona-ai/build-minimal.sh 2>&1)
+    BUILD_EXIT_CODE=$?
+
+    # Mostrar output do build
+    echo "$BUILD_OUTPUT"
+
+    if [ $BUILD_EXIT_CODE -ne 0 ]; then
+        echo -e "${RED}❌ Erro no build!${NC}"
+        exit 1
+    fi
+
+    # Extrair a versão gerada do output (linha que contém "Versão: ")
+    BUILD_VERSION=$(echo "$BUILD_OUTPUT" | grep "🔖 Versão:" | awk '{print $3}')
+
+    if [ -n "$BUILD_VERSION" ]; then
+        # Construir o nome completo da imagem com a versão específica
+        IMAGE_BASE=$(echo "$DOCKER_IMAGE" | cut -d':' -f1)
+        DEPLOY_IMAGE="${IMAGE_BASE}:${BUILD_VERSION}"
+        echo -e "${GREEN}✅ Imagem buildada: $DEPLOY_IMAGE${NC}"
+    else
+        echo -e "${YELLOW}⚠️  Não foi possível detectar a versão, usando: $DOCKER_IMAGE${NC}"
+    fi
     echo ""
 fi
 
 # Fazer deploy
 echo -e "${BLUE}🚀 Iniciando deploy...${NC}"
+echo -e "  Imagem: ${DEPLOY_IMAGE}"
 echo ""
 
 caprover deploy \
   --caproverUrl "$CAPROVER_URL" \
   --appToken "$CAPROVER_APP_TOKEN" \
-  --imageName "$DOCKER_IMAGE" \
+  --imageName "$DEPLOY_IMAGE" \
   --appName "$CAPROVER_APP_NAME"
 
 if [ $? -eq 0 ]; then

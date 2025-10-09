@@ -53,8 +53,17 @@ Ou você pode fazer o build manualmente antes:
 2. ✅ Carrega as variáveis de ambiente
 3. ✅ Valida se todas as variáveis obrigatórias estão configuradas
 4. ✅ Pergunta se deve fazer build da imagem
-5. ✅ Faz o deploy no CapRover usando o App Token
-6. ✅ Mostra os endpoints da aplicação
+5. ✅ Se sim, faz build e **captura automaticamente a versão gerada** (ex: `20251008-100153`)
+6. ✅ Usa a imagem específica buildada (ou `:latest` se não fez build)
+7. ✅ Faz o deploy no CapRover usando o App Token
+8. ✅ Mostra os endpoints da aplicação
+
+### 🎯 Comportamento Inteligente
+
+- **Com build (`s`)**: Usa a imagem específica que foi buildada (ex: `versiona-ai-minimal:20251008-100153`)
+- **Sem build (`n`)**: Usa a imagem configurada no `.env` (geralmente `:latest`)
+
+Isso garante que você sempre faz deploy da imagem que acabou de buildar, evitando inconsistências!
 
 ## 🌐 Endpoints após deploy
 
