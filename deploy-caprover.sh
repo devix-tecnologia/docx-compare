@@ -40,25 +40,24 @@ if [ -z "$CAPROVER_APP_TOKEN" ]; then
     exit 1
 fi
 
-if [ -z "$DOCKER_IMAGE" ]; then
-    echo -e "${RED}❌ DOCKER_IMAGE não definida no .env${NC}"
-    exit 1
-fi
-
-if [ "$CAPROVER_APP_TOKEN" = "seu_token_aqui" ]; then
+if [ "$CAPROVER_APP_TOKEN" = "seu_token_aqui" ] || [ "$CAPROVER_APP_TOKEN" = "your-caprover-app-token-here" ]; then
     echo -e "${RED}❌ Configure o CAPROVER_APP_TOKEN no arquivo .env${NC}"
     echo -e "${YELLOW}💡 Obtenha o token em: $CAPROVER_URL${NC}"
     exit 1
 fi
 
+# Nome base da imagem (sem tag)
+DOCKER_IMAGE_BASE="docker-registry.de.vix.br/versiona-ai-minimal"
+DOCKER_IMAGE_DEFAULT="${DOCKER_IMAGE_BASE}:latest"
+
 echo -e "${BLUE}📦 Configuração:${NC}"
 echo -e "  URL: $CAPROVER_URL"
 echo -e "  App: $CAPROVER_APP_NAME"
-echo -e "  Imagem base: $DOCKER_IMAGE"
+echo -e "  Registry: $DOCKER_IMAGE_BASE"
 echo ""
 
 # Variável para armazenar a imagem final a ser deployada
-DEPLOY_IMAGE="$DOCKER_IMAGE"
+DEPLOY_IMAGE="$DOCKER_IMAGE_DEFAULT"
 
 # Perguntar se deve fazer build antes
 read -p "$(echo -e ${YELLOW}🔨 Fazer build da imagem antes? [s/N]: ${NC})" -n 1 -r
@@ -83,11 +82,11 @@ if [[ $REPLY =~ ^[Ss]$ ]]; then
 
     if [ -n "$BUILD_VERSION" ]; then
         # Construir o nome completo da imagem com a versão específica
-        IMAGE_BASE=$(echo "$DOCKER_IMAGE" | cut -d':' -f1)
-        DEPLOY_IMAGE="${IMAGE_BASE}:${BUILD_VERSION}"
+        DEPLOY_IMAGE="${DOCKER_IMAGE_BASE}:${BUILD_VERSION}"
         echo -e "${GREEN}✅ Imagem buildada: $DEPLOY_IMAGE${NC}"
     else
-        echo -e "${YELLOW}⚠️  Não foi possível detectar a versão, usando: $DOCKER_IMAGE${NC}"
+        echo -e "${YELLOW}⚠️  Não foi possível detectar a versão, usando: $DOCKER_IMAGE_DEFAULT${NC}"
+        DEPLOY_IMAGE="$DOCKER_IMAGE_DEFAULT"
     fi
     echo ""
 fi
