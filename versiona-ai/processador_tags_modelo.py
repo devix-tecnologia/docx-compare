@@ -126,7 +126,8 @@ class ProcessadorTagsModelo:
         """Busca dados do modelo no Directus incluindo suas cláusulas"""
         url = f"{self.base_url}/items/modelo_contrato/{modelo_id}"
         params = {
-            "fields": "id,nome,status,arquivo_original,arquivo_com_tags,clausulas.id,clausulas.numero,clausulas.nome"
+            "fields": "id,nome,status,arquivo_original,arquivo_com_tags,clausulas.id,clausulas.numero,clausulas.nome",
+            "deep[clausulas][_limit]": -1,  # Trazer todas as cláusulas sem limite
         }
 
         print(f"🔍 Buscando modelo: {url}")
@@ -355,7 +356,15 @@ class ProcessadorTagsModelo:
                     # Extrair conteúdo entre as tags (sem incluir as tags)
                     conteudo_inicio = open_pos
                     conteudo_fim = open_pos + close_match.start()
-                    conteudo = texto[conteudo_inicio:conteudo_fim].strip()
+                    conteudo_bruto = texto[conteudo_inicio:conteudo_fim]
+                    
+                    # Remover espaços, quebras de linha e numeração do início
+                    conteudo = conteudo_bruto.strip()
+                    
+                    # Remover numeração no início (ex: "4. ", "1. ", "a) ", etc)
+                    conteudo = re.sub(r'^\d+\.\s*', '', conteudo)
+                    conteudo = re.sub(r'^[a-z]\)\s*', '', conteudo)
+                    conteudo = re.sub(r'^\([a-z]\)\s*', '', conteudo)
 
                     conteudo_map[tag_nome] = {
                         "conteudo": conteudo,
