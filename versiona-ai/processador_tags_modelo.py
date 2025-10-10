@@ -37,8 +37,12 @@ class ProcessadorTagsModelo:
         try:
             print(f"\n🚀 Processando modelo de contrato {modelo_id}")
 
-            # 1. Buscar dados do modelo
+            # 1. Buscar dados do modelo incluindo cláusulas
             modelo_data = self._buscar_modelo(modelo_id)
+
+            # Criar mapa de cláusulas
+            clausulas_map = self._criar_mapa_clausulas(modelo_data.get("clausulas", []))
+            print(f"📋 {len(clausulas_map)} cláusulas disponíveis para vinculação")
 
             arquivo_original_id = modelo_data.get("arquivo_original")
             arquivo_tagged_id = modelo_data.get("arquivo_com_tags")
@@ -99,7 +103,7 @@ class ProcessadorTagsModelo:
 
             # 7. Atualizar modelo com tags válidas (Directus cria os registros atomicamente)
             if not dry_run:
-                self._atualizar_modelo_com_tags(modelo_id, tags_validas)
+                self._atualizar_modelo_com_tags(modelo_id, tags_validas, clausulas_map)
                 print(f"💾 {len(tags_validas)} tags salvas no Directus")
             else:
                 print(f"🏃‍♂️ DRY-RUN: {len(tags_validas)} tags seriam criadas")
@@ -119,9 +123,11 @@ class ProcessadorTagsModelo:
             return {"modelo_id": modelo_id, "status": "erro", "erro": str(e)}
 
     def _buscar_modelo(self, modelo_id: str) -> dict:
-        """Busca dados do modelo no Directus"""
+        """Busca dados do modelo no Directus incluindo suas cláusulas"""
         url = f"{self.base_url}/items/modelo_contrato/{modelo_id}"
-        params = {"fields": "id,nome,status,arquivo_original,arquivo_com_tags"}
+        params = {
+            "fields": "id,nome,status,arquivo_original,arquivo_com_tags,clausulas.id,clausulas.numero,clausulas.nome"
+        }
 
         print(f"🔍 Buscando modelo: {url}")
         print(
@@ -377,7 +383,46 @@ class ProcessadorTagsModelo:
 
         return conteudo_map
 
-    def _atualizar_modelo_com_tags(self, modelo_id: str, tags_encontradas: list[dict]):
+    def _criar_mapa_clausulas(self, clausulas: list[dict]) -> dict[str, list[str]]:
+        """
+        Cria um mapa tag_nome -> [clausula_ids] a partir das cláusulas do modelo
+        Verifica tanto o campo 'numero' quanto 'nome' da cláusula
+        Uma tag pode ter múltiplas cláusulas vinculadas
+
+        Args:
+            clausulas: Lista de cláusulas do modelo
+
+        Returns:
+            dict com {tag_nome: [clausula_id1, clausula_id2, ...]}
+        """
+        clausulas_map = {}
+
+        for clausula in clausulas:
+            clausula_id = clausula.get("id")
+            numero = clausula.get("numero", "").strip()
+            nome = clausula.get("nome", "").strip()
+
+            # Mapear por número (normalizado para lowercase)
+            if numero:
+                numero_lower = numero.lower()
+                if numero_lower not in clausulas_map:
+                    clausulas_map[numero_lower] = []
+                clausulas_map[numero_lower].append(clausula_id)
+
+            # Mapear por nome (normalizado para lowercase)
+            if nome:
+                nome_lower = nome.lower()
+                if nome_lower not in clausulas_map:
+                    clausulas_map[nome_lower] = []
+                # Evitar duplicatas
+                if clausula_id not in clausulas_map[nome_lower]:
+                    clausulas_map[nome_lower].append(clausula_id)
+
+        return clausulas_map
+
+    def _atualizar_modelo_com_tags(
+        self, modelo_id: str, tags_encontradas: list[dict], clausulas_map: dict[str, list[str]]
+    ):
         """
         Atualiza o modelo com as tags encontradas
         O Directus cria automaticamente os registros em modelo_contrato_tag
@@ -389,10 +434,25 @@ class ProcessadorTagsModelo:
 
         # Preparar dados das tags
         tags_data = []
+        tags_vinculadas = 0
+        tags_sem_vinculo = 0
+        total_vinculos = 0
+
         for tag_info in tags_ordenadas:
+            tag_nome = tag_info["nome"]
+
+            # Buscar cláusulas vinculadas (pode ter múltiplas)
+            clausulas_ids = clausulas_map.get(tag_nome, [])
+
+            if clausulas_ids:
+                tags_vinculadas += 1
+                total_vinculos += len(clausulas_ids)
+            else:
+                tags_sem_vinculo += 1
+
             tag_data = {
                 # "modelo_contrato": modelo_id,
-                "tag_nome": tag_info["nome"],
+                "tag_nome": tag_nome,
                 "caminho_tag_inicio": tag_info.get("caminho_tag_inicio", ""),
                 "caminho_tag_fim": tag_info.get("caminho_tag_fim", ""),
                 "conteudo": tag_info.get("conteudo", ""),
@@ -403,7 +463,16 @@ class ProcessadorTagsModelo:
                 "posicao_final_texto": tag_info.get("posicao_final_texto", 0),
                 "status": "published",
             }
+
+            # Adicionar cláusulas se encontradas (lista de IDs)
+            if clausulas_ids:
+                tag_data["clausulas"] = clausulas_ids
+
             tags_data.append(tag_data)
+
+        print(f"🔗 {tags_vinculadas} tags vinculadas a cláusulas")
+        print(f"📊 Total de vínculos: {total_vinculos}")
+        print(f"⚠️  {tags_sem_vinculo} tags sem cláusula correspondente")
 
         # Atualizar modelo com tags (Directus cria os registros atomicamente)
         update_url = f"{self.base_url}/items/modelo_contrato/{modelo_id}"

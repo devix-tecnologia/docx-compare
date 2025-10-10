@@ -12,7 +12,7 @@ echo "📦 Registry: ${REGISTRY}"
 echo "🏷️  Imagem: ${IMAGE_NAME}"
 echo "🔖 Versão: ${VERSION}"
 
-cd /Users/sidarta/repositorios/docx-compare
+cd /home/sidarta/repositorio/devix/docx-compare
 
 echo "🔨 Build super rápido usando imagem base existente..."
 docker build \

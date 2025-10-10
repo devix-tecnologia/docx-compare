@@ -23,12 +23,12 @@ RUN rm -f /etc/nginx/sites-enabled/default && \
     error_log /dev/stderr; \
     location / { try_files $uri $uri/ /index.html; } \
     location /api/ { \
-    proxy_pass http://127.0.0.1:8001/api/; \
+    proxy_pass http://127.0.0.1:8000/api/; \
     proxy_set_header Host $host; \
     proxy_set_header X-Real-IP $remote_addr; \
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; \
     } \
-    location /health { proxy_pass http://127.0.0.1:8001/health; } \
+    location /health { proxy_pass http://127.0.0.1:8000/health; } \
     location /health-full { \
     access_log off; \
     return 200 "checking..."; \
@@ -92,7 +92,7 @@ RUN echo '#!/bin/bash' > /usr/local/bin/health-check.sh && \
     chmod +x /usr/local/bin/health-check.sh
 
 # Variáveis de ambiente padrão
-ENV FLASK_PORT=8001
+ENV FLASK_PORT=8000
 ENV DIRECTUS_BASE_URL=https://contract.devix.co
 
 # Expor porta
