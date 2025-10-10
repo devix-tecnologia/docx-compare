@@ -357,10 +357,10 @@ class ProcessadorTagsModelo:
                     conteudo_inicio = open_pos
                     conteudo_fim = open_pos + close_match.start()
                     conteudo_bruto = texto[conteudo_inicio:conteudo_fim]
-                    
+
                     # Remover espaços, quebras de linha e numeração do início
                     conteudo = conteudo_bruto.strip()
-                    
+
                     # Remover numeração no início (ex: "4. ", "1. ", "a) ", etc)
                     conteudo = re.sub(r'^\d+\.\s*', '', conteudo)
                     conteudo = re.sub(r'^[a-z]\)\s*', '', conteudo)
@@ -468,10 +468,14 @@ class ProcessadorTagsModelo:
                 "contexto": tag_info.get("contexto", "")[:500],
                 "posicao_inicio": tag_info.get("posicao_inicio", 0),
                 "posicao_fim": tag_info.get("posicao_fim", 0),
-                "posicao_inicial_texto": tag_info.get("posicao_inicial_texto", 0),
-                "posicao_final_texto": tag_info.get("posicao_final_texto", 0),
+                "posicao_inicio_texto": tag_info.get("posicao_inicial_texto", 0),
+                "posicao_fim_texto": tag_info.get("posicao_final_texto", 0),
                 "status": "published",
             }
+            
+            # Debug: Log das primeiras 3 tags com suas posições
+            if len(tags_data) < 3:
+                print(f"🔍 Debug tag {tag_nome}: pos_inicio={tag_data['posicao_inicio_texto']}, pos_fim={tag_data['posicao_fim_texto']}")
 
             # Adicionar cláusulas se encontradas (lista de IDs)
             if clausulas_ids:
