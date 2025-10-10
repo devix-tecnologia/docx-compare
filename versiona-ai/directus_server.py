@@ -30,6 +30,13 @@ except ImportError:
     print("⚠️ Agrupador posicional não disponível - usando contagem padrão")
     AgrupadorPosicional = None
 
+# Importar processador de tags de modelo
+try:
+    from processador_tags_modelo import ProcessadorTagsModelo
+except ImportError:
+    print("⚠️ Processador de tags de modelo não disponível")
+    ProcessadorTagsModelo = None
+
 # Carregar variáveis do .env
 load_dotenv()
 
@@ -1821,6 +1828,50 @@ def process_document():
         print("⚠️  Resultado não tem campo 'id', não salvando no cache")
 
     return jsonify(result)
+
+
+@app.route("/api/process-modelo", methods=["POST"])
+def process_modelo():
+    """Processa um modelo de contrato e extrai suas tags
+
+    Body JSON esperado:
+    {
+        "modelo_id": "id_do_modelo",
+        "dry_run": true/false (opcional, default: false)
+    }
+    """
+    if not ProcessadorTagsModelo:
+        return jsonify({"error": "Processador de tags de modelo não disponível"}), 500
+
+    data = request.json
+    if not data:
+        return jsonify({"error": "Nenhum dado JSON fornecido"}), 400
+
+    modelo_id = data.get("modelo_id")
+    dry_run = data.get("dry_run", False)
+
+    if not modelo_id:
+        return jsonify({"error": "modelo_id é obrigatório"}), 400
+
+    print(f"🔍 Processando modelo {modelo_id} (dry_run: {dry_run})")
+
+    try:
+        # Criar processador
+        processador = ProcessadorTagsModelo(
+            directus_base_url=DIRECTUS_BASE_URL, directus_token=DIRECTUS_TOKEN or ""
+        )
+
+        # Processar modelo
+        resultado = processador.processar_modelo(modelo_id, dry_run=dry_run)
+
+        if resultado.get("status") == "erro":
+            return jsonify(resultado), 500
+
+        return jsonify(resultado), 200
+
+    except Exception as e:
+        print(f"❌ Erro ao processar modelo: {e}")
+        return jsonify({"error": str(e), "modelo_id": modelo_id}), 500
 
 
 @app.route("/view/<diff_id>", methods=["GET"])
