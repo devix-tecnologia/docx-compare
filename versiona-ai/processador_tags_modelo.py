@@ -472,7 +472,7 @@ class ProcessadorTagsModelo:
                 "posicao_fim_texto": tag_info.get("posicao_final_texto", 0),
                 "status": "published",
             }
-            
+
             # Debug: Log das primeiras 3 tags com suas posições
             if len(tags_data) < 3:
                 print(f"🔍 Debug tag {tag_nome}: pos_inicio={tag_data['posicao_inicio_texto']}, pos_fim={tag_data['posicao_fim_texto']}")
