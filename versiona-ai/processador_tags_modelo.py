@@ -72,10 +72,14 @@ class ProcessadorTagsModelo:
             print(f"📝 Conteúdo extraído para {len(conteudo_tags)} tags")
 
             # 6. Enriquecer tags com conteúdo
+            tags_enriquecidas = 0
             for tag_info in tags_encontradas:
                 tag_nome = tag_info["nome"]
                 if tag_nome in conteudo_tags:
                     tag_info["conteudo"] = conteudo_tags[tag_nome]
+                    tags_enriquecidas += 1
+            
+            print(f"✨ {tags_enriquecidas}/{len(tags_encontradas)} tags enriquecidas com conteúdo")
 
             # 7. Atualizar modelo com tags (Directus cria os registros atomicamente)
             if not dry_run:

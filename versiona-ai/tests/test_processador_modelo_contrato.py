@@ -12,7 +12,7 @@ sys.path.insert(0, versiona_ai_dir)
 
 # Importação após ajuste do path (necessário para encontrar o módulo)
 # ruff: noqa: E402
-from processador_tags_modelo import ProcessadorTagsModelo
+from processador_tags_modelo import ProcessadorTagsModelo  # type: ignore
 
 
 # Helper para extrair tags usando o novo processador
