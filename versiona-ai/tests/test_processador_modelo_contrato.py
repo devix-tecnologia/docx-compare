@@ -6,11 +6,13 @@ Testes para o processador de modelo de contrato
 import os
 import sys
 
-from processador_tags_modelo import ProcessadorTagsModelo
-
-# Adicionar o diretório versiona-ai ao path
+# Adicionar o diretório versiona-ai ao path ANTES de importar
 versiona_ai_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, versiona_ai_dir)
+
+# Importação após ajuste do path (necessário para encontrar o módulo)
+# ruff: noqa: E402
+from processador_tags_modelo import ProcessadorTagsModelo
 
 
 # Helper para extrair tags usando o novo processador
@@ -336,6 +338,66 @@ def test_extract_content_between_tags():
     print()
 
 
+def test_extract_content_real_document():
+    """Testa extração de conteúdo com dados reais do documento"""
+    print("🧪 Teste: Conteúdo de documento real")
+
+    processador = ProcessadorTagsModelo("https://test.com", "fake-token")
+
+    # Conteúdo real extraído do arquivo com tags do modelo
+    texto = """{{1.1}}
+
+1.  O CONTRATO tem por objeto a execução, pela EMPREITEIRA, das obras
+    descritas no QUADRO RESUMO, conforme especificações detalhadas no
+    Memorial Descritivo, parte integrante deste instrumento.
+
+{{/1.1}}
+
+Texto intermediário sem tag
+
+{{7.4}}
+A EMPREITEIRA obriga-se a executar os serviços de acordo com as normas
+técnicas aplicáveis e seguindo as melhores práticas de engenharia.
+{{/7.4}}
+
+{{10.1.2}}
+O prazo para conclusão das obras será de 180 dias contados da data
+de emissão da Ordem de Serviço.
+{{/10.1.2}}"""
+
+    conteudo_map = processador._extrair_conteudo_entre_tags(texto)
+
+    print(f"   Tags com conteúdo: {sorted(conteudo_map.keys())}")
+
+    # Verificar se as 3 tags foram encontradas
+    expected_tags = {"1.1", "7.4", "10.1.2"}
+    found_tags = set(conteudo_map.keys())
+
+    assert found_tags == expected_tags, f"Esperado {expected_tags}, obtido {found_tags}"
+
+    # Verificar conteúdo específico de cada tag (removendo espaços/quebras para comparação)
+    conteudo_1_1 = conteudo_map["1.1"].replace("\n", " ").replace("  ", " ")
+    assert "O CONTRATO tem por objeto" in conteudo_1_1, "Tag 1.1 deve conter texto esperado"
+    assert "execução, pela EMPREITEIRA" in conteudo_1_1, "Tag 1.1 deve conter texto esperado"
+
+    conteudo_7_4 = conteudo_map["7.4"].replace("\n", " ").replace("  ", " ")
+    assert "normas" in conteudo_7_4 and "técnicas" in conteudo_7_4, "Tag 7.4 deve conter texto esperado"
+    assert "melhores práticas" in conteudo_7_4, "Tag 7.4 deve conter texto esperado"
+
+    conteudo_10_1_2 = conteudo_map["10.1.2"].replace("\n", " ").replace("  ", " ")
+    assert "180 dias" in conteudo_10_1_2, "Tag 10.1.2 deve conter texto esperado"
+    assert "Ordem de Serviço" in conteudo_10_1_2, "Tag 10.1.2 deve conter texto esperado"
+
+    # Verificar que inclui as tags no conteúdo
+    for tag_name, conteudo in conteudo_map.items():
+        assert f"{{{{{tag_name}}}}}" in conteudo, f"Conteúdo deve incluir tag de abertura {{{{{tag_name}}}}}"
+        assert f"{{{{/{tag_name}}}}}" in conteudo, f"Conteúdo deve incluir tag de fechamento {{{{/{tag_name}}}}}"
+        print(f"   ✓ Tag '{tag_name}' tem {len(conteudo)} caracteres de conteúdo válido")
+
+    print("   ✅ Teste passou!")
+    print()
+
+
 def run_all_tests():
     """Executa todos os testes"""
     print("🚀 Executando testes do processador de modelo de contrato...\n")
@@ -352,6 +414,7 @@ def run_all_tests():
         test_extract_tags_numeric,
         test_extract_tags_with_prefix,
         test_extract_content_between_tags,
+        test_extract_content_real_document,
     ]
 
     passed = 0
