@@ -78,14 +78,20 @@ class ProcessadorTagsModelo:
             for tag_info in tags_encontradas:
                 tag_nome = tag_info["nome"]
                 if tag_nome in conteudo_tags:
-                    tag_info["conteudo"] = conteudo_tags[tag_nome]
+                    # Adicionar dados do conteúdo extraído
+                    conteudo_data = conteudo_tags[tag_nome]
+                    tag_info["conteudo"] = conteudo_data["conteudo"]
+                    tag_info["posicao_inicial_texto"] = conteudo_data[
+                        "posicao_inicial_texto"
+                    ]
+                    tag_info["posicao_final_texto"] = conteudo_data[
+                        "posicao_final_texto"
+                    ]
                     tags_validas.append(tag_info)
                 else:
                     tags_orfas.append(tag_nome)
 
-            print(
-                f"✨ {len(tags_validas)} tags válidas com conteúdo"
-            )
+            print(f"✨ {len(tags_validas)} tags válidas com conteúdo")
             if tags_orfas:
                 print(
                     f"⚠️  {len(tags_orfas)} tags órfãs descartadas: {', '.join(sorted(tags_orfas))}"
@@ -292,10 +298,13 @@ class ProcessadorTagsModelo:
 
         return list(tags_encontradas.values())
 
-    def _extrair_conteudo_entre_tags(self, texto: str) -> dict[str, str]:
+    def _extrair_conteudo_entre_tags(self, texto: str) -> dict[str, dict]:
         """
         Extrai conteúdo entre tags de abertura e fechamento
         Ex: {{TAG-nome}}...conteúdo...{{/TAG-nome}} ou {{6}}...conteúdo...{{/6}}
+
+        Returns:
+            dict com {tag_nome: {"conteudo": str, "posicao_inicial_texto": int, "posicao_final_texto": int}}
         """
         conteudo_map = {}
         total_aberturas = 0
@@ -338,14 +347,22 @@ class ProcessadorTagsModelo:
                 if close_match:
                     total_pares += 1
                     # Extrair conteúdo entre as tags (sem incluir as tags)
-                    conteudo = texto[open_pos : open_pos + close_match.start()].strip()
+                    conteudo_inicio = open_pos
+                    conteudo_fim = open_pos + close_match.start()
+                    conteudo = texto[conteudo_inicio:conteudo_fim].strip()
 
-                    conteudo_map[tag_nome] = conteudo
+                    conteudo_map[tag_nome] = {
+                        "conteudo": conteudo,
+                        "posicao_inicial_texto": conteudo_inicio,
+                        "posicao_final_texto": conteudo_fim,
+                    }
                 else:
                     # Log quando não encontra par
                     if total_aberturas <= 5:  # Log apenas primeiras 5 falhas
                         contexto = texto[open_pos : open_pos + 100].replace("\n", " ")
-                        print(f"❌ Sem par para tag {open_match.group(1)}: {contexto[:50]}...")
+                        print(
+                            f"❌ Sem par para tag {open_match.group(1)}: {contexto[:50]}..."
+                        )
 
         print(f"🔍 Tags de abertura encontradas: {total_aberturas}")
         print(f"✓ Pares completos encontrados: {total_pares}")
@@ -382,6 +399,9 @@ class ProcessadorTagsModelo:
                 "contexto": tag_info.get("contexto", "")[:500],
                 "posicao_inicio": tag_info.get("posicao_inicio", 0),
                 "posicao_fim": tag_info.get("posicao_fim", 0),
+                "posicao_inicial_texto": tag_info.get("posicao_inicial_texto", 0),
+                "posicao_final_texto": tag_info.get("posicao_final_texto", 0),
+                "status": "published",
             }
             tags_data.append(tag_data)
 
