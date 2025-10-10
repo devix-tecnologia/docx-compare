@@ -77,21 +77,17 @@ class ProcessadorTagsModelo:
                 if tag_nome in conteudo_tags:
                     tag_info["conteudo"] = conteudo_tags[tag_nome]
 
-            # 7. Salvar tags no Directus
+            # 7. Atualizar modelo com tags (Directus cria os registros atomicamente)
             if not dry_run:
-                tags_criadas = self._salvar_tags(modelo_id, tags_encontradas)
-                print(f"💾 {len(tags_criadas)} tags salvas no Directus")
-
-                # 8. Atualizar status do modelo
-                self._atualizar_status_modelo(modelo_id, "concluido", len(tags_criadas))
+                self._atualizar_modelo_com_tags(modelo_id, tags_encontradas)
+                print(f"💾 {len(tags_encontradas)} tags salvas no Directus")
             else:
                 print(f"🏃‍♂️ DRY-RUN: {len(tags_encontradas)} tags seriam criadas")
-                tags_criadas = [f"mock-{tag['nome']}" for tag in tags_encontradas]
 
             return {
                 "modelo_id": modelo_id,
                 "tags_encontradas": len(tags_encontradas),
-                "tags_criadas": len(tags_criadas),
+                "tags_criadas": len(tags_encontradas),
                 "modificacoes_analisadas": len(modificacoes),
                 "status": "sucesso",
                 "dry_run": dry_run,
@@ -106,9 +102,16 @@ class ProcessadorTagsModelo:
         url = f"{self.base_url}/items/modelo_contrato/{modelo_id}"
         params = {"fields": "id,nome,status,arquivo_original,arquivo_com_tags"}
 
+        print(f"🔍 Buscando modelo: {url}")
+        print(
+            f"🔍 Headers: Authorization Bearer {self.headers.get('Authorization', 'N/A')[:20]}..."
+        )
+
         response = requests.get(url, headers=self.headers, params=params, timeout=10)
 
+        print(f"🔍 Status da resposta: {response.status_code}")
         if response.status_code != 200:
+            print(f"❌ Resposta de erro: {response.text[:200]}")
             raise ValueError(
                 f"Modelo {modelo_id} não encontrado (HTTP {response.status_code})"
             )
@@ -277,20 +280,27 @@ class ProcessadorTagsModelo:
     def _extrair_conteudo_entre_tags(self, texto: str) -> dict[str, str]:
         """
         Extrai conteúdo entre tags de abertura e fechamento
-        Ex: {{TAG-nome}}...conteúdo...{{/TAG-nome}}
+        Ex: {{TAG-nome}}...conteúdo...{{/TAG-nome}} ou {{6}}...conteúdo...{{/6}}
         """
         conteudo_map = {}
 
         # Padrões para tags de abertura e fechamento
         patterns = [
+            # Tags com prefixo TAG-
             (
                 r"\{\{TAG-([a-zA-Z_][a-zA-Z0-9_]*)\}\}",
                 r"\{\{/TAG-\1\}\}",
             ),  # {{TAG-nome}}...{{/TAG-nome}}
+            # Tags textuais
             (
                 r"\{\{([a-zA-Z_][a-zA-Z0-9_]*)\}\}",
                 r"\{\{/\1\}\}",
             ),  # {{nome}}...{{/nome}}
+            # Tags numéricas
+            (
+                r"\{\{(\d+(?:\.\d+)*)\}\}",
+                r"\{\{/\1\}\}",
+            ),  # {{6}}...{{/6}} ou {{7.4}}...{{/7.4}}
         ]
 
         for open_pattern, close_pattern_template in patterns:
@@ -324,51 +334,45 @@ class ProcessadorTagsModelo:
 
         return conteudo_map
 
-    def _salvar_tags(self, modelo_id: str, tags_encontradas: list[dict]) -> list[str]:
-        """Salva tags no Directus"""
-        tags_criadas = []
+    def _atualizar_modelo_com_tags(self, modelo_id: str, tags_encontradas: list[dict]):
+        """
+        Atualiza o modelo com as tags encontradas
+        O Directus cria automaticamente os registros em modelo_contrato_tag
+        """
+        # Ordenar tags por posição no documento
+        tags_ordenadas = sorted(
+            tags_encontradas, key=lambda x: x.get("posicao_inicio", 0)
+        )
 
-        for tag_info in sorted(tags_encontradas, key=lambda x: x["nome"]):
+        # Preparar dados das tags
+        tags_data = []
+        for tag_info in tags_ordenadas:
             tag_data = {
-                "modelo_contrato": modelo_id,
+                # "modelo_contrato": modelo_id,
                 "tag_nome": tag_info["nome"],
                 "caminho_tag_inicio": tag_info.get("caminho_tag_inicio", ""),
                 "caminho_tag_fim": tag_info.get("caminho_tag_fim", ""),
                 "conteudo": tag_info.get("conteudo", ""),
-                "contexto": tag_info.get("contexto", "")[:500],  # Limitar a 500 chars
+                "contexto": tag_info.get("contexto", "")[:500],
                 "posicao_inicio": tag_info.get("posicao_inicio", 0),
                 "posicao_fim": tag_info.get("posicao_fim", 0),
-                "status": "published",
             }
+            tags_data.append(tag_data)
 
-            # Criar tag no Directus
-            create_url = f"{self.base_url}/items/modelo_contrato_tag"
-            response = requests.post(
-                create_url, headers=self.headers, json=tag_data, timeout=10
-            )
-
-            if response.status_code in [200, 201]:
-                tag_criada = response.json().get("data", {})
-                tag_id = tag_criada.get("id")
-                tags_criadas.append(tag_id)
-                print(f"  ✅ Tag '{tag_info['nome']}' criada: {tag_id}")
-            else:
-                print(
-                    f"  ❌ Erro ao criar tag '{tag_info['nome']}': HTTP {response.status_code}"
-                )
-
-        return tags_criadas
-
-    def _atualizar_status_modelo(self, modelo_id: str, status: str, total_tags: int):
-        """Atualiza status do modelo no Directus"""
+        # Atualizar modelo com tags (Directus cria os registros atomicamente)
         update_url = f"{self.base_url}/items/modelo_contrato/{modelo_id}"
-        update_data = {"status": status}
+        update_data = {"tags": tags_data, "status": "concluido"}
+
+        print(f"🔄 Atualizando modelo {modelo_id} com {len(tags_data)} tags...")
 
         response = requests.patch(
-            update_url, headers=self.headers, json=update_data, timeout=10
+            update_url, headers=self.headers, json=update_data, timeout=30
         )
 
         if response.status_code == 200:
-            print(f"✅ Modelo {modelo_id} atualizado para status '{status}'")
+            print(f"  ✅ Modelo atualizado com {len(tags_data)} tags")
         else:
-            print(f"⚠️ Erro ao atualizar status do modelo: HTTP {response.status_code}")
+            error_msg = response.text[:500]
+            print(f"  ⚠️ Erro ao atualizar modelo: HTTP {response.status_code}")
+            print(f"  ⚠️ Erro: {error_msg}")
+            raise ValueError(f"Falha ao atualizar modelo: {error_msg}")

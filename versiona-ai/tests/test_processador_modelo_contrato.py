@@ -6,11 +6,18 @@ Testes para o processador de modelo de contrato
 import os
 import sys
 
-# Adicionar o diretório raiz (docx-compare) ao path para importar o processador
-root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.insert(0, root_dir)
+from processador_tags_modelo import ProcessadorTagsModelo
 
-from processador_modelo_contrato import extract_tags_from_differences
+# Adicionar o diretório versiona-ai ao path
+versiona_ai_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, versiona_ai_dir)
+
+
+# Helper para extrair tags usando o novo processador
+def extract_tags_from_differences(modifications):
+    """Extrai tags usando o ProcessadorTagsModelo"""
+    processador = ProcessadorTagsModelo("https://test.com", "fake-token")
+    return processador._extrair_tags(modifications)
 
 
 def test_extract_tags_basic():
@@ -237,6 +244,98 @@ def test_extract_tags_case_insensitive():
     print()
 
 
+def test_extract_tags_numeric():
+    """Testa extração de tags numéricas que envolvem conteúdo de cláusulas"""
+    print("🧪 Teste: Tags numéricas")
+
+    modifications = [
+        {
+            "categoria": "modificacao",
+            "conteudo": "Cláusula 6\nlorem lorem lorem e subcláusula 7.4 e 10.1.2",
+            "alteracao": "{{6}}Cláusula 6\nlorem lorem lorem{{/6}} e subcláusula {{7.4}}texto da 7.4{{/7.4}} e {{10.1.2}}texto{{/10.1.2}}",
+            "sort": 1,
+        }
+    ]
+
+    tags_info = extract_tags_from_differences(modifications)
+    tags = {tag["nome"] for tag in tags_info}
+    expected_tags = {"6", "7.4", "10.1.2"}
+
+    print(f"   Tags encontradas: {sorted(tags)}")
+    print(f"   Tags esperadas: {sorted(expected_tags)}")
+
+    assert tags == expected_tags, f"Esperado {expected_tags}, obtido {tags}"
+    print("   ✅ Teste passou!")
+    print()
+
+
+def test_extract_tags_with_prefix():
+    """Testa extração de tags com prefixo TAG-"""
+    print("🧪 Teste: Tags com prefixo TAG-")
+
+    modifications = [
+        {
+            "categoria": "adicao",
+            "conteudo": "",
+            "alteracao": "{{TAG-cabecalho}} e {{TAG-rodape}} no documento",
+            "sort": 1,
+        }
+    ]
+
+    tags_info = extract_tags_from_differences(modifications)
+    tags = {tag["nome"] for tag in tags_info}
+    expected_tags = {"cabecalho", "rodape"}
+
+    print(f"   Tags encontradas: {sorted(tags)}")
+    print(f"   Tags esperadas: {sorted(expected_tags)}")
+
+    assert tags == expected_tags, f"Esperado {expected_tags}, obtido {tags}"
+    print("   ✅ Teste passou!")
+    print()
+
+
+def test_extract_content_between_tags():
+    """Testa extração de conteúdo entre tags de abertura/fechamento"""
+    print("🧪 Teste: Conteúdo entre tags")
+
+    processador = ProcessadorTagsModelo("https://test.com", "fake-token")
+
+    texto = """
+    {{TAG-secao1}}
+    Este é o conteúdo da seção 1
+    Com múltiplas linhas
+    {{/TAG-secao1}}
+
+    {{6}}
+    Conteúdo da cláusula 6
+    {{/6}}
+
+    {{nome}}
+    Conteúdo da tag nome
+    {{/nome}}
+    """
+
+    conteudo_map = processador._extrair_conteudo_entre_tags(texto)
+
+    print(f"   Tags com conteúdo: {sorted(conteudo_map.keys())}")
+
+    # Verificar se as 3 tags foram encontradas
+    expected_tags = {"secao1", "6", "nome"}
+    found_tags = set(conteudo_map.keys())
+
+    assert found_tags == expected_tags, f"Esperado {expected_tags}, obtido {found_tags}"
+
+    # Verificar se o conteúdo foi extraído
+    for tag_name, conteudo in conteudo_map.items():
+        assert conteudo, f"Tag {tag_name} deveria ter conteúdo"
+        assert "{{" in conteudo, "Conteúdo deveria incluir tags de abertura"
+        assert "}}" in conteudo, "Conteúdo deveria incluir tags de fechamento"
+        print(f"   ✓ Tag '{tag_name}' tem {len(conteudo)} caracteres de conteúdo")
+
+    print("   ✅ Teste passou!")
+    print()
+
+
 def run_all_tests():
     """Executa todos os testes"""
     print("🚀 Executando testes do processador de modelo de contrato...\n")
@@ -250,6 +349,9 @@ def run_all_tests():
         test_extract_tags_no_tags,
         test_extract_tags_invalid_patterns,
         test_extract_tags_case_insensitive,
+        test_extract_tags_numeric,
+        test_extract_tags_with_prefix,
+        test_extract_content_between_tags,
     ]
 
     passed = 0
