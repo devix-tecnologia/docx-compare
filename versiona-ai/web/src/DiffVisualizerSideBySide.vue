@@ -70,20 +70,20 @@
       }
     }
     // Estrutura antiga (mock)
-    return props.dados.documentos?.[0] || { 
+    return props.dados.documentos?.[0] || {
       conteudo_comparacao: { original: '', modificado: '', diff_highlights: [] },
       modificacoes: [],
       estatisticas: { tempo_processamento: 0 }
     }
   })
-  
+
   const totalDocumentos = computed(() => {
     // Estrutura nova
     if (props.dados.modificacoes) return 1
     // Estrutura antiga
     return props.dados.metadata?.total_documentos || 1
   })
-  
+
   const modificacoes = computed(() => documento.value.modificacoes || [])
   const totalModificacoes = computed(() => modificacoes.value.length)
   const tempoProcessamento = computed(() =>

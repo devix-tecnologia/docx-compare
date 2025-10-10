@@ -11,13 +11,14 @@ Script automatizado para fazer deploy da aplicação no CapRover.
    ```
 
 2. **Variáveis configuradas no `.env`:**
+
    ```bash
    CAPROVER_URL=https://captain.paas.node10.de.vix.br
    CAPROVER_APP_NAME=ignai-contract-ia
    CAPROVER_APP_TOKEN=seu_token_aqui
    ```
 
-   > **Nota:** O script usa automaticamente a imagem `docker-registry.de.vix.br/versiona-ai-minimal:latest` 
+   > **Nota:** O script usa automaticamente a imagem `docker-registry.de.vix.br/versiona-ai-minimal:latest`
    > ou a versão específica gerada pelo build.
 
 ## 🔑 Como obter o App Token
@@ -67,8 +68,7 @@ Ou você pode fazer o build manualmente antes:
 
 Isso garante que você sempre faz deploy da imagem que acabou de buildar, evitando inconsistências!
 
-> **Imagem padrão:** `docker-registry.de.vix.br/versiona-ai-minimal:latest`  
-> **Registry:** `docker-registry.de.vix.br`
+> **Imagem padrão:** `docker-registry.de.vix.br/versiona-ai-minimal:latest` > **Registry:** `docker-registry.de.vix.br`
 
 ## 🌐 Endpoints após deploy
 

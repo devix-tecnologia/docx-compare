@@ -1843,14 +1843,14 @@ def view_diff(diff_id):
         <body>
             <h1>❌ Diff não encontrado no cache</h1>
             <p>O diff_id <code>{diff_id}</code> não existe no cache do servidor.</p>
-            
+
             <h2>📝 Como processar e visualizar:</h2>
             <ol>
                 <li><strong>Listar versões:</strong> <code>GET /api/versoes</code></li>
                 <li><strong>Processar versão:</strong> <code>GET /api/versoes/&lt;versao_id&gt;</code></li>
                 <li><strong>Usar o diff_id retornado para visualizar aqui</strong></li>
             </ol>
-            
+
             <h3>🔗 Links úteis:</h3>
             <ul>
                 <li><a href="/api/debug/cache">Ver diffs disponíveis no cache</a></li>

@@ -45,7 +45,7 @@
       }
     }
     // Estrutura antiga (mock)
-    return props.dados.documentos?.[0] || { 
+    return props.dados.documentos?.[0] || {
       conteudo_comparacao: { original: '', modificado: '' }
     }
   })
