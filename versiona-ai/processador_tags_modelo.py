@@ -71,27 +71,38 @@ class ProcessadorTagsModelo:
             conteudo_tags = self._extrair_conteudo_entre_tags(texto_tagged)
             print(f"📝 Conteúdo extraído para {len(conteudo_tags)} tags")
 
-            # 6. Enriquecer tags com conteúdo
-            tags_enriquecidas = 0
+            # 6. Enriquecer tags com conteúdo e filtrar tags órfãs
+            tags_validas = []
+            tags_orfas = []
+
             for tag_info in tags_encontradas:
                 tag_nome = tag_info["nome"]
                 if tag_nome in conteudo_tags:
                     tag_info["conteudo"] = conteudo_tags[tag_nome]
-                    tags_enriquecidas += 1
-            
-            print(f"✨ {tags_enriquecidas}/{len(tags_encontradas)} tags enriquecidas com conteúdo")
+                    tags_validas.append(tag_info)
+                else:
+                    tags_orfas.append(tag_nome)
 
-            # 7. Atualizar modelo com tags (Directus cria os registros atomicamente)
+            print(
+                f"✨ {len(tags_validas)} tags válidas com conteúdo"
+            )
+            if tags_orfas:
+                print(
+                    f"⚠️  {len(tags_orfas)} tags órfãs descartadas: {', '.join(sorted(tags_orfas))}"
+                )
+
+            # 7. Atualizar modelo com tags válidas (Directus cria os registros atomicamente)
             if not dry_run:
-                self._atualizar_modelo_com_tags(modelo_id, tags_encontradas)
-                print(f"💾 {len(tags_encontradas)} tags salvas no Directus")
+                self._atualizar_modelo_com_tags(modelo_id, tags_validas)
+                print(f"💾 {len(tags_validas)} tags salvas no Directus")
             else:
-                print(f"🏃‍♂️ DRY-RUN: {len(tags_encontradas)} tags seriam criadas")
+                print(f"🏃‍♂️ DRY-RUN: {len(tags_validas)} tags seriam criadas")
 
             return {
                 "modelo_id": modelo_id,
                 "tags_encontradas": len(tags_encontradas),
-                "tags_criadas": len(tags_encontradas),
+                "tags_criadas": len(tags_validas),
+                "tags_orfas": len(tags_orfas),
                 "modificacoes_analisadas": len(modificacoes),
                 "status": "sucesso",
                 "dry_run": dry_run,
@@ -287,6 +298,8 @@ class ProcessadorTagsModelo:
         Ex: {{TAG-nome}}...conteúdo...{{/TAG-nome}} ou {{6}}...conteúdo...{{/6}}
         """
         conteudo_map = {}
+        total_aberturas = 0
+        total_pares = 0
 
         # Padrões para tags de abertura e fechamento
         patterns = [
@@ -307,9 +320,10 @@ class ProcessadorTagsModelo:
             ),  # {{6}}...{{/6}} ou {{7.4}}...{{/7.4}}
         ]
 
-        for open_pattern, close_pattern_template in patterns:
+        for _pattern_idx, (open_pattern, close_pattern_template) in enumerate(patterns):
             # Encontrar todas as tags de abertura
             for open_match in re.finditer(open_pattern, texto):
+                total_aberturas += 1
                 tag_nome = open_match.group(1).lower()
                 open_pos = open_match.end()
 
@@ -322,6 +336,7 @@ class ProcessadorTagsModelo:
                 close_match = re.search(close_pattern, texto[open_pos:], re.IGNORECASE)
 
                 if close_match:
+                    total_pares += 1
                     # Extrair conteúdo entre as tags
                     conteudo = texto[open_pos : open_pos + close_match.start()].strip()
 
@@ -335,6 +350,22 @@ class ProcessadorTagsModelo:
                     )
 
                     conteudo_map[tag_nome] = conteudo_completo
+                else:
+                    # Log quando não encontra par
+                    if total_aberturas <= 5:  # Log apenas primeiras 5 falhas
+                        contexto = texto[open_pos : open_pos + 100].replace("\n", " ")
+                        print(f"❌ Sem par para tag {open_match.group(1)}: {contexto[:50]}...")
+
+        print(f"🔍 Tags de abertura encontradas: {total_aberturas}")
+        print(f"✓ Pares completos encontrados: {total_pares}")
+        print(f"📝 Tags com conteúdo extraído: {len(conteudo_map)}")
+
+        # Log amostra do texto para debug
+        if total_aberturas == 0:
+            print(f"⚠️ TEXTO SAMPLE (primeiros 500 chars): {texto[:500]}")
+            print("⚠️ Buscando tags numéricas explicitamente...")
+            numeric_tags = re.findall(r"\{\{(\d+(?:\.\d+)*)\}\}", texto)
+            print(f"⚠️ Tags numéricas encontradas: {numeric_tags[:10]}")
 
         return conteudo_map
 

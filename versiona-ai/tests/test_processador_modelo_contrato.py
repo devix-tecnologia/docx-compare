@@ -377,23 +377,97 @@ de emissão da Ordem de Serviço.
 
     # Verificar conteúdo específico de cada tag (removendo espaços/quebras para comparação)
     conteudo_1_1 = conteudo_map["1.1"].replace("\n", " ").replace("  ", " ")
-    assert "O CONTRATO tem por objeto" in conteudo_1_1, "Tag 1.1 deve conter texto esperado"
-    assert "execução, pela EMPREITEIRA" in conteudo_1_1, "Tag 1.1 deve conter texto esperado"
+    assert "O CONTRATO tem por objeto" in conteudo_1_1, (
+        "Tag 1.1 deve conter texto esperado"
+    )
+    assert "execução, pela EMPREITEIRA" in conteudo_1_1, (
+        "Tag 1.1 deve conter texto esperado"
+    )
 
     conteudo_7_4 = conteudo_map["7.4"].replace("\n", " ").replace("  ", " ")
-    assert "normas" in conteudo_7_4 and "técnicas" in conteudo_7_4, "Tag 7.4 deve conter texto esperado"
+    assert "normas" in conteudo_7_4 and "técnicas" in conteudo_7_4, (
+        "Tag 7.4 deve conter texto esperado"
+    )
     assert "melhores práticas" in conteudo_7_4, "Tag 7.4 deve conter texto esperado"
 
     conteudo_10_1_2 = conteudo_map["10.1.2"].replace("\n", " ").replace("  ", " ")
     assert "180 dias" in conteudo_10_1_2, "Tag 10.1.2 deve conter texto esperado"
-    assert "Ordem de Serviço" in conteudo_10_1_2, "Tag 10.1.2 deve conter texto esperado"
+    assert "Ordem de Serviço" in conteudo_10_1_2, (
+        "Tag 10.1.2 deve conter texto esperado"
+    )
 
     # Verificar que inclui as tags no conteúdo
     for tag_name, conteudo in conteudo_map.items():
-        assert f"{{{{{tag_name}}}}}" in conteudo, f"Conteúdo deve incluir tag de abertura {{{{{tag_name}}}}}"
-        assert f"{{{{/{tag_name}}}}}" in conteudo, f"Conteúdo deve incluir tag de fechamento {{{{/{tag_name}}}}}"
-        print(f"   ✓ Tag '{tag_name}' tem {len(conteudo)} caracteres de conteúdo válido")
+        assert f"{{{{{tag_name}}}}}" in conteudo, (
+            f"Conteúdo deve incluir tag de abertura {{{{{tag_name}}}}}"
+        )
+        assert f"{{{{/{tag_name}}}}}" in conteudo, (
+            f"Conteúdo deve incluir tag de fechamento {{{{/{tag_name}}}}}"
+        )
+        print(
+            f"   ✓ Tag '{tag_name}' tem {len(conteudo)} caracteres de conteúdo válido"
+        )
 
+    print("   ✅ Teste passou!")
+    print()
+
+
+def test_extract_content_orphan_tags():
+    """Testa que tags órfãs (sem par) são desconsideradas"""
+    print("🧪 Testando descarte de tags órfãs...")
+
+    processador = ProcessadorTagsModelo(
+        directus_base_url="http://test.com", directus_token="test_token"
+    )
+
+    # Documento com tags órfãs
+    texto = """
+    Documento de teste com tags órfãs
+
+    {{1.1}}
+    Conteúdo válido da tag 1.1 com abertura e fechamento
+    {{/1.1}}
+
+    {{/7.4}}
+    Esta tag só tem fechamento, sem abertura - deve ser descartada
+
+    {{7.10}}
+    Esta tag só tem abertura, sem fechamento - deve ser descartada
+
+    {{2.5}}
+    Conteúdo válido da tag 2.5 com ambas as tags
+    {{/2.5}}
+
+    {{/710}}
+    Outra tag órfã apenas com fechamento
+
+    {{3.1}}
+    Mais um conteúdo válido
+    {{/3.1}}
+    """
+
+    conteudo_map = processador._extrair_conteudo_entre_tags(texto)
+
+    # Verificar que apenas tags válidas foram extraídas
+    assert len(conteudo_map) == 3, f"Deve extrair 3 tags válidas, extraiu {len(conteudo_map)}"
+
+    # Tags válidas devem estar presentes
+    assert "1.1" in conteudo_map, "Tag 1.1 (válida) deve estar presente"
+    assert "2.5" in conteudo_map, "Tag 2.5 (válida) deve estar presente"
+    assert "3.1" in conteudo_map, "Tag 3.1 (válida) deve estar presente"
+
+    # Tags órfãs NÃO devem estar presentes
+    assert "7.4" not in conteudo_map, "Tag 7.4 (órfã - só fechamento) NÃO deve estar presente"
+    assert "7.10" not in conteudo_map, "Tag 7.10 (órfã - só abertura) NÃO deve estar presente"
+    assert "710" not in conteudo_map, "Tag 710 (órfã - só fechamento) NÃO deve estar presente"
+
+    # Verificar conteúdo das tags válidas
+    assert "Conteúdo válido da tag 1.1" in conteudo_map["1.1"]
+    assert "Conteúdo válido da tag 2.5" in conteudo_map["2.5"]
+    assert "Mais um conteúdo válido" in conteudo_map["3.1"]
+
+    print(f"   ✓ Tags válidas extraídas: {sorted(conteudo_map.keys())}")
+    print("   ✓ Tags órfãs corretamente descartadas: 7.4, 7.10, 710")
     print("   ✅ Teste passou!")
     print()
 
@@ -415,6 +489,7 @@ def run_all_tests():
         test_extract_tags_with_prefix,
         test_extract_content_between_tags,
         test_extract_content_real_document,
+        test_extract_content_orphan_tags,
     ]
 
     passed = 0
