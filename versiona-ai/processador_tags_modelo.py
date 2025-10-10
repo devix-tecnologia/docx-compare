@@ -337,19 +337,10 @@ class ProcessadorTagsModelo:
 
                 if close_match:
                     total_pares += 1
-                    # Extrair conteúdo entre as tags
+                    # Extrair conteúdo entre as tags (sem incluir as tags)
                     conteudo = texto[open_pos : open_pos + close_match.start()].strip()
 
-                    # Incluir as tags no conteúdo
-                    conteudo_completo = (
-                        open_match.group(0)
-                        + "\n"
-                        + conteudo
-                        + "\n"
-                        + close_match.group(0)
-                    )
-
-                    conteudo_map[tag_nome] = conteudo_completo
+                    conteudo_map[tag_nome] = conteudo
                 else:
                     # Log quando não encontra par
                     if total_aberturas <= 5:  # Log apenas primeiras 5 falhas

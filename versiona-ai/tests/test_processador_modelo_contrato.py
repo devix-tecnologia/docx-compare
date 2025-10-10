@@ -330,8 +330,8 @@ def test_extract_content_between_tags():
     # Verificar se o conteúdo foi extraído
     for tag_name, conteudo in conteudo_map.items():
         assert conteudo, f"Tag {tag_name} deveria ter conteúdo"
-        assert "{{" in conteudo, "Conteúdo deveria incluir tags de abertura"
-        assert "}}" in conteudo, "Conteúdo deveria incluir tags de fechamento"
+        assert "{{" not in conteudo, "Conteúdo NÃO deve incluir tags de abertura"
+        assert "}}" not in conteudo, "Conteúdo NÃO deve incluir tags de fechamento"
         print(f"   ✓ Tag '{tag_name}' tem {len(conteudo)} caracteres de conteúdo")
 
     print("   ✅ Teste passou!")
@@ -396,13 +396,13 @@ de emissão da Ordem de Serviço.
         "Tag 10.1.2 deve conter texto esperado"
     )
 
-    # Verificar que inclui as tags no conteúdo
+    # Verificar que NÃO inclui as tags no conteúdo
     for tag_name, conteudo in conteudo_map.items():
-        assert f"{{{{{tag_name}}}}}" in conteudo, (
-            f"Conteúdo deve incluir tag de abertura {{{{{tag_name}}}}}"
+        assert f"{{{{{tag_name}}}}}" not in conteudo, (
+            f"Conteúdo NÃO deve incluir tag de abertura {{{{{tag_name}}}}}"
         )
-        assert f"{{{{/{tag_name}}}}}" in conteudo, (
-            f"Conteúdo deve incluir tag de fechamento {{{{/{tag_name}}}}}"
+        assert f"{{{{/{tag_name}}}}}" not in conteudo, (
+            f"Conteúdo NÃO deve incluir tag de fechamento {{{{/{tag_name}}}}}"
         )
         print(
             f"   ✓ Tag '{tag_name}' tem {len(conteudo)} caracteres de conteúdo válido"
