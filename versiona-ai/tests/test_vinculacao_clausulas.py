@@ -80,17 +80,30 @@ def test_mapear_posicoes_tags_no_documento_original(api, sample_data):
     # Preparar tags_modelo no formato que a API espera
     tags_modelo = []
     for tag in tags_esperadas:
-        tags_modelo.append({
-            "tag_nome": tag["nome"],
-            "conteudo": tag["conteudo"],
-            "clausulas": [{"id": tag["clausula_id"], "nome": f"Cláusula {tag['nome']}", "numero": tag["nome"]}],
-            # Adicionar posições absolutas se disponíveis
-            "posicao_inicio_texto": tag.get("posicao_no_original"),
-            "posicao_fim_texto": tag.get("posicao_no_original", 0) + len(tag["conteudo"]) if tag.get("posicao_no_original") else None,
-        })
+        tags_modelo.append(
+            {
+                "tag_nome": tag["nome"],
+                "conteudo": tag["conteudo"],
+                "clausulas": [
+                    {
+                        "id": tag["clausula_id"],
+                        "nome": f"Cláusula {tag['nome']}",
+                        "numero": tag["nome"],
+                    }
+                ],
+                # Adicionar posições absolutas se disponíveis
+                "posicao_inicio_texto": tag.get("posicao_no_original"),
+                "posicao_fim_texto": tag.get("posicao_no_original", 0)
+                + len(tag["conteudo"])
+                if tag.get("posicao_no_original")
+                else None,
+            }
+        )
 
     # Criar uma modificação dummy para testar o mapeamento
-    modificacoes = [{"id": "mod-test", "tipo": "REMOCAO", "conteudo": {"original": "test"}}]
+    modificacoes = [
+        {"id": "mod-test", "tipo": "REMOCAO", "conteudo": {"original": "test"}}
+    ]
 
     # Chamar método REAL da API
     resultado = api._vincular_modificacoes_clausulas(
@@ -124,24 +137,37 @@ def test_vincular_modificacoes_as_clausulas(api, sample_data):
     # Preparar tags_modelo
     tags_modelo = []
     for tag in tags_esperadas:
-        tags_modelo.append({
-            "tag_nome": tag["nome"],
-            "conteudo": tag["conteudo"],
-            "clausulas": [{"id": tag["clausula_id"], "nome": f"Cláusula {tag['nome']}", "numero": tag["nome"]}],
-            "posicao_inicio_texto": tag.get("posicao_no_original"),
-            "posicao_fim_texto": tag.get("posicao_no_original", 0) + len(tag["conteudo"]) if tag.get("posicao_no_original") else None,
-        })
+        tags_modelo.append(
+            {
+                "tag_nome": tag["nome"],
+                "conteudo": tag["conteudo"],
+                "clausulas": [
+                    {
+                        "id": tag["clausula_id"],
+                        "nome": f"Cláusula {tag['nome']}",
+                        "numero": tag["nome"],
+                    }
+                ],
+                "posicao_inicio_texto": tag.get("posicao_no_original"),
+                "posicao_fim_texto": tag.get("posicao_no_original", 0)
+                + len(tag["conteudo"])
+                if tag.get("posicao_no_original")
+                else None,
+            }
+        )
 
     # Preparar modificações no formato da API
     modificacoes = []
     for mod in modificacoes_data:
-        modificacoes.append({
-            "id": mod["id"],
-            "tipo": "REMOCAO",  # Simplificando para teste
-            "conteudo": {"original": "test"},
-            "posicao_inicio": mod.get("posicao_original"),
-            "posicao_fim": mod.get("posicao_original", 0) + 10,
-        })
+        modificacoes.append(
+            {
+                "id": mod["id"],
+                "tipo": "REMOCAO",  # Simplificando para teste
+                "conteudo": {"original": "test"},
+                "posicao_inicio": mod.get("posicao_original"),
+                "posicao_fim": mod.get("posicao_original", 0) + 10,
+            }
+        )
 
     # Chamar método REAL da API
     resultado = api._vincular_modificacoes_clausulas(
@@ -265,24 +291,37 @@ def test_integracao_completa_vinculacao(api, sample_data):
     # Preparar tags_modelo
     tags_modelo = []
     for tag in tags_esperadas:
-        tags_modelo.append({
-            "tag_nome": tag["nome"],
-            "conteudo": tag["conteudo"],
-            "clausulas": [{"id": tag["clausula_id"], "nome": f"Cláusula {tag['nome']}", "numero": tag["nome"]}],
-            "posicao_inicio_texto": tag.get("posicao_no_original"),
-            "posicao_fim_texto": tag.get("posicao_no_original", 0) + len(tag["conteudo"]) if tag.get("posicao_no_original") else None,
-        })
+        tags_modelo.append(
+            {
+                "tag_nome": tag["nome"],
+                "conteudo": tag["conteudo"],
+                "clausulas": [
+                    {
+                        "id": tag["clausula_id"],
+                        "nome": f"Cláusula {tag['nome']}",
+                        "numero": tag["nome"],
+                    }
+                ],
+                "posicao_inicio_texto": tag.get("posicao_no_original"),
+                "posicao_fim_texto": tag.get("posicao_no_original", 0)
+                + len(tag["conteudo"])
+                if tag.get("posicao_no_original")
+                else None,
+            }
+        )
 
     # Preparar modificações
     modificacoes = []
     for mod in modificacoes_data:
-        modificacoes.append({
-            "id": mod["id"],
-            "tipo": "REMOCAO",
-            "conteudo": {"original": "test"},
-            "posicao_inicio": mod.get("posicao_original"),
-            "posicao_fim": mod.get("posicao_original", 0) + 10,
-        })
+        modificacoes.append(
+            {
+                "id": mod["id"],
+                "tipo": "REMOCAO",
+                "conteudo": {"original": "test"},
+                "posicao_inicio": mod.get("posicao_original"),
+                "posicao_fim": mod.get("posicao_original", 0) + 10,
+            }
+        )
 
     # Chamar método REAL da API
     resultado = api._vincular_modificacoes_clausulas(
@@ -294,10 +333,7 @@ def test_integracao_completa_vinculacao(api, sample_data):
     )
 
     # Mapear resultado para comparar com esperado
-    vinculacoes_resultado = {
-        mod["id"]: mod.get("clausula_id")
-        for mod in resultado
-    }
+    vinculacoes_resultado = {mod["id"]: mod.get("clausula_id") for mod in resultado}
 
     # Comparar com vinculação esperada
     for mod_id, clausula_esperada in vinculacao_esperada.items():

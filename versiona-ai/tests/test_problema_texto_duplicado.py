@@ -194,9 +194,7 @@ def test_multiplas_duplicacoes_todas_vinculadas_corretamente(api):
     """
 
     documento_original = "ABC DEF GHI DEF JKL DEF MNO"
-    documento_com_tags = (
-        "ABC {{TAG-1}}DEF{{/TAG-1}} GHI {{TAG-2}}DEF{{/TAG-2}} JKL {{TAG-3}}DEF{{/TAG-3}} MNO"
-    )
+    documento_com_tags = "ABC {{TAG-1}}DEF{{/TAG-1}} GHI {{TAG-2}}DEF{{/TAG-2}} JKL {{TAG-3}}DEF{{/TAG-3}} MNO"
 
     tags_modelo = [
         {

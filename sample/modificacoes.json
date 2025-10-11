@@ -1,0 +1,23 @@
+[
+  {
+    "id": "mod-1",
+    "tipo": "insert",
+    "texto": "NOVO TEXTO ADICIONADO",
+    "posicao_original": 35,
+    "contexto": "Este é um contrato de exemplo.\n\nNOVO TEXTO ADICIONADO\n\nCláusula 1"
+  },
+  {
+    "id": "mod-2",
+    "tipo": "delete",
+    "texto": "pagar o valor acordado",
+    "posicao_original": 88,
+    "contexto": "O contratante compromete-se a pagar o valor acordado"
+  },
+  {
+    "id": "mod-3",
+    "tipo": "insert",
+    "texto": "dentro do prazo estipulado",
+    "posicao_original": 180,
+    "contexto": "O contratado deve entregar o serviço no prazo dentro do prazo estipulado"
+  }
+]
