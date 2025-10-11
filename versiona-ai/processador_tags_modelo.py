@@ -362,9 +362,9 @@ class ProcessadorTagsModelo:
                     conteudo = conteudo_bruto.strip()
 
                     # Remover numeração no início (ex: "4. ", "1. ", "a) ", etc)
-                    conteudo = re.sub(r'^\d+\.\s*', '', conteudo)
-                    conteudo = re.sub(r'^[a-z]\)\s*', '', conteudo)
-                    conteudo = re.sub(r'^\([a-z]\)\s*', '', conteudo)
+                    conteudo = re.sub(r"^\d+\.\s*", "", conteudo)
+                    conteudo = re.sub(r"^[a-z]\)\s*", "", conteudo)
+                    conteudo = re.sub(r"^\([a-z]\)\s*", "", conteudo)
 
                     conteudo_map[tag_nome] = {
                         "conteudo": conteudo,

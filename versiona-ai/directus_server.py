@@ -303,6 +303,7 @@ class DirectusAPI:
             # Buscar tags do modelo de contrato (somente em modo real)
             tags_modelo = []
             modelo_id = None
+            arquivo_com_tags_text = None
             print(f"🔍 DEBUG: mock={mock}, verificando busca de tags")
             if not mock:
                 try:
@@ -327,6 +328,36 @@ class DirectusAPI:
                             print(f"🔍 DEBUG: modelo_id encontrado={modelo_id}")
 
                     if modelo_id:
+                        # Buscar arquivo_com_tags do modelo para mapear posições corretas
+                        print(f"🔍 Buscando arquivo_com_tags do modelo {modelo_id}...")
+                        modelo_response = requests.get(
+                            f"{self.base_url}/items/modelo_contrato/{modelo_id}",
+                            headers=DIRECTUS_HEADERS,
+                            params={"fields": "arquivo_com_tags"},
+                            timeout=10,
+                        )
+                        if modelo_response.status_code == 200:
+                            arquivo_com_tags_id = modelo_response.json()["data"].get(
+                                "arquivo_com_tags"
+                            )
+                            if arquivo_com_tags_id:
+                                print(
+                                    f"📥 Baixando arquivo_com_tags {arquivo_com_tags_id} para mapear posições..."
+                                )
+                                arquivo_com_tags_text = self._download_and_extract_text(
+                                    arquivo_com_tags_id
+                                )
+                                if arquivo_com_tags_text:
+                                    print(
+                                        f"✅ Arquivo com tags carregado ({len(arquivo_com_tags_text)} caracteres)"
+                                    )
+                                else:
+                                    print(
+                                        "⚠️ Não foi possível extrair texto do arquivo_com_tags"
+                                    )
+                            else:
+                                print("⚠️ modelo não tem arquivo_com_tags")
+
                         print(f"🔍 Buscando tags do modelo {modelo_id}...")
                         tags_response = requests.get(
                             f"{self.base_url}/items/modelo_contrato_tag",
@@ -361,8 +392,20 @@ class DirectusAPI:
 
             # Vincular modificações às cláusulas usando tags (somente em modo real)
             if not mock and tags_modelo:
+                # Usar arquivo_com_tags_text se disponível, senão usar modified_text
+                texto_para_mapear_tags = (
+                    arquivo_com_tags_text if arquivo_com_tags_text else modified_text
+                )
+                print(
+                    f"🔍 Mapeando tags em: {'arquivo_com_tags' if arquivo_com_tags_text else 'modified_text'}"
+                )
+                print("🔍 Buscando modificações em: original_text")
                 modificacoes = self._vincular_modificacoes_clausulas(
-                    modificacoes, tags_modelo, modified_text
+                    modificacoes,
+                    tags_modelo,
+                    texto_para_mapear_tags,
+                    original_text,
+                    modified_text,
                 )
 
             # Calcular blocos usando agrupamento posicional
@@ -391,7 +434,14 @@ class DirectusAPI:
             # Persistir modificações no Directus (somente em modo real)
             if not mock:
                 try:
-                    self._persistir_modificacoes_directus(versao_id, modificacoes)
+                    # Obter arquivo_original_id para atualizar na versão
+                    arquivo_original_id = None
+                    if not mock:
+                        arquivo_original_id = self._get_arquivo_original(versao_data)
+
+                    self._persistir_modificacoes_directus(
+                        versao_id, modificacoes, arquivo_original_id
+                    )
                 except Exception as persist_error:
                     print(
                         f"⚠️ Erro ao persistir modificações no Directus: {persist_error}"
@@ -428,7 +478,9 @@ class DirectusAPI:
 
         return original_text, modified_text
 
-    def _persistir_modificacoes_directus(self, versao_id, modificacoes):
+    def _persistir_modificacoes_directus(
+        self, versao_id, modificacoes, arquivo_original_id=None
+    ):
         """
         Persiste as modificações no Directus e atualiza o status da versão
         Cria todas as modificações de uma vez via PATCH na versão
@@ -436,6 +488,7 @@ class DirectusAPI:
         Args:
             versao_id: ID da versão processada
             modificacoes: Lista de modificações extraídas
+            arquivo_original_id: ID do arquivo original para atualizar modifica_arquivo
         """
         print(
             f"💾 Iniciando persistência de {len(modificacoes)} modificações no Directus..."
@@ -459,6 +512,11 @@ class DirectusAPI:
                 "status": "concluido",
                 "modificacoes": {"create": modificacoes_directus},
             }
+
+            # Adicionar arquivo_original se disponível
+            if arquivo_original_id:
+                update_data["modifica_arquivo"] = arquivo_original_id
+                print(f"📝 Atualizando modifica_arquivo: {arquivo_original_id}")
 
             print(
                 f"📡 Enviando PATCH para versão {versao_id} com {len(modificacoes_directus)} modificações..."
@@ -592,7 +650,12 @@ class DirectusAPI:
         return directus_mod
 
     def _vincular_modificacoes_clausulas(
-        self, modificacoes, tags_modelo, texto_documento
+        self,
+        modificacoes,
+        tags_modelo,
+        texto_com_tags,
+        texto_original=None,
+        texto_modificado=None,
     ):
         """
         Vincula cada modificação à cláusula correspondente baseado nas tags do modelo
@@ -600,7 +663,9 @@ class DirectusAPI:
         Args:
             modificacoes: Lista de modificações extraídas
             tags_modelo: Lista de tags do modelo de contrato com cláusulas
-            texto_documento: Texto completo do documento modificado
+            texto_com_tags: Texto completo do arquivo com tags (para mapear posições das tags)
+            texto_original: Texto do documento original (para buscar DELETEs). Se None, usa texto_com_tags
+            texto_modificado: Texto do documento modificado (para buscar INSERTs). Se None, usa texto_original
 
         Returns:
             Lista de modificações atualizada com informação de cláusula
@@ -611,7 +676,19 @@ class DirectusAPI:
             print("⚠️ Nenhuma tag do modelo disponível para vinculação")
             return modificacoes
 
-        # Construir mapa de posições das tags no documento
+        # Se não foi passado texto_original, usar o texto_com_tags
+        if texto_original is None:
+            texto_original = texto_com_tags
+            print("📝 Usando texto_com_tags para buscar modificações (mesma base)")
+        else:
+            print("📝 Usando texto_original para buscar modificações")
+
+        # Se não foi passado texto_modificado, usar texto_original
+        if texto_modificado is None:
+            texto_modificado = texto_original
+            print("📝 Usando texto_original também para INSERTs")
+
+        # Construir mapa de posições das tags no documento COM TAGS
         tag_positions = []
         for tag in tags_modelo:
             tag_nome = tag.get("tag_nome")
@@ -620,6 +697,27 @@ class DirectusAPI:
 
             if not tag_nome or not conteudo_original:
                 continue
+
+            # PRIORIZAR posições que já vêm do Directus (quando disponíveis)
+            posicao_inicio_directus = tag.get("posicao_inicio_texto")
+            posicao_fim_directus = tag.get("posicao_fim_texto")
+
+            if posicao_inicio_directus is not None and posicao_fim_directus is not None:
+                # Usar posições absolutas do Directus
+                tag_info = {
+                    "tag_nome": tag_nome,
+                    "posicao_inicio": posicao_inicio_directus,
+                    "posicao_fim": posicao_fim_directus,
+                    "clausulas": clausulas if isinstance(clausulas, list) else [],
+                    "conteudo_referencia": conteudo_original[:50],
+                }
+                tag_positions.append(tag_info)
+                print(
+                    f"✅ Tag '{tag_nome}' usando posição do Directus: {posicao_inicio_directus}-{posicao_fim_directus}"
+                )
+                continue
+
+            # FALLBACK: Buscar posição por texto (quando não há posição no Directus)
 
             # Remover as tags {{TAG-...}} e {{/TAG-...}} do conteúdo
             # O conteúdo no Directus inclui as tags, mas o documento processado não tem mais as tags
@@ -636,9 +734,9 @@ class DirectusAPI:
                 print(f"⚠️  Tag '{tag_nome}': conteúdo vazio após limpeza")
                 continue
 
-            # Encontrar posição do conteúdo da tag no texto
+            # Encontrar posição do conteúdo da tag no texto COM TAGS
             # Estratégia 1: Buscar o conteúdo completo
-            posicao = texto_documento.find(conteudo_limpo)
+            posicao = texto_com_tags.find(conteudo_limpo)
 
             # Estratégia 2: Se não encontrou, tentar com primeiros 100 caracteres
             if posicao < 0:
@@ -647,7 +745,7 @@ class DirectusAPI:
                     if len(conteudo_limpo) > 100
                     else conteudo_limpo
                 )
-                posicao = texto_documento.find(conteudo_busca)
+                posicao = texto_com_tags.find(conteudo_busca)
             else:
                 conteudo_busca = conteudo_limpo
 
@@ -655,7 +753,7 @@ class DirectusAPI:
             if posicao < 0:
                 # Normalizar espaços no conteúdo de busca e no documento
                 conteudo_normalizado = " ".join(conteudo_limpo.split())
-                documento_normalizado = " ".join(texto_documento.split())
+                documento_normalizado = " ".join(texto_com_tags.split())
 
                 # Buscar primeira linha significativa (mais de 10 caracteres)
                 primeira_linha = ""
@@ -668,36 +766,64 @@ class DirectusAPI:
                     posicao_normalizada = documento_normalizado.find(primeira_linha)
                     if posicao_normalizada >= 0:
                         # Aproximar posição no texto original
-                        posicao = texto_documento.find(primeira_linha)
+                        posicao = texto_com_tags.find(primeira_linha)
                         conteudo_busca = primeira_linha
 
             if posicao >= 0:
+                # IMPORTANTE: A posicao encontrada é no texto_com_tags
+                # Precisamos calcular a posição correspondente no texto_original
+                # Para isso, buscamos o mesmo conteúdo no texto_original
+                posicao_original = texto_original.find(conteudo_limpo)
+
+                if posicao_original < 0:
+                    # Tentar com busca parcial
+                    conteudo_busca_parcial = (
+                        conteudo_limpo[:100]
+                        if len(conteudo_limpo) > 100
+                        else conteudo_limpo
+                    )
+                    posicao_original = texto_original.find(conteudo_busca_parcial)
+
+                if posicao_original < 0:
+                    print(
+                        f"⚠️  Tag '{tag_nome}': conteúdo encontrado em texto_com_tags mas não em texto_original"
+                    )
+                    continue
+
                 # Calcular posição fim baseada no comprimento do conteúdo limpo ou busca
                 comprimento = (
                     len(conteudo_limpo)
-                    if posicao == texto_documento.find(conteudo_limpo)
+                    if posicao == texto_com_tags.find(conteudo_limpo)
                     else len(conteudo_busca)
                 )
 
                 tag_info = {
                     "tag_nome": tag_nome,
-                    "posicao_inicio": posicao,
-                    "posicao_fim": posicao + comprimento,
+                    "posicao_inicio": posicao_original,  # Posição no documento ORIGINAL
+                    "posicao_fim": posicao_original + comprimento,
                     "clausulas": clausulas if isinstance(clausulas, list) else [],
                     "conteudo_referencia": conteudo_busca[:50],  # Para debug
                 }
                 tag_positions.append(tag_info)
                 print(
-                    f"✅ Tag '{tag_nome}' mapeada na posição {posicao} (comprimento: {comprimento})"
+                    f"✅ Tag '{tag_nome}' mapeada na posição {posicao_original} do original (comprimento: {comprimento})"
                 )
             else:
                 print(f"⚠️  Tag '{tag_nome}' não encontrada no documento")
                 print(f"   Conteúdo limpo: '{conteudo_limpo[:80]}...'")
 
         # Ordenar tags por posição
+        print("🔍 DEBUG: ANTES DO SORT")
+        import sys
+
+        sys.stdout.flush()
         tag_positions.sort(key=lambda x: x["posicao_inicio"])
+        print("🔍 DEBUG: DEPOIS DO SORT")
+        sys.stdout.flush()
 
         print(f"📍 {len(tag_positions)} tags com posições identificadas no documento")
+        print("🔍 DEBUG: Finalizou mapeamento de tags, iniciando vinculação...")
+        sys.stdout.flush()
 
         # Construir mapa de todas as cláusulas disponíveis por tag_nome
         # para referência e debug
@@ -713,19 +839,48 @@ class DirectusAPI:
         # Vincular cada modificação à tag/cláusula baseado na posição no documento
         for mod in modificacoes:
             conteudo_mod = mod.get("conteudo", {})
-            texto_busca = conteudo_mod.get("novo") or conteudo_mod.get("original", "")
+            tipo_mod = mod.get("tipo", "").upper()
 
-            if not texto_busca:
-                continue
-
-            # Encontrar posição da modificação no documento
-            pos_mod = texto_documento.find(texto_busca)
-            if pos_mod < 0:
-                # Tentar busca parcial se não encontrou completo
-                texto_busca_parcial = (
-                    texto_busca[:100] if len(texto_busca) > 100 else texto_busca
+            # PRIORIZAR posição absoluta se já existir na modificação (vinda do diff)
+            if "posicao_inicio" in mod and "posicao_fim" in mod:
+                pos_mod = mod["posicao_inicio"]
+                texto_busca = conteudo_mod.get("original") or conteudo_mod.get(
+                    "novo", ""
                 )
-                pos_mod = texto_documento.find(texto_busca_parcial)
+                print(
+                    f"✅ Mod {mod.get('id')}: usando posição absoluta {pos_mod} (não busca de texto)"
+                )
+            else:
+                # FALLBACK: Buscar por texto se não houver posição
+                # Escolher texto de busca baseado no tipo de modificação
+                if "INSERCAO" in tipo_mod or "INSERT" in tipo_mod:
+                    # INSERTs existem apenas no documento modificado
+                    texto_busca = conteudo_mod.get("novo", "")
+                    documento_busca = texto_modificado
+                    print(
+                        f"🔍 Mod {mod.get('id')}: INSERT, buscando em texto_modificado"
+                    )
+                else:
+                    # DELETEs e ALTERAÇÕEs existem no documento original
+                    texto_busca = conteudo_mod.get("original") or conteudo_mod.get(
+                        "novo", ""
+                    )
+                    documento_busca = texto_original
+                    print(
+                        f"🔍 Mod {mod.get('id')}: {tipo_mod}, buscando em texto_original"
+                    )
+
+                if not texto_busca:
+                    continue
+
+                # Encontrar posição da modificação no documento apropriado
+                pos_mod = documento_busca.find(texto_busca)
+                if pos_mod < 0:
+                    # Tentar busca parcial se não encontrou completo
+                    texto_busca_parcial = (
+                        texto_busca[:100] if len(texto_busca) > 100 else texto_busca
+                    )
+                    pos_mod = documento_busca.find(texto_busca_parcial)
 
             if pos_mod < 0:
                 print(f"⚠️ Modificação {mod['id']}: texto não encontrado no documento")
@@ -738,6 +893,10 @@ class DirectusAPI:
                     # Modificação está dentro desta tag
                     mod["tag_nome"] = tag_info["tag_nome"]
 
+                    # Adicionar informações de posição da modificação
+                    mod["posicao_inicio"] = pos_mod
+                    mod["posicao_fim"] = pos_mod + len(texto_busca)
+
                     # Se há cláusulas associadas, usar a primeira
                     if tag_info["clausulas"]:
                         primeira_clausula = tag_info["clausulas"][0]
@@ -746,7 +905,7 @@ class DirectusAPI:
                         mod["clausula_nome"] = primeira_clausula.get("nome")
 
                         print(
-                            f"✅ Modificação {mod['id']} → Tag '{tag_info['tag_nome']}' → Cláusula '{primeira_clausula.get('numero')} - {primeira_clausula.get('nome')}'"
+                            f"✅ Modificação {mod['id']} → Tag '{tag_info['tag_nome']}' → Cláusula '{primeira_clausula.get('numero')} - {primeira_clausula.get('nome')}' (posição {pos_mod}-{pos_mod + len(texto_busca)})"
                         )
                         vinculada = True
                     else:
@@ -835,6 +994,7 @@ class DirectusAPI:
 
             # 1. Tentar buscar versão anterior (date_created menor)
             print(f"🔍 Buscando versão anterior do contrato {contrato_id}")
+            print(f"   Versão atual date_created: {versao_atual_date}")
 
             # Buscar todas as versões do mesmo contrato, ordenadas por data
             response = requests.get(
@@ -850,8 +1010,12 @@ class DirectusAPI:
                 timeout=10,
             )
 
+            print(f"🔍 DEBUG: Busca versão anterior - status={response.status_code}")
             if response.status_code == 200:
                 versoes_anteriores = response.json().get("data", [])
+                print(
+                    f"🔍 DEBUG: Versões anteriores encontradas: {len(versoes_anteriores)}"
+                )
                 if versoes_anteriores:
                     versao_anterior = versoes_anteriores[0]
                     arquivo_anterior_id = versao_anterior.get("arquivo")
@@ -869,16 +1033,27 @@ class DirectusAPI:
                 timeout=10,
             )
 
+            print(f"🔍 DEBUG: Response status={response.status_code}")
             if response.status_code == 200:
                 contrato_data = response.json().get("data", {})
+                print(f"🔍 DEBUG: contrato_data={contrato_data}")
                 modelo_contrato = contrato_data.get("modelo_contrato")
+                print(f"🔍 DEBUG: modelo_contrato={modelo_contrato}")
                 if modelo_contrato:
                     arquivo_original_id = modelo_contrato.get("arquivo_original")
+                    print(f"🔍 DEBUG: arquivo_original_id={arquivo_original_id}")
                     if arquivo_original_id:
                         print(
                             f"✅ Encontrado arquivo original do modelo: {arquivo_original_id}"
                         )
                         return arquivo_original_id
+                    else:
+                        print("⚠️  arquivo_original está NULL no modelo_contrato")
+                else:
+                    print("⚠️  modelo_contrato não encontrado ou NULL")
+            else:
+                print(f"❌ Erro ao buscar contrato: HTTP {response.status_code}")
+                print(f"   Response: {response.text[:200]}")
 
             print("❌ Não foi possível encontrar arquivo original/anterior")
             return None

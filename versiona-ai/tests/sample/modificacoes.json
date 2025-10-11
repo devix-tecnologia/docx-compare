@@ -1,0 +1,23 @@
+[
+  {
+    "id": "mod-1",
+    "tipo": "insert",
+    "texto": "TEXTO INSERIDO AQUI",
+    "posicao_original": 10,
+    "contexto": "Modificação ANTES da primeira cláusula (fora de tags)"
+  },
+  {
+    "id": "mod-2",
+    "tipo": "delete",
+    "texto": "pagar o valor acordado",
+    "posicao_original": 74,
+    "contexto": "Modificação DENTRO da cláusula 1 (posição 74 está entre 32-97)"
+  },
+  {
+    "id": "mod-3",
+    "tipo": "delete",
+    "texto": "entregar o serviço no prazo",
+    "posicao_original": 119,
+    "contexto": "Modificação DENTRO da cláusula 2 (posição 119 está entre 99-157)"
+  }
+]
