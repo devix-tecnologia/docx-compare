@@ -7,10 +7,17 @@ PRIMEIRA ocorrência (posição 4), mesmo que a modificação seja na SEGUNDA (p
 
 SOLUÇÃO:
 As modificações devem vir com POSIÇÃO ABSOLUTA do diff, não buscar por texto.
+
+ESTRATÉGIA:
+- Usa DirectusAPI REAL (instancia classe de produção)
+- Mocka apenas as chamadas HTTP externas ao Directus
+- Testa a LÓGICA de vinculação com texto duplicado
+- Demonstra o problema e valida a solução implementada
 """
 
 import sys
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -20,7 +27,14 @@ from directus_server import DirectusAPI
 
 @pytest.fixture
 def api():
-    return DirectusAPI()
+    """Cria uma instância do DirectusAPI com mocks para requisições externas."""
+    with patch("directus_server.requests") as mock_requests:
+        # Configurar mock para não fazer chamadas HTTP reais
+        mock_requests.get.return_value = MagicMock(status_code=200, json=lambda: {})
+        mock_requests.post.return_value = MagicMock(status_code=200, json=lambda: {})
+
+        api_instance = DirectusAPI()
+        yield api_instance
 
 
 def test_problema_texto_duplicado_busca_primeira_ocorrencia(api):

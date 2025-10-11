@@ -1,10 +1,17 @@
 """
-Testes para validar a função _vincular_modificacoes_clausulas
+Testes unitários para validar a função _vincular_modificacoes_clausulas
 que lida com deslocamento de posições causado por múltiplas modificações.
+
+ESTRATÉGIA:
+- Usa DirectusAPI REAL (instancia classe de produção)
+- Mocka apenas as chamadas HTTP externas ao Directus
+- Testa a LÓGICA de vinculação sem dependências externas
+- Validação de posições absolutas e deslocamento
 """
 
 import sys
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -14,7 +21,14 @@ from directus_server import DirectusAPI
 
 @pytest.fixture
 def api():
-    return DirectusAPI()
+    """Cria uma instância do DirectusAPI com mocks para requisições externas."""
+    with patch("directus_server.requests") as mock_requests:
+        # Configurar mock para não fazer chamadas HTTP reais
+        mock_requests.get.return_value = MagicMock(status_code=200, json=lambda: {})
+        mock_requests.post.return_value = MagicMock(status_code=200, json=lambda: {})
+
+        api_instance = DirectusAPI()
+        yield api_instance
 
 
 def test_vinculacao_com_delete_resolve_deslocamento(api):

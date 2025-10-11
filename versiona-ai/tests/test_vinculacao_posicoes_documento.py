@@ -1,11 +1,22 @@
 """
-Teste de integração para validar que o método _vincular_modificacoes_clausulas
-está usando corretamente as posições do documento original.
+Testes unitários para validar o cálculo de posições no documento original.
+
+Este teste valida que o método _vincular_modificacoes_clausulas:
+- Mapeia tags corretamente no documento COM tags
+- Calcula posições no documento ORIGINAL (sem marcadores de tags)
+- Vincula modificações usando posições corretas do documento original
+
+ESTRATÉGIA:
+- Usa DirectusAPI REAL (instancia classe de produção)
+- Mocka apenas as chamadas HTTP externas ao Directus
+- Testa a LÓGICA de vinculação sem dependências externas
+- Valida cálculo de posições com dados de sample/
 """
 
 import json
 import sys
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -17,8 +28,14 @@ from directus_server import DirectusAPI
 
 @pytest.fixture
 def server():
-    """Cria uma instância do DirectusAPI para testes."""
-    return DirectusAPI()
+    """Cria uma instância do DirectusAPI com mocks para requisições externas."""
+    with patch("directus_server.requests") as mock_requests:
+        # Configurar mock para não fazer chamadas HTTP reais
+        mock_requests.get.return_value = MagicMock(status_code=200, json=lambda: {})
+        mock_requests.post.return_value = MagicMock(status_code=200, json=lambda: {})
+
+        api_instance = DirectusAPI()
+        yield api_instance
 
 
 @pytest.fixture
