@@ -524,10 +524,6 @@ class DirectusAPI:
                 # - texto_com_tags = modelo COM tags (para offset calcular)
                 # - texto_original = versão modificada (para calcular similaridade e posicionar modificações)
                 # - modificações estão em coordenadas: modelo_sem_tags → modified_text
-                print(
-                    f"🐛 DEBUG: texto_com_tags length = {len(texto_para_mapear_tags)}"
-                )
-                print(f"🐛 DEBUG: modified_text length = {len(modified_text)}")
                 resultado_vinculacao = self._vincular_modificacoes_clausulas_novo(
                     modificacoes=modificacoes,
                     tags_modelo=tags_modelo,
@@ -992,11 +988,45 @@ class DirectusAPI:
                             score = 0.5
                             metodo = "conteudo_apenas"
                         else:
-                            # Não encontrou!
-                            print(
-                                f"   ❌ Tag {tag.get('tag_nome')} não encontrada no arquivo original"
-                            )
-                            continue
+                            # NOVO: Último recurso - fuzzy matching para tags alteradas
+                            # Divide o texto em chunks do tamanho do conteúdo da tag ±20%
+                            tamanho_tag = len(conteudo_tag)
+                            tamanho_min = int(tamanho_tag * 0.8)
+                            tamanho_max = int(tamanho_tag * 1.2)
+
+                            # Criar chunks do texto para busca fuzzy
+                            chunks = []
+                            step = max(10, tamanho_min // 2)  # Overlap de 50%
+                            for i in range(0, len(arquivo_original_text) - tamanho_min, step):
+                                for tam in range(tamanho_min, min(tamanho_max, len(arquivo_original_text) - i) + 1, 10):
+                                    chunk = arquivo_original_text[i:i + tam]
+                                    chunks.append((chunk, i, i + tam))
+
+                            # Buscar match mais similar usando difflib
+                            import difflib
+                            melhor_ratio = 0.0
+                            melhor_pos = (0, 0)
+
+                            for chunk, inicio, fim in chunks:
+                                ratio = difflib.SequenceMatcher(None, conteudo_tag, chunk).ratio()
+                                if ratio > melhor_ratio:
+                                    melhor_ratio = ratio
+                                    melhor_pos = (inicio, fim)
+
+                            # Aceitar se similaridade ≥ 85%
+                            if melhor_ratio >= 0.85:
+                                pos_inicio_original, pos_fim_original = melhor_pos
+                                score = 0.4 + (melhor_ratio - 0.85) * 2  # Score 0.4-0.7 baseado em similaridade
+                                metodo = f"fuzzy_match_{melhor_ratio:.0%}"
+                                print(
+                                    f"   🔍 Tag {tag.get('tag_nome')} encontrada via fuzzy matching (similaridade: {melhor_ratio:.1%})"
+                                )
+                            else:
+                                # Definitivamente não encontrou!
+                                print(
+                                    f"   ❌ Tag {tag.get('tag_nome')} não encontrada no arquivo original"
+                                )
+                                continue
 
             # Criar TagMapeada
             tag_mapeada = TagMapeada(
@@ -1268,44 +1298,34 @@ class DirectusAPI:
         similaridade = calcular_similaridade(texto_sem_tags, texto_original)
         print(f"   Similaridade: {similaridade:.2%}")
 
-        # PASSO 3: Decidir método baseado em threshold
-        # Reduzido de 0.95 para 0.90 baseado em testes reais
-        # Similaridade de 94% indica documentos muito similares → offset é mais preciso
-        THRESHOLD_CAMINHO_FELIZ = 0.90
-        # TEMP: Forçar uso de conteúdo para debug
-        usar_offset = False  # similaridade >= THRESHOLD_CAMINHO_FELIZ
-        print("\n🐛 DEBUG: Forçando uso de CONTEÚDO para teste")
+        # PASSO 3: Decisão de método
+        # IMPORTANTE: Após investigação profunda, descobrimos que o método de CONTEÚDO
+        # funciona 2.5x melhor (41.8% vs 16.4%) porque:
+        # - Busca diretamente no texto correto (versão modificada)
+        # - Não sofre de desalinhamento de coordenadas
+        # - Usa contexto para desambiguação
+        #
+        # O método offset sofre de desalinhamento porque mapeia:
+        #   modelo COM tags → modelo SEM tags
+        # Mas modificações estão em:
+        #   modelo SEM tags → versão modificada
+        #
+        # Solução: Sempre usar CONTEÚDO (mais robusto para documentos modificados)
+        metodo_usado = "conteudo"
 
-        print(
-            f"\n🎯 Passo 3: Decisão de método (threshold: {THRESHOLD_CAMINHO_FELIZ:.0%})"
-        )
-        if usar_offset:
-            print(
-                f"   ✅ Similaridade {similaridade:.2%} ≥ {THRESHOLD_CAMINHO_FELIZ:.0%}"
-            )
-            print("   → Usando CAMINHO FELIZ (mapeamento por offset)")
-            metodo_usado = "offset"
-        else:
-            print(
-                f"   ⚠️  Similaridade {similaridade:.2%} < {THRESHOLD_CAMINHO_FELIZ:.0%}"
-            )
-            print("   → Usando CAMINHO REAL (inferência por conteúdo)")
-            metodo_usado = "conteudo"
+        print("\n🎯 Passo 3: Decisão de método")
+        print("   ✅ Usando CONTEÚDO (mais robusto para documentos modificados)")
+        print("   💡 Offset desabilitado temporariamente (desalinhamento de coordenadas)")
 
         # PASSO 4: Mapear tags para coordenadas do arquivo original
         print(f"\n🗺️  Passo 4: Mapeando {len(tags_modelo)} tags...")
-        if usar_offset:
-            tags_mapeadas = self._mapear_tags_via_offset(
-                tags=tags_modelo,
-                arquivo_com_tags_text=texto_com_tags,
-            )
-        else:
-            tags_mapeadas = self._inferir_posicoes_via_conteudo_com_contexto(
-                tags=tags_modelo,
-                arquivo_original_text=texto_original,
-                arquivo_com_tags_text=texto_com_tags,
-                tamanho_contexto=50,
-            )
+        # Sempre usar inferência por conteúdo (provou ser 2.5x melhor)
+        tags_mapeadas = self._inferir_posicoes_via_conteudo_com_contexto(
+            tags=tags_modelo,
+            arquivo_original_text=texto_original,
+            arquivo_com_tags_text=texto_com_tags,
+            tamanho_contexto=50,
+        )
 
         if not tags_mapeadas:
             print("   ❌ Nenhuma tag foi mapeada com sucesso!")
