@@ -20,10 +20,10 @@ Durante a implementação, descobrimos que o problema é mais complexo que o ini
 
 #### Tentativas e Resultados
 
-| Método | Configuração | Resultado | Análise |
-|--------|-------------|-----------|---------|
-| **Offset (bugado)** | Tags: modelo COM→SEM<br>Mods: modelo SEM→versão | 9/55 (16.4%) | ❌ Desalinhamento de coordenadas<br>Tags em modelo SEM, mods consideram diferença para versão |
-| **Conteúdo** | Busca textual com contexto | 23/55 (41.8%)<br>+2 revisão | ✅ **Melhora de 2.5x!**<br>Funciona porque busca no texto correto |
+| Método              | Configuração                                    | Resultado                   | Análise                                                                                       |
+| ------------------- | ----------------------------------------------- | --------------------------- | --------------------------------------------------------------------------------------------- |
+| **Offset (bugado)** | Tags: modelo COM→SEM<br>Mods: modelo SEM→versão | 9/55 (16.4%)                | ❌ Desalinhamento de coordenadas<br>Tags em modelo SEM, mods consideram diferença para versão |
+| **Conteúdo**        | Busca textual com contexto                      | 23/55 (41.8%)<br>+2 revisão | ✅ **Melhora de 2.5x!**<br>Funciona porque busca no texto correto                             |
 
 #### Logs Detalhados de Sobreposição
 
@@ -40,11 +40,13 @@ Com o método **Conteúdo**, as tags são buscadas diretamente no texto da vers�
 #### Por Que Conteúdo Funciona Melhor
 
 ✅ **Vantagens:**
+
 - Busca o texto da tag diretamente na versão modificada (sistema correto)
 - Não depende de cálculos de offset
 - Usa contexto para desambiguação
 
 ❌ **Limitações:**
+
 - 10 tags não encontradas (conteúdo foi alterado): `16.8.1, 11.1, 12.1, 14.1, 16.9.2, 12.2, 15.2.1, 1.1, 7.5.1, 15.1.1`
 - Apenas 90/100 tags mapeadas (offset mapeava 100/100)
 - Perde tags cujo conteúdo textual mudou completamente
@@ -52,6 +54,7 @@ Com o método **Conteúdo**, as tags são buscadas diretamente no texto da vers�
 ### Problema do Offset Identificado
 
 O algoritmo offset atual:
+
 1. Mapeia tags: modelo COM tags → modelo SEM tags ✅
 2. Modificações calculadas: modelo SEM tags → versão modificada ✅
 3. **PROBLEMA:** Comparar posições de tags (modelo SEM) com modificações (que consideram diferença para versão) causa desalinhamento
@@ -61,10 +64,12 @@ O algoritmo offset atual:
 ### Próximos Passos Identificados
 
 1. **Opção A (Ideal):** Corrigir offset para mapear diretamente para versão modificada
+
    - Requer calcular diferenças entre modelo SEM e versão
    - Mais complexo, mas mantém precisão do offset
 
 2. **Opção B (Pragmática):** Melhorar método de conteúdo
+
    - Adicionar fallbacks mais robustos
    - Usar similaridade fuzzy para tags alteradas
    - Mais simples, já mostra resultados 2.5x melhores
@@ -1163,7 +1168,7 @@ tail -100 /tmp/flask_server.log | grep -E "(ERROR|Exception)"
 ### Fase 2: Caminho Feliz ✅ (3/3) - COMPLETA
 
 - [x] Implementar `_mapear_tags_via_offset()`
-- [x] Criar testes para Caminho Feliz (simples + aninhado) 
+- [x] Criar testes para Caminho Feliz (simples + aninhado)
 - [x] Integrar branch "Caminho Feliz" no algoritmo principal
 
 ### Fase 3: Caminho Real ✅ (3/3) - COMPLETA
@@ -1220,18 +1225,21 @@ tail -100 /tmp/flask_server.log | grep -E "(ERROR|Exception)"
 #### Problemas Encontrados e Soluções
 
 1. **Problema: Sistema de Coordenadas Triplo**
+
    - **Descoberta:** Não são 2 sistemas (modelo COM/SEM tags), mas 3 (modelo COM, modelo SEM, versão modificada)
    - **Impacto:** Offset mapeava modelo COM→SEM, mas modificações consideravam diferença SEM→versão
    - **Evidência:** Sobreposições de 2-7 chars ao invés de centenas (desalinhamento claro)
    - **Solução temporária:** Forçar uso do método de conteúdo
 
 2. **Problema: Offset com Desalinhamento**
+
    - **Sintoma:** 16.4% de vinculação (9/55) com método offset
    - **Causa:** Tags mapeadas para modelo SEM tags (203k chars), mas modificações consideram versão modificada (209k chars)
    - **Exemplo:** `Mod[143844-144476]` ∩ `Tag[143399-143848]` = apenas 4 chars (deveria ter ~400!)
    - **Status:** ❌ Não resolvido - requer refatoração do algoritmo offset
 
 3. **Problema: Conteúdo Perde Tags Alteradas**
+
    - **Sintoma:** 41.8% de vinculação (23/55), mas 10 tags não encontradas
    - **Causa:** Tags cujo conteúdo textual foi modificado não são encontradas por busca literal
    - **Tags perdidas:** `16.8.1, 11.1, 12.1, 14.1, 16.9.2, 12.2, 15.2.1, 1.1, 7.5.1, 15.1.1`
@@ -1245,13 +1253,13 @@ tail -100 /tmp/flask_server.log | grep -E "(ERROR|Exception)"
 
 #### Experimentos Realizados
 
-| # | Teste | Resultado | Conclusão |
-|---|-------|-----------|-----------|
-| 1 | Offset com threshold 95% | 9/55 (16.4%) | ❌ Desalinhamento |
-| 2 | Offset com threshold 90% | 9/55 (16.4%) | ❌ Threshold não é o problema |
-| 3 | Passar texto_original_limpo | 9/55 (16.4%) | ❌ Ainda desalinhado |
-| 4 | Passar modified_text | 9/55 (16.4%) | ❌ Offset não resolve |
-| 5 | **Forçar método conteúdo** | **23/55 (41.8%)** | ✅ **Melhora de 2.5x!** |
+| #   | Teste                       | Resultado         | Conclusão                     |
+| --- | --------------------------- | ----------------- | ----------------------------- |
+| 1   | Offset com threshold 95%    | 9/55 (16.4%)      | ❌ Desalinhamento             |
+| 2   | Offset com threshold 90%    | 9/55 (16.4%)      | ❌ Threshold não é o problema |
+| 3   | Passar texto_original_limpo | 9/55 (16.4%)      | ❌ Ainda desalinhado          |
+| 4   | Passar modified_text        | 9/55 (16.4%)      | ❌ Offset não resolve         |
+| 5   | **Forçar método conteúdo**  | **23/55 (41.8%)** | ✅ **Melhora de 2.5x!**       |
 
 #### Logs de Debug Adicionados
 
@@ -1273,21 +1281,25 @@ if tamanho_sobreposicao > 0:
 ### Melhorias Futuras
 
 1. **Corrigir Algoritmo Offset (Prioridade Alta)**
+
    - Mapear modelo COM tags → versão modificada (não modelo SEM)
    - Requer diff entre modelo SEM e versão modificada
    - Potencial de alcançar 90%+ com precisão do offset
 
 2. **Melhorar Método de Conteúdo (Prioridade Média)**
+
    - Implementar fuzzy matching para tags levemente alteradas
    - Usar `difflib.get_close_matches()` ou Levenshtein distance
    - Threshold: 85% de similaridade para match
 
 3. **Abordagem Híbrida (Prioridade Alta)**
+
    - Tentar conteúdo primeiro (mais robusto para tags alteradas)
    - Usar offset como fallback (para tags não encontradas)
    - Combinar scores de ambos os métodos
 
 4. **Interface de Revisão Manual**
+
    - Dashboard para modificações com score 0.4-0.69
    - Mostrar candidatos e contexto
    - Permitir vinculação manual

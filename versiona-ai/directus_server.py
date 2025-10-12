@@ -1046,12 +1046,14 @@ class DirectusAPI:
         print("🔗 Vinculando tags às modificações por sobreposição")
         print(f"   Total de tags mapeadas: {len(tags_mapeadas)}")
         print(f"   Total de modificações: {len(modificacoes)}")
-        
+
         # Debug: mostrar primeiras 3 tags
         if tags_mapeadas and len(tags_mapeadas) >= 3:
-            print(f"\n🏷️  Exemplo de tags mapeadas (primeiras 3):")
+            print("\n🏷️  Exemplo de tags mapeadas (primeiras 3):")
             for i, tag in enumerate(tags_mapeadas[:3]):
-                print(f"   Tag {i+1}: {tag.tag_nome} [{tag.posicao_inicio_original}-{tag.posicao_fim_original}] método={tag.metodo}")
+                print(
+                    f"   Tag {i + 1}: {tag.tag_nome} [{tag.posicao_inicio_original}-{tag.posicao_fim_original}] método={tag.metodo}"
+                )
 
         vinculadas = []
         revisao_manual = []
@@ -1061,10 +1063,12 @@ class DirectusAPI:
             mod_inicio = modificacao.get("posicao_inicio", 0)
             mod_fim = modificacao.get("posicao_fim", 0)
             mod_tipo = modificacao.get("tipo", "")
-            
+
             # Debug: primeiras 3 modificações
             if idx < 3:
-                print(f"\n📝 Modificação {idx+1}: tipo={mod_tipo} [{mod_inicio}-{mod_fim}]")
+                print(
+                    f"\n📝 Modificação {idx + 1}: tipo={mod_tipo} [{mod_inicio}-{mod_fim}]"
+                )
 
             melhor_tag = None
             melhor_score = 0.0
@@ -1079,10 +1083,12 @@ class DirectusAPI:
 
                 if tamanho_sobreposicao == 0:
                     continue  # Sem sobreposição
-                
+
                 # Debug: log TODAS as sobreposições (não só primeiras 3)
                 if tamanho_sobreposicao > 0:
-                    print(f"      → Mod[{mod_inicio}-{mod_fim}] ∩ Tag {tag.tag_nome}[{tag.posicao_inicio_original}-{tag.posicao_fim_original}]: {tamanho_sobreposicao} chars")
+                    print(
+                        f"      → Mod[{mod_inicio}-{mod_fim}] ∩ Tag {tag.tag_nome}[{tag.posicao_inicio_original}-{tag.posicao_fim_original}]: {tamanho_sobreposicao} chars"
+                    )
 
                 # Calcular tamanhos
                 tamanho_modificacao = mod_fim - mod_inicio
@@ -1268,7 +1274,7 @@ class DirectusAPI:
         THRESHOLD_CAMINHO_FELIZ = 0.90
         # TEMP: Forçar uso de conteúdo para debug
         usar_offset = False  # similaridade >= THRESHOLD_CAMINHO_FELIZ
-        print(f"\n🐛 DEBUG: Forçando uso de CONTEÚDO para teste")
+        print("\n🐛 DEBUG: Forçando uso de CONTEÚDO para teste")
 
         print(
             f"\n🎯 Passo 3: Decisão de método (threshold: {THRESHOLD_CAMINHO_FELIZ:.0%})"
