@@ -31,11 +31,7 @@ except ImportError:
     AgrupadorPosicional = None
 
 # Importar processador de tags de modelo
-try:
-    from processador_tags_modelo import ProcessadorTagsModelo
-except ImportError:
-    print("⚠️ Processador de tags de modelo não disponível")
-    ProcessadorTagsModelo = None
+from processador_tags_modelo import ProcessadorTagsModelo
 
 # Carregar variáveis do .env
 load_dotenv()
@@ -385,21 +381,40 @@ class DirectusAPI:
                     traceback.print_exc()
 
             # Gerar diff
-            diff_html = self._generate_diff_html(original_text, modified_text)
+            # Se temos arquivo_com_tags, usar ele (sem tags) como original para ter mesmas coordenadas
+            if arquivo_com_tags_text:
+                print("🔄 Usando arquivo_com_tags (sem tags) como base para diff")
+                # Remover tags do arquivo_com_tags para usar como original
+                original_text_para_diff = re.sub(
+                    r"\{\{/?TAG-[^}]+\}\}", "", arquivo_com_tags_text
+                )
+                original_text_para_diff = re.sub(
+                    r"\{\{/?[^}]+\}\}", "", original_text_para_diff
+                )
+                print(
+                    f"📝 Texto original (sem tags): {len(original_text_para_diff)} caracteres"
+                )
+                print(f"📝 Texto modificado: {len(modified_text)} caracteres")
+                diff_html = self._generate_diff_html(
+                    original_text_para_diff, modified_text
+                )
+            else:
+                diff_html = self._generate_diff_html(original_text, modified_text)
 
             # Extrair modificações do diff
             modificacoes = self._extrair_modificacoes_do_diff(diff_html)
 
             # Vincular modificações às cláusulas usando tags (somente em modo real)
             if not mock and tags_modelo:
-                # Usar arquivo_com_tags_text se disponível, senão usar modified_text
-                texto_para_mapear_tags = (
-                    arquivo_com_tags_text if arquivo_com_tags_text else modified_text
-                )
-                print(
-                    f"🔍 Mapeando tags em: {'arquivo_com_tags' if arquivo_com_tags_text else 'modified_text'}"
-                )
-                print("🔍 Buscando modificações em: original_text")
+                # Usar arquivo_com_tags_text se disponível
+                if arquivo_com_tags_text:
+                    texto_para_mapear_tags = arquivo_com_tags_text
+                    # As modificações agora estão no sistema de coordenadas correto!
+                    print("🔍 Mapeando tags com coordenadas alinhadas")
+                else:
+                    texto_para_mapear_tags = modified_text
+                    print("⚠️ Sem arquivo_com_tags - posições podem não alinhar")
+
                 modificacoes = self._vincular_modificacoes_clausulas(
                     modificacoes,
                     tags_modelo,
@@ -662,10 +677,10 @@ class DirectusAPI:
 
         Args:
             modificacoes: Lista de modificações extraídas
-            tags_modelo: Lista de tags do modelo de contrato com cláusulas
-            texto_com_tags: Texto completo do arquivo com tags (para mapear posições das tags)
-            texto_original: Texto do documento original (para buscar DELETEs). Se None, usa texto_com_tags
-            texto_modificado: Texto do documento modificado (para buscar INSERTs). Se None, usa texto_original
+            tags_modelo: Lista de tags do modelo de contrato com cláusulas (DEVEM ter posicoes)
+            texto_com_tags: Texto do arquivo COM TAGS do modelo (usado como referência de posições)
+            texto_original: Texto original da versão (para buscar modificações)
+            texto_modificado: Texto modificado da versão (para buscar modificações)
 
         Returns:
             Lista de modificações atualizada com informação de cláusula
@@ -676,226 +691,219 @@ class DirectusAPI:
             print("⚠️ Nenhuma tag do modelo disponível para vinculação")
             return modificacoes
 
-        # Se não foi passado texto_original, usar o texto_com_tags
-        if texto_original is None:
-            texto_original = texto_com_tags
-            print("📝 Usando texto_com_tags para buscar modificações (mesma base)")
-        else:
-            print("📝 Usando texto_original para buscar modificações")
+        # Remover tags do texto_com_tags para criar versão limpa (similar ao arquivo original da versão)
+        texto_sem_tags = re.sub(r"\{\{/?TAG-[^}]+\}\}", "", texto_com_tags)
+        texto_sem_tags = re.sub(r"\{\{/?[^}]+\}\}", "", texto_sem_tags)
+        print(f"📝 Texto com tags: {len(texto_com_tags)} caracteres")
+        print(f"📝 Texto sem tags: {len(texto_sem_tags)} caracteres")
 
-        # Se não foi passado texto_modificado, usar texto_original
-        if texto_modificado is None:
-            texto_modificado = texto_original
-            print("📝 Usando texto_original também para INSERTs")
-
-        # Construir mapa de posições das tags no documento COM TAGS
+        # Construir mapa de posições das tags - TODAS devem ter posição
         tag_positions = []
+        tags_sem_posicao = []
+
         for tag in tags_modelo:
             tag_nome = tag.get("tag_nome")
-            conteudo_original = tag.get("conteudo", "")
             clausulas = tag.get("clausulas", [])
+            posicao_inicio = tag.get("posicao_inicio_texto")
+            posicao_fim = tag.get("posicao_fim_texto")
 
-            if not tag_nome or not conteudo_original:
+            if not tag_nome:
                 continue
 
-            # PRIORIZAR posições que já vêm do Directus (quando disponíveis)
-            posicao_inicio_directus = tag.get("posicao_inicio_texto")
-            posicao_fim_directus = tag.get("posicao_fim_texto")
-
-            if posicao_inicio_directus is not None and posicao_fim_directus is not None:
-                # Usar posições absolutas do Directus
-                tag_info = {
-                    "tag_nome": tag_nome,
-                    "posicao_inicio": posicao_inicio_directus,
-                    "posicao_fim": posicao_fim_directus,
-                    "clausulas": clausulas if isinstance(clausulas, list) else [],
-                    "conteudo_referencia": conteudo_original[:50],
-                }
-                tag_positions.append(tag_info)
+            # EXIGIR posições - não há fallback
+            if posicao_inicio is None or posicao_fim is None:
+                tags_sem_posicao.append(tag_nome)
                 print(
-                    f"✅ Tag '{tag_nome}' usando posição do Directus: {posicao_inicio_directus}-{posicao_fim_directus}"
+                    f"❌ Tag '{tag_nome}': SEM POSIÇÃO (erro no processamento do modelo)"
                 )
                 continue
 
-            # FALLBACK: Buscar posição por texto (quando não há posição no Directus)
+            tag_info = {
+                "tag_nome": tag_nome,
+                "posicao_inicio": posicao_inicio,
+                "posicao_fim": posicao_fim,
+                "clausulas": clausulas if isinstance(clausulas, list) else [],
+            }
+            tag_positions.append(tag_info)
 
-            # Remover as tags {{TAG-...}} e {{/TAG-...}} do conteúdo
-            # O conteúdo no Directus inclui as tags, mas o documento processado não tem mais as tags
-            conteudo_limpo = re.sub(r"\{\{TAG-.*?\}\}\s*", "", conteudo_original)
-            conteudo_limpo = re.sub(r"\s*\{\{/TAG-.*?\}\}", "", conteudo_limpo)
-            conteudo_limpo = conteudo_limpo.strip()
-
-            # Tentar também remover tags simples {{...}}
-            conteudo_limpo = re.sub(r"\{\{.*?\}\}\s*", "", conteudo_limpo)
-            conteudo_limpo = re.sub(r"\s*\{\{/.*?\}\}", "", conteudo_limpo)
-            conteudo_limpo = conteudo_limpo.strip()
-
-            if not conteudo_limpo:
-                print(f"⚠️  Tag '{tag_nome}': conteúdo vazio após limpeza")
-                continue
-
-            # Encontrar posição do conteúdo da tag no texto COM TAGS
-            # Estratégia 1: Buscar o conteúdo completo
-            posicao = texto_com_tags.find(conteudo_limpo)
-
-            # Estratégia 2: Se não encontrou, tentar com primeiros 100 caracteres
-            if posicao < 0:
-                conteudo_busca = (
-                    conteudo_limpo[:100]
-                    if len(conteudo_limpo) > 100
-                    else conteudo_limpo
-                )
-                posicao = texto_com_tags.find(conteudo_busca)
-            else:
-                conteudo_busca = conteudo_limpo
-
-            # Estratégia 3: Se ainda não encontrou, normalizar espaços e tentar novamente
-            if posicao < 0:
-                # Normalizar espaços no conteúdo de busca e no documento
-                conteudo_normalizado = " ".join(conteudo_limpo.split())
-                documento_normalizado = " ".join(texto_com_tags.split())
-
-                # Buscar primeira linha significativa (mais de 10 caracteres)
-                primeira_linha = ""
-                for linha in conteudo_normalizado.split("\n"):
-                    if len(linha.strip()) > 10:
-                        primeira_linha = linha.strip()
-                        break
-
-                if primeira_linha:
-                    posicao_normalizada = documento_normalizado.find(primeira_linha)
-                    if posicao_normalizada >= 0:
-                        # Aproximar posição no texto original
-                        posicao = texto_com_tags.find(primeira_linha)
-                        conteudo_busca = primeira_linha
-
-            if posicao >= 0:
-                # IMPORTANTE: A posicao encontrada é no texto_com_tags
-                # Precisamos calcular a posição correspondente no texto_original
-                # Para isso, buscamos o mesmo conteúdo no texto_original
-                posicao_original = texto_original.find(conteudo_limpo)
-
-                if posicao_original < 0:
-                    # Tentar com busca parcial
-                    conteudo_busca_parcial = (
-                        conteudo_limpo[:100]
-                        if len(conteudo_limpo) > 100
-                        else conteudo_limpo
-                    )
-                    posicao_original = texto_original.find(conteudo_busca_parcial)
-
-                if posicao_original < 0:
-                    print(
-                        f"⚠️  Tag '{tag_nome}': conteúdo encontrado em texto_com_tags mas não em texto_original"
-                    )
-                    continue
-
-                # Calcular posição fim baseada no comprimento do conteúdo limpo ou busca
-                comprimento = (
-                    len(conteudo_limpo)
-                    if posicao == texto_com_tags.find(conteudo_limpo)
-                    else len(conteudo_busca)
-                )
-
-                tag_info = {
-                    "tag_nome": tag_nome,
-                    "posicao_inicio": posicao_original,  # Posição no documento ORIGINAL
-                    "posicao_fim": posicao_original + comprimento,
-                    "clausulas": clausulas if isinstance(clausulas, list) else [],
-                    "conteudo_referencia": conteudo_busca[:50],  # Para debug
-                }
-                tag_positions.append(tag_info)
-                print(
-                    f"✅ Tag '{tag_nome}' mapeada na posição {posicao_original} do original (comprimento: {comprimento})"
-                )
-            else:
-                print(f"⚠️  Tag '{tag_nome}' não encontrada no documento")
-                print(f"   Conteúdo limpo: '{conteudo_limpo[:80]}...'")
+        if tags_sem_posicao:
+            print(f"\n⚠️  AVISO: {len(tags_sem_posicao)} tags sem posição encontradas:")
+            for tag_nome in tags_sem_posicao[:10]:  # Mostrar até 10
+                print(f"   - {tag_nome}")
+            if len(tags_sem_posicao) > 10:
+                print(f"   ... e mais {len(tags_sem_posicao) - 10} tags")
+            print("   ⚠️  Essas tags NÃO serão usadas para vinculação.")
+            print("   ⚠️  Verifique o processamento do modelo de contrato!\n")
 
         # Ordenar tags por posição
-        print("🔍 DEBUG: ANTES DO SORT")
-        import sys
-
-        sys.stdout.flush()
         tag_positions.sort(key=lambda x: x["posicao_inicio"])
-        print("🔍 DEBUG: DEPOIS DO SORT")
-        sys.stdout.flush()
 
-        print(f"📍 {len(tag_positions)} tags com posições identificadas no documento")
-        print("🔍 DEBUG: Finalizou mapeamento de tags, iniciando vinculação...")
-        sys.stdout.flush()
+        print(f"✅ {len(tag_positions)} tags com posições válidas para vinculação")
 
-        # Construir mapa de todas as cláusulas disponíveis por tag_nome
-        # para referência e debug
-        clausulas_por_tag = {}
-        for tag in tags_modelo:
-            tag_nome = tag.get("tag_nome")
-            clausulas = tag.get("clausulas", [])
-            if tag_nome and isinstance(clausulas, list) and clausulas:
-                clausulas_por_tag[tag_nome] = clausulas
+        # Construir mapa de cláusulas por tag para estatísticas
+        tags_com_clausulas = sum(1 for t in tag_positions if t["clausulas"])
+        print(f"📚 {tags_com_clausulas} tags possuem cláusulas vinculadas")
 
-        print(f"📚 {len(clausulas_por_tag)} tags com cláusulas vinculadas")
+        # Vincular cada modificação à tag/cláusula baseado nas posições
+        # ESTRATÉGIA:
+        # 1. Normalizar texto COM tags (para ter base consistente de posições)
+        # 2. Mapear posições das tags no texto normalizado COM tags
+        # 3. Remover tags e buscar modificações no texto normalizado SEM tags
+        # 4. Ajustar posições das tags para compensar remoção das tags
 
-        # Vincular cada modificação à tag/cláusula baseado na posição no documento
-        for mod in modificacoes:
-            conteudo_mod = mod.get("conteudo", {})
-            tipo_mod = mod.get("tipo", "").upper()
+        # PASSO 1: Normalizar texto COM tags (preservando as tags)
+        texto_com_tags_normalizado = re.sub(r"\s+", " ", texto_com_tags).strip()
+        print(
+            f"📝 Texto COM tags normalizado: {len(texto_com_tags_normalizado)} caracteres"
+        )
 
-            # PRIORIZAR posição absoluta se já existir na modificação (vinda do diff)
-            if "posicao_inicio" in mod and "posicao_fim" in mod:
-                pos_mod = mod["posicao_inicio"]
-                texto_busca = conteudo_mod.get("original") or conteudo_mod.get(
-                    "novo", ""
-                )
+        # PASSO 2: Mapear posições das tags no texto COM tags normalizado
+        tag_positions_normalized = []
+        for tag_info in tag_positions:
+            tag_nome = tag_info["tag_nome"]
+
+            # Buscar tag no texto COM tags normalizado
+            # Formato: {{TAG-nome}} ... {{/TAG-nome}} ou {{nome}} ... {{/nome}}
+            tag_abertura = f"{{{{TAG-{tag_nome}}}}}"
+            tag_fechamento = f"{{{{/TAG-{tag_nome}}}}}"
+
+            if tag_abertura not in texto_com_tags_normalizado:
+                tag_abertura = f"{{{{{tag_nome}}}}}"
+                tag_fechamento = f"{{{{/{tag_nome}}}}}"
+
+            pos_abertura = texto_com_tags_normalizado.find(tag_abertura)
+            pos_fechamento = texto_com_tags_normalizado.find(tag_fechamento)
+
+            if pos_abertura < 0 or pos_fechamento < 0:
                 print(
-                    f"✅ Mod {mod.get('id')}: usando posição absoluta {pos_mod} (não busca de texto)"
+                    f"⚠️ Tag '{tag_nome}': não encontrada no texto normalizado COM tags"
                 )
-            else:
-                # FALLBACK: Buscar por texto se não houver posição
-                # Escolher texto de busca baseado no tipo de modificação
-                if "INSERCAO" in tipo_mod or "INSERT" in tipo_mod:
-                    # INSERTs existem apenas no documento modificado
-                    texto_busca = conteudo_mod.get("novo", "")
-                    documento_busca = texto_modificado
-                    print(
-                        f"🔍 Mod {mod.get('id')}: INSERT, buscando em texto_modificado"
-                    )
-                else:
-                    # DELETEs e ALTERAÇÕEs existem no documento original
-                    texto_busca = conteudo_mod.get("original") or conteudo_mod.get(
-                        "novo", ""
-                    )
-                    documento_busca = texto_original
-                    print(
-                        f"🔍 Mod {mod.get('id')}: {tipo_mod}, buscando em texto_original"
-                    )
-
-                if not texto_busca:
-                    continue
-
-                # Encontrar posição da modificação no documento apropriado
-                pos_mod = documento_busca.find(texto_busca)
-                if pos_mod < 0:
-                    # Tentar busca parcial se não encontrou completo
-                    texto_busca_parcial = (
-                        texto_busca[:100] if len(texto_busca) > 100 else texto_busca
-                    )
-                    pos_mod = documento_busca.find(texto_busca_parcial)
-
-            if pos_mod < 0:
-                print(f"⚠️ Modificação {mod['id']}: texto não encontrado no documento")
                 continue
 
-            # Encontrar a tag que contém esta posição
-            vinculada = False
-            for tag_info in tag_positions:
-                if tag_info["posicao_inicio"] <= pos_mod <= tag_info["posicao_fim"]:
-                    # Modificação está dentro desta tag
-                    mod["tag_nome"] = tag_info["tag_nome"]
+            # Posição do conteúdo: após tag abertura, antes tag fechamento
+            pos_inicio_conteudo = pos_abertura + len(tag_abertura)
+            pos_fim_conteudo = pos_fechamento
 
-                    # Adicionar informações de posição da modificação
-                    mod["posicao_inicio"] = pos_mod
-                    mod["posicao_fim"] = pos_mod + len(texto_busca)
+            tag_positions_normalized.append(
+                {
+                    "tag_nome": tag_nome,
+                    "posicao_inicio_com_tags": pos_inicio_conteudo,
+                    "posicao_fim_com_tags": pos_fim_conteudo,
+                    "tag_abertura": tag_abertura,
+                    "tag_fechamento": tag_fechamento,
+                    "clausulas": tag_info["clausulas"],
+                }
+            )
+
+        print(f"✅ {len(tag_positions_normalized)} tags mapeadas no texto normalizado")
+
+        # PASSO 3: Criar texto SEM tags normalizado e mapear posições
+        # Para cada tag, calcular quanto de "tamanho de tags" existe ANTES dela
+        texto_sem_tags_normalizado = re.sub(
+            r"\{\{/?TAG-[^}]+\}\}", "", texto_com_tags_normalizado
+        )
+        texto_sem_tags_normalizado = re.sub(
+            r"\{\{/?[^}]+\}\}", "", texto_sem_tags_normalizado
+        ).strip()
+        print(
+            f"📝 Texto SEM tags normalizado: {len(texto_sem_tags_normalizado)} caracteres"
+        )
+
+        # PASSO 4: Recalcular posições das tags no texto SEM tags
+        # A ideia é: se uma tag começa na posição 100 no texto COM tags,
+        # e há 30 caracteres de tags antes dela, ela começa na posição 70 no texto SEM tags
+        tag_positions_final = []
+
+        for tag_info in tag_positions_normalized:
+            tag_nome = tag_info["tag_nome"]
+
+            # Contar TODOS os caracteres de tags que aparecem ANTES desta tag
+            texto_antes_da_tag = texto_com_tags_normalizado[
+                : tag_info["posicao_inicio_com_tags"]
+            ]
+
+            # Encontrar todas as tags no texto antes
+            todas_tags_antes = re.findall(r"\{\{/?[^}]+\}\}", texto_antes_da_tag)
+            tamanho_tags_antes = sum(len(t) for t in todas_tags_antes)
+
+            # A posição no texto SEM tags é: posição COM tags - tamanho das tags removidas antes
+            pos_inicio_sem_tags = (
+                tag_info["posicao_inicio_com_tags"] - tamanho_tags_antes
+            )
+
+            # Para a posição final, fazer o mesmo cálculo
+            texto_ate_fim_tag = texto_com_tags_normalizado[
+                : tag_info["posicao_fim_com_tags"]
+            ]
+            todas_tags_ate_fim = re.findall(r"\{\{/?[^}]+\}\}", texto_ate_fim_tag)
+            tamanho_tags_ate_fim = sum(len(t) for t in todas_tags_ate_fim)
+
+            pos_fim_sem_tags = tag_info["posicao_fim_com_tags"] - tamanho_tags_ate_fim
+
+            # Garantir posições válidas
+            pos_inicio_sem_tags = max(0, pos_inicio_sem_tags)
+            pos_fim_sem_tags = min(len(texto_sem_tags_normalizado), pos_fim_sem_tags)
+
+            tag_positions_final.append(
+                {
+                    "tag_nome": tag_nome,
+                    "posicao_inicio": pos_inicio_sem_tags,
+                    "posicao_fim": pos_fim_sem_tags,
+                    "clausulas": tag_info["clausulas"],
+                }
+            )
+
+        print("✅ Posições das tags ajustadas para texto SEM tags")
+
+        modificacoes_sem_conteudo = []
+
+        for idx, mod in enumerate(modificacoes):
+            conteudo_mod = mod.get("conteudo", {})
+
+            # Buscar texto da modificação (original ou novo, dependendo do tipo)
+            texto_mod = conteudo_mod.get("original") or conteudo_mod.get("novo", "")
+
+            if not texto_mod or len(texto_mod.strip()) == 0:
+                modificacoes_sem_conteudo.append(idx)
+                continue
+
+            # NORMALIZAR o texto da modificação também (para comparação justa)
+            texto_mod_normalizado = re.sub(r"\s+", " ", texto_mod).strip()
+
+            # Buscar posição no texto NORMALIZADO SEM tags
+            pos_inicio_mod = texto_sem_tags_normalizado.find(texto_mod_normalizado)
+
+            if pos_inicio_mod < 0:
+                # Tentar busca parcial (primeiros 50 caracteres)
+                texto_parcial = (
+                    texto_mod_normalizado[:50]
+                    if len(texto_mod_normalizado) > 50
+                    else texto_mod_normalizado
+                )
+                pos_inicio_mod = texto_sem_tags_normalizado.find(texto_parcial)
+                if pos_inicio_mod >= 0:
+                    texto_mod_normalizado = texto_parcial
+
+            if pos_inicio_mod < 0:
+                print(f"⚠️ Mod #{idx}: texto não encontrado no documento")
+                continue
+
+            pos_fim_mod = pos_inicio_mod + len(texto_mod_normalizado)
+
+            # Encontrar a tag que contém esta posição (agora no mesmo espaço de coordenadas!)
+            vinculada = False
+            for tag_info in tag_positions_final:
+                # Verificar se há sobreposição entre a modificação e a tag
+                if (
+                    tag_info["posicao_inicio"]
+                    <= pos_inicio_mod
+                    <= tag_info["posicao_fim"]
+                ) or (
+                    tag_info["posicao_inicio"] <= pos_fim_mod <= tag_info["posicao_fim"]
+                ):
+                    mod["tag_nome"] = tag_info["tag_nome"]
+                    mod["posicao_inicio"] = pos_inicio_mod
+                    mod["posicao_fim"] = pos_fim_mod
 
                     # Se há cláusulas associadas, usar a primeira
                     if tag_info["clausulas"]:
@@ -905,19 +913,26 @@ class DirectusAPI:
                         mod["clausula_nome"] = primeira_clausula.get("nome")
 
                         print(
-                            f"✅ Modificação {mod['id']} → Tag '{tag_info['tag_nome']}' → Cláusula '{primeira_clausula.get('numero')} - {primeira_clausula.get('nome')}' (posição {pos_mod}-{pos_mod + len(texto_busca)})"
+                            f"✅ Mod #{idx} (pos {pos_inicio_mod}-{pos_fim_mod}) → "
+                            f"Tag '{tag_info['tag_nome']}' (pos {tag_info['posicao_inicio']}-{tag_info['posicao_fim']}) → "
+                            f"Cláusula {primeira_clausula.get('numero')}"
                         )
                         vinculada = True
                     else:
                         print(
-                            f"⚠️ Modificação {mod['id']} → Tag '{tag_info['tag_nome']}' (sem cláusula associada)"
+                            f"⚠️ Mod #{idx} → Tag '{tag_info['tag_nome']}' (sem cláusula associada)"
                         )
                     break
 
             if not vinculada:
                 print(
-                    f"⚠️ Modificação {mod['id']}: posição {pos_mod} não encontrada em nenhuma tag"
+                    f"⚠️ Mod #{idx}: posição {pos_inicio_mod}-{pos_fim_mod} não encontrada em nenhuma tag"
                 )
+
+        if modificacoes_sem_conteudo:
+            print(
+                f"\n⚠️  {len(modificacoes_sem_conteudo)} modificações sem conteúdo (não vinculadas)"
+            )
 
         # Resumo
         mods_com_clausula = sum(1 for m in modificacoes if m.get("clausula_id"))
@@ -1233,7 +1248,6 @@ class DirectusAPI:
 
     def _split_into_semantic_units(self, text):
         """Divide texto em unidades semânticas (frases, parágrafos)"""
-        import re
 
         # Dividir por quebras de linha duplas (parágrafos)
         paragraphs = text.split("\n\n")
@@ -1269,7 +1283,6 @@ class DirectusAPI:
     def _is_field_replacement(self, original, modified):
         """Detecta se é preenchimento de campo (placeholder -> valor)"""
         # Detectar padrões de placeholder
-        import re
 
         placeholder_patterns = [
             r"_+",  # Underscores
@@ -1299,7 +1312,6 @@ class DirectusAPI:
 
     def _identify_clause(self, line):
         """Identifica a cláusula baseada na linha de texto"""
-        import re
 
         # Padrões para identificar cláusulas
         clause_patterns = [
@@ -1510,7 +1522,6 @@ class DirectusAPI:
         }
 
         # Extrair palavras significativas (mais de 3 caracteres, não números)
-        import re
 
         palavras = re.findall(r"\b[a-záêçõã]{4,}\b", texto.lower())
         palavras_filtradas = [p for p in palavras if p not in stop_words]
@@ -2015,9 +2026,6 @@ def process_modelo():
         "dry_run": true/false (opcional, default: false)
     }
     """
-    if not ProcessadorTagsModelo:
-        return jsonify({"error": "Processador de tags de modelo não disponível"}), 500
-
     data = request.json
     if not data:
         return jsonify({"error": "Nenhum dado JSON fornecido"}), 400
