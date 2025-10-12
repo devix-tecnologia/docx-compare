@@ -510,6 +510,8 @@ make shell     # Entrar no container
 
 ## 🧪 Executar Testes
 
+### **Testes Unitários e de Integração**
+
 ```bash
 # Testes mock (rápidos, sem dependências externas)
 python versiona-ai/tests/teste_implementacoes_mock.py
@@ -519,6 +521,136 @@ python versiona-ai/tests/pipeline_funcional_teste.py
 
 # Testes Directus (requer configuração)
 python versiona-ai/tests/teste_implementacoes_directus.py
+```
+
+### **Testes de Regressão Automatizados** 🆕
+
+Os testes de regressão garantem que melhorias no código não causem piora nos resultados.
+
+#### **Teste Rápido (Modo Offline - Recomendado para Desenvolvimento)**
+
+Usa dados salvos em fixture, **executa em ~2.6 segundos**:
+
+```bash
+# Modo rápido com fixture salva (sem servidor, sem Directus)
+USE_SAVED_FIXTURE=1 pytest versiona-ai/tests/test_regressao_versao_99090886.py -v
+
+# Ou com uv (gerenciador de pacotes moderno)
+USE_SAVED_FIXTURE=1 uv run pytest versiona-ai/tests/test_regressao_versao_99090886.py -v
+```
+
+**Resultado esperado:**
+```
+✅ 6/6 testes passando em ~2.6 segundos
+- test_servidor_disponivel ✅
+- test_processamento_versao_99090886_taxa_minima ✅
+- test_processamento_versao_99090886_nao_regredir ✅
+- test_processamento_versao_99090886_modificacoes_validas ✅
+- test_processamento_versao_99090886_tags_mapeadas ✅
+- test_comparacao_com_fixture_salva ✅
+```
+
+#### **Teste Completo (Modo Online - Antes de Deploy)**
+
+Processa versão real do Directus, **demora 5-10 minutos**:
+
+```bash
+# 1. Iniciar servidor (em outro terminal)
+cd versiona-ai
+python3 directus_server.py
+
+# 2. Executar testes completos (terminal principal)
+pytest versiona-ai/tests/test_regressao_versao_99090886.py -v
+
+# Ou com uv
+uv run pytest versiona-ai/tests/test_regressao_versao_99090886.py -v
+```
+
+**O que o teste completo faz:**
+1. 📥 Baixa arquivos DOCX do Directus (~200KB)
+2. 🔍 Processa 100 tags do modelo
+3. 📊 Gera diff de 209KB de texto
+4. 🔗 Faz vinculação de 55 modificações
+5. ✅ Valida métricas contra baseline
+
+#### **Fixture de Teste**
+
+A fixture captura dados reais do Directus e salva localmente:
+
+```bash
+# Regenerar fixture (quando houver mudanças no algoritmo)
+cd versiona-ai/tests/sample/versao-99090886
+python3 capture_fixture.py
+```
+
+**Estrutura da fixture:**
+```
+versiona-ai/tests/sample/versao-99090886/
+├── resultado_processamento.json    # Resposta completa da API
+├── modificacoes_processadas.json   # 55 modificações com vinculação
+├── vinculacao_metrics.json         # Métricas baseline
+├── fixture_summary.json            # Resumo dos dados
+├── test_expectations.json          # Thresholds mínimos
+└── README.md                       # Documentação
+```
+
+#### **Métricas de Qualidade**
+
+Os testes validam automaticamente:
+
+| Métrica | Mínimo Esperado | Baseline Atual |
+|---------|----------------|----------------|
+| Taxa de vinculação | ≥ 40% | 41.8% (23/55) |
+| Taxa de cobertura | ≥ 45% | 45.5% (25/55) |
+| Similaridade | ≥ 90% | 91.34% |
+| Tags mapeadas | 100 tags | 100/100 ✅ |
+| Método usado | conteúdo | conteúdo ✅ |
+
+#### **CI/CD Integration**
+
+Para integração contínua, use o modo offline:
+
+```yaml
+# .github/workflows/test.yml
+name: Tests
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+      - run: pip install -r requirements.txt
+      - run: USE_SAVED_FIXTURE=1 pytest versiona-ai/tests/test_regressao_versao_99090886.py -v
+```
+
+#### **Troubleshooting**
+
+**Erro: "Servidor não está rodando"**
+```bash
+# Verificar se servidor está ativo
+curl http://localhost:8001/health
+
+# Se não estiver, iniciar:
+cd versiona-ai
+python3 directus_server.py
+```
+
+**Erro: "Timeout após 600 segundos"**
+```bash
+# Processamento pode demorar em máquinas lentas ou conexão lenta
+# Use modo offline para testes rápidos:
+USE_SAVED_FIXTURE=1 pytest versiona-ai/tests/test_regressao_versao_99090886.py -v
+```
+
+**Erro: "Fixture não encontrada"**
+```bash
+# Verificar se fixture existe
+ls versiona-ai/tests/sample/versao-99090886/resultado_processamento.json
+
+# Se não existir, gerar fixture:
+cd versiona-ai/tests/sample/versao-99090886
+python3 capture_fixture.py
 ```
 
 ## 📊 Exemplo de Resultado
