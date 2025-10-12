@@ -430,7 +430,10 @@ class ProcessadorTagsModelo:
         return clausulas_map
 
     def _atualizar_modelo_com_tags(
-        self, modelo_id: str, tags_encontradas: list[dict], clausulas_map: dict[str, list[str]]
+        self,
+        modelo_id: str,
+        tags_encontradas: list[dict],
+        clausulas_map: dict[str, list[str]],
     ):
         """
         Atualiza o modelo com as tags encontradas
@@ -475,7 +478,9 @@ class ProcessadorTagsModelo:
 
             # Debug: Log das primeiras 3 tags com suas posições
             if len(tags_data) < 3:
-                print(f"🔍 Debug tag {tag_nome}: pos_inicio={tag_data['posicao_inicio_texto']}, pos_fim={tag_data['posicao_fim_texto']}")
+                print(
+                    f"🔍 Debug tag {tag_nome}: pos_inicio={tag_data['posicao_inicio_texto']}, pos_fim={tag_data['posicao_fim_texto']}"
+                )
 
             # Adicionar cláusulas se encontradas (lista de IDs)
             if clausulas_ids:

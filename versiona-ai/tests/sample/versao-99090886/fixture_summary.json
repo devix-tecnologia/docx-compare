@@ -1,0 +1,23 @@
+{
+  "versao_id": "99090886-7f43-45c9-bfe4-ec6eddd6cde0",
+  "data_captura": "2025-10-12T18:13:53.353264",
+  "metricas": {
+    "total_modificacoes": 55,
+    "vinculadas": 23,
+    "revisao_manual": 2,
+    "nao_vinculadas": 30,
+    "taxa_sucesso": 41.81818181818181,
+    "taxa_cobertura": 45.45454545454545,
+    "tags_mapeadas": 100
+  },
+  "qualidade": {
+    "similaridade": 0.9133871253295306,
+    "metodo_usado": "conteudo"
+  },
+  "arquivos_gerados": [
+    "resultado_processamento.json",
+    "vinculacao_metrics.json",
+    "modificacoes_processadas.json",
+    "test_expectations.json"
+  ]
+}

@@ -997,18 +997,28 @@ class DirectusAPI:
                             # Criar chunks do texto para busca fuzzy
                             chunks = []
                             step = max(10, tamanho_min // 2)  # Overlap de 50%
-                            for i in range(0, len(arquivo_original_text) - tamanho_min, step):
-                                for tam in range(tamanho_min, min(tamanho_max, len(arquivo_original_text) - i) + 1, 10):
-                                    chunk = arquivo_original_text[i:i + tam]
+                            for i in range(
+                                0, len(arquivo_original_text) - tamanho_min, step
+                            ):
+                                for tam in range(
+                                    tamanho_min,
+                                    min(tamanho_max, len(arquivo_original_text) - i)
+                                    + 1,
+                                    10,
+                                ):
+                                    chunk = arquivo_original_text[i : i + tam]
                                     chunks.append((chunk, i, i + tam))
 
                             # Buscar match mais similar usando difflib
                             import difflib
+
                             melhor_ratio = 0.0
                             melhor_pos = (0, 0)
 
                             for chunk, inicio, fim in chunks:
-                                ratio = difflib.SequenceMatcher(None, conteudo_tag, chunk).ratio()
+                                ratio = difflib.SequenceMatcher(
+                                    None, conteudo_tag, chunk
+                                ).ratio()
                                 if ratio > melhor_ratio:
                                     melhor_ratio = ratio
                                     melhor_pos = (inicio, fim)
@@ -1016,7 +1026,9 @@ class DirectusAPI:
                             # Aceitar se similaridade ≥ 85%
                             if melhor_ratio >= 0.85:
                                 pos_inicio_original, pos_fim_original = melhor_pos
-                                score = 0.4 + (melhor_ratio - 0.85) * 2  # Score 0.4-0.7 baseado em similaridade
+                                score = (
+                                    0.4 + (melhor_ratio - 0.85) * 2
+                                )  # Score 0.4-0.7 baseado em similaridade
                                 metodo = f"fuzzy_match_{melhor_ratio:.0%}"
                                 print(
                                     f"   🔍 Tag {tag.get('tag_nome')} encontrada via fuzzy matching (similaridade: {melhor_ratio:.1%})"
@@ -1315,7 +1327,9 @@ class DirectusAPI:
 
         print("\n🎯 Passo 3: Decisão de método")
         print("   ✅ Usando CONTEÚDO (mais robusto para documentos modificados)")
-        print("   💡 Offset desabilitado temporariamente (desalinhamento de coordenadas)")
+        print(
+            "   💡 Offset desabilitado temporariamente (desalinhamento de coordenadas)"
+        )
 
         # PASSO 4: Mapear tags para coordenadas do arquivo original
         print(f"\n🗺️  Passo 4: Mapeando {len(tags_modelo)} tags...")
@@ -2154,7 +2168,7 @@ class DirectusAPI:
                 posicao_inicio = 0
                 posicao_fim = 0
 
-                if matcher and removed_text:
+                if matcher and removed_text and texto_original:
                     # Tentar encontrar o texto removido no original
                     pos = texto_original.find(removed_text)
                     if pos >= 0:
@@ -2172,7 +2186,7 @@ class DirectusAPI:
                             posicao_inicio = pos
                             posicao_fim = pos + len(removed_text)
 
-                elif matcher and added_text:
+                elif matcher and added_text and texto_modificado:
                     # Para inserções, usar posição no texto modificado
                     pos = texto_modificado.find(added_text)
                     if pos >= 0:

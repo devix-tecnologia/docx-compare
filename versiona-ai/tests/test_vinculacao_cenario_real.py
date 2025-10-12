@@ -59,7 +59,8 @@ da assinatura do contrato.
 
     print("\n📄 MODELO COM TAGS:")
     print(f"   Tamanho: {len(modelo_com_tags)} caracteres")
-    print(f"   Número de tags: {len(re.findall(r'{{\\d+}}', modelo_com_tags))}")
+    pattern = r"{{\d+}}"
+    print(f"   Número de tags: {len(re.findall(pattern, modelo_com_tags))}")
 
     # =============================================================================
     # FIXTURE 2: Versão do contrato (DERIVADA do modelo mas SEM TAGS)

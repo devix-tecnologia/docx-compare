@@ -201,21 +201,6 @@ Cláusula 2  -  DO VALOR
 {{/2}}
 """
 
-    tags_modelo = [
-        {
-            "tag_nome": "1",
-            "posicao_inicio_texto": modelo_com_tags.find("{{1}}"),
-            "posicao_fim_texto": modelo_com_tags.find("{{/1}}") + len("{{/1}}"),
-            "clausulas": [{"id": "cl-1", "numero": "1", "nome": "DO OBJETO"}],
-        },
-        {
-            "tag_nome": "2",
-            "posicao_inicio_texto": modelo_com_tags.find("{{2}}"),
-            "posicao_fim_texto": modelo_com_tags.find("{{/2}}") + len("{{/2}}"),
-            "clausulas": [{"id": "cl-2", "numero": "2", "nome": "DO VALOR"}],
-        },
-    ]
-
     # Modificações com texto normalizado
     modificacoes = [
         {

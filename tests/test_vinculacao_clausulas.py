@@ -104,7 +104,6 @@ def mapear_tags_com_posicoes_originais(documento_com_tags, tags_modelo):
         # Encontra a posição da tag no documento TAGUEADO
         # A tag tem formato: <<N>>conteudo<</N>>
         tag_abertura = f"<<{tag_nome}>>"
-        tag_fechamento = f"<</{tag_nome}>>"
 
         pos_abertura = documento_com_tags.find(tag_abertura)
         if pos_abertura == -1:
