@@ -92,19 +92,19 @@ class ResultadoVinculacao:
     )  # (mod, candidatos, score)
 
     def taxa_sucesso(self) -> float:
-        """Retorna a taxa de vinculação automática."""
+        """Retorna a taxa de vinculação automática (em %)."""
         total = (
             len(self.vinculadas) + len(self.nao_vinculadas) + len(self.revisao_manual)
         )
-        return len(self.vinculadas) / total if total > 0 else 0.0
+        return (len(self.vinculadas) / total * 100) if total > 0 else 0.0
 
     def taxa_cobertura(self) -> float:
-        """Retorna a taxa de cobertura (inclui revisão manual como potencial sucesso)."""
+        """Retorna a taxa de cobertura (inclui revisão manual como potencial sucesso, em %)."""
         total = (
             len(self.vinculadas) + len(self.nao_vinculadas) + len(self.revisao_manual)
         )
         cobertos = len(self.vinculadas) + len(self.revisao_manual)
-        return cobertos / total if total > 0 else 0.0
+        return (cobertos / total * 100) if total > 0 else 0.0
 
 
 # ============================================================================
@@ -495,26 +495,52 @@ class DirectusAPI:
             else:
                 diff_html = self._generate_diff_html(original_text, modified_text)
 
-            # Extrair modificações do diff
-            modificacoes = self._extrair_modificacoes_do_diff(diff_html)
+            # Extrair modificações do diff (com posições de caracteres)
+            # Passar textos para calcular posições exatas
+            texto_original_limpo = (
+                original_text_para_diff if arquivo_com_tags_text else original_text
+            )
+            modificacoes = self._extrair_modificacoes_do_diff(
+                diff_html,
+                texto_original=texto_original_limpo,
+                texto_modificado=modified_text,
+            )
 
             # Vincular modificações às cláusulas usando tags (somente em modo real)
+            resultado_vinculacao = None
             if not mock and tags_modelo:
                 # Usar arquivo_com_tags_text se disponível
                 if arquivo_com_tags_text:
                     texto_para_mapear_tags = arquivo_com_tags_text
-                    # As modificações agora estão no sistema de coordenadas correto!
-                    print("🔍 Mapeando tags com coordenadas alinhadas")
+                    # IMPORTANTE: Modificações estão em coordenadas SEM tags (texto_original_limpo)
+                    # Tags precisam ser mapeadas para o mesmo sistema de coordenadas
+                    print("🔍 Usando NOVO ALGORITMO UNIFICADO de vinculação")
                 else:
                     texto_para_mapear_tags = modified_text
-                    print("⚠️ Sem arquivo_com_tags - posições podem não alinhar")
+                    print("⚠️ Sem arquivo_com_tags - usando texto modificado")
 
-                modificacoes = self._vincular_modificacoes_clausulas(
-                    modificacoes,
-                    tags_modelo,
-                    texto_para_mapear_tags,
-                    original_text,
-                    modified_text,
+                # NOVO: Usar algoritmo unificado inteligente
+                # IMPORTANTE: Passar modified_text como texto_original
+                # - texto_com_tags = modelo COM tags (para offset calcular)
+                # - texto_original = versão modificada (para calcular similaridade e posicionar modificações)
+                # - modificações estão em coordenadas: modelo_sem_tags → modified_text
+                print(
+                    f"🐛 DEBUG: texto_com_tags length = {len(texto_para_mapear_tags)}"
+                )
+                print(f"🐛 DEBUG: modified_text length = {len(modified_text)}")
+                resultado_vinculacao = self._vincular_modificacoes_clausulas_novo(
+                    modificacoes=modificacoes,
+                    tags_modelo=tags_modelo,
+                    texto_com_tags=texto_para_mapear_tags,  # modelo COM tags
+                    texto_original=modified_text,  # versão modificada (base das modificações)
+                )
+
+                # Atualizar modificacoes com as vinculadas
+                # O novo algoritmo já categorizou, mas mantemos formato antigo por compatibilidade
+                modificacoes = (
+                    resultado_vinculacao["resultado"].vinculadas
+                    + resultado_vinculacao["resultado"].revisao_manual
+                    + resultado_vinculacao["resultado"].nao_vinculadas
                 )
 
             # Calcular blocos usando agrupamento posicional
@@ -537,6 +563,25 @@ class DirectusAPI:
                 "url": f"http://localhost:{FLASK_PORT}/view/{diff_id}",
                 "mode": "mock" if mock else "real",
             }
+
+            # Adicionar métricas do novo algoritmo de vinculação
+            if resultado_vinculacao:
+                diff_data["vinculacao_metrics"] = {
+                    "metodo_usado": resultado_vinculacao["metodo_usado"],
+                    "similaridade": resultado_vinculacao["similaridade"],
+                    "tags_mapeadas": len(resultado_vinculacao["tags_mapeadas"]),
+                    "vinculadas": len(resultado_vinculacao["resultado"].vinculadas),
+                    "revisao_manual": len(
+                        resultado_vinculacao["resultado"].revisao_manual
+                    ),
+                    "nao_vinculadas": len(
+                        resultado_vinculacao["resultado"].nao_vinculadas
+                    ),
+                    "taxa_sucesso": resultado_vinculacao["resultado"].taxa_sucesso(),
+                    "taxa_cobertura": resultado_vinculacao[
+                        "resultado"
+                    ].taxa_cobertura(),
+                }
 
             diff_cache[diff_id] = diff_data
 
@@ -971,6 +1016,334 @@ class DirectusAPI:
 
     # ============================================================================
     # FIM FASE 3
+    # ============================================================================
+
+    # ============================================================================
+    # FASE 4: SCORE E CATEGORIZAÇÃO
+    # ============================================================================
+
+    def _vincular_por_sobreposicao_com_score(
+        self,
+        tags_mapeadas: list[TagMapeada],
+        modificacoes: list[dict],
+    ) -> ResultadoVinculacao:
+        """
+        Vincula tags às modificações baseado em sobreposição de posições.
+
+        Para cada modificação, calcula a sobreposição com cada tag mapeada.
+        Aplica thresholds para categorizar a vinculação:
+        - Alta confiança (score ≥ 0.8): vinculação automática
+        - Média confiança (0.5 ≤ score < 0.8): revisão manual recomendada
+        - Baixa confiança (score < 0.5): não vinculada
+
+        Args:
+            tags_mapeadas: Lista de tags com posições recalculadas no original
+            modificacoes: Lista de modificações detectadas com posições
+
+        Returns:
+            ResultadoVinculacao com listas de vinculadas, revisao_manual, nao_vinculadas
+        """
+        print("🔗 Vinculando tags às modificações por sobreposição")
+        print(f"   Total de tags mapeadas: {len(tags_mapeadas)}")
+        print(f"   Total de modificações: {len(modificacoes)}")
+        
+        # Debug: mostrar primeiras 3 tags
+        if tags_mapeadas and len(tags_mapeadas) >= 3:
+            print(f"\n🏷️  Exemplo de tags mapeadas (primeiras 3):")
+            for i, tag in enumerate(tags_mapeadas[:3]):
+                print(f"   Tag {i+1}: {tag.tag_nome} [{tag.posicao_inicio_original}-{tag.posicao_fim_original}] método={tag.metodo}")
+
+        vinculadas = []
+        revisao_manual = []
+        nao_vinculadas = []
+
+        for idx, modificacao in enumerate(modificacoes):
+            mod_inicio = modificacao.get("posicao_inicio", 0)
+            mod_fim = modificacao.get("posicao_fim", 0)
+            mod_tipo = modificacao.get("tipo", "")
+            
+            # Debug: primeiras 3 modificações
+            if idx < 3:
+                print(f"\n📝 Modificação {idx+1}: tipo={mod_tipo} [{mod_inicio}-{mod_fim}]")
+
+            melhor_tag = None
+            melhor_score = 0.0
+            melhor_sobreposicao = 0
+
+            # Calcular sobreposição com cada tag
+            for tag in tags_mapeadas:
+                # Calcular sobreposição das posições
+                inicio_sobreposicao = max(mod_inicio, tag.posicao_inicio_original)
+                fim_sobreposicao = min(mod_fim, tag.posicao_fim_original)
+                tamanho_sobreposicao = max(0, fim_sobreposicao - inicio_sobreposicao)
+
+                if tamanho_sobreposicao == 0:
+                    continue  # Sem sobreposição
+                
+                # Debug: log TODAS as sobreposições (não só primeiras 3)
+                if tamanho_sobreposicao > 0:
+                    print(f"      → Mod[{mod_inicio}-{mod_fim}] ∩ Tag {tag.tag_nome}[{tag.posicao_inicio_original}-{tag.posicao_fim_original}]: {tamanho_sobreposicao} chars")
+
+                # Calcular tamanhos
+                tamanho_modificacao = mod_fim - mod_inicio
+                tamanho_tag = tag.posicao_fim_original - tag.posicao_inicio_original
+
+                # Score de sobreposição: percentual da menor região coberta
+                # Exemplo: se mod=10 chars e tag=100 chars, e sobreposição=10,
+                # então score = 10/10 = 1.0 (modificação inteira dentro da tag)
+                tamanho_menor = min(tamanho_modificacao, tamanho_tag)
+                score_sobreposicao = (
+                    tamanho_sobreposicao / tamanho_menor if tamanho_menor > 0 else 0.0
+                )
+
+                # Combinar com score de inferência da tag
+                # Score final = média ponderada (70% sobreposição + 30% inferência)
+                score_final = (0.7 * score_sobreposicao) + (0.3 * tag.score_inferencia)
+
+                if score_final > melhor_score:
+                    melhor_score = score_final
+                    melhor_tag = tag
+                    melhor_sobreposicao = tamanho_sobreposicao
+
+            # Categorizar baseado no score
+            if melhor_tag is None:
+                # Nenhuma tag encontrada
+                nao_vinculadas.append(
+                    {
+                        "modificacao": modificacao,
+                        "motivo": "sem_sobreposicao",
+                        "score": 0.0,
+                    }
+                )
+                print(
+                    f"   ❌ Modificação [{mod_inicio}-{mod_fim}] tipo={mod_tipo}: sem tag correspondente"
+                )
+
+            elif melhor_score >= 0.8:
+                # Alta confiança - vinculação automática
+                vinculadas.append(
+                    {
+                        "modificacao": modificacao,
+                        "tag": melhor_tag,
+                        "score": melhor_score,
+                        "sobreposicao_chars": melhor_sobreposicao,
+                        "metodo_inferencia": melhor_tag.metodo,
+                    }
+                )
+                print(
+                    f"   ✅ Modificação [{mod_inicio}-{mod_fim}] → Tag {melhor_tag.tag_nome} "
+                    f"(score={melhor_score:.2f}, método={melhor_tag.metodo})"
+                )
+
+            elif melhor_score >= 0.5:
+                # Média confiança - revisão manual
+                revisao_manual.append(
+                    {
+                        "modificacao": modificacao,
+                        "tag": melhor_tag,
+                        "score": melhor_score,
+                        "sobreposicao_chars": melhor_sobreposicao,
+                        "metodo_inferencia": melhor_tag.metodo,
+                        "motivo": "score_medio",
+                    }
+                )
+                print(
+                    f"   ⚠️  Modificação [{mod_inicio}-{mod_fim}] → Tag {melhor_tag.tag_nome} "
+                    f"(score={melhor_score:.2f}) - REQUER REVISÃO"
+                )
+
+            else:
+                # Baixa confiança - não vinculada
+                nao_vinculadas.append(
+                    {
+                        "modificacao": modificacao,
+                        "tag_proxima": melhor_tag,
+                        "score": melhor_score,
+                        "motivo": "score_baixo",
+                    }
+                )
+                print(
+                    f"   ❌ Modificação [{mod_inicio}-{mod_fim}]: score muito baixo ({melhor_score:.2f})"
+                )
+
+        resultado = ResultadoVinculacao(
+            vinculadas=vinculadas,
+            nao_vinculadas=nao_vinculadas,
+            revisao_manual=revisao_manual,
+        )
+
+        print("\n📊 Resultado da vinculação:")
+        print(f"   ✅ Vinculadas: {len(vinculadas)}")
+        print(f"   ⚠️  Revisão manual: {len(revisao_manual)}")
+        print(f"   ❌ Não vinculadas: {len(nao_vinculadas)}")
+        print(f"   📈 Taxa de sucesso: {resultado.taxa_sucesso():.1f}%")
+        print(f"   📊 Taxa de cobertura: {resultado.taxa_cobertura():.1f}%")
+
+        return resultado
+
+    # ============================================================================
+    # FIM FASE 4
+    # ============================================================================
+
+    # ============================================================================
+    # FASE 5: ROBUSTEZ E INTEGRAÇÃO
+    # ============================================================================
+
+    def _vincular_modificacoes_clausulas_novo(
+        self,
+        modificacoes: list[dict],
+        tags_modelo: list[dict],
+        texto_com_tags: str,
+        texto_original: str,
+    ) -> dict:
+        """
+        NOVO ALGORITMO UNIFICADO: Vincula modificações às cláusulas usando algoritmo inteligente.
+
+        Este é o novo método que substitui _vincular_modificacoes_clausulas() antigo.
+        Decide automaticamente entre Caminho Feliz (offset) e Caminho Real (conteúdo)
+        baseado na similaridade entre os documentos.
+
+        Fluxo:
+        1. Calcula similaridade entre arquivo COM tags e arquivo ORIGINAL
+        2. Se similaridade ≥ 0.95 → Caminho Feliz (mapeamento por offset)
+        3. Se similaridade < 0.95 → Caminho Real (inferência por conteúdo)
+        4. Vincula modificações às tags mapeadas por sobreposição
+        5. Categoriza em vinculadas/revisao_manual/nao_vinculadas
+
+        Args:
+            modificacoes: Lista de modificações detectadas com posições
+            tags_modelo: Lista de tags do modelo com posições no arquivo COM tags
+            texto_com_tags: Texto completo do arquivo COM tags do modelo
+            texto_original: Texto completo do arquivo original da versão
+
+        Returns:
+            Dict com:
+                - resultado: ResultadoVinculacao com categorização
+                - metodo_usado: "offset" ou "conteudo"
+                - similaridade: float entre 0.0 e 1.0
+                - tags_mapeadas: list[TagMapeada]
+        """
+        print("\n" + "=" * 70)
+        print("🚀 NOVO ALGORITMO DE VINCULAÇÃO INTELIGENTE")
+        print("=" * 70)
+
+        # Validações
+        if not tags_modelo:
+            print("⚠️  Nenhuma tag do modelo disponível")
+            return {
+                "resultado": ResultadoVinculacao(
+                    vinculadas=[], nao_vinculadas=modificacoes, revisao_manual=[]
+                ),
+                "metodo_usado": "none",
+                "similaridade": 0.0,
+                "tags_mapeadas": [],
+            }
+
+        if not modificacoes:
+            print("ℹ️  Nenhuma modificação para vincular")
+            return {
+                "resultado": ResultadoVinculacao(
+                    vinculadas=[], nao_vinculadas=[], revisao_manual=[]
+                ),
+                "metodo_usado": "none",
+                "similaridade": 0.0,
+                "tags_mapeadas": [],
+            }
+
+        # PASSO 1: Remover tags do texto_com_tags para criar versão limpa
+        print("\n📝 Passo 1: Preparando textos...")
+        texto_sem_tags = re.sub(r"\{\{/?[^}]+\}\}", "", texto_com_tags)
+        print(f"   Texto COM tags: {len(texto_com_tags)} caracteres")
+        print(f"   Texto SEM tags: {len(texto_sem_tags)} caracteres")
+        print(f"   Texto ORIGINAL: {len(texto_original)} caracteres")
+
+        # PASSO 2: Calcular similaridade para decidir método
+        print("\n🔍 Passo 2: Calculando similaridade entre documentos...")
+        similaridade = calcular_similaridade(texto_sem_tags, texto_original)
+        print(f"   Similaridade: {similaridade:.2%}")
+
+        # PASSO 3: Decidir método baseado em threshold
+        # Reduzido de 0.95 para 0.90 baseado em testes reais
+        # Similaridade de 94% indica documentos muito similares → offset é mais preciso
+        THRESHOLD_CAMINHO_FELIZ = 0.90
+        # TEMP: Forçar uso de conteúdo para debug
+        usar_offset = False  # similaridade >= THRESHOLD_CAMINHO_FELIZ
+        print(f"\n🐛 DEBUG: Forçando uso de CONTEÚDO para teste")
+
+        print(
+            f"\n🎯 Passo 3: Decisão de método (threshold: {THRESHOLD_CAMINHO_FELIZ:.0%})"
+        )
+        if usar_offset:
+            print(
+                f"   ✅ Similaridade {similaridade:.2%} ≥ {THRESHOLD_CAMINHO_FELIZ:.0%}"
+            )
+            print("   → Usando CAMINHO FELIZ (mapeamento por offset)")
+            metodo_usado = "offset"
+        else:
+            print(
+                f"   ⚠️  Similaridade {similaridade:.2%} < {THRESHOLD_CAMINHO_FELIZ:.0%}"
+            )
+            print("   → Usando CAMINHO REAL (inferência por conteúdo)")
+            metodo_usado = "conteudo"
+
+        # PASSO 4: Mapear tags para coordenadas do arquivo original
+        print(f"\n🗺️  Passo 4: Mapeando {len(tags_modelo)} tags...")
+        if usar_offset:
+            tags_mapeadas = self._mapear_tags_via_offset(
+                tags=tags_modelo,
+                arquivo_com_tags_text=texto_com_tags,
+            )
+        else:
+            tags_mapeadas = self._inferir_posicoes_via_conteudo_com_contexto(
+                tags=tags_modelo,
+                arquivo_original_text=texto_original,
+                arquivo_com_tags_text=texto_com_tags,
+                tamanho_contexto=50,
+            )
+
+        if not tags_mapeadas:
+            print("   ❌ Nenhuma tag foi mapeada com sucesso!")
+            return {
+                "resultado": ResultadoVinculacao(
+                    vinculadas=[], nao_vinculadas=modificacoes, revisao_manual=[]
+                ),
+                "metodo_usado": metodo_usado,
+                "similaridade": similaridade,
+                "tags_mapeadas": [],
+            }
+
+        print(f"   ✅ {len(tags_mapeadas)} tags mapeadas com sucesso")
+
+        # PASSO 5: Vincular modificações às tags por sobreposição
+        print(f"\n🔗 Passo 5: Vinculando {len(modificacoes)} modificações...")
+        resultado = self._vincular_por_sobreposicao_com_score(
+            tags_mapeadas=tags_mapeadas, modificacoes=modificacoes
+        )
+
+        # Resumo final
+        print("\n" + "=" * 70)
+        print("📊 RESULTADO FINAL")
+        print("=" * 70)
+        print(f"Método usado: {metodo_usado.upper()}")
+        print(f"Similaridade: {similaridade:.2%}")
+        print(f"Tags mapeadas: {len(tags_mapeadas)}")
+        print(f"Modificações processadas: {len(modificacoes)}")
+        print(f"  ✅ Vinculadas (alta confiança): {len(resultado.vinculadas)}")
+        print(f"  ⚠️  Revisão manual (média confiança): {len(resultado.revisao_manual)}")
+        print(f"  ❌ Não vinculadas (baixa confiança): {len(resultado.nao_vinculadas)}")
+        print(f"Taxa de sucesso: {resultado.taxa_sucesso():.1f}%")
+        print(f"Taxa de cobertura: {resultado.taxa_cobertura():.1f}%")
+        print("=" * 70)
+
+        return {
+            "resultado": resultado,
+            "metodo_usado": metodo_usado,
+            "similaridade": similaridade,
+            "tags_mapeadas": tags_mapeadas,
+        }
+
+    # ============================================================================
+    # FIM FASE 5
     # ============================================================================
 
     def _vincular_modificacoes_clausulas(
@@ -1694,8 +2067,20 @@ class DirectusAPI:
             print(f"❌ Erro no cálculo de blocos: {e}")
             return {"total_blocos": 1, "blocos_detalhados": [], "metodo": "fallback"}
 
-    def _extrair_modificacoes_do_diff(self, diff_html):
-        """Extrai modificações do HTML diff, similar ao algoritmo do frontend"""
+    def _extrair_modificacoes_do_diff(
+        self, diff_html, texto_original=None, texto_modificado=None
+    ):
+        """
+        Extrai modificações do HTML diff com posições de caracteres.
+
+        Args:
+            diff_html: HTML gerado pelo diff
+            texto_original: Texto original completo (para calcular posições)
+            texto_modificado: Texto modificado completo (para calcular posições)
+
+        Returns:
+            Lista de modificações com posicao_inicio e posicao_fim
+        """
         modificacoes = []
         modificacao_id = 1
 
@@ -1703,6 +2088,7 @@ class DirectusAPI:
 
         try:
             # Usar regex para encontrar elementos de diff
+            import difflib
             import re
 
             # Encontrar cabeçalhos de cláusulas (mantido apenas para logs/debug)
@@ -1720,6 +2106,14 @@ class DirectusAPI:
             added_matches = list(re.finditer(added_pattern, diff_html, re.DOTALL))
             print(f"📝 Elementos adicionados encontrados: {len(added_matches)}")
 
+            # Criar SequenceMatcher para mapear posições
+            matcher = None
+            if texto_original and texto_modificado:
+                matcher = difflib.SequenceMatcher(
+                    None, texto_original, texto_modificado
+                )
+                print("✅ SequenceMatcher criado para calcular posições exatas")
+
             # Processar pares de remoção/adição
             max_elements = max(len(removed_matches), len(added_matches))
 
@@ -1729,6 +2123,49 @@ class DirectusAPI:
 
                 removed_text = removed_match.group(1).strip() if removed_match else None
                 added_text = added_match.group(1).strip() if added_match else None
+
+                # Calcular posições usando difflib
+                posicao_inicio = 0
+                posicao_fim = 0
+
+                if matcher and removed_text:
+                    # Tentar encontrar o texto removido no original
+                    pos = texto_original.find(removed_text)
+                    if pos >= 0:
+                        posicao_inicio = pos
+                        posicao_fim = pos + len(removed_text)
+                    else:
+                        # Busca fuzzy com primeiros 50 chars
+                        trecho_busca = (
+                            removed_text[:50]
+                            if len(removed_text) > 50
+                            else removed_text
+                        )
+                        pos = texto_original.find(trecho_busca)
+                        if pos >= 0:
+                            posicao_inicio = pos
+                            posicao_fim = pos + len(removed_text)
+
+                elif matcher and added_text:
+                    # Para inserções, usar posição no texto modificado
+                    pos = texto_modificado.find(added_text)
+                    if pos >= 0:
+                        # Mapear posição do modificado de volta para o original
+                        # Encontrar bloco correspondente no original
+                        for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+                            if tag == "insert" and j1 <= pos < j2:
+                                posicao_inicio = i1
+                                posicao_fim = i1
+                                break
+                            elif tag == "replace" and j1 <= pos < j2:
+                                posicao_inicio = i1
+                                posicao_fim = i2
+                                break
+                            elif tag == "equal" and j1 <= pos < j2:
+                                offset = pos - j1
+                                posicao_inicio = i1 + offset
+                                posicao_fim = i1 + offset
+                                break
 
                 # Não popular campo 'clausula' aqui - isso será feito pela vinculação com tags
                 # A vinculação correta acontece em _vincular_modificacoes_clausulas()
@@ -1742,6 +2179,8 @@ class DirectusAPI:
                             "css_class": "diff-alteracao",
                             "confianca": 0.95,
                             "posicao": {"linha": i + 1, "coluna": 1},
+                            "posicao_inicio": posicao_inicio,
+                            "posicao_fim": posicao_fim,
                             "conteudo": {"original": removed_text, "novo": added_text},
                             "tags_relacionadas": self._extrair_palavras_chave(
                                 removed_text + " " + added_text
@@ -1757,6 +2196,8 @@ class DirectusAPI:
                             "css_class": "diff-insercao",
                             "confianca": 0.9,
                             "posicao": {"linha": i + 1, "coluna": 1},
+                            "posicao_inicio": posicao_inicio,
+                            "posicao_fim": posicao_fim,
                             "conteudo": {"novo": added_text},
                             "tags_relacionadas": self._extrair_palavras_chave(
                                 added_text
@@ -1772,6 +2213,8 @@ class DirectusAPI:
                             "css_class": "diff-remocao",
                             "confianca": 0.85,
                             "posicao": {"linha": i + 1, "coluna": 1},
+                            "posicao_inicio": posicao_inicio,
+                            "posicao_fim": posicao_fim,
                             "conteudo": {"original": removed_text},
                             "tags_relacionadas": self._extrair_palavras_chave(
                                 removed_text
@@ -1782,6 +2225,9 @@ class DirectusAPI:
                 modificacao_id += 1
 
             print(f"✅ {len(modificacoes)} modificações extraídas do diff")
+            if modificacoes and modificacoes[0].get("posicao_inicio") is not None:
+                print("📍 Posições de caracteres calculadas para vinculação")
+            print("ℹ️  Vinculação com cláusulas será feita através das tags do modelo")
             print("ℹ️  Vinculação com cláusulas será feita através das tags do modelo")
             return modificacoes
 
