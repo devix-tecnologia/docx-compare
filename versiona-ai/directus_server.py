@@ -2,13 +2,17 @@
 Servidor API para integração real com Directus
 Conecta com https://contract.devix.co usando as credenciais do .env
 Inclui agrupamento posicional para cálculo preciso de blocos
+Implementa algoritmo unificado de vinculação de modificações às cláusulas
 """
 
+import difflib
 import os
 import re
 import signal
 import sys
+import unicodedata
 import uuid
+from dataclasses import dataclass, field
 from datetime import datetime
 
 import requests
@@ -53,6 +57,96 @@ DIRECTUS_HEADERS = {
     "Authorization": f"Bearer {DIRECTUS_TOKEN}",
     "Content-Type": "application/json",
 }
+
+
+# ============================================================================
+# ESTRUTURAS DE DADOS PARA VINCULAÇÃO UNIFICADA
+# ============================================================================
+
+
+@dataclass
+class TagMapeada:
+    """Tag com posições recalculadas no sistema de coordenadas original."""
+
+    tag_id: str
+    tag_nome: str
+    posicao_inicio_original: int  # Posição no arquivo SEM tags
+    posicao_fim_original: int
+    clausulas: list[dict]
+    score_inferencia: float  # 1.0 (offset), 0.9-0.5 (contexto)
+    metodo: str  # "offset", "contexto_completo", "contexto_parcial", "conteudo"
+
+
+@dataclass
+class ResultadoVinculacao:
+    """Resultado da vinculação com categorização por confiança."""
+
+    vinculadas: list[tuple[dict, str, float]] = field(
+        default_factory=list
+    )  # (modificacao, clausula_id, score)
+    nao_vinculadas: list[dict] = field(
+        default_factory=list
+    )  # modificacoes sem candidatos
+    revisao_manual: list[tuple[dict, list[dict], float]] = field(
+        default_factory=list
+    )  # (mod, candidatos, score)
+
+    def taxa_sucesso(self) -> float:
+        """Retorna a taxa de vinculação automática."""
+        total = (
+            len(self.vinculadas) + len(self.nao_vinculadas) + len(self.revisao_manual)
+        )
+        return len(self.vinculadas) / total if total > 0 else 0.0
+
+    def taxa_cobertura(self) -> float:
+        """Retorna a taxa de cobertura (inclui revisão manual como potencial sucesso)."""
+        total = (
+            len(self.vinculadas) + len(self.nao_vinculadas) + len(self.revisao_manual)
+        )
+        cobertos = len(self.vinculadas) + len(self.revisao_manual)
+        return cobertos / total if total > 0 else 0.0
+
+
+# ============================================================================
+# FUNÇÕES UTILITÁRIAS DE NORMALIZAÇÃO E SIMILARIDADE
+# ============================================================================
+
+
+def normalizar_texto(texto: str) -> str:
+    """
+    Normalização padronizada para todo o sistema.
+    Garante consistência em tags, modificações e contexto.
+    """
+    if not texto:
+        return ""
+
+    # 1. Unicode normalization (NFC) - garante forma canônica composta
+    # "é" pode ser: U+00E9 (único) OU U+0065 + U+0301 (e + acento)
+    # NFC garante sempre U+00E9
+    texto = unicodedata.normalize("NFC", texto)
+
+    # 2. Remover variações de espaço (nbsp, thin space, etc)
+    texto = re.sub(r"[\u00A0\u1680\u2000-\u200B\u202F\u205F\u3000]", " ", texto)
+
+    # 3. Normalizar espaços múltiplos, tabs, quebras de linha → espaço único
+    texto = re.sub(r"\s+", " ", texto)
+
+    # 4. Remover espaços no início/fim
+    texto = texto.strip()
+
+    return texto
+
+
+def calcular_similaridade(texto1: str, texto2: str) -> float:
+    """
+    Calcula similaridade entre dois textos normalizados.
+    Retorna valor entre 0.0 (totalmente diferentes) e 1.0 (idênticos).
+    """
+    if not texto1 or not texto2:
+        return 0.0
+
+    # Calcular e retornar similaridade diretamente
+    return difflib.SequenceMatcher(None, texto1, texto2).ratio()
 
 
 def setup_signal_handlers():
@@ -663,6 +757,221 @@ class DirectusAPI:
                 directus_mod["tags"] = str(tags)
 
         return directus_mod
+
+    # ============================================================================
+    # FASE 2: CAMINHO FELIZ - MAPEAMENTO VIA OFFSET
+    # ============================================================================
+
+    def _mapear_tags_via_offset(
+        self, tags: list[dict], arquivo_com_tags_text: str
+    ) -> list[TagMapeada]:
+        """
+        Mapeia tags para o sistema de coordenadas original usando cálculo de offset.
+
+        Este método é usado no "Caminho Feliz" quando os documentos são idênticos.
+        Calcula o offset acumulado removendo as tags e recalculando as posições.
+
+        Args:
+            tags: Lista de tags do modelo com posições no arquivo COM tags
+            arquivo_com_tags_text: Texto completo do arquivo COM tags
+
+        Returns:
+            Lista de TagMapeada com posições recalculadas no arquivo SEM tags
+        """
+        print("🎯 Mapeando tags via offset (Caminho Feliz)")
+
+        # 1. Encontrar todas as tags no texto e calcular offsets acumulados
+        # Pattern para encontrar tags: {{TAG-xxx}} ou {{/TAG-xxx}} ou qualquer {{...}}
+        tag_pattern = re.compile(r"\{\{/?[^}]+\}\}")
+
+        # Lista de (posição_inicio_tag, tamanho_tag, conteudo_tag)
+        tags_encontradas = []
+        for match in tag_pattern.finditer(arquivo_com_tags_text):
+            tags_encontradas.append(
+                (match.start(), match.end() - match.start(), match.group())
+            )
+
+        print(f"   📍 Encontradas {len(tags_encontradas)} tags no texto")
+
+        # 2. Construir mapa de offsets: posicao_com_tags → offset_acumulado
+        # Cada tag adiciona seu tamanho ao offset
+        offset_map = []  # Lista de (posicao, offset_acumulado)
+        offset_atual = 0
+
+        for pos_inicio, tamanho, _ in tags_encontradas:
+            # Antes desta tag, o offset é o acumulado até agora
+            offset_map.append((pos_inicio, offset_atual))
+            # Depois desta tag, acumular seu tamanho
+            offset_atual += tamanho
+
+        # Adicionar ponto final
+        offset_map.append((len(arquivo_com_tags_text), offset_atual))
+
+        print(f"   📊 Offset final acumulado: {offset_atual} caracteres de tags")
+
+        # 3. Mapear cada tag para o sistema de coordenadas original
+        tags_mapeadas = []
+
+        for tag in tags:
+            # Posições originais (no arquivo COM tags)
+            pos_inicio_com_tags = tag.get("posicao_inicio_texto", 0)
+            pos_fim_com_tags = tag.get("posicao_fim_texto", 0)
+
+            # Encontrar offset aplicável no início
+            # Pegar o maior offset de uma tag que começa ANTES do início desta tag
+            offset_inicio = 0
+            for pos, offset in offset_map:
+                if pos < pos_inicio_com_tags:  # Menor que (não menor ou igual)
+                    offset_inicio = offset
+                else:
+                    break
+
+            # Encontrar offset aplicável no fim
+            # Pegar o maior offset de uma tag que começa ANTES OU NO fim desta tag
+            offset_fim = 0
+            for pos, offset in offset_map:
+                if pos < pos_fim_com_tags:  # Menor que (não menor ou igual)
+                    offset_fim = offset
+                else:
+                    break
+
+            # Calcular posições no arquivo SEM tags
+            pos_inicio_original = pos_inicio_com_tags - offset_inicio
+            pos_fim_original = pos_fim_com_tags - offset_fim
+
+            # Criar TagMapeada
+            tag_mapeada = TagMapeada(
+                tag_id=tag.get("id", ""),
+                tag_nome=tag.get("tag_nome", ""),
+                posicao_inicio_original=pos_inicio_original,
+                posicao_fim_original=pos_fim_original,
+                clausulas=tag.get("clausulas", []),
+                score_inferencia=1.0,  # Caminho Feliz = confiança máxima
+                metodo="offset",
+            )
+
+            tags_mapeadas.append(tag_mapeada)
+
+        print(f"   ✅ {len(tags_mapeadas)} tags mapeadas com sucesso")
+        return tags_mapeadas
+
+    # ============================================================================
+    # FASE 3: CAMINHO REAL - INFERÊNCIA POR CONTEÚDO COM CONTEXTO
+    # ============================================================================
+
+    def _inferir_posicoes_via_conteudo_com_contexto(
+        self,
+        tags: list[dict],
+        arquivo_original_text: str,
+        arquivo_com_tags_text: str,
+        tamanho_contexto: int = 50,
+    ) -> list[TagMapeada]:
+        """
+        Infere posições das tags no arquivo original usando busca por conteúdo + contexto.
+
+        Este método é usado no "Caminho Real" quando os documentos são diferentes.
+        Extrai o conteúdo de cada tag e busca no arquivo original usando contexto
+        de vizinhança para desambiguar.
+
+        Args:
+            tags: Lista de tags do modelo com posições no arquivo COM tags
+            arquivo_original_text: Texto do arquivo original (da versão)
+            arquivo_com_tags_text: Texto completo do arquivo COM tags (do modelo)
+            tamanho_contexto: Quantos caracteres antes/depois extrair como contexto
+
+        Returns:
+            Lista de TagMapeada com posições inferidas no arquivo original
+        """
+        print("🎯 Inferindo posições via conteúdo (Caminho Real)")
+
+        tags_mapeadas = []
+
+        for tag in tags:
+            pos_inicio = tag.get("posicao_inicio_texto", 0)
+            pos_fim = tag.get("posicao_fim_texto", 0)
+
+            # Extrair conteúdo da tag (SEM normalizar - trabalhar com texto literal)
+            conteudo_tag = arquivo_com_tags_text[pos_inicio:pos_fim]
+
+            if not conteudo_tag:
+                print(f"   ⚠️  Tag {tag.get('tag_nome')} sem conteúdo, pulando")
+                continue
+
+            # Extrair contexto antes e depois (SEM normalizar)
+            contexto_antes_start = max(0, pos_inicio - tamanho_contexto)
+            contexto_antes = arquivo_com_tags_text[contexto_antes_start:pos_inicio]
+
+            contexto_depois_end = min(
+                len(arquivo_com_tags_text), pos_fim + tamanho_contexto
+            )
+            contexto_depois = arquivo_com_tags_text[pos_fim:contexto_depois_end]
+
+            # Tentar encontrar com contexto completo (score 0.9)
+            sequencia_completa = f"{contexto_antes}{conteudo_tag}{contexto_depois}"
+            pos_encontrada = arquivo_original_text.find(sequencia_completa)
+
+            if pos_encontrada >= 0:
+                # Encontrou com contexto completo!
+                offset_conteudo = len(contexto_antes)
+                pos_inicio_original = pos_encontrada + offset_conteudo
+                pos_fim_original = pos_inicio_original + len(conteudo_tag)
+                score = 0.9
+                metodo = "contexto_completo"
+            else:
+                # Tentar com contexto parcial (apenas antes OU depois)
+                sequencia_antes = f"{contexto_antes}{conteudo_tag}"
+                pos_encontrada = arquivo_original_text.find(sequencia_antes)
+
+                if pos_encontrada >= 0:
+                    offset_conteudo = len(contexto_antes)
+                    pos_inicio_original = pos_encontrada + offset_conteudo
+                    pos_fim_original = pos_inicio_original + len(conteudo_tag)
+                    score = 0.7
+                    metodo = "contexto_parcial_antes"
+                else:
+                    sequencia_depois = f"{conteudo_tag}{contexto_depois}"
+                    pos_encontrada = arquivo_original_text.find(sequencia_depois)
+
+                    if pos_encontrada >= 0:
+                        pos_inicio_original = pos_encontrada
+                        pos_fim_original = pos_inicio_original + len(conteudo_tag)
+                        score = 0.7
+                        metodo = "contexto_parcial_depois"
+                    else:
+                        # Último recurso: apenas conteúdo
+                        pos_encontrada = arquivo_original_text.find(conteudo_tag)
+
+                        if pos_encontrada >= 0:
+                            pos_inicio_original = pos_encontrada
+                            pos_fim_original = pos_encontrada + len(conteudo_tag)
+                            score = 0.5
+                            metodo = "conteudo_apenas"
+                        else:
+                            # Não encontrou!
+                            print(
+                                f"   ❌ Tag {tag.get('tag_nome')} não encontrada no arquivo original"
+                            )
+                            continue
+
+            # Criar TagMapeada
+            tag_mapeada = TagMapeada(
+                tag_id=tag.get("id", ""),
+                tag_nome=tag.get("tag_nome", ""),
+                posicao_inicio_original=pos_inicio_original,
+                posicao_fim_original=pos_fim_original,
+                clausulas=tag.get("clausulas", []),
+                score_inferencia=score,
+                metodo=metodo,
+            )
+
+            tags_mapeadas.append(tag_mapeada)
+
+        print(f"   ✅ {len(tags_mapeadas)}/{len(tags)} tags inferidas com sucesso")
+        return tags_mapeadas
+
+    # ============================================================================
+    # FIM FASE 3
+    # ============================================================================
 
     def _vincular_modificacoes_clausulas(
         self,
