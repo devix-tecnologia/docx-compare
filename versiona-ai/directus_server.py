@@ -647,15 +647,17 @@ class DirectusAPI:
         try:
             # Converter todas as modificações para o formato Directus
             modificacoes_directus = []
-            for mod in modificacoes:
+            for idx, mod in enumerate(modificacoes):
                 try:
                     modificacao_data = self._converter_modificacao_para_directus(
                         versao_id, mod
                     )
                     modificacoes_directus.append(modificacao_data)
-                    print(f"✅ Modificação {mod['id']} convertida para Directus")
+                    mod_id = mod.get("id", f"mod-{idx}")
+                    print(f"✅ Modificação {mod_id} convertida para Directus")
                 except Exception as e:
-                    print(f"❌ Erro ao converter modificação {mod['id']}: {e}")
+                    mod_id = mod.get("id", f"mod-{idx}")
+                    print(f"❌ Erro ao converter modificação {mod_id}: {e}")
 
             # Atualizar versão com todas as modificações de uma vez (transação única)
             update_data = {
