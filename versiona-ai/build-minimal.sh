@@ -3,6 +3,11 @@
 
 set -e
 
+# Configurar Docker para usar Colima se disponível
+if [ -S "${HOME}/.colima/default/docker.sock" ]; then
+    export DOCKER_HOST="unix://${HOME}/.colima/default/docker.sock"
+fi
+
 REGISTRY="docker-registry.de.vix.br"
 IMAGE_NAME="versiona-ai-minimal"
 VERSION=$(date +%Y%m%d-%H%M%S)
