@@ -653,11 +653,9 @@ class DirectusAPI:
                         versao_id, mod
                     )
                     modificacoes_directus.append(modificacao_data)
-                    mod_id = mod.get("id", f"mod-{idx}")
-                    print(f"✅ Modificação {mod_id} convertida para Directus")
+                    print(f"✅ Modificação {idx + 1}/{len(modificacoes)} convertida para Directus")
                 except Exception as e:
-                    mod_id = mod.get("id", f"mod-{idx}")
-                    print(f"❌ Erro ao converter modificação {mod_id}: {e}")
+                    print(f"❌ Erro ao converter modificação {idx + 1}: {e}")
 
             # Atualizar versão com todas as modificações de uma vez (transação única)
             update_data = {
@@ -775,12 +773,12 @@ class DirectusAPI:
             # Campo clausula é uma FK para tabela clausula (tipo uuid)
             directus_mod["clausula"] = mod["clausula_id"]
             print(
-                f"📋 Cláusula vinculada para modificação {mod.get('id')}: {mod.get('clausula_numero')} - {mod.get('clausula_nome')}"
+                f"📋 Cláusula vinculada: {mod.get('clausula_numero')} - {mod.get('clausula_nome')}"
             )
         else:
             # Se não há clausula_id, não enviar o campo (deixar null no banco)
             print(
-                f"⚠️  Modificação {mod.get('id')} sem cláusula vinculada (nenhuma tag correspondente encontrada)"
+                "⚠️  Modificação sem cláusula vinculada (nenhuma tag correspondente encontrada)"
             )
 
         # Adicionar campos opcionais se disponíveis
