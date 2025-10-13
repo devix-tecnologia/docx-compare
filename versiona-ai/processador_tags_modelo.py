@@ -499,7 +499,7 @@ class ProcessadorTagsModelo:
         print(f"🔄 Atualizando modelo {modelo_id} com {len(tags_data)} tags...")
 
         response = requests.patch(
-            update_url, headers=self.headers, json=update_data, timeout=30
+            update_url, headers=self.headers, json=update_data, timeout=300
         )
 
         if response.status_code == 200:

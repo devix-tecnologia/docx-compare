@@ -676,7 +676,7 @@ class DirectusAPI:
                 f"{self.base_url}/items/versao/{versao_id}",
                 headers=DIRECTUS_HEADERS,
                 json=update_data,
-                timeout=30,  # Timeout maior para transação
+                timeout=300,  # Timeout maior para transação (5 minutos)
             )
 
             if response.status_code == 200:
@@ -1805,7 +1805,7 @@ class DirectusAPI:
             # URL para download do arquivo
             download_url = f"{self.base_url}/assets/{arquivo_id}"
 
-            response = requests.get(download_url, headers=DIRECTUS_HEADERS, timeout=30)
+            response = requests.get(download_url, headers=DIRECTUS_HEADERS, timeout=300)
 
             if response.status_code != 200:
                 print(f"❌ Erro ao baixar arquivo {arquivo_id}: {response.status_code}")
