@@ -12,7 +12,7 @@ import signal
 import sys
 import unicodedata
 import uuid
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from datetime import datetime
 
@@ -1099,13 +1099,14 @@ class DirectusAPI:
             max_workers = multiprocessing.cpu_count()
 
         print(
-            f"🎯 Inferindo posições via conteúdo (Caminho Real) - {max_workers} workers"
+            f"🎯 Inferindo posições via conteúdo (Caminho Real) - {max_workers} workers (PROCESSOS)"
         )
 
         tags_mapeadas = []
 
-        # Processar tags em paralelo usando ThreadPoolExecutor
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        # Processar tags em paralelo usando ProcessPoolExecutor (processos, não threads!)
+        # ProcessPoolExecutor contorna o GIL do Python para tarefas CPU-bound
+        with ProcessPoolExecutor(max_workers=max_workers) as executor:
             # Submeter todas as tags para processamento
             future_to_tag = {
                 executor.submit(
