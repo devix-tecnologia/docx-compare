@@ -12,8 +12,12 @@ echo "📦 Registry: ${REGISTRY}"
 echo "🏷️  Imagem: ${IMAGE_NAME}"
 echo "🔖 Versão: ${VERSION}"
 
-cd /home/sidarta/repositorio/devix/docx-compare
+# Detectar caminho do repositório automaticamente
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$(dirname "$SCRIPT_DIR")"
+cd "$REPO_DIR"
 
+echo "📂 Diretório: $REPO_DIR"
 echo "🔨 Build super rápido usando imagem base existente..."
 docker build \
     --platform linux/amd64 \
