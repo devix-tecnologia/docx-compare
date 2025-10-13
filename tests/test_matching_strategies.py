@@ -13,8 +13,8 @@ import pytest
 versiona_ai_path = Path(__file__).parent.parent / "versiona-ai"
 sys.path.insert(0, str(versiona_ai_path))
 
-from matching import DifflibMatcher, MatchingStrategy, RapidFuzzMatcher
-from matching.rapidfuzz_matcher import RAPIDFUZZ_AVAILABLE
+from matching import DifflibMatcher, MatchingStrategy, RapidFuzzMatcher  # noqa: E402
+from matching.rapidfuzz_matcher import RAPIDFUZZ_AVAILABLE  # noqa: E402
 
 
 # Fixture com diferentes estratégias

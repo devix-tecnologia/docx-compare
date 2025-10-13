@@ -12,7 +12,7 @@ from pathlib import Path
 versiona_ai_path = Path(__file__).parent.parent / "versiona-ai"
 sys.path.insert(0, str(versiona_ai_path))
 
-from matching import DifflibMatcher, RapidFuzzMatcher
+from matching import DifflibMatcher, RapidFuzzMatcher  # noqa: E402
 
 
 def create_realistic_document(size_kb: int = 500) -> str:

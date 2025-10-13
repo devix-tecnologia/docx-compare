@@ -13,7 +13,7 @@ import pytest
 versiona_ai_path = Path(__file__).parent.parent / "versiona-ai"
 sys.path.insert(0, str(versiona_ai_path))
 
-from matching import DifflibMatcher, RapidFuzzMatcher
+from matching import DifflibMatcher, RapidFuzzMatcher  # noqa: E402
 
 
 def create_contract_document() -> str:
@@ -224,18 +224,13 @@ class TestSuccessRate:
         (acentos removidos, palavras alteradas, etc).
         """
         # Cria documentos
-        original = create_contract_document()
         modified = create_modified_document()
 
         # Normaliza espaços
-        original_norm = " ".join(original.split())
         modified_norm = " ".join(modified.split())
 
         # Obtém matcher
-        if matcher_name == "difflib":
-            matcher = DifflibMatcher()
-        else:
-            matcher = RapidFuzzMatcher()
+        matcher = DifflibMatcher() if matcher_name == "difflib" else RapidFuzzMatcher()
 
         # Busca todas as tags
         tags = get_test_tags()

@@ -12,8 +12,11 @@ from pathlib import Path
 versiona_ai_path = Path(__file__).parent.parent / "versiona-ai"
 sys.path.insert(0, str(versiona_ai_path))
 
-from matching import DifflibMatcher, MatchingStrategy
-from matching.rapidfuzz_matcher import RAPIDFUZZ_AVAILABLE, RapidFuzzMatcher
+from matching import DifflibMatcher, MatchingStrategy  # noqa: E402
+from matching.rapidfuzz_matcher import (  # noqa: E402
+    RAPIDFUZZ_AVAILABLE,
+    RapidFuzzMatcher,
+)
 
 
 def benchmark_matcher(
@@ -51,22 +54,25 @@ class TestPerformanceBenchmark:
     def test_benchmark_small_document(self):
         """Benchmark com documento pequeno (~1KB)."""
         needle = "cláusula 5.1 do presente contrato"
-        haystack = """
+        haystack = (
+            """
         CONTRATO DE PRESTAÇÃO DE SERVIÇOS
-        
+
         Entre as partes, doravante denominadas CONTRATANTE e CONTRATADA,
         firmam o presente instrumento de contrato.
-        
+
         CLÁUSULA PRIMEIRA - DO OBJETO
         O presente contrato tem como objeto a prestação de serviços.
-        
+
         CLÁUSULA SEGUNDA - DAS OBRIGAÇÕES
-        Conforme estipulado na cláusula 5.1 do presente contrato, 
+        Conforme estipulado na cláusula 5.1 do presente contrato,
         a CONTRATADA deverá prestar os serviços com qualidade.
-        
+
         CLÁUSULA TERCEIRA - DO PRAZO
         O prazo de vigência será de 12 meses.
-        """ * 10  # Repete 10x para ~1KB
+        """
+            * 10
+        )  # Repete 10x para ~1KB
 
         results = {}
 
@@ -95,8 +101,8 @@ class TestPerformanceBenchmark:
 
         for name, data in results.items():
             print(
-                f"{name:12} | Tempo: {data['time']*1000:7.2f}ms | "
-                f"Similaridade: {data['similarity']*100:5.1f}%"
+                f"{name:12} | Tempo: {data['time'] * 1000:7.2f}ms | "
+                f"Similaridade: {data['similarity'] * 100:5.1f}%"
             )
 
         # Calcula speedup se ambos disponíveis
@@ -116,25 +122,25 @@ class TestPerformanceBenchmark:
         # Cria documento médio (~50KB)
         base_text = """
         CONTRATO DE PRESTAÇÃO DE SERVIÇOS COMPLEXOS
-        
+
         Entre as partes qualificadas, conforme previsto na legislação vigente,
         firmam o presente instrumento particular de contrato de prestação de
         serviços profissionais, mediante as cláusulas e condições seguintes:
-        
+
         CLÁUSULA PRIMEIRA - DO OBJETO
         O presente contrato tem como objeto a prestação de serviços técnicos
         especializados, incluindo consultoria, desenvolvimento e manutenção.
-        
+
         CLÁUSULA SEGUNDA - DAS RESPONSABILIDADES
         Conforme cláusula específica sobre responsabilidades, compete à
         CONTRATADA executar todos os serviços com qualidade e eficiência.
-        
+
         CLÁUSULA TERCEIRA - DO PRAZO E VIGÊNCIA
         O prazo inicial será de 24 meses, renovável automaticamente.
-        
+
         CLÁUSULA QUARTA - DOS VALORES E PAGAMENTOS
         Os valores serão pagos mensalmente mediante apresentação de nota fiscal.
-        
+
         """
         haystack = base_text * 100  # ~50KB
 
@@ -165,8 +171,8 @@ class TestPerformanceBenchmark:
 
         for name, data in results.items():
             print(
-                f"{name:12} | Tempo: {data['time']*1000:7.2f}ms | "
-                f"Similaridade: {data['similarity']*100:5.1f}%"
+                f"{name:12} | Tempo: {data['time'] * 1000:7.2f}ms | "
+                f"Similaridade: {data['similarity'] * 100:5.1f}%"
             )
 
         if "rapidfuzz" in results and "difflib" in results:
@@ -185,37 +191,37 @@ class TestPerformanceBenchmark:
         # Cria documento grande (~500KB) similar ao que temos em produção
         base_text = """
         CONTRATO CORPORATIVO DE PRESTAÇÃO DE SERVIÇOS PROFISSIONAIS
-        
+
         Pelo presente instrumento particular de contrato de prestação de serviços,
         de um lado a empresa CONTRATANTE, e de outro lado a empresa CONTRATADA,
         firmam o presente contrato mediante as seguintes cláusulas e condições:
-        
+
         CLÁUSULA PRIMEIRA - DO OBJETO E ESCOPO
         O presente contrato tem como objeto a prestação de serviços técnicos
         especializados em tecnologia da informação, incluindo mas não se
         limitando a desenvolvimento de software, consultoria técnica,
         manutenção de sistemas, suporte técnico e treinamento de usuários.
-        
+
         1.1 - Os serviços serão prestados em conformidade com as melhores
         práticas do mercado e legislação aplicável.
-        
+
         1.2 - O escopo poderá ser ajustado mediante termo aditivo.
-        
+
         CLÁUSULA SEGUNDA - DAS OBRIGAÇÕES DA CONTRATADA
         Compete à CONTRATADA a execução dos serviços com qualidade, observando
         os prazos acordados e mantendo sigilo profissional.
-        
+
         2.1 - Alocar profissionais qualificados para execução dos serviços.
         2.2 - Fornecer relatórios periódicos de acompanhamento.
         2.3 - Manter backup de todas as informações críticas.
-        
+
         CLÁUSULA VIGÉSIMA SEGUNDA - DAS DISPOSIÇÕES GERAIS
         As partes acordam que o item específico da cláusula vigésima segunda
         estabelece condições especiais para casos não previstos inicialmente.
-        
+
         22.1 - Qualquer alteração deve ser formalizada por escrito.
         22.2 - O contrato prevalece sobre entendimentos verbais.
-        
+
         """
         haystack = base_text * 200  # ~500KB
 
@@ -248,7 +254,7 @@ class TestPerformanceBenchmark:
             tempo_s = data["time"]
             print(
                 f"{name:12} | Tempo: {tempo_s:7.2f}s | "
-                f"Similaridade: {data['similarity']*100:5.1f}%"
+                f"Similaridade: {data['similarity'] * 100:5.1f}%"
             )
 
         if "rapidfuzz" in results and "difflib" in results:
@@ -261,15 +267,15 @@ class TestPerformanceBenchmark:
 
             print("\n📊 Estimativa para 440 tags (produção):")
             print(
-                f"   Difflib:    {time_440_difflib/60:6.1f} minutos "
-                f"({time_440_difflib/3600:4.1f} horas)"
+                f"   Difflib:    {time_440_difflib / 60:6.1f} minutos "
+                f"({time_440_difflib / 3600:4.1f} horas)"
             )
             print(
-                f"   RapidFuzz:  {time_440_rapidfuzz/60:6.1f} minutos "
-                f"({time_440_rapidfuzz/3600:4.1f} horas)"
+                f"   RapidFuzz:  {time_440_rapidfuzz / 60:6.1f} minutos "
+                f"({time_440_rapidfuzz / 3600:4.1f} horas)"
             )
             print(
-                f"   Economia:   {(time_440_difflib - time_440_rapidfuzz)/60:6.1f} "
+                f"   Economia:   {(time_440_difflib - time_440_rapidfuzz) / 60:6.1f} "
                 f"minutos"
             )
 
