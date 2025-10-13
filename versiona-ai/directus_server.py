@@ -12,6 +12,7 @@ import signal
 import sys
 import unicodedata
 import uuid
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from datetime import datetime
 
@@ -912,15 +913,171 @@ class DirectusAPI:
     # FASE 3: CAMINHO REAL - INFERÊNCIA POR CONTEÚDO COM CONTEXTO
     # ============================================================================
 
+    def _processar_tag_individual(
+        self,
+        tag: dict,
+        arquivo_original_text: str,
+        arquivo_com_tags_text: str,
+        tamanho_contexto: int,
+    ) -> TagMapeada | None:
+        """
+        Processa uma tag individual para inferir sua posição.
+        Função auxiliar para permitir processamento paralelo.
+
+        Returns:
+            TagMapeada se encontrou, None se não encontrou
+        """
+        # CORREÇÃO: Usar campo 'conteudo' da tag se disponível (já vem limpo do Directus)
+        # Só extrair do texto COM tags se não vier o conteúdo
+        conteudo_tag = tag.get("conteudo")
+
+        # Obter posições SEMPRE (necessárias para extrair contexto)
+        pos_inicio = tag.get("posicao_inicio_texto", 0)
+        pos_fim = tag.get("posicao_fim_texto", 0)
+
+        if not conteudo_tag:
+            # Fallback: extrair do texto usando posições
+            conteudo_tag = arquivo_com_tags_text[pos_inicio:pos_fim]
+
+        if not conteudo_tag:
+            print(f"   ⚠️  Tag {tag.get('tag_nome')} sem conteúdo, pulando")
+            return None
+
+        # Extrair contexto antes e depois (SEM normalizar)
+        contexto_antes_start = max(0, pos_inicio - tamanho_contexto)
+        contexto_antes = arquivo_com_tags_text[contexto_antes_start:pos_inicio]
+
+        contexto_depois_end = min(
+            len(arquivo_com_tags_text), pos_fim + tamanho_contexto
+        )
+        contexto_depois = arquivo_com_tags_text[pos_fim:contexto_depois_end]
+
+        # Tentar encontrar com contexto completo (score 0.9)
+        sequencia_completa = f"{contexto_antes}{conteudo_tag}{contexto_depois}"
+        pos_encontrada = arquivo_original_text.find(sequencia_completa)
+
+        if pos_encontrada >= 0:
+            # Encontrou com contexto completo!
+            offset_conteudo = len(contexto_antes)
+            pos_inicio_original = pos_encontrada + offset_conteudo
+            pos_fim_original = pos_inicio_original + len(conteudo_tag)
+            score = 0.9
+            metodo = "contexto_completo"
+        else:
+            # Tentar com contexto parcial (apenas antes OU depois)
+            sequencia_antes = f"{contexto_antes}{conteudo_tag}"
+            pos_encontrada = arquivo_original_text.find(sequencia_antes)
+
+            if pos_encontrada >= 0:
+                offset_conteudo = len(contexto_antes)
+                pos_inicio_original = pos_encontrada + offset_conteudo
+                pos_fim_original = pos_inicio_original + len(conteudo_tag)
+                score = 0.7
+                metodo = "contexto_parcial_antes"
+            else:
+                sequencia_depois = f"{conteudo_tag}{contexto_depois}"
+                pos_encontrada = arquivo_original_text.find(sequencia_depois)
+
+                if pos_encontrada >= 0:
+                    pos_inicio_original = pos_encontrada
+                    pos_fim_original = pos_inicio_original + len(conteudo_tag)
+                    score = 0.7
+                    metodo = "contexto_parcial_depois"
+                else:
+                    # Último recurso: apenas conteúdo
+                    pos_encontrada = arquivo_original_text.find(conteudo_tag)
+
+                    if pos_encontrada >= 0:
+                        pos_inicio_original = pos_encontrada
+                        pos_fim_original = pos_encontrada + len(conteudo_tag)
+                        score = 0.5
+                        metodo = "conteudo_apenas"
+                    else:
+                        # OTIMIZADO: Fuzzy matching com step adaptativo
+                        tamanho_tag = len(conteudo_tag)
+                        tamanho_min = int(tamanho_tag * 0.8)
+                        tamanho_max = int(tamanho_tag * 1.2)
+
+                        melhor_ratio = 0.0
+                        melhor_pos = (0, 0)
+
+                        # OTIMIZAÇÃO: Step adaptativo baseado no tamanho da tag
+                        if tamanho_tag < 100:
+                            step = max(20, tamanho_min // 8)
+                        elif tamanho_tag < 500:
+                            step = max(50, tamanho_min // 4)
+                        else:
+                            step = max(100, tamanho_min // 2)
+
+                        # Criar chunks com overlap para não perder matches
+                        for i in range(
+                            0, len(arquivo_original_text) - tamanho_min, step
+                        ):
+                            # Testar 3 tamanhos estratégicos ao invés de todos
+                            for tam in [
+                                tamanho_min,
+                                (tamanho_min + tamanho_max) // 2,
+                                tamanho_max,
+                            ]:
+                                if i + tam > len(arquivo_original_text):
+                                    continue
+
+                                chunk = arquivo_original_text[i : i + tam]
+
+                                ratio = difflib.SequenceMatcher(
+                                    None, conteudo_tag, chunk
+                                ).ratio()
+
+                                if ratio > melhor_ratio:
+                                    melhor_ratio = ratio
+                                    melhor_pos = (i, i + tam)
+
+                                # Early exit se encontrar match excelente
+                                if melhor_ratio >= 0.95:
+                                    break
+
+                            if melhor_ratio >= 0.95:
+                                break
+
+                        # Aceitar se similaridade ≥ 85%
+                        if melhor_ratio >= 0.85:
+                            pos_inicio_original, pos_fim_original = melhor_pos
+                            score = 0.4 + (melhor_ratio - 0.85) * 2
+                            metodo = f"fuzzy_match_{melhor_ratio:.0%}"
+                            print(
+                                f"   🔍 Tag {tag.get('tag_nome')} encontrada via fuzzy matching (similaridade: {melhor_ratio:.1%})"
+                            )
+                        else:
+                            # Não encontrou mesmo com fuzzy
+                            print(
+                                f"   ❌ Tag {tag.get('tag_nome')} não encontrada (melhor match: {melhor_ratio:.1%})"
+                            )
+                            return None
+
+        # Criar TagMapeada
+        tag_mapeada = TagMapeada(
+            tag_id=tag.get("id", ""),
+            tag_nome=tag.get("tag_nome", ""),
+            posicao_inicio_original=pos_inicio_original,
+            posicao_fim_original=pos_fim_original,
+            clausulas=tag.get("clausulas", []),
+            score_inferencia=score,
+            metodo=metodo,
+        )
+
+        return tag_mapeada
+
     def _inferir_posicoes_via_conteudo_com_contexto(
         self,
         tags: list[dict],
         arquivo_original_text: str,
         arquivo_com_tags_text: str,
         tamanho_contexto: int = 50,
+        max_workers: int | None = None,
     ) -> list[TagMapeada]:
         """
         Infere posições das tags no arquivo original usando busca por conteúdo + contexto.
+        VERSÃO PARALELIZADA para aproveitar múltiplos CPUs.
 
         Este método é usado no "Caminho Real" quando os documentos são diferentes.
         Extrai o conteúdo de cada tag e busca no arquivo original usando contexto
@@ -931,165 +1088,45 @@ class DirectusAPI:
             arquivo_original_text: Texto do arquivo original (da versão)
             arquivo_com_tags_text: Texto completo do arquivo COM tags (do modelo)
             tamanho_contexto: Quantos caracteres antes/depois extrair como contexto
+            max_workers: Número máximo de workers (None = usar CPU count)
 
         Returns:
             Lista de TagMapeada com posições inferidas no arquivo original
         """
-        print("🎯 Inferindo posições via conteúdo (Caminho Real)")
+        import multiprocessing
+
+        if max_workers is None:
+            max_workers = multiprocessing.cpu_count()
+
+        print(
+            f"🎯 Inferindo posições via conteúdo (Caminho Real) - {max_workers} workers"
+        )
 
         tags_mapeadas = []
 
-        for tag in tags:
-            # CORREÇÃO: Usar campo 'conteudo' da tag se disponível (já vem limpo do Directus)
-            # Só extrair do texto COM tags se não vier o conteúdo
-            conteudo_tag = tag.get("conteudo")
+        # Processar tags em paralelo usando ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # Submeter todas as tags para processamento
+            future_to_tag = {
+                executor.submit(
+                    self._processar_tag_individual,
+                    tag,
+                    arquivo_original_text,
+                    arquivo_com_tags_text,
+                    tamanho_contexto,
+                ): tag
+                for tag in tags
+            }
 
-            # Obter posições SEMPRE (necessárias para extrair contexto)
-            pos_inicio = tag.get("posicao_inicio_texto", 0)
-            pos_fim = tag.get("posicao_fim_texto", 0)
-
-            if not conteudo_tag:
-                # Fallback: extrair do texto usando posições
-                conteudo_tag = arquivo_com_tags_text[pos_inicio:pos_fim]
-
-            if not conteudo_tag:
-                print(f"   ⚠️  Tag {tag.get('tag_nome')} sem conteúdo, pulando")
-                continue
-
-            # Extrair contexto antes e depois (SEM normalizar)
-            contexto_antes_start = max(0, pos_inicio - tamanho_contexto)
-            contexto_antes = arquivo_com_tags_text[contexto_antes_start:pos_inicio]
-
-            contexto_depois_end = min(
-                len(arquivo_com_tags_text), pos_fim + tamanho_contexto
-            )
-            contexto_depois = arquivo_com_tags_text[pos_fim:contexto_depois_end]
-
-            # Tentar encontrar com contexto completo (score 0.9)
-            sequencia_completa = f"{contexto_antes}{conteudo_tag}{contexto_depois}"
-            pos_encontrada = arquivo_original_text.find(sequencia_completa)
-
-            if pos_encontrada >= 0:
-                # Encontrou com contexto completo!
-                offset_conteudo = len(contexto_antes)
-                pos_inicio_original = pos_encontrada + offset_conteudo
-                pos_fim_original = pos_inicio_original + len(conteudo_tag)
-                score = 0.9
-                metodo = "contexto_completo"
-            else:
-                # Tentar com contexto parcial (apenas antes OU depois)
-                sequencia_antes = f"{contexto_antes}{conteudo_tag}"
-                pos_encontrada = arquivo_original_text.find(sequencia_antes)
-
-                if pos_encontrada >= 0:
-                    offset_conteudo = len(contexto_antes)
-                    pos_inicio_original = pos_encontrada + offset_conteudo
-                    pos_fim_original = pos_inicio_original + len(conteudo_tag)
-                    score = 0.7
-                    metodo = "contexto_parcial_antes"
-                else:
-                    sequencia_depois = f"{conteudo_tag}{contexto_depois}"
-                    pos_encontrada = arquivo_original_text.find(sequencia_depois)
-
-                    if pos_encontrada >= 0:
-                        pos_inicio_original = pos_encontrada
-                        pos_fim_original = pos_inicio_original + len(conteudo_tag)
-                        score = 0.7
-                        metodo = "contexto_parcial_depois"
-                    else:
-                        # Último recurso: apenas conteúdo
-                        pos_encontrada = arquivo_original_text.find(conteudo_tag)
-
-                        if pos_encontrada >= 0:
-                            pos_inicio_original = pos_encontrada
-                            pos_fim_original = pos_encontrada + len(conteudo_tag)
-                            score = 0.5
-                            metodo = "conteudo_apenas"
-                        else:
-                            # OTIMIZADO: Fuzzy matching com step adaptativo
-                            # Mantém qualidade mas reduz tempo de 60s para ~2s por tag
-                            import difflib
-
-                            tamanho_tag = len(conteudo_tag)
-                            tamanho_min = int(tamanho_tag * 0.8)
-                            tamanho_max = int(tamanho_tag * 1.2)
-
-                            melhor_ratio = 0.0
-                            melhor_pos = (0, 0)
-
-                            # OTIMIZAÇÃO: Step adaptativo baseado no tamanho da tag
-                            # CORREÇÃO: Steps menores para maior precisão
-                            # Tags pequenas precisam de mais precisão para não pular a posição exata
-                            if tamanho_tag < 100:
-                                step = max(
-                                    20, tamanho_min // 8
-                                )  # Step bem pequeno para tags pequenas
-                            elif tamanho_tag < 500:
-                                step = max(50, tamanho_min // 4)  # Step médio
-                            else:
-                                step = max(
-                                    100, tamanho_min // 2
-                                )  # Step grande para tags grandes
-
-                            # Criar chunks com overlap para não perder matches
-                            for i in range(
-                                0, len(arquivo_original_text) - tamanho_min, step
-                            ):
-                                # Testar 3 tamanhos estratégicos ao invés de todos
-                                for tam in [
-                                    tamanho_min,
-                                    (tamanho_min + tamanho_max) // 2,
-                                    tamanho_max,
-                                ]:
-                                    if i + tam > len(arquivo_original_text):
-                                        continue
-
-                                    chunk = arquivo_original_text[i : i + tam]
-
-                                    ratio = difflib.SequenceMatcher(
-                                        None, conteudo_tag, chunk
-                                    ).ratio()
-
-                                    if ratio > melhor_ratio:
-                                        melhor_ratio = ratio
-                                        melhor_pos = (i, i + tam)
-
-                                    # Early exit se encontrar match excelente
-                                    if melhor_ratio >= 0.95:
-                                        break
-
-                                if melhor_ratio >= 0.95:
-                                    break
-
-                            # Aceitar se similaridade ≥ 85%
-                            if melhor_ratio >= 0.85:
-                                pos_inicio_original, pos_fim_original = melhor_pos
-                                score = (
-                                    0.4 + (melhor_ratio - 0.85) * 2
-                                )  # Score 0.4-0.7 baseado em similaridade
-                                metodo = f"fuzzy_match_{melhor_ratio:.0%}"
-                                print(
-                                    f"   🔍 Tag {tag.get('tag_nome')} encontrada via fuzzy matching (similaridade: {melhor_ratio:.1%})"
-                                )
-                            else:
-                                # Não encontrou mesmo com fuzzy
-                                print(
-                                    f"   ❌ Tag {tag.get('tag_nome')} não encontrada (melhor match: {melhor_ratio:.1%})"
-                                )
-                                continue
-
-            # Criar TagMapeada
-            tag_mapeada = TagMapeada(
-                tag_id=tag.get("id", ""),
-                tag_nome=tag.get("tag_nome", ""),
-                posicao_inicio_original=pos_inicio_original,
-                posicao_fim_original=pos_fim_original,
-                clausulas=tag.get("clausulas", []),
-                score_inferencia=score,
-                metodo=metodo,
-            )
-
-            tags_mapeadas.append(tag_mapeada)
+            # Coletar resultados conforme vão ficando prontos
+            for future in as_completed(future_to_tag):
+                tag = future_to_tag[future]
+                try:
+                    tag_mapeada = future.result()
+                    if tag_mapeada:
+                        tags_mapeadas.append(tag_mapeada)
+                except Exception as exc:
+                    print(f"   ❌ Tag {tag.get('tag_nome')} gerou exceção: {exc}")
 
         print(f"   ✅ {len(tags_mapeadas)}/{len(tags)} tags inferidas com sucesso")
         return tags_mapeadas
