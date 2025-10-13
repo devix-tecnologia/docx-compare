@@ -124,7 +124,9 @@ Cláusula 3: As partes concordam com os termos estabelecidos.
         pytest.fail(f"❌ ERRO ao processar tags sem posições: {e}")
 
 
-@pytest.mark.skip(reason="Fuzzy matching com threshold 85% pode falhar em textos muito curtos")
+@pytest.mark.skip(
+    reason="Fuzzy matching com threshold 85% pode falhar em textos muito curtos"
+)
 def test_tags_com_posicoes_ainda_funcionam(api):
     """
     Garante que tags COM posições (caso antigo) ainda funcionam.
