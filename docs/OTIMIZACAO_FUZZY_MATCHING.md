@@ -1,7 +1,7 @@
 # Otimização do Fuzzy Matching - Performance Crítica
 
-**Data:** 13 de outubro de 2025  
-**Issue:** Processamento de versão levando ~440 minutos (7+ horas)  
+**Data:** 13 de outubro de 2025
+**Issue:** Processamento de versão levando ~440 minutos (7+ horas)
 **Solução:** Otimização de algoritmo fuzzy matching
 
 ## 🔥 Problema Identificado
@@ -16,8 +16,8 @@ Logs do CapRover mostravam tempos alarmantes:
 2025-10-13T13:58:40.172199870Z ❌ Tag 11.1.1 não encontrada no arquivo original
 ```
 
-**Tempo médio:** ~60 segundos por tag não encontrada  
-**Total de tags:** 440+ tags no modelo de contrato  
+**Tempo médio:** ~60 segundos por tag não encontrada
+**Total de tags:** 440+ tags no modelo de contrato
 **Tempo estimado:** 440 tags × 60s = **26.400 segundos = 7,3 horas** 🚨
 
 ### Causa Raiz
@@ -41,6 +41,7 @@ for i in range(0, len(arquivo_original_text) - tamanho_min, step):
 ```
 
 **Complexidade:** O(n × m × k) onde:
+
 - n = tamanho do documento (~100k chars)
 - m = range de tamanhos de chunk (~200 chars)
 - k = custo do difflib.SequenceMatcher
@@ -135,28 +136,28 @@ tentativas = 0
 for i in range(0, len(arquivo_original_text) - tamanho_min, step):
     if tentativas >= max_tentativas:
         break
-    
+
     # OTIMIZAÇÃO 3: Tamanho médio único
     tam = (tamanho_min + tamanho_max) // 2
     if i + tam > len(arquivo_original_text):
         tam = len(arquivo_original_text) - i
-    
+
     chunk = arquivo_original_text[i : i + tam]
-    
+
     # OTIMIZAÇÃO 4: Quick check
     palavras_tag = set(conteudo_tag[:100].split())
     palavras_chunk = set(chunk[:100].split())
     if not palavras_tag.intersection(palavras_chunk):
         continue
-    
+
     ratio = difflib.SequenceMatcher(None, conteudo_tag, chunk).ratio()
-    
+
     if ratio > melhor_ratio:
         melhor_ratio = ratio
         melhor_pos = (i, i + tam)
-    
+
     tentativas += 1
-    
+
     # OTIMIZAÇÃO 5: Early exit
     if melhor_ratio >= 0.95:
         break
@@ -166,23 +167,23 @@ for i in range(0, len(arquivo_original_text) - tamanho_min, step):
 
 ### Antes da Otimização
 
-| Métrica | Valor |
-|---------|-------|
-| Tempo por tag não encontrada | ~60 segundos |
-| Total de tags | 440 |
-| Tempo total estimado | **26.400 segundos (7,3 horas)** |
-| Chunks testados por tag | ~199.200 |
-| Complexidade | O(n × m × k) |
+| Métrica                      | Valor                           |
+| ---------------------------- | ------------------------------- |
+| Tempo por tag não encontrada | ~60 segundos                    |
+| Total de tags                | 440                             |
+| Tempo total estimado         | **26.400 segundos (7,3 horas)** |
+| Chunks testados por tag      | ~199.200                        |
+| Complexidade                 | O(n × m × k)                    |
 
 ### Depois da Otimização
 
-| Métrica | Valor |
-|---------|-------|
-| Tempo por tag não encontrada | **~100ms** |
-| Total de tags | 440 |
-| Tempo total estimado | **44 segundos** |
-| Chunks testados por tag | ~100 (máximo) |
-| Complexidade | O(min(100, n/1000)) |
+| Métrica                      | Valor               |
+| ---------------------------- | ------------------- |
+| Tempo por tag não encontrada | **~100ms**          |
+| Total de tags                | 440                 |
+| Tempo total estimado         | **44 segundos**     |
+| Chunks testados por tag      | ~100 (máximo)       |
+| Complexidade                 | O(min(100, n/1000)) |
 
 ### Ganho de Performance
 
@@ -226,6 +227,7 @@ A otimização **não afeta** a qualidade da vinculação:
 ### Casos edge onde pode falhar?
 
 **Muito raros:**
+
 - Tag com conteúdo totalmente alterado (>85% diferente) + posicionada entre dois pontos de amostragem
 - **Solução:** Se crítico, aumentar `max_tentativas` para 200 ou reduzir `step` para 500
 
@@ -251,6 +253,7 @@ print(f"✅ Tag {tag_nome} encontrada (similaridade: {ratio:.1%}, {tentativas} t
 ## 🎯 Conclusão
 
 Problema crítico de performance **resolvido com sucesso**:
+
 - ✅ Processamento reduzido de **7+ horas para ~44 segundos**
 - ✅ Qualidade de vinculação mantida (41.8%)
 - ✅ Testes automatizados validam o funcionamento
@@ -260,5 +263,5 @@ Problema crítico de performance **resolvido com sucesso**:
 
 ---
 
-**Autor:** GitHub Copilot  
+**Autor:** GitHub Copilot
 **Revisado por:** Equipe Devix

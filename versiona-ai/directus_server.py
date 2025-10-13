@@ -944,10 +944,12 @@ class DirectusAPI:
             # Só extrair do texto COM tags se não vier o conteúdo
             conteudo_tag = tag.get("conteudo")
 
+            # Obter posições SEMPRE (necessárias para extrair contexto)
+            pos_inicio = tag.get("posicao_inicio_texto", 0)
+            pos_fim = tag.get("posicao_fim_texto", 0)
+
             if not conteudo_tag:
                 # Fallback: extrair do texto usando posições
-                pos_inicio = tag.get("posicao_inicio_texto", 0)
-                pos_fim = tag.get("posicao_fim_texto", 0)
                 conteudo_tag = arquivo_com_tags_text[pos_inicio:pos_fim]
 
             if not conteudo_tag:
@@ -1019,16 +1021,26 @@ class DirectusAPI:
                             # CORREÇÃO: Steps menores para maior precisão
                             # Tags pequenas precisam de mais precisão para não pular a posição exata
                             if tamanho_tag < 100:
-                                step = max(20, tamanho_min // 8)  # Step bem pequeno para tags pequenas
+                                step = max(
+                                    20, tamanho_min // 8
+                                )  # Step bem pequeno para tags pequenas
                             elif tamanho_tag < 500:
                                 step = max(50, tamanho_min // 4)  # Step médio
                             else:
-                                step = max(100, tamanho_min // 2)  # Step grande para tags grandes
+                                step = max(
+                                    100, tamanho_min // 2
+                                )  # Step grande para tags grandes
 
                             # Criar chunks com overlap para não perder matches
-                            for i in range(0, len(arquivo_original_text) - tamanho_min, step):
+                            for i in range(
+                                0, len(arquivo_original_text) - tamanho_min, step
+                            ):
                                 # Testar 3 tamanhos estratégicos ao invés de todos
-                                for tam in [tamanho_min, (tamanho_min + tamanho_max) // 2, tamanho_max]:
+                                for tam in [
+                                    tamanho_min,
+                                    (tamanho_min + tamanho_max) // 2,
+                                    tamanho_max,
+                                ]:
                                     if i + tam > len(arquivo_original_text):
                                         continue
 

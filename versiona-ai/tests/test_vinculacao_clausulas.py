@@ -195,7 +195,9 @@ def test_vincular_modificacoes_as_clausulas(api, sample_data):
     print(f"   Vinculadas a cláusulas: {vinculadas}/{len(resultado)}")
 
 
-@pytest.mark.skip(reason="Edge case: requer priorização de posições absolutas quando textos são idênticos")
+@pytest.mark.skip(
+    reason="Edge case: requer priorização de posições absolutas quando textos são idênticos"
+)
 def test_posicoes_absolutas_prioritarias(api):
     """
     Testa que posições absolutas são priorizadas sobre busca de texto.
