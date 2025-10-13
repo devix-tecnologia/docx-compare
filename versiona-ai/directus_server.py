@@ -365,7 +365,9 @@ class DirectusAPI:
                 fields = "id,status,date_created,date_updated,versao,observacao,origem,arquivo,modifica_arquivo,contrato"
                 url = f"{self.base_url}/items/versao/{versao_id}?fields={fields}"
                 print(f"🔍 Buscando versão no Directus: {url}")
-                print(f"🔍 Headers configurados: Authorization presente = {bool(DIRECTUS_HEADERS.get('Authorization'))}")
+                print(
+                    f"🔍 Headers configurados: Authorization presente = {bool(DIRECTUS_HEADERS.get('Authorization'))}"
+                )
 
                 response = requests.get(
                     url,
@@ -463,7 +465,7 @@ class DirectusAPI:
                             params={
                                 "filter[modelo_contrato][_eq]": modelo_id,
                                 "fields": "id,tag_nome,caminho_tag_inicio,caminho_tag_fim,posicao_inicio_texto,posicao_fim_texto,conteudo,clausulas.id,clausulas.numero,clausulas.nome",
-                                "limit": 100,
+                                "limit": -1,
                             },
                             timeout=10,
                         )
@@ -998,40 +1000,55 @@ class DirectusAPI:
                             score = 0.5
                             metodo = "conteudo_apenas"
                         else:
-                            # NOVO: Último recurso - fuzzy matching para tags alteradas
-                            # Divide o texto em chunks do tamanho do conteúdo da tag ±20%
+                            # OTIMIZADO: Fuzzy matching rápido com amostragem inteligente
+                            # Estratégia: ao invés de testar TODOS os chunks, amostrar posições estratégicas
+                            import difflib
+
                             tamanho_tag = len(conteudo_tag)
                             tamanho_min = int(tamanho_tag * 0.8)
                             tamanho_max = int(tamanho_tag * 1.2)
 
-                            # Criar chunks do texto para busca fuzzy
-                            chunks = []
-                            step = max(10, tamanho_min // 2)  # Overlap de 50%
-                            for i in range(
-                                0, len(arquivo_original_text) - tamanho_min, step
-                            ):
-                                for tam in range(
-                                    tamanho_min,
-                                    min(tamanho_max, len(arquivo_original_text) - i)
-                                    + 1,
-                                    10,
-                                ):
-                                    chunk = arquivo_original_text[i : i + tam]
-                                    chunks.append((chunk, i, i + tam))
-
-                            # Buscar match mais similar usando difflib
-                            import difflib
-
                             melhor_ratio = 0.0
                             melhor_pos = (0, 0)
 
-                            for chunk, inicio, fim in chunks:
+                            # OTIMIZAÇÃO 1: Amostragem com step grande (1000 chars ao invés de 10)
+                            step = max(1000, tamanho_min)  # Pular grandes blocos
+
+                            # OTIMIZAÇÃO 2: Limitar a 100 tentativas máximo
+                            max_tentativas = 100
+                            tentativas = 0
+
+                            for i in range(0, len(arquivo_original_text) - tamanho_min, step):
+                                if tentativas >= max_tentativas:
+                                    break
+
+                                # OTIMIZAÇÃO 3: Testar apenas o tamanho médio, não todos os tamanhos
+                                tam = (tamanho_min + tamanho_max) // 2
+                                if i + tam > len(arquivo_original_text):
+                                    tam = len(arquivo_original_text) - i
+
+                                chunk = arquivo_original_text[i : i + tam]
+
+                                # OTIMIZAÇÃO 4: Quick check - se não tem palavras em comum, pular
+                                # Extrair primeiras palavras da tag (mais significativas)
+                                palavras_tag = set(conteudo_tag[:100].split())
+                                palavras_chunk = set(chunk[:100].split())
+                                if not palavras_tag.intersection(palavras_chunk):
+                                    continue
+
                                 ratio = difflib.SequenceMatcher(
                                     None, conteudo_tag, chunk
                                 ).ratio()
+
                                 if ratio > melhor_ratio:
                                     melhor_ratio = ratio
-                                    melhor_pos = (inicio, fim)
+                                    melhor_pos = (i, i + tam)
+
+                                tentativas += 1
+
+                                # OTIMIZAÇÃO 5: Early exit se encontrar match muito bom
+                                if melhor_ratio >= 0.95:
+                                    break
 
                             # Aceitar se similaridade ≥ 85%
                             if melhor_ratio >= 0.85:
@@ -1041,12 +1058,12 @@ class DirectusAPI:
                                 )  # Score 0.4-0.7 baseado em similaridade
                                 metodo = f"fuzzy_match_{melhor_ratio:.0%}"
                                 print(
-                                    f"   🔍 Tag {tag.get('tag_nome')} encontrada via fuzzy matching (similaridade: {melhor_ratio:.1%})"
+                                    f"   🔍 Tag {tag.get('tag_nome')} encontrada via fuzzy matching otimizado (similaridade: {melhor_ratio:.1%}, {tentativas} tentativas)"
                                 )
                             else:
-                                # Definitivamente não encontrou!
+                                # Não encontrou mesmo com fuzzy
                                 print(
-                                    f"   ❌ Tag {tag.get('tag_nome')} não encontrada no arquivo original"
+                                    f"   ❌ Tag {tag.get('tag_nome')} não encontrada (melhor match: {melhor_ratio:.1%})"
                                 )
                                 continue
 
