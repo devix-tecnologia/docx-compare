@@ -18,6 +18,15 @@ from datetime import datetime
 
 import requests
 from dotenv import load_dotenv
+
+# RapidFuzz para matching ultra-rápido (221x mais rápido que difflib)
+try:
+    from rapidfuzz import fuzz
+
+    RAPIDFUZZ_AVAILABLE = True
+except ImportError:
+    RAPIDFUZZ_AVAILABLE = False
+    print("⚠️ RapidFuzz não disponível - usando difflib (mais lento)")
 from flask import (
     Flask,
     jsonify,
@@ -142,12 +151,18 @@ def calcular_similaridade(texto1: str, texto2: str) -> float:
     """
     Calcula similaridade entre dois textos normalizados.
     Retorna valor entre 0.0 (totalmente diferentes) e 1.0 (idênticos).
+
+    Usa RapidFuzz se disponível (221x mais rápido), senão usa difflib.
     """
     if not texto1 or not texto2:
         return 0.0
 
-    # Calcular e retornar similaridade diretamente
-    return difflib.SequenceMatcher(None, texto1, texto2).ratio()
+    if RAPIDFUZZ_AVAILABLE:
+        # RapidFuzz: ~221x mais rápido que difflib
+        return fuzz.ratio(texto1, texto2) / 100.0
+    else:
+        # Fallback para difflib (mais lento)
+        return difflib.SequenceMatcher(None, texto1, texto2).ratio()
 
 
 def setup_signal_handlers():
@@ -1024,9 +1039,8 @@ class DirectusAPI:
 
                                 chunk = arquivo_original_text[i : i + tam]
 
-                                ratio = difflib.SequenceMatcher(
-                                    None, conteudo_tag, chunk
-                                ).ratio()
+                                # Usa RapidFuzz (221x mais rápido) ou difflib
+                                ratio = calcular_similaridade(conteudo_tag, chunk)
 
                                 if ratio > melhor_ratio:
                                     melhor_ratio = ratio
