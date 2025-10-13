@@ -540,6 +540,7 @@ USE_SAVED_FIXTURE=1 uv run pytest versiona-ai/tests/test_regressao_versao_990908
 ```
 
 **Resultado esperado:**
+
 ```
 ✅ 6/6 testes passando em ~2.6 segundos
 - test_servidor_disponivel ✅
@@ -567,6 +568,7 @@ uv run pytest versiona-ai/tests/test_regressao_versao_99090886.py -v
 ```
 
 **O que o teste completo faz:**
+
 1. 📥 Baixa arquivos DOCX do Directus (~200KB)
 2. 🔍 Processa 100 tags do modelo
 3. 📊 Gera diff de 209KB de texto
@@ -584,6 +586,7 @@ python3 capture_fixture.py
 ```
 
 **Estrutura da fixture:**
+
 ```
 versiona-ai/tests/sample/versao-99090886/
 ├── resultado_processamento.json    # Resposta completa da API
@@ -598,13 +601,13 @@ versiona-ai/tests/sample/versao-99090886/
 
 Os testes validam automaticamente:
 
-| Métrica | Mínimo Esperado | Baseline Atual |
-|---------|----------------|----------------|
-| Taxa de vinculação | ≥ 40% | 41.8% (23/55) |
-| Taxa de cobertura | ≥ 45% | 45.5% (25/55) |
-| Similaridade | ≥ 90% | 91.34% |
-| Tags mapeadas | 100 tags | 100/100 ✅ |
-| Método usado | conteúdo | conteúdo ✅ |
+| Métrica            | Mínimo Esperado | Baseline Atual |
+| ------------------ | --------------- | -------------- |
+| Taxa de vinculação | ≥ 40%           | 41.8% (23/55)  |
+| Taxa de cobertura  | ≥ 45%           | 45.5% (25/55)  |
+| Similaridade       | ≥ 90%           | 91.34%         |
+| Tags mapeadas      | 100 tags        | 100/100 ✅     |
+| Método usado       | conteúdo        | conteúdo ✅    |
 
 #### **CI/CD Integration**
 
@@ -627,6 +630,7 @@ jobs:
 #### **Troubleshooting**
 
 **Erro: "Servidor não está rodando"**
+
 ```bash
 # Verificar se servidor está ativo
 curl http://localhost:8001/health
@@ -637,6 +641,7 @@ python3 directus_server.py
 ```
 
 **Erro: "Timeout após 600 segundos"**
+
 ```bash
 # Processamento pode demorar em máquinas lentas ou conexão lenta
 # Use modo offline para testes rápidos:
@@ -644,6 +649,7 @@ USE_SAVED_FIXTURE=1 pytest versiona-ai/tests/test_regressao_versao_99090886.py -
 ```
 
 **Erro: "Fixture não encontrada"**
+
 ```bash
 # Verificar se fixture existe
 ls versiona-ai/tests/sample/versao-99090886/resultado_processamento.json

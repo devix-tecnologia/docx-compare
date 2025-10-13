@@ -47,18 +47,18 @@ def resultado_processamento():
     Processa a versão UMA ÚNICA VEZ e compartilha resultado entre todos os testes.
 
     Isso evita processar 5 vezes (reduz de ~5 minutos para ~1 minuto).
-    
+
     Para testes rápidos offline, use a fixture salva:
     pytest --use-saved-fixture
     """
     import os
-    
+
     # Opção para usar fixture salva (mais rápido para testes offline)
     if os.environ.get("USE_SAVED_FIXTURE") == "1":
         print("\n📦 Usando fixture salva (modo offline)")
         with open(FIXTURE_DIR / "resultado_processamento.json") as f:
             return json.load(f)
-    
+
     versao_id = "99090886-7f43-45c9-bfe4-ec6eddd6cde0"
 
     print(f"\n🔄 Processando versão {versao_id} (executado 1x para todos os testes)...")
@@ -159,7 +159,7 @@ def test_processamento_versao_99090886_nao_regredir(
 def test_processamento_versao_99090886_modificacoes_validas(resultado_processamento):
     """
     Teste de integridade: verifica se modificações foram criadas corretamente.
-    
+
     - Se fixture salva: valida estrutura dos dados salvos
     - Se API real: busca modificações do Directus para validar
     """
@@ -172,11 +172,11 @@ def test_processamento_versao_99090886_modificacoes_validas(resultado_processame
             f"{API_URL}/api/versoes/{versao_id}/modificacoes",
             timeout=30,
         )
-        
+
         assert response.status_code == 200, (
             f"Erro ao buscar modificações do Directus: {response.status_code}"
         )
-        
+
         modificacoes = response.json()
 
     # Deve ter modificações
@@ -195,7 +195,7 @@ def test_processamento_versao_99090886_modificacoes_validas(resultado_processame
             # Directus direto
             assert "id" in mod, f"Modificação sem ID: {mod}"
             assert "tipo" in mod, f"Modificação sem tipo: {mod}"
-        
+
         # Validar score de vinculação
         score = mod.get("score") or (mod.get("vinculacao") or {}).get("score")
         if score is not None:
