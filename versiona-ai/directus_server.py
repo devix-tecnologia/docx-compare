@@ -363,11 +363,19 @@ class DirectusAPI:
                 # Buscar dados reais do Directus
                 # Usar apenas campos que sabemos que existem baseado na listagem
                 fields = "id,status,date_created,date_updated,versao,observacao,origem,arquivo,modifica_arquivo,contrato"
+                url = f"{self.base_url}/items/versao/{versao_id}?fields={fields}"
+                print(f"🔍 Buscando versão no Directus: {url}")
+                print(f"🔍 Headers configurados: Authorization presente = {bool(DIRECTUS_HEADERS.get('Authorization'))}")
+
                 response = requests.get(
-                    f"{self.base_url}/items/versao/{versao_id}?fields={fields}",
+                    url,
                     headers=DIRECTUS_HEADERS,
                     timeout=10,
                 )
+
+                print(f"📡 Resposta do Directus: HTTP {response.status_code}")
+                if response.status_code != 200:
+                    print(f"📄 Corpo da resposta: {response.text[:500]}")
 
                 if response.status_code != 200:
                     # No modo real, falha do Directus é erro (não usar mock como fallback)
@@ -653,7 +661,9 @@ class DirectusAPI:
                         versao_id, mod
                     )
                     modificacoes_directus.append(modificacao_data)
-                    print(f"✅ Modificação {idx + 1}/{len(modificacoes)} convertida para Directus")
+                    print(
+                        f"✅ Modificação {idx + 1}/{len(modificacoes)} convertida para Directus"
+                    )
                 except Exception as e:
                     print(f"❌ Erro ao converter modificação {idx + 1}: {e}")
 
