@@ -1117,6 +1117,12 @@ class DirectusAPI:
         )
 
         tags_mapeadas = []
+        total_tags = len(tags)
+
+        # Métricas de progresso
+        inicio_processamento = datetime.now()
+        tags_processadas = 0
+        tags_encontradas = 0
 
         # Processar tags em paralelo usando ProcessPoolExecutor (processos, não threads!)
         # ProcessPoolExecutor contorna o GIL do Python para tarefas CPU-bound
@@ -1136,14 +1142,42 @@ class DirectusAPI:
             # Coletar resultados conforme vão ficando prontos
             for future in as_completed(future_to_tag):
                 tag = future_to_tag[future]
+                tags_processadas += 1
+
                 try:
                     tag_mapeada = future.result()
                     if tag_mapeada:
                         tags_mapeadas.append(tag_mapeada)
+                        tags_encontradas += 1
                 except Exception as exc:
                     print(f"   ❌ Tag {tag.get('tag_nome')} gerou exceção: {exc}")
 
-        print(f"   ✅ {len(tags_mapeadas)}/{len(tags)} tags inferidas com sucesso")
+                # Calcular métricas a cada 10 tags ou no final
+                if tags_processadas % 10 == 0 or tags_processadas == total_tags:
+                    tempo_decorrido = (datetime.now() - inicio_processamento).total_seconds()
+                    velocidade = tags_processadas / tempo_decorrido if tempo_decorrido > 0 else 0
+                    tags_restantes = total_tags - tags_processadas
+                    tempo_estimado = tags_restantes / velocidade if velocidade > 0 else 0
+                    taxa_sucesso = (tags_encontradas / tags_processadas * 100) if tags_processadas > 0 else 0
+
+                    print(
+                        f"   📊 Progresso: {tags_processadas}/{total_tags} tags "
+                        f"({tags_processadas/total_tags*100:.1f}%) | "
+                        f"✅ {tags_encontradas} encontradas ({taxa_sucesso:.1f}%) | "
+                        f"⚡ {velocidade:.2f} tags/s | "
+                        f"⏱️  ETA: {tempo_estimado:.0f}s (~{tempo_estimado/60:.1f}min)"
+                    )
+
+        tempo_total = (datetime.now() - inicio_processamento).total_seconds()
+        velocidade_media = total_tags / tempo_total if tempo_total > 0 else 0
+
+        print(
+            f"\n   ✅ Processamento concluído em {tempo_total:.1f}s "
+            f"({tempo_total/60:.2f} min) | "
+            f"Velocidade média: {velocidade_media:.2f} tags/s"
+        )
+        print(f"   📈 Resultado: {len(tags_mapeadas)}/{len(tags)} tags inferidas com sucesso ({len(tags_mapeadas)/len(tags)*100:.1f}%)")
+
         return tags_mapeadas
 
     # ============================================================================
