@@ -763,18 +763,40 @@ class DirectusAPI:
 
         # Extrair conteúdo original e novo
         conteudo_obj = mod.get("conteudo", {})
-        conteudo_original = conteudo_obj.get("original", "")
-        conteudo_novo = conteudo_obj.get("novo", "")
+        if isinstance(conteudo_obj, dict):
+            conteudo_original = conteudo_obj.get("original", "")
+            conteudo_novo = conteudo_obj.get("novo", "")
+        else:
+            # Se conteudo não é dict, pode ser string direta (tag sem matching)
+            conteudo_novo = str(conteudo_obj) if conteudo_obj else ""
+            conteudo_original = ""
 
-        # Extrair posição
-        posicao = mod.get("posicao", {})
-        linha = posicao.get("linha", 0)
-        coluna = posicao.get("coluna", 0)
+        # Usar posições reais se disponíveis (vindas do diff ou vinculação)
+        # Se não, usar posição aproximada baseada em linha/coluna
+        posicao_inicio_real = mod.get("posicao_inicio")
+        posicao_fim_real = mod.get("posicao_fim")
 
-        # Construir caminho (usando linha e coluna como referência)
-        caminho_inicio = f"L{linha}:C{coluna}"
-        # Para o fim, assumir que vai até o final do conteúdo
-        caminho_fim = f"L{linha}:C{coluna + len(conteudo_original)}"
+        if posicao_inicio_real is not None and posicao_fim_real is not None:
+            # Posições reais disponíveis (do diff ou vinculação)
+            posicao_inicio = posicao_inicio_real
+            posicao_fim = posicao_fim_real
+        else:
+            # Fallback: calcular aproximado por linha/coluna
+            posicao = mod.get("posicao", {})
+            linha = posicao.get("linha", 0)
+            coluna = posicao.get("coluna", 0)
+            posicao_inicio = linha * 1000 + coluna
+            posicao_fim = linha * 1000 + coluna + len(conteudo_original)
+
+        # Construir caminho baseado nas posições reais
+        # Converter posição linear de volta para linha:coluna aproximado
+        linha_inicio = posicao_inicio // 1000
+        coluna_inicio = posicao_inicio % 1000
+        linha_fim = posicao_fim // 1000
+        coluna_fim = posicao_fim % 1000
+
+        caminho_inicio = f"L{linha_inicio}:C{coluna_inicio}"
+        caminho_fim = f"L{linha_fim}:C{coluna_fim}"
 
         # Montar objeto para Directus
         directus_mod = {
@@ -785,8 +807,8 @@ class DirectusAPI:
             "alteracao": conteudo_novo if conteudo_novo else None,
             "caminho_inicio": caminho_inicio,
             "caminho_fim": caminho_fim,
-            "posicao_inicio": linha * 1000 + coluna,  # Posição linear aproximada
-            "posicao_fim": linha * 1000 + coluna + len(conteudo_original),
+            "posicao_inicio": posicao_inicio,
+            "posicao_fim": posicao_fim,
         }
 
         # Adicionar cláusula se disponível (UUID obtido via vinculação com tags)
@@ -1414,6 +1436,16 @@ class DirectusAPI:
             modificacao, meta = extrair_modificacao(item)
             if "tag_proxima" in meta:
                 aplicar_tag(modificacao, meta.get("tag_proxima"))
+
+            # Garantir que conteudo seja preenchido com o texto da tag se disponível
+            tag = meta.get("tag") or meta.get("tag_proxima")
+            if tag and not modificacao.get("conteudo"):
+                # Extrair conteudo da tag se disponível
+                if hasattr(tag, "conteudo_tag"):
+                    modificacao["conteudo"] = tag.conteudo_tag
+                elif isinstance(tag, dict) and "conteudo_tag" in tag:
+                    modificacao["conteudo"] = tag["conteudo_tag"]
+
             if "score" in meta:
                 modificacao["score_vinculacao"] = meta["score"]
             if "motivo" in meta:
