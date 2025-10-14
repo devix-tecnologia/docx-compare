@@ -61,5 +61,8 @@
         "tests"
     ],
     "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/versiona-ai"
+    ],
     "makefile.configureOnOpen": false
 }
