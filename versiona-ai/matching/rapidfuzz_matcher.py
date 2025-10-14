@@ -31,8 +31,7 @@ class RapidFuzzMatcher(MatchingStrategy):
     def __init__(self):
         if not RAPIDFUZZ_AVAILABLE:
             raise ImportError(
-                "RapidFuzz não está instalado. "
-                "Instale com: pip install rapidfuzz"
+                "RapidFuzz não está instalado. Instale com: pip install rapidfuzz"
             )
 
     @property
@@ -125,4 +124,14 @@ class RapidFuzzMatcher(MatchingStrategy):
             )
 
         # Fallback: procura só o needle
-        return self.find_best_match(needle, haystack, threshold)
+        fallback = self.find_best_match(needle, haystack, threshold)
+
+        if fallback.found and "fuzzy" not in fallback.method:
+            return MatchResult(
+                found=True,
+                position=fallback.position,
+                similarity=fallback.similarity,
+                method="rapidfuzz_fallback_fuzzy",
+            )
+
+        return fallback

@@ -25,11 +25,11 @@ from directus_server import DirectusAPI
 
 def test_decisao_caminho_feliz():
     """
-    Teste 1: Decisão pelo Caminho Feliz (offset)
+    Teste 1: Decisão em cenário "caminho feliz" (documentos idênticos).
 
     Cenário: Documentos são idênticos (exceto pelas tags).
-    Similaridade ≥ 0.95 → deve usar offset.
-    Esperado: metodo_usado = "offset", alta taxa de sucesso
+    Mesmo com similaridade 100%, mantemos o método "conteudo"
+    (offset desabilitado devido ao desalinhamento de coordenadas).
     """
     print("\n🧪 Teste 1: Decisão pelo Caminho Feliz")
 
@@ -85,8 +85,8 @@ def test_decisao_caminho_feliz():
     )
 
     # Validar decisão
-    assert resultado_completo["metodo_usado"] == "offset", (
-        f"Esperado método 'offset', obteve '{resultado_completo['metodo_usado']}'"
+    assert resultado_completo["metodo_usado"] == "conteudo", (
+        f"Esperado método 'conteudo', obteve '{resultado_completo['metodo_usado']}'"
     )
     assert resultado_completo["similaridade"] >= 0.95, (
         f"Similaridade deveria ser ≥ 0.95, obteve {resultado_completo['similaridade']:.2%}"
@@ -114,7 +114,7 @@ def test_decisao_caminho_feliz():
     print(f"   Similaridade: {resultado_completo['similaridade']:.2%}")
     print(f"   Tags mapeadas: {len(tags_mapeadas)}")
     print(f"   Taxa de sucesso: {resultado.taxa_sucesso():.1f}%")
-    print("   ✅ Decisão pelo Caminho Feliz correta!")
+    print("   ✅ Decisão coerente com estratégia atual (conteúdo)")
 
 
 def test_decisao_caminho_real():

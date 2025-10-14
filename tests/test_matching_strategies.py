@@ -13,8 +13,14 @@ import pytest
 versiona_ai_path = Path(__file__).parent.parent / "versiona-ai"
 sys.path.insert(0, str(versiona_ai_path))
 
-from matching import DifflibMatcher, MatchingStrategy, RapidFuzzMatcher  # noqa: E402
+from matching import (  # noqa: E402
+    DifflibMatcher,
+    MatchingStrategy,
+    RapidFuzzMatcher,
+)
 from matching.rapidfuzz_matcher import RAPIDFUZZ_AVAILABLE  # noqa: E402
+
+from tests.matching_rinha_metrics import InstrumentedMatcher  # noqa: E402
 
 
 # Fixture com diferentes estratégias
@@ -22,11 +28,11 @@ from matching.rapidfuzz_matcher import RAPIDFUZZ_AVAILABLE  # noqa: E402
 def matcher(request) -> MatchingStrategy:
     """Retorna cada estratégia de matching para testar."""
     if request.param == "difflib":
-        return DifflibMatcher()
+        return InstrumentedMatcher(DifflibMatcher())
     elif request.param == "rapidfuzz":
         if not RAPIDFUZZ_AVAILABLE:
             pytest.skip("RapidFuzz não está instalado")
-        return RapidFuzzMatcher()
+        return InstrumentedMatcher(RapidFuzzMatcher())
     raise ValueError(f"Matcher desconhecido: {request.param}")
 
 

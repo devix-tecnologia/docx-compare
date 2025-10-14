@@ -5,6 +5,7 @@ Inclui agrupamento posicional para cálculo preciso de blocos
 Implementa algoritmo unificado de vinculação de modificações às cláusulas
 """
 
+import copy
 import difflib
 import os
 import re
@@ -91,15 +92,9 @@ class TagMapeada:
 class ResultadoVinculacao:
     """Resultado da vinculação com categorização por confiança."""
 
-    vinculadas: list[tuple[dict, str, float]] = field(
-        default_factory=list
-    )  # (modificacao, clausula_id, score)
-    nao_vinculadas: list[dict] = field(
-        default_factory=list
-    )  # modificacoes sem candidatos
-    revisao_manual: list[tuple[dict, list[dict], float]] = field(
-        default_factory=list
-    )  # (mod, candidatos, score)
+    vinculadas: list[dict] = field(default_factory=list)
+    nao_vinculadas: list[dict] = field(default_factory=list)
+    revisao_manual: list[dict] = field(default_factory=list)
 
     def taxa_sucesso(self) -> float:
         """Retorna a taxa de vinculação automática (em %)."""
@@ -559,11 +554,9 @@ class DirectusAPI:
 
                 # Atualizar modificacoes com as vinculadas
                 # O novo algoritmo já categorizou, mas mantemos formato antigo por compatibilidade
-                modificacoes = (
-                    resultado_vinculacao["resultado"].vinculadas
-                    + resultado_vinculacao["resultado"].revisao_manual
-                    + resultado_vinculacao["resultado"].nao_vinculadas
-                )
+                modificacoes_vinculadas = resultado_vinculacao.get("modificacoes")
+                if modificacoes_vinculadas is not None:
+                    modificacoes = modificacoes_vinculadas
 
             # Calcular blocos usando agrupamento posicional
             resultado_blocos = self._calcular_blocos_avancado(versao_id, diff_html)
@@ -879,8 +872,6 @@ class DirectusAPI:
         print(f"   📊 Offset final acumulado: {offset_atual} caracteres de tags")
 
         # 3. Mapear cada tag para o sistema de coordenadas original
-        tags_mapeadas = []
-
         for tag in tags:
             # Posições originais (no arquivo COM tags)
             pos_inicio_com_tags = tag.get("posicao_inicio_texto", 0)
@@ -1116,7 +1107,7 @@ class DirectusAPI:
             f"🎯 Inferindo posições via conteúdo (Caminho Real) - {max_workers} workers (PROCESSOS)"
         )
 
-        tags_mapeadas = []
+        tags_mapeadas_ordenadas: list[tuple[int, TagMapeada]] = []
         total_tags = len(tags)
 
         # Métricas de progresso
@@ -1135,48 +1126,63 @@ class DirectusAPI:
                     arquivo_original_text,
                     arquivo_com_tags_text,
                     tamanho_contexto,
-                ): tag
-                for tag in tags
+                ): (index, tag)
+                for index, tag in enumerate(tags)
             }
 
             # Coletar resultados conforme vão ficando prontos
             for future in as_completed(future_to_tag):
-                tag = future_to_tag[future]
+                index, tag = future_to_tag[future]
                 tags_processadas += 1
 
                 try:
                     tag_mapeada = future.result()
                     if tag_mapeada:
-                        tags_mapeadas.append(tag_mapeada)
+                        tags_mapeadas_ordenadas.append((index, tag_mapeada))
                         tags_encontradas += 1
                 except Exception as exc:
                     print(f"   ❌ Tag {tag.get('tag_nome')} gerou exceção: {exc}")
 
                 # Calcular métricas a cada 10 tags ou no final
                 if tags_processadas % 10 == 0 or tags_processadas == total_tags:
-                    tempo_decorrido = (datetime.now() - inicio_processamento).total_seconds()
-                    velocidade = tags_processadas / tempo_decorrido if tempo_decorrido > 0 else 0
+                    tempo_decorrido = (
+                        datetime.now() - inicio_processamento
+                    ).total_seconds()
+                    velocidade = (
+                        tags_processadas / tempo_decorrido if tempo_decorrido > 0 else 0
+                    )
                     tags_restantes = total_tags - tags_processadas
-                    tempo_estimado = tags_restantes / velocidade if velocidade > 0 else 0
-                    taxa_sucesso = (tags_encontradas / tags_processadas * 100) if tags_processadas > 0 else 0
+                    tempo_estimado = (
+                        tags_restantes / velocidade if velocidade > 0 else 0
+                    )
+                    taxa_sucesso = (
+                        (tags_encontradas / tags_processadas * 100)
+                        if tags_processadas > 0
+                        else 0
+                    )
 
                     print(
                         f"   📊 Progresso: {tags_processadas}/{total_tags} tags "
-                        f"({tags_processadas/total_tags*100:.1f}%) | "
+                        f"({tags_processadas / total_tags * 100:.1f}%) | "
                         f"✅ {tags_encontradas} encontradas ({taxa_sucesso:.1f}%) | "
                         f"⚡ {velocidade:.2f} tags/s | "
-                        f"⏱️  ETA: {tempo_estimado:.0f}s (~{tempo_estimado/60:.1f}min)"
+                        f"⏱️  ETA: {tempo_estimado:.0f}s (~{tempo_estimado / 60:.1f}min)"
                     )
 
         tempo_total = (datetime.now() - inicio_processamento).total_seconds()
         velocidade_media = total_tags / tempo_total if tempo_total > 0 else 0
 
+        tags_mapeadas_ordenadas.sort(key=lambda item: item[0])
+        tags_mapeadas = [item[1] for item in tags_mapeadas_ordenadas]
+
         print(
             f"\n   ✅ Processamento concluído em {tempo_total:.1f}s "
-            f"({tempo_total/60:.2f} min) | "
+            f"({tempo_total / 60:.2f} min) | "
             f"Velocidade média: {velocidade_media:.2f} tags/s"
         )
-        print(f"   📈 Resultado: {len(tags_mapeadas)}/{len(tags)} tags inferidas com sucesso ({len(tags_mapeadas)/len(tags)*100:.1f}%)")
+        print(
+            f"   📈 Resultado: {len(tags_mapeadas)}/{len(tags)} tags inferidas com sucesso ({len(tags_mapeadas) / len(tags) * 100:.1f}%)"
+        )
 
         return tags_mapeadas
 
@@ -1357,6 +1363,66 @@ class DirectusAPI:
     # FIM FASE 4
     # ============================================================================
 
+    def _consolidar_modificacoes_vinculacao(
+        self, resultado: ResultadoVinculacao
+    ) -> list[dict]:
+        """Converte o resultado da vinculação em uma lista plana de modificações."""
+
+        modificacoes_enriquecidas: list[dict] = []
+
+        def extrair_modificacao(item: dict) -> tuple[dict, dict]:
+            if isinstance(item, dict) and "modificacao" in item:
+                return copy.deepcopy(item["modificacao"]), item
+            return copy.deepcopy(item), item if isinstance(item, dict) else {}
+
+        def aplicar_tag(mod: dict, tag: TagMapeada | None) -> None:
+            if not tag:
+                return
+
+            mod["tag_nome"] = getattr(tag, "tag_nome", None)
+
+            if getattr(tag, "clausulas", None):
+                primeira = tag.clausulas[0] if tag.clausulas else None
+                if isinstance(primeira, dict):
+                    mod.setdefault("clausula_id", primeira.get("id"))
+                    mod.setdefault("clausula_numero", primeira.get("numero"))
+                    mod.setdefault("clausula_nome", primeira.get("nome"))
+
+        for item in resultado.vinculadas:
+            modificacao, meta = extrair_modificacao(item)
+            aplicar_tag(modificacao, meta.get("tag"))
+            if "score" in meta:
+                modificacao["score_vinculacao"] = meta["score"]
+            if "sobreposicao_chars" in meta:
+                modificacao["sobreposicao_chars"] = meta["sobreposicao_chars"]
+            if "metodo_inferencia" in meta:
+                modificacao["metodo_vinculacao"] = meta["metodo_inferencia"]
+            modificacao["status_vinculacao"] = "automatico"
+            modificacoes_enriquecidas.append(modificacao)
+
+        for item in resultado.revisao_manual:
+            modificacao, meta = extrair_modificacao(item)
+            aplicar_tag(modificacao, meta.get("tag"))
+            if "score" in meta:
+                modificacao["score_vinculacao"] = meta["score"]
+            if "motivo" in meta:
+                modificacao["motivo_vinculacao"] = meta["motivo"]
+            modificacao["status_vinculacao"] = "revisao_manual"
+            modificacoes_enriquecidas.append(modificacao)
+
+        for item in resultado.nao_vinculadas:
+            modificacao, meta = extrair_modificacao(item)
+            if "tag_proxima" in meta:
+                aplicar_tag(modificacao, meta.get("tag_proxima"))
+            if "score" in meta:
+                modificacao["score_vinculacao"] = meta["score"]
+            if "motivo" in meta:
+                modificacao["motivo_vinculacao"] = meta["motivo"]
+            modificacao["status_vinculacao"] = "nao_vinculada"
+            modificacoes_enriquecidas.append(modificacao)
+
+        return modificacoes_enriquecidas
+
     # ============================================================================
     # FASE 5: ROBUSTEZ E INTEGRAÇÃO
     # ============================================================================
@@ -1409,6 +1475,7 @@ class DirectusAPI:
                 "metodo_usado": "none",
                 "similaridade": 0.0,
                 "tags_mapeadas": [],
+                "modificacoes": modificacoes,
             }
 
         if not modificacoes:
@@ -1420,6 +1487,7 @@ class DirectusAPI:
                 "metodo_usado": "none",
                 "similaridade": 0.0,
                 "tags_mapeadas": [],
+                "modificacoes": [],
             }
 
         # PASSO 1: Remover tags do texto_com_tags para criar versão limpa
@@ -1474,6 +1542,7 @@ class DirectusAPI:
                 "metodo_usado": metodo_usado,
                 "similaridade": similaridade,
                 "tags_mapeadas": [],
+                "modificacoes": modificacoes,
             }
 
         print(f"   ✅ {len(tags_mapeadas)} tags mapeadas com sucesso")
@@ -1499,11 +1568,14 @@ class DirectusAPI:
         print(f"Taxa de cobertura: {resultado.taxa_cobertura():.1f}%")
         print("=" * 70)
 
+        modificacoes_enriquecidas = self._consolidar_modificacoes_vinculacao(resultado)
+
         return {
             "resultado": resultado,
             "metodo_usado": metodo_usado,
             "similaridade": similaridade,
             "tags_mapeadas": tags_mapeadas,
+            "modificacoes": modificacoes_enriquecidas,
         }
 
     # ============================================================================

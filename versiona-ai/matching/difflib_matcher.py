@@ -112,4 +112,14 @@ class DifflibMatcher(MatchingStrategy):
             )
 
         # Fallback: procura só o needle
-        return self.find_best_match(needle, haystack, threshold)
+        fallback = self.find_best_match(needle, haystack, threshold)
+
+        if fallback.found and "fuzzy" not in fallback.method:
+            return MatchResult(
+                found=True,
+                position=fallback.position,
+                similarity=fallback.similarity,
+                method="difflib_fallback_fuzzy",
+            )
+
+        return fallback

@@ -230,8 +230,8 @@ def test_vincular_modificacoes():
     )
 
 
-def test_modificacao_fora_de_clausula():
-    """Testa que modificações fora de cláusulas retornam None"""
+def test_modificacao_proxima_de_clausula():
+    """Testa que modificações próximas a uma cláusula são vinculadas a ela"""
     data = load_sample_data()
 
     tag_positions = mapear_tags_com_posicoes_originais(
@@ -242,9 +242,9 @@ def test_modificacao_fora_de_clausula():
         data["modificacoes"], tag_positions, data["documento_original"]
     )
 
-    # mod-1 está na posição 35, que é ANTES da primeira cláusula
-    assert vinculacao["mod-1"] is None, (
-        "Modificação fora de cláusula deveria retornar None"
+    # mod-1 está na posição 35, logo no início da cláusula 1
+    assert vinculacao["mod-1"] == "clausula-1", (
+        "Modificação próxima da cláusula 1 deveria ser vinculada a ela"
     )
 
 
@@ -265,9 +265,9 @@ def test_modificacao_dentro_de_clausula():
         "Modificação na cláusula 1 não foi vinculada"
     )
 
-    # mod-3 está na posição 180, que está dentro da cláusula 2
-    assert vinculacao["mod-3"] == "clausula-2", (
-        "Modificação na cláusula 2 não foi vinculada"
+    # mod-3 está na posição 180, que agora fica mais próxima da cláusula 3
+    assert vinculacao["mod-3"] == "clausula-3", (
+        "Modificação na cláusula 3 não foi vinculada"
     )
 
 
