@@ -894,6 +894,7 @@ class DirectusAPI:
         print(f"   📊 Offset final acumulado: {offset_atual} caracteres de tags")
 
         # 3. Mapear cada tag para o sistema de coordenadas original
+        tags_mapeadas = []
         for tag in tags:
             # Posições originais (no arquivo COM tags)
             pos_inicio_com_tags = tag.get("posicao_inicio_texto", 0)
