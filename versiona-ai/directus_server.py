@@ -31,8 +31,6 @@ except ImportError:
 from flask import (
     Flask,
     jsonify,
-    render_template,
-    render_template_string,
     request,
     send_from_directory,
 )
@@ -2910,48 +2908,224 @@ def _get_mock_versao_by_id(versao_id):
     return mock_versoes.get(versao_id)
 
 
-@app.route("/versao/<versao_id>", methods=["GET"])
+@app.route("/view/<versao_id>", methods=["GET"])
 def view_version(versao_id):
-    """Visualiza uma versão específica com suas diferenças"""
+    """
+    Serve a interface Vue.js do visualizador de diff.
+    O frontend fará chamadas para /api/versao/<versao_id> para obter os dados do Directus.
+    """
     try:
-        # Buscar dados da versão
+        dist_path = os.path.join(os.path.dirname(__file__), "web", "dist", "index.html")
+        if os.path.exists(dist_path):
+            with open(dist_path, encoding="utf-8") as f:
+                html = f.read()
+                # Adicionar script para carregar dados da versão automaticamente
+                script = f"""
+                <script>
+                    window.VERSAO_ID = '{versao_id}';
+                    window.LOAD_FROM_API = true;
+                </script>
+                """
+                # Inserir o script antes do </head>
+                html = html.replace("</head>", f"{script}</head>")
+                return html
+        else:
+            return jsonify(
+                {
+                    "error": "Frontend não encontrado. Execute o build do Vue.js primeiro."
+                }
+            ), 404
+    except Exception as e:
+        print(f"❌ Erro ao servir interface: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+def _get_versao_json(versao_id):
+    """Função auxiliar para buscar dados da versão do Directus e retornar JSON"""
+    # Verificar se é um diff_id do cache antigo (para retrocompatibilidade)
+    if versao_id in diff_cache:
+        diff_data = diff_cache[versao_id]
+        return jsonify(diff_data)
+
+    # Caso contrário, buscar do Directus
+    try:
+        # Buscar versão COM TODOS os relacionamentos em UMA requisição
+        params = {
+            "fields": "*,modificacoes.*,modificacoes.clausula.*,contrato.*,contrato.modelo_contrato.*"
+        }
+
         response = requests.get(
             f"{DIRECTUS_BASE_URL}/items/versao/{versao_id}",
             headers=DIRECTUS_HEADERS,
-            timeout=10,
+            params=params,
+            timeout=30,
         )
 
-        print(f"🔍 Buscando versão {versao_id} no Directus...")
-        print(f"📡 URL: {DIRECTUS_BASE_URL}/items/versao/{versao_id}")
-        print("Resultado da requisição:", response.status_code, response.text)
+        print(f"🔍 Buscando versão {versao_id} com relacionamentos...")
+        print(f"📡 Status: {response.status_code}")
 
-        if response.status_code == 200:
-            versao_data = response.json()["data"]
-        else:
-            versao_data = _get_mock_versao_by_id(versao_id)
-            if not versao_data:
-                return "Versão não encontrada", 404
+        if response.status_code != 200:
+            return jsonify({"error": "Versão não encontrada"}), 404
 
-        # Processar a versão para gerar as diferenças
-        result = directus_api.process_versao(versao_id)
+        versao_completa = response.json().get("data")
 
-        if "error" in result:
-            return f"Erro ao processar versão: {result['error']}", 500
+        if not versao_completa:
+            return jsonify({"error": "Versão não encontrada"}), 404
 
-        # Usar template específico para versão
-        response = render_template(
-            "version_template.html",
-            versao_id=versao_id,
-            versao_data=versao_data,
-            diff_data=result,
-            diff_html=result.get("diff_html", ""),
-            created_at=result.get("created_at", ""),
-        )
-        return response, 200, {"Content-Type": "text/html; charset=utf-8"}
+        # Verificar status do processamento
+        if versao_completa.get("status") != "concluido":
+            return jsonify(
+                {
+                    "error": "Versão ainda não processada",
+                    "status": versao_completa.get("status"),
+                    "progresso": versao_completa.get("progresso"),
+                }
+            ), 202
 
+        # Validar que contrato e modelo estão presentes (obrigatórios)
+        if not versao_completa.get("contrato"):
+            print(f"❌ Versão {versao_id} sem contrato vinculado")
+            return jsonify({"error": "Dados inconsistentes: versão sem contrato"}), 500
+
+        if not versao_completa["contrato"].get("modelo_contrato"):
+            print(f"❌ Contrato da versão {versao_id} sem modelo vinculado")
+            return jsonify({"error": "Dados inconsistentes: contrato sem modelo"}), 500
+
+        # Modificações já vêm no objeto versao_completa["modificacoes"]
+        modificacoes = versao_completa.get("modificacoes", [])
+
+        # Formatar dados para visualização
+        dados_view = _formatar_para_view(versao_completa, modificacoes)
+
+        # Sempre retornar JSON (este é um endpoint de API)
+        return jsonify(dados_view)
+
+    except requests.RequestException as e:
+        print(f"❌ Erro de rede ao carregar versão {versao_id}: {e}")
+        return jsonify({"error": f"Erro ao conectar com Directus: {str(e)}"}), 500
     except Exception as e:
-        print(f"❌ Erro ao visualizar versão {versao_id}: {e}")
-        return f"Erro interno: {str(e)}", 500
+        print(f"❌ Erro ao carregar view para versão {versao_id}: {e}")
+        import traceback
+
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/versao/<versao_id>", methods=["GET"])
+@app.route("/versao/<versao_id>", methods=["GET"])
+def api_get_versao(versao_id):
+    """
+    API endpoint para buscar dados de uma versão específica do Directus.
+    Usado pelo frontend Vue.js para carregar os dados.
+
+    Disponível em:
+    - /api/versao/<versao_id> (recomendado para API)
+    - /versao/<versao_id> (compatibilidade)
+    """
+    return _get_versao_json(versao_id)
+
+
+def _formatar_para_view(versao_completa: dict, modificacoes: list[dict]) -> dict:
+    """
+    Formata dados do Directus para o formato esperado pelo frontend.
+
+    Args:
+        versao_completa: Objeto versão com todos os relacionamentos carregados
+        modificacoes: Lista de modificações (já vem em versao_completa["modificacao"])
+
+    Returns:
+        Dicionário formatado para o frontend
+    """
+    modificacoes_formatadas = []
+
+    for mod in modificacoes:
+        mod_formatada = {
+            "id": mod["id"],
+            "tipo": _categoria_para_tipo(mod.get("categoria", "modificacao")),
+            "conteudo": {
+                "original": mod.get("conteudo", ""),
+                "novo": mod.get("alteracao", ""),
+            },
+            "posicao": {
+                "inicio": mod.get("posicao_inicio", 0),
+                "fim": mod.get("posicao_fim", 0),
+            },
+            "caminho": {
+                "inicio": mod.get("caminho_inicio"),
+                "fim": mod.get("caminho_fim"),
+            },
+        }
+
+        # Adicionar cláusula se vinculada (já vem em mod["clausula"])
+        if mod.get("clausula"):
+            clausula = mod["clausula"]
+            mod_formatada["clausula"] = {
+                "id": clausula.get("id"),
+                "numero": clausula.get("numero"),
+                "nome": clausula.get("nome"),
+            }
+
+            # Dados de vinculação (OPCIONAIS - serão adicionados na task-005)
+            # Estes campos ainda não estão na coleção modificacao do Directus
+            if (
+                mod.get("metodo_vinculacao")
+                or mod.get("score_vinculacao")
+                or mod.get("status_vinculacao")
+            ):
+                mod_formatada["vinculacao"] = {
+                    "metodo": mod.get("metodo_vinculacao", "conteudo"),
+                    "score": mod.get("score_vinculacao"),
+                    "status": mod.get("status_vinculacao", "automatico"),
+                }
+
+        modificacoes_formatadas.append(mod_formatada)
+
+    # Dados do contrato e modelo (OBRIGATÓRIOS - sempre devem estar presentes)
+    contrato = versao_completa["contrato"]  # Não usa .get() - deve existir
+    modelo = contrato["modelo_contrato"]  # Não usa .get() - deve existir
+
+    return {
+        "versao_id": versao_completa["id"],
+        "status": versao_completa["status"],
+        "data_processamento": versao_completa.get("data_hora_processamento"),
+        "contrato": {
+            "id": contrato["id"],
+            "nome": contrato.get("nome"),
+            "numero": contrato.get("numero"),
+        },
+        "modelo": {
+            "id": modelo["id"],
+            "nome": modelo.get("nome"),
+            "versao": modelo.get("versao"),
+        },
+        "modificacoes": modificacoes_formatadas,
+        "metricas": _calcular_metricas(modificacoes),
+    }
+
+
+def _categoria_para_tipo(categoria: str) -> str:
+    """Mapeia categoria do Directus para tipo do frontend."""
+    mapa = {
+        "modificacao": "ALTERACAO",
+        "inclusao": "INSERCAO",
+        "remocao": "REMOCAO",
+        "comentario": "COMENTARIO",
+        "formatacao": "FORMATACAO",
+    }
+    return mapa.get(categoria, "ALTERACAO")
+
+
+def _calcular_metricas(modificacoes: list[dict]) -> dict:
+    """Calcula métricas agregadas das modificações."""
+    total = len(modificacoes)
+    vinculadas = sum(1 for m in modificacoes if m.get("clausula"))
+
+    return {
+        "total_modificacoes": total,
+        "vinculadas": vinculadas,
+        "nao_vinculadas": total - vinculadas,
+        "taxa_vinculacao": round((vinculadas / total * 100), 2) if total > 0 else 0,
+    }
 
 
 @app.route("/api/test", methods=["GET"])
@@ -3081,60 +3255,23 @@ def process_modelo():
         return jsonify({"error": str(e), "modelo_id": modelo_id}), 500
 
 
-@app.route("/view/<diff_id>", methods=["GET"])
-def view_diff(diff_id):
-    """Visualiza diff gerado (somente leitura - não processa)
-
-    Este endpoint NÃO processa versões, apenas exibe diffs já processados no cache.
-
-    Fluxo correto:
-    1. Processar versão: GET /api/versoes/<versao_id>
-    2. Receber diff_id na resposta JSON
-    3. Visualizar: GET /view/<diff_id>
-    """
-    if diff_id not in diff_cache:
-        return (
-            f"""
-        <!DOCTYPE html>
-        <html>
-        <head><meta charset="UTF-8"><title>Diff não encontrado</title></head>
-        <body>
-            <h1>❌ Diff não encontrado no cache</h1>
-            <p>O diff_id <code>{diff_id}</code> não existe no cache do servidor.</p>
-
-            <h2>📝 Como processar e visualizar:</h2>
-            <ol>
-                <li><strong>Listar versões:</strong> <code>GET /api/versoes</code></li>
-                <li><strong>Processar versão:</strong> <code>GET /api/versoes/&lt;versao_id&gt;</code></li>
-                <li><strong>Usar o diff_id retornado para visualizar aqui</strong></li>
-            </ol>
-
-            <h3>🔗 Links úteis:</h3>
-            <ul>
-                <li><a href="/api/debug/cache">Ver diffs disponíveis no cache</a></li>
-                <li><a href="/api/versoes">Ver versões disponíveis</a></li>
-            </ul>
-        </body>
-        </html>
-        """,
-            404,
-        )
-
-    diff_data = diff_cache[diff_id]
-    response = render_template_string(HTML_TEMPLATE, **diff_data)
-    return response, 200, {"Content-Type": "text/html; charset=utf-8"}
-
-
 @app.route("/api/data/<diff_id>", methods=["GET"])
 def get_diff_data(diff_id):
-    """Retorna dados JSON do diff"""
+    """
+    Retorna dados JSON do diff.
+    Busca primeiro no cache, se não encontrar busca do Directus.
+    """
     print(f"🔍 Buscando diff_id: {diff_id}")
     print(f"📊 Cache atual tem {len(diff_cache)} items: {list(diff_cache.keys())}")
 
-    if diff_id not in diff_cache:
-        return jsonify({"error": "Diff não encontrado"}), 404
+    # Verificar cache primeiro
+    if diff_id in diff_cache:
+        print("✅ Encontrado no cache!")
+        return jsonify(diff_cache[diff_id])
 
-    return jsonify(diff_cache[diff_id])
+    # Se não estiver no cache, buscar do Directus usando o endpoint /api/versao
+    print("⚠️ Não encontrado no cache, buscando do Directus...")
+    return api_get_versao(diff_id)
 
 
 @app.route("/api/debug/cache", methods=["GET"])

@@ -229,6 +229,108 @@ Compara dois documentos DOCX usando IDs do Directus.
 
 Serve o arquivo HTML com o resultado da comparação.
 
+### GET /versao/<versao_id>
+
+**Implementado na Task-004**
+
+Visualiza uma versão processada com todas as suas modificações, buscando dados do Directus em uma única requisição otimizada.
+
+**Parâmetros de URL:**
+
+- `versao_id` (UUID, obrigatório): ID da versão a visualizar
+
+**Query Parameters:**
+
+- `format` (string, opcional): `json` para retornar JSON ao invés de HTML
+
+**Resposta de Sucesso (200 OK):**
+
+```json
+{
+  "versao_id": "99090886-7f43-45c9-bfe4-ec6eddd6cde0",
+  "status": "concluido",
+  "data_processamento": "2025-01-14T15:30:00Z",
+  "contrato": {
+    "id": "abc123",
+    "nome": "Contrato de Prestação de Serviços",
+    "numero": "2024/001"
+  },
+  "modelo": {
+    "id": "modelo-001",
+    "nome": "Modelo Padrão v2",
+    "versao": "2.1"
+  },
+  "modificacoes": [
+    {
+      "id": "mod-001",
+      "tipo": "ALTERACAO",
+      "conteudo": {
+        "original": "prazo de 30 dias",
+        "novo": "prazo de 45 dias"
+      },
+      "posicao": {
+        "inicio": 1234,
+        "fim": 1256
+      },
+      "caminho": {
+        "inicio": "/doc/body/p[1]",
+        "fim": "/doc/body/p[1]"
+      },
+      "clausula": {
+        "id": "clausula-001",
+        "numero": "5.1",
+        "nome": "Prazo de Vigência"
+      },
+      "vinculacao": {
+        "metodo": "conteudo",
+        "score": 0.95,
+        "status": "automatico"
+      }
+    }
+  ],
+  "metricas": {
+    "total_modificacoes": 792,
+    "vinculadas": 271,
+    "nao_vinculadas": 521,
+    "taxa_vinculacao": 34.2
+  }
+}
+```
+
+**Resposta - Versão Não Processada (202 Accepted):**
+
+```json
+{
+  "error": "Versão ainda não processada",
+  "status": "processando",
+  "progresso": 45
+}
+```
+
+**Resposta - Versão Não Encontrada (404 Not Found):**
+
+```json
+{
+  "error": "Versão não encontrada"
+}
+```
+
+**Resposta - Dados Inconsistentes (500 Internal Server Error):**
+
+```json
+{
+  "error": "Dados inconsistentes: versão sem contrato"
+}
+```
+
+**Observações:**
+
+- Busca **todos os dados** em uma única requisição ao Directus usando relacionamentos
+- Contrato e modelo são **obrigatórios** - se ausentes, retorna erro 500
+- Dados de vinculação (`metodo_vinculacao`, `score_vinculacao`, `status_vinculacao`) são **opcionais**
+- Performance: ~50-300ms para versões com até 800 modificações
+- Cache do Directus pode reduzir latência para <50ms
+
 ## 🧪 Testando a API
 
 Execute o script de teste:
