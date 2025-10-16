@@ -3025,6 +3025,31 @@ def api_get_versao(versao_id):
     return _get_versao_json(versao_id)
 
 
+def _extrair_chave_ordenacao_clausula(numero: str | None) -> tuple:
+    """
+    Extrai chave de ordenação para números de cláusula (ex: "1.1.1.e", "2.3.a").
+    Converte partes numéricas em int e mantém letras como strings.
+
+    Exemplos:
+        "1.1.1" -> (1, 1, 1)
+        "1.1.1.e" -> (1, 1, 1, 'e')
+        "2.3.a" -> (2, 3, 'a')
+    """
+    if not numero:
+        return (float("inf"),)  # Cláusulas sem número vão para o final
+
+    partes = []
+    for parte in str(numero).split("."):
+        try:
+            # Tentar converter para inteiro
+            partes.append(int(parte))
+        except ValueError:
+            # Se não for número, manter como string (letra)
+            partes.append(parte.lower())
+
+    return tuple(partes)
+
+
 def _formatar_para_view(versao_completa: dict, modificacoes: list[dict]) -> dict:
     """
     Formata dados do Directus para o formato esperado pelo frontend.
@@ -3036,9 +3061,21 @@ def _formatar_para_view(versao_completa: dict, modificacoes: list[dict]) -> dict
     Returns:
         Dicionário formatado para o frontend
     """
+    # Ordenar modificações pelo número da cláusula associada (ordenação natural)
+    # Modificações sem cláusula vão para o final
+    modificacoes_ordenadas = sorted(
+        modificacoes,
+        key=lambda m: (
+            _extrair_chave_ordenacao_clausula(
+                m.get("clausula", {}).get("numero") if m.get("clausula") else None
+            ),
+            m.get("posicao_inicio", 0),  # Segunda ordenação: posição no documento
+        ),
+    )
+
     modificacoes_formatadas = []
 
-    for mod in modificacoes:
+    for mod in modificacoes_ordenadas:
         mod_formatada = {
             "id": mod["id"],
             "tipo": _categoria_para_tipo(mod.get("categoria", "modificacao")),
