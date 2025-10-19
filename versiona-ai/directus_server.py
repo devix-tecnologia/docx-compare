@@ -2051,18 +2051,24 @@ class DirectusAPI:
             original_paras = PandocASTProcessor.extract_paragraphs_from_ast(
                 ast_original
             )
-            print(f"✅ AST do documento original extraído: {len(original_paras)} parágrafos")
+            print(
+                f"✅ AST do documento original extraído: {len(original_paras)} parágrafos"
+            )
 
             print("📥 Convertendo documento modificado para AST...")
             ast_modified = PandocASTProcessor.convert_docx_to_ast(modified_docx)
             modified_paras = PandocASTProcessor.extract_paragraphs_from_ast(
                 ast_modified
             )
-            print(f"✅ AST do documento modificado extraído: {len(modified_paras)} parágrafos")
+            print(
+                f"✅ AST do documento modificado extraído: {len(modified_paras)} parágrafos"
+            )
 
             # Gerar diff usando parágrafos estruturados
             print("🔍 Gerando HTML de comparação...")
-            diff_html = self._generate_diff_html_from_ast(original_paras, modified_paras)
+            diff_html = self._generate_diff_html_from_ast(
+                original_paras, modified_paras
+            )
             print(f"✅ HTML de comparação gerado: {len(diff_html)} caracteres")
 
             # Extrair modificações do diff
@@ -2336,7 +2342,9 @@ class DirectusAPI:
                         if para.get("clause_number")
                         else ""
                     )
-                    html.append(f"<div class='diff-removed'{clause_attr}>- {text}</div>")
+                    html.append(
+                        f"<div class='diff-removed'{clause_attr}>- {text}</div>"
+                    )
 
             elif tag == "insert":
                 # Parágrafos adicionados
@@ -2461,14 +2469,20 @@ class DirectusAPI:
                 is_pair = False
 
                 # Critério 1: Mesma cláusula
-                if removed.get("clause") and added.get("clause"):
-                    if removed["clause"] == added["clause"]:
-                        is_pair = True
+                if (
+                    removed.get("clause")
+                    and added.get("clause")
+                    and removed["clause"] == added["clause"]
+                ):
+                    is_pair = True
 
                 # Critério 2: Próximos no documento
-                if not is_pair and abs(removed["position"] - added["position"]) < 200:
-                    if added["position"] > removed["position"]:
-                        is_pair = True
+                if (
+                    not is_pair
+                    and abs(removed["position"] - added["position"]) < 200
+                    and added["position"] > removed["position"]
+                ):
+                    is_pair = True
 
                 if is_pair:
                     # É uma ALTERACAO
@@ -2501,7 +2515,9 @@ class DirectusAPI:
                             "confianca": 0.85,
                             "posicao": {"linha": modificacao_id, "coluna": 1},
                             "clausula_original": removed.get("clause"),
-                            "conteudo": {"original": self._unescape_html(removed["text"])},
+                            "conteudo": {
+                                "original": self._unescape_html(removed["text"])
+                            },
                         }
                     )
                     i += 1
@@ -2558,26 +2574,6 @@ class DirectusAPI:
                 modificacao_id += 1
 
         return modificacoes
-
-    def _escape_html(self, text: str) -> str:
-        """Escapa caracteres HTML."""
-        return (
-            text.replace("&", "&amp;")
-            .replace("<", "&lt;")
-            .replace(">", "&gt;")
-            .replace('"', "&quot;")
-            .replace("'", "&#39;")
-        )
-
-    def _unescape_html(self, text: str) -> str:
-        """Reverte escape de HTML."""
-        return (
-            text.replace("&amp;", "&")
-            .replace("&lt;", "<")
-            .replace("&gt;", ">")
-            .replace("&quot;", '"')
-            .replace("&#39;", "'")
-        )
 
     def _download_docx_to_temp(self, file_id):
         """Baixa arquivo DOCX do Directus para arquivo temporário"""
@@ -2966,6 +2962,16 @@ class DirectusAPI:
             .replace(">", "&gt;")
             .replace('"', "&quot;")
             .replace("'", "&#39;")
+        )
+
+    def _unescape_html(self, text: str) -> str:
+        """Reverte escape de HTML"""
+        return (
+            text.replace("&amp;", "&")
+            .replace("&lt;", "<")
+            .replace("&gt;", ">")
+            .replace("&quot;", '"')
+            .replace("&#39;", "'")
         )
 
     def _is_field_replacement(self, original, modified):
