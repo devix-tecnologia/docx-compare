@@ -64,5 +64,8 @@
     "python.analysis.extraPaths": [
         "${workspaceFolder}/versiona-ai"
     ],
-    "makefile.configureOnOpen": false
+    "makefile.configureOnOpen": false,
+
+    // Desabilitar validação TOML estrita (Ruff já valida corretamente)
+    "evenBetterToml.schema.enabled": false
 }

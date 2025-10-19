@@ -2241,11 +2241,19 @@ class DirectusAPI:
                     mod_data = {
                         "versao": versao_id,
                         "categoria": mod.get("tipo", "ALTERACAO"),  # tipo → categoria
-                        "conteudo": mod.get("conteudo", {}).get("original"),  # conteudo_original → conteudo
-                        "alteracao": mod.get("conteudo", {}).get("novo"),  # conteudo_novo → alteracao
+                        "conteudo": mod.get("conteudo", {}).get(
+                            "original"
+                        ),  # conteudo_original → conteudo
+                        "alteracao": mod.get("conteudo", {}).get(
+                            "novo"
+                        ),  # conteudo_novo → alteracao
                         "clausula": mod.get("clausula_id"),  # ID da cláusula vinculada
-                        "caminho_inicio": mod.get("posicao", {}).get("linha"),  # posicao_linha → caminho_inicio
-                        "caminho_fim": mod.get("posicao", {}).get("coluna"),  # posicao_coluna → caminho_fim
+                        "caminho_inicio": mod.get("posicao", {}).get(
+                            "linha"
+                        ),  # posicao_linha → caminho_inicio
+                        "caminho_fim": mod.get("posicao", {}).get(
+                            "coluna"
+                        ),  # posicao_coluna → caminho_fim
                     }
 
                     # Limpar campos None
