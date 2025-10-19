@@ -26,8 +26,8 @@ def mock_versao_completa():
             "modelo_contrato": {
                 "id": "modelo-123",
                 "nome": "Modelo Padrão",
-                "versao": "1.0"
-            }
+                "versao": "1.0",
+            },
         },
         "modificacao": [
             {
@@ -43,11 +43,11 @@ def mock_versao_completa():
                     "id": "clausula-001",
                     "numero": "5.1",
                     "nome": "Cláusula Teste",
-                    "tipo": "prazo"
+                    "tipo": "prazo",
                 },
                 "metodo_vinculacao": "conteudo",
                 "score_vinculacao": 0.95,
-                "status_vinculacao": "automatico"
+                "status_vinculacao": "automatico",
             },
             {
                 "id": "mod-002",
@@ -58,9 +58,9 @@ def mock_versao_completa():
                 "posicao_fim": 400,
                 "caminho_inicio": "/doc/body/p[2]",
                 "caminho_fim": "/doc/body/p[2]",
-                "clausula": None
-            }
-        ]
+                "clausula": None,
+            },
+        ],
     }
 
 
@@ -71,7 +71,7 @@ def mock_versao_sem_contrato():
         "id": "test-versao-456",
         "status": "concluido",
         "contrato": None,
-        "modificacao": []
+        "modificacao": [],
     }
 
 
@@ -82,11 +82,8 @@ def mock_versao_nao_processada():
         "id": "test-versao-789",
         "status": "processando",
         "progresso": 45,
-        "contrato": {
-            "id": "contrato-123",
-            "modelo_contrato": {"id": "modelo-123"}
-        },
-        "modificacao": []
+        "contrato": {"id": "contrato-123", "modelo_contrato": {"id": "modelo-123"}},
+        "modificacao": [],
     }
 
 
@@ -95,8 +92,7 @@ def test_formatar_para_view_sucesso(mock_versao_completa):
     from directus_server import _formatar_para_view
 
     resultado = _formatar_para_view(
-        mock_versao_completa,
-        mock_versao_completa["modificacao"]
+        mock_versao_completa, mock_versao_completa["modificacao"]
     )
 
     # Verificar estrutura principal
@@ -194,7 +190,7 @@ def test_formatar_modificacao_sem_vinculacao():
         "contrato": {
             "id": "c1",
             "nome": "Contrato",
-            "modelo_contrato": {"id": "m1", "nome": "Modelo"}
+            "modelo_contrato": {"id": "m1", "nome": "Modelo"},
         },
         "modificacao": [
             {
@@ -203,14 +199,10 @@ def test_formatar_modificacao_sem_vinculacao():
                 "conteudo": "texto",
                 "posicao_inicio": 0,
                 "posicao_fim": 10,
-                "clausula": {
-                    "id": "cl1",
-                    "numero": "1.1",
-                    "nome": "Teste"
-                }
+                "clausula": {"id": "cl1", "numero": "1.1", "nome": "Teste"},
                 # SEM metodo_vinculacao, score_vinculacao, status_vinculacao
             }
-        ]
+        ],
     }
 
     resultado = _formatar_para_view(versao, versao["modificacao"])
@@ -232,7 +224,7 @@ def test_formatar_modificacao_com_vinculacao_parcial():
         "contrato": {
             "id": "c1",
             "nome": "Contrato",
-            "modelo_contrato": {"id": "m1", "nome": "Modelo"}
+            "modelo_contrato": {"id": "m1", "nome": "Modelo"},
         },
         "modificacao": [
             {
@@ -245,7 +237,7 @@ def test_formatar_modificacao_com_vinculacao_parcial():
                 "score_vinculacao": 0.85,
                 # metodo_vinculacao e status_vinculacao ausentes
             }
-        ]
+        ],
     }
 
     resultado = _formatar_para_view(versao, versao["modificacao"])
