@@ -6,6 +6,9 @@ USER root
 RUN apt-get update && apt-get install -y nginx supervisor pandoc curl && \
     rm -rf /var/lib/apt/lists/*
 
+# Instalar flask-restx para documentação Swagger
+RUN /app/.venv/bin/pip install flask-restx>=1.3.0
+
 # Copiar código atualizado do servidor Python
 COPY versiona-ai/directus_server.py /app/versiona-ai/
 COPY versiona-ai/wsgi.py /app/versiona-ai/
