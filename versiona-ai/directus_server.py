@@ -4095,10 +4095,17 @@ def process_modelo():
                             versao_id, mock=False, use_ast=use_ast
                         )
 
-                        if (
+                        # AST retorna success=True, modo original retorna status="sucesso"
+                        sucesso = (
                             resultado_versao
-                            and resultado_versao.get("status") == "sucesso"
-                        ):
+                            and (
+                                resultado_versao.get("success") is True
+                                or resultado_versao.get("status") == "sucesso"
+                            )
+                            and "error" not in resultado_versao
+                        )
+
+                        if sucesso:
                             versoes_processadas += 1
                             modificacoes_versao = len(
                                 resultado_versao.get("modificacoes", [])
@@ -4109,9 +4116,8 @@ def process_modelo():
                             )
                         else:
                             versoes_com_erro += 1
-                            print(
-                                "      ⚠️  Versão com erro ou status diferente de sucesso"
-                            )
+                            erro_msg = resultado_versao.get("error", "status diferente de sucesso")
+                            print(f"      ⚠️  Versão com erro: {erro_msg}")
 
                     except Exception as e:
                         versoes_com_erro += 1
