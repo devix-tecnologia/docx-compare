@@ -496,11 +496,22 @@ class DirectusAPI:
                 if not versao_data:
                     return {"error": f"Versão mock {versao_id} não encontrada"}
             else:
-                # Buscar dados reais do Directus
-                # Usar apenas campos que sabemos que existem baseado na listagem
-                fields = "id,status,date_created,date_updated,versao,observacao,origem,arquivo,modifica_arquivo,contrato"
+                # Buscar dados reais do Directus com nested fields (1 única requisição!)
+                # Buscar: versão → contrato → modelo_contrato → tags
+                fields = (
+                    "id,status,date_created,date_updated,versao,observacao,origem,arquivo,modifica_arquivo,"
+                    "contrato.id,contrato.modelo_contrato.id,contrato.modelo_contrato.arquivo_com_tags,"
+                    "contrato.modelo_contrato.tags.id,contrato.modelo_contrato.tags.tag_nome,"
+                    "contrato.modelo_contrato.tags.caminho_tag_inicio,contrato.modelo_contrato.tags.caminho_tag_fim,"
+                    "contrato.modelo_contrato.tags.posicao_inicio_texto,contrato.modelo_contrato.tags.posicao_fim_texto,"
+                    "contrato.modelo_contrato.tags.conteudo,"
+                    "contrato.modelo_contrato.tags.clausulas.id,contrato.modelo_contrato.tags.clausulas.numero,"
+                    "contrato.modelo_contrato.tags.clausulas.nome"
+                )
                 url = f"{self.base_url}/items/versao/{versao_id}?fields={fields}"
-                print(f"🔍 Buscando versão no Directus: {url}")
+                print(
+                    "🔍 Buscando versão + contrato + modelo + tags no Directus (1 requisição)..."
+                )
                 print(
                     f"🔍 Headers configurados: Authorization presente = {bool(DIRECTUS_HEADERS.get('Authorization'))}"
                 )
@@ -508,7 +519,7 @@ class DirectusAPI:
                 response = requests.get(
                     url,
                     headers=DIRECTUS_HEADERS,
-                    timeout=10,
+                    timeout=30,  # Timeout maior para nested query
                 )
 
                 print(f"📡 Resposta do Directus: HTTP {response.status_code}")
@@ -525,6 +536,33 @@ class DirectusAPI:
                     }
                 else:
                     versao_data = response.json()["data"]
+
+                    # Extrair dados nested para uso posterior
+                    contrato_data = versao_data.get("contrato")
+                    if isinstance(contrato_data, dict):
+                        modelo_data = contrato_data.get("modelo_contrato")
+                        if isinstance(modelo_data, dict):
+                            tags_modelo_nested = modelo_data.get("tags", [])
+                            arquivo_com_tags_id_nested = modelo_data.get(
+                                "arquivo_com_tags"
+                            )
+
+                            print("✅ Dados carregados em 1 requisição:")
+                            print(f"   - Versão: {versao_id}")
+                            print(f"   - Contrato: {contrato_data.get('id')}")
+                            print(f"   - Modelo: {modelo_data.get('id')}")
+                            print(f"   - Tags: {len(tags_modelo_nested)}")
+                            print(
+                                f"   - Arquivo com tags: {arquivo_com_tags_id_nested}"
+                            )
+                        else:
+                            tags_modelo_nested = []
+                            arquivo_com_tags_id_nested = None
+                            print("⚠️ Modelo não encontrado no contrato")
+                    else:
+                        tags_modelo_nested = []
+                        arquivo_com_tags_id_nested = None
+                        print("⚠️ Contrato não encontrado na versão")
 
             # Se use_ast=True, usar processamento AST
             if use_ast and not mock:
@@ -543,89 +581,33 @@ class DirectusAPI:
                 print("🔍 Processando arquivos reais...")
                 original_text, modified_text = self._process_real_documents(versao_data)
 
-            # Buscar tags do modelo de contrato (somente em modo real)
+            # Usar tags já carregadas na requisição inicial (zero requisições extras!)
             tags_modelo = []
-            modelo_id = None
             arquivo_com_tags_text = None
-            print(f"🔍 DEBUG: mock={mock}, verificando busca de tags")
-            if not mock:
-                try:
-                    # Buscar modelo_id da versão através do contrato
-                    contrato_id = versao_data.get("contrato")
-                    print(f"🔍 DEBUG: contrato_id={contrato_id}")
-                    if contrato_id:
-                        print(f"🔍 Buscando modelo do contrato {contrato_id}...")
-                        contrato_response = requests.get(
-                            f"{self.base_url}/items/contrato/{contrato_id}",
-                            headers=DIRECTUS_HEADERS,
-                            params={"fields": "modelo_contrato"},
-                            timeout=10,
-                        )
+
+            if not mock and "tags_modelo_nested" in locals() and tags_modelo_nested:
+                # Dados já carregados na requisição inicial!
+                print("🎯 Usando dados já carregados (0 requisições extras)")
+                tags_modelo = tags_modelo_nested
+
+                # Baixar arquivo_com_tags se disponível
+                if arquivo_com_tags_id_nested:
+                    print(
+                        f"📥 Baixando arquivo_com_tags {arquivo_com_tags_id_nested}..."
+                    )
+                    arquivo_com_tags_text = self._download_and_extract_text(
+                        arquivo_com_tags_id_nested
+                    )
+                    if arquivo_com_tags_text:
                         print(
-                            f"🔍 DEBUG: contrato response status={contrato_response.status_code}"
+                            f"✅ Arquivo com tags carregado ({len(arquivo_com_tags_text)} caracteres)"
                         )
-                        if contrato_response.status_code == 200:
-                            modelo_id = contrato_response.json()["data"].get(
-                                "modelo_contrato"
-                            )
-                            print(f"🔍 DEBUG: modelo_id encontrado={modelo_id}")
-
-                    if modelo_id:
-                        # Buscar arquivo_com_tags do modelo para mapear posições corretas
-                        print(f"🔍 Buscando arquivo_com_tags do modelo {modelo_id}...")
-                        modelo_response = requests.get(
-                            f"{self.base_url}/items/modelo_contrato/{modelo_id}",
-                            headers=DIRECTUS_HEADERS,
-                            params={"fields": "arquivo_com_tags"},
-                            timeout=10,
-                        )
-                        if modelo_response.status_code == 200:
-                            arquivo_com_tags_id = modelo_response.json()["data"].get(
-                                "arquivo_com_tags"
-                            )
-                            if arquivo_com_tags_id:
-                                print(
-                                    f"📥 Baixando arquivo_com_tags {arquivo_com_tags_id} para mapear posições..."
-                                )
-                                arquivo_com_tags_text = self._download_and_extract_text(
-                                    arquivo_com_tags_id
-                                )
-                                if arquivo_com_tags_text:
-                                    print(
-                                        f"✅ Arquivo com tags carregado ({len(arquivo_com_tags_text)} caracteres)"
-                                    )
-                                else:
-                                    print(
-                                        "⚠️ Não foi possível extrair texto do arquivo_com_tags"
-                                    )
-                            else:
-                                print("⚠️ modelo não tem arquivo_com_tags")
-
-                        print(f"🔍 Buscando tags do modelo {modelo_id}...")
-                        tags_response = requests.get(
-                            f"{self.base_url}/items/modelo_contrato_tag",
-                            headers=DIRECTUS_HEADERS,
-                            params={
-                                "filter[modelo_contrato][_eq]": modelo_id,
-                                "fields": "id,tag_nome,caminho_tag_inicio,caminho_tag_fim,posicao_inicio_texto,posicao_fim_texto,conteudo,clausulas.id,clausulas.numero,clausulas.nome",
-                                "limit": -1,
-                            },
-                            timeout=10,
-                        )
-                        if tags_response.status_code == 200:
-                            tags_modelo = tags_response.json().get("data", [])
-                            print(
-                                f"✅ Encontradas {len(tags_modelo)} tags do modelo para vinculação"
-                            )
                     else:
-                        print(
-                            "⚠️ modelo_id não encontrado, não será possível vincular cláusulas"
-                        )
-                except Exception as e:
-                    print(f"⚠️ Erro ao buscar tags do modelo: {e}")
-                    import traceback
-
-                    traceback.print_exc()
+                        print("⚠️ Não foi possível extrair texto do arquivo_com_tags")
+                else:
+                    print("⚠️ Modelo não tem arquivo_com_tags")
+            elif not mock:
+                print("⚠️ Sem dados de tags (contrato ou modelo não encontrado)")
 
             # Gerar diff
             # Se temos arquivo_com_tags, usar ele (sem tags) como original para ter mesmas coordenadas
@@ -2111,44 +2093,30 @@ class DirectusAPI:
                 "texto_modificado": "\n".join(p["text"] for p in modified_paras),
             }
 
-            # 3. Buscar tags do modelo para vinculação (igual ao processo normal)
+            # 3. Extrair tags já carregadas na requisição inicial do process_versao
+            # OTIMIZAÇÃO: versao_data já vem com nested fields (contrato.modelo_contrato.tags)
             tags_modelo = []
-            modelo_id = None
 
             try:
-                contrato_id = versao_data.get("contrato")
-                if contrato_id:
-                    print(f"🔍 Buscando modelo do contrato {contrato_id}...")
-                    contrato_response = requests.get(
-                        f"{self.base_url}/items/contrato/{contrato_id}",
-                        headers=DIRECTUS_HEADERS,
-                        params={"fields": "modelo_contrato"},
-                        timeout=10,
-                    )
-                    if contrato_response.status_code == 200:
-                        modelo_id = contrato_response.json()["data"].get(
-                            "modelo_contrato"
-                        )
-
-                if modelo_id:
-                    print(f"🔍 Buscando tags do modelo {modelo_id}...")
-                    tags_response = requests.get(
-                        f"{self.base_url}/items/modelo_contrato_tag",
-                        headers=DIRECTUS_HEADERS,
-                        params={
-                            "filter[modelo_contrato][_eq]": modelo_id,
-                            "fields": "id,tag_nome,caminho_tag_inicio,caminho_tag_fim,posicao_inicio_texto,posicao_fim_texto,conteudo,clausulas.id,clausulas.numero,clausulas.nome",
-                            "limit": -1,
-                        },
-                        timeout=10,
-                    )
-                    if tags_response.status_code == 200:
-                        tags_modelo = tags_response.json().get("data", [])
-                        print(
-                            f"✅ Encontradas {len(tags_modelo)} tags do modelo para vinculação"
-                        )
+                # Tentar extrair tags dos dados nested
+                contrato_data = versao_data.get("contrato")
+                if isinstance(contrato_data, dict):
+                    modelo_data = contrato_data.get("modelo_contrato")
+                    if isinstance(modelo_data, dict):
+                        tags_modelo = modelo_data.get("tags", [])
+                        if tags_modelo:
+                            print(
+                                f"✅ Usando {len(tags_modelo)} tags já carregadas (0 requisições extras)"
+                            )
+                        else:
+                            print("⚠️ Modelo não tem tags")
+                    else:
+                        print("⚠️ Modelo não encontrado nos dados nested")
+                else:
+                    print("⚠️ Contrato não encontrado nos dados nested")
             except Exception as e:
-                print(f"⚠️ Erro ao buscar tags: {e}")
+                print(f"⚠️ Erro ao extrair tags nested: {e}")
+                tags_modelo = []
 
             # 4. Vincular modificações AST às cláusulas
             modificacoes = resultado_ast["modificacoes"]
@@ -2242,6 +2210,7 @@ class DirectusAPI:
                 # Gravar modificações individuais no Directus
                 print(f"\n📝 Gravando {len(modificacoes)} modificações no Directus...")
                 modificacoes_criadas = 0
+                modificacoes_ids = []  # Coletar IDs das modificações criadas
 
                 for idx, mod in enumerate(modificacoes, 1):
                     # Mapear campos corretamente para o schema do Directus
@@ -2280,10 +2249,16 @@ class DirectusAPI:
 
                         if mod_response.status_code in [200, 201]:
                             modificacoes_criadas += 1
+                            # Coletar ID da modificação criada
+                            mod_id = mod_response.json().get("data", {}).get("id")
+                            if mod_id:
+                                modificacoes_ids.append(mod_id)
                             if (
                                 idx <= 5 or idx % 10 == 0
                             ):  # Mostrar primeiras 5 e múltiplos de 10
-                                print(f"  ✅ Modificação #{idx} ({mod['tipo']}) criada")
+                                print(
+                                    f"  ✅ Modificação #{idx} ({mod['tipo']}) criada - ID: {mod_id}"
+                                )
                         else:
                             print(
                                 f"  ⚠️ Erro ao criar modificação #{idx}: HTTP {mod_response.status_code}"
@@ -2295,6 +2270,35 @@ class DirectusAPI:
                 print(
                     f"\n✅ Gravação concluída: {modificacoes_criadas}/{len(modificacoes)} modificações salvas no Directus"
                 )
+
+                # Atualizar versão com array de IDs das modificações
+                # Isso faz o Directus automaticamente remover modificações antigas não incluídas no array
+                if modificacoes_ids:
+                    print(
+                        f"\n🔄 Atualizando versão com {len(modificacoes_ids)} modificações vinculadas..."
+                    )
+                    versao_mod_update = {"modificacoes": modificacoes_ids}
+
+                    try:
+                        versao_mod_response = requests.patch(
+                            f"{self.base_url}/items/versao/{versao_id}",
+                            headers=DIRECTUS_HEADERS,
+                            json=versao_mod_update,
+                            timeout=10,
+                        )
+
+                        if versao_mod_response.status_code in [200, 204]:
+                            print("✅ Versão atualizada com modificações vinculadas")
+                            print(
+                                "   Modificações antigas removidas automaticamente pelo Directus"
+                            )
+                        else:
+                            print(
+                                f"⚠️ Erro ao vincular modificações: HTTP {versao_mod_response.status_code}"
+                            )
+                            print(f"   Resposta: {versao_mod_response.text[:200]}")
+                    except Exception as e:
+                        print(f"⚠️ Erro ao vincular modificações à versão: {e}")
 
             except Exception as e:
                 print(f"⚠️ Erro ao gravar no Directus: {e}")
