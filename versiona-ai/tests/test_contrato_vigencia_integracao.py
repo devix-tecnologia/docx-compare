@@ -138,17 +138,6 @@ class TestContratoVigenciaIntegracao:
         # Processar diff
         modificacoes = self._get_modificacoes(api_mockada)
 
-        # Para cada modificação, simular vinculação
-        # (na implementação real isso seria feito com tags)
-        modificacoes = modificacoes
-
-        # Contar quantas teriam score < 0.8 (revisão manual)
-        # Nota: Este teste vai FALHAR até corrigirmos o threshold
-        scores_baixos = 0
-        for mod in modificacoes:
-            # Se tivéssemos vinculação real, verificaríamos o score aqui
-            pass
-
         # Por enquanto, apenas validamos que temos as modificações
         assert len(modificacoes) > 0, "Deve ter modificações detectadas"
 
@@ -159,12 +148,13 @@ class TestContratoVigenciaIntegracao:
         # Procurar modificação que contém estas palavras-chave
         mod_encontrada = None
         for mod in modificacoes:
-            conteudo_orig = mod.get("conteudo", "")
-            alteracao = mod.get("alteracao", "")
+            conteudo = mod.get("conteudo", {})
+            conteudo_orig = conteudo.get("original", "")
+            conteudo_novo = conteudo.get("novo", "")
 
             if (
                 "QUADRO RESUMO" in conteudo_orig
-                and "ESCOPO INICIAL PREVISTO" in alteracao
+                and "ESCOPO INICIAL PREVISTO" in conteudo_novo
             ):
                 mod_encontrada = mod
                 break
@@ -172,7 +162,7 @@ class TestContratoVigenciaIntegracao:
         assert mod_encontrada is not None, (
             "Deve detectar mudança QUADRO RESUMO → ESCOPO INICIAL PREVISTO"
         )
-        assert mod_encontrada["categoria"] == "modificacao", "Deve ser tipo modificação"
+        assert mod_encontrada["tipo"] == "ALTERACAO", "Deve ser tipo ALTERACAO"
 
     def test_modificacao_1_2_exclusividade_removida(self, api_mockada):
         """Valida detecção da remoção da cláusula 1.2 sobre exclusividade."""
@@ -181,9 +171,10 @@ class TestContratoVigenciaIntegracao:
         # Procurar remoção que contém "exclusividade"
         remocao_encontrada = None
         for mod in modificacoes:
-            if mod.get("categoria") == "remocao" and "exclusividade" in mod.get(
-                "conteudo", ""
-            ):
+            conteudo = mod.get("conteudo", {})
+            conteudo_orig = conteudo.get("original", "")
+
+            if mod.get("tipo") == "REMOCAO" and "exclusividade" in conteudo_orig:
                 remocao_encontrada = mod
                 break
 
@@ -198,8 +189,10 @@ class TestContratoVigenciaIntegracao:
         # Procurar modificação com "SE APLICÁVEL"
         mod_encontrada = None
         for mod in modificacoes:
-            alteracao = mod.get("alteracao", "")
-            if "SE APLICÁVEL, A RETROATIVIDADE" in alteracao:
+            conteudo = mod.get("conteudo", {})
+            conteudo_novo = conteudo.get("novo", "")
+
+            if "SE APLICÁVEL, A RETROATIVIDADE" in conteudo_novo:
                 mod_encontrada = mod
                 break
 
@@ -214,8 +207,13 @@ class TestContratoVigenciaIntegracao:
         # Procurar modificação com "EMPRESA CONTRATADA"
         mod_encontrada = None
         for mod in modificacoes:
-            alteracao = mod.get("alteracao", "")
-            if "EMPRESA CONTRATADA" in alteracao and "desmobilização" in alteracao:
+            conteudo = mod.get("conteudo", {})
+            conteudo_novo = conteudo.get("novo", "")
+
+            if (
+                "EMPRESA CONTRATADA" in conteudo_novo
+                and "desmobilização" in conteudo_novo
+            ):
                 mod_encontrada = mod
                 break
 
@@ -230,8 +228,12 @@ class TestContratoVigenciaIntegracao:
         # Procurar inserção com "obrigações tributárias"
         insercao_encontrada = None
         for mod in modificacoes:
-            if mod.get("categoria") == "adicao" and "obrigações tributárias" in mod.get(
-                "alteracao", ""
+            conteudo = mod.get("conteudo", {})
+            conteudo_novo = conteudo.get("novo", "")
+
+            if (
+                mod.get("tipo") == "INSERCAO"
+                and "obrigações tributárias" in conteudo_novo
             ):
                 insercao_encontrada = mod
                 break
@@ -247,15 +249,15 @@ class TestContratoVigenciaIntegracao:
         # Contar por tipo
         tipos = {}
         for mod in modificacoes:
-            categoria = mod.get("categoria", "unknown")
-            tipos[categoria] = tipos.get(categoria, 0) + 1
+            tipo = mod.get("tipo", "unknown")
+            tipos[tipo] = tipos.get(tipo, 0) + 1
 
         print(f"\n📊 Distribuição de tipos: {tipos}")
 
         # Validações mínimas
-        assert tipos.get("modificacao", 0) >= 4, "Deve ter pelo menos 4 modificações"
-        assert tipos.get("remocao", 0) >= 1, "Deve ter pelo menos 1 remoção"
-        assert tipos.get("adicao", 0) >= 1, "Deve ter pelo menos 1 adição"
+        assert tipos.get("ALTERACAO", 0) >= 4, "Deve ter pelo menos 4 alterações"
+        assert tipos.get("REMOCAO", 0) >= 1, "Deve ter pelo menos 1 remoção"
+        assert tipos.get("INSERCAO", 0) >= 1, "Deve ter pelo menos 1 inserção"
 
     def test_metricas_cobertura(self, api_mockada):
         """Valida métricas de cobertura das modificações."""

@@ -3,17 +3,16 @@
 import os
 import sys
 
-# Path setup
-tests_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, tests_dir)
-
-# Import fixture
 from fixtures.contrato_vigencia_fixture import (
     METRICAS_ESPERADAS,
     MODELO_TEXTO_ORIGINAL,
     TOTAL_MODIFICACOES_ESPERADO,
     VERSAO_TEXTO_MODIFICADO,
 )
+
+# Path setup
+tests_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, tests_dir)
 
 
 class TestContratoVigencia:
