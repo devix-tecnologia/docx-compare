@@ -2233,17 +2233,19 @@ class DirectusAPI:
                 modificacoes_criadas = 0
 
                 for idx, mod in enumerate(modificacoes, 1):
+                    # Mapear campos corretamente para o schema do Directus
+                    # categoria = tipo (ALTERACAO, REMOCAO, INSERCAO)
+                    # conteudo = texto original
+                    # alteracao = texto novo/modificado
+                    # clausula = ID da cláusula vinculada (se houver)
                     mod_data = {
                         "versao": versao_id,
-                        "tipo": mod.get("tipo", "ALTERACAO"),
-                        "confianca": mod.get("confianca", 0.95),
-                        "clausula_original": mod.get("clausula_original"),
-                        "clausula_modificada": mod.get("clausula_modificada"),
-                        "conteudo_original": mod.get("conteudo", {}).get("original"),
-                        "conteudo_novo": mod.get("conteudo", {}).get("novo"),
-                        "posicao_linha": mod.get("posicao", {}).get("linha"),
-                        "posicao_coluna": mod.get("posicao", {}).get("coluna"),
-                        "metodo_deteccao": "AST_PANDOC",
+                        "categoria": mod.get("tipo", "ALTERACAO"),  # tipo → categoria
+                        "conteudo": mod.get("conteudo", {}).get("original"),  # conteudo_original → conteudo
+                        "alteracao": mod.get("conteudo", {}).get("novo"),  # conteudo_novo → alteracao
+                        "clausula": mod.get("clausula_id"),  # ID da cláusula vinculada
+                        "caminho_inicio": mod.get("posicao", {}).get("linha"),  # posicao_linha → caminho_inicio
+                        "caminho_fim": mod.get("posicao", {}).get("coluna"),  # posicao_coluna → caminho_fim
                     }
 
                     # Limpar campos None
