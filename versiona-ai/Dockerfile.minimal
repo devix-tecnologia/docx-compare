@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y nginx supervisor pandoc curl && \
 # Copiar código atualizado do servidor Python
 COPY versiona-ai/directus_server.py /app/versiona-ai/
 COPY versiona-ai/wsgi.py /app/versiona-ai/
+COPY versiona-ai/swagger_docs.py /app/versiona-ai/
 COPY versiona-ai/processador_tags_modelo.py /app/versiona-ai/
 COPY versiona-ai/agrupador_posicional.py /app/versiona-ai/
 
