@@ -4020,6 +4020,7 @@ def process_modelo():
     modelo_id = data.get("modelo_id")
     dry_run = data.get("dry_run", False)
     use_ast = data.get("use_ast", True)  # AST como padrão
+    process_tags = data.get("process_tags", True)  # Processar tags por padrão
     process_versions = data.get(
         "process_versions", True
     )  # Processar versões por padrão
@@ -4040,7 +4041,7 @@ def process_modelo():
 
     print(f"🔍 Processando modelo {modelo_id}")
     print(
-        f"   ⚙️  Configurações: dry_run={dry_run}, use_ast={use_ast}, process_versions={process_versions}"
+        f"   ⚙️  Configurações: dry_run={dry_run}, use_ast={use_ast}, process_tags={process_tags}, process_versions={process_versions}"
     )
 
     try:
@@ -4048,32 +4049,44 @@ def process_modelo():
             "modelo_id": modelo_id,
             "dry_run": dry_run,
             "use_ast": use_ast,
+            "process_tags": process_tags,
             "status": "sucesso",
         }
 
-        # 1. Processar tags do modelo (sempre executado)
-        print("\n📋 ETAPA 1: Processando tags do modelo...")
-        print(f"   🔑 Directus URL: {DIRECTUS_BASE_URL}")
-        print(
-            f"   🔑 Directus Token: {'SET (' + DIRECTUS_TOKEN[:20] + '...)' if DIRECTUS_TOKEN else 'NOT SET'}"
-        )
+        # 1. Processar tags do modelo (opcional)
+        if process_tags:
+            print("\n📋 ETAPA 1: Processando tags do modelo...")
+            print(f"   🔑 Directus URL: {DIRECTUS_BASE_URL}")
+            print(
+                f"   🔑 Directus Token: {'SET (' + DIRECTUS_TOKEN[:20] + '...)' if DIRECTUS_TOKEN else 'NOT SET'}"
+            )
 
-        processador = ProcessadorTagsModelo(
-            directus_base_url=DIRECTUS_BASE_URL, directus_token=DIRECTUS_TOKEN
-        )
-        resultado_tags = processador.processar_modelo(modelo_id, dry_run=dry_run)
+            processador = ProcessadorTagsModelo(
+                directus_base_url=DIRECTUS_BASE_URL, directus_token=DIRECTUS_TOKEN
+            )
+            resultado_tags = processador.processar_modelo(modelo_id, dry_run=dry_run)
 
-        if resultado_tags.get("status") == "erro":
-            return jsonify(resultado_tags), 500
-
-        # Adicionar resultados das tags
-        resultado_final.update(
-            {
-                "tags_encontradas": resultado_tags.get("tags_encontradas", 0),
-                "tags_criadas": resultado_tags.get("tags_criadas", 0),
-                "tags_orfas": resultado_tags.get("tags_orfas", 0),
-            }
-        )
+            if resultado_tags.get("status") == "erro":
+                print(f"   ⚠️  Erro ao processar tags: {resultado_tags.get('erro')}")
+                print("   📋 Continuando sem processamento de tags...")
+                # Não falhar aqui, apenas logar
+                resultado_final.update(
+                    {"tags_encontradas": 0, "tags_criadas": 0, "tags_orfas": 0}
+                )
+            else:
+                # Adicionar resultados das tags
+                resultado_final.update(
+                    {
+                        "tags_encontradas": resultado_tags.get("tags_encontradas", 0),
+                        "tags_criadas": resultado_tags.get("tags_criadas", 0),
+                        "tags_orfas": resultado_tags.get("tags_orfas", 0),
+                    }
+                )
+        else:
+            print("\n⏭️  Pulando processamento de tags (process_tags=false)")
+            resultado_final.update(
+                {"tags_encontradas": 0, "tags_criadas": 0, "tags_orfas": 0}
+            )
 
         # 2. Processar versões (se solicitado)
         if process_versions:
