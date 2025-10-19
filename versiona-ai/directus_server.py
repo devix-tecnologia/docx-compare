@@ -4027,6 +4027,17 @@ def process_modelo():
     if not modelo_id:
         return jsonify({"error": "modelo_id é obrigatório"}), 400
 
+    # Validar configuração do Directus
+    if not DIRECTUS_BASE_URL or not DIRECTUS_TOKEN:
+        print(
+            f"❌ Configuração inválida: DIRECTUS_BASE_URL={DIRECTUS_BASE_URL}, DIRECTUS_TOKEN={'SET' if DIRECTUS_TOKEN else 'NOT SET'}"
+        )
+        return jsonify(
+            {
+                "error": "Configuração do Directus não encontrada (DIRECTUS_BASE_URL ou DIRECTUS_TOKEN)"
+            }
+        ), 500
+
     print(f"🔍 Processando modelo {modelo_id}")
     print(
         f"   ⚙️  Configurações: dry_run={dry_run}, use_ast={use_ast}, process_versions={process_versions}"
@@ -4042,8 +4053,13 @@ def process_modelo():
 
         # 1. Processar tags do modelo (sempre executado)
         print("\n📋 ETAPA 1: Processando tags do modelo...")
+        print(f"   🔑 Directus URL: {DIRECTUS_BASE_URL}")
+        print(
+            f"   🔑 Directus Token: {'SET (' + DIRECTUS_TOKEN[:20] + '...)' if DIRECTUS_TOKEN else 'NOT SET'}"
+        )
+
         processador = ProcessadorTagsModelo(
-            directus_base_url=DIRECTUS_BASE_URL, directus_token=DIRECTUS_TOKEN or ""
+            directus_base_url=DIRECTUS_BASE_URL, directus_token=DIRECTUS_TOKEN
         )
         resultado_tags = processador.processar_modelo(modelo_id, dry_run=dry_run)
 
@@ -4116,7 +4132,9 @@ def process_modelo():
                             )
                         else:
                             versoes_com_erro += 1
-                            erro_msg = resultado_versao.get("error", "status diferente de sucesso")
+                            erro_msg = resultado_versao.get(
+                                "error", "status diferente de sucesso"
+                            )
                             print(f"      ⚠️  Versão com erro: {erro_msg}")
 
                     except Exception as e:
