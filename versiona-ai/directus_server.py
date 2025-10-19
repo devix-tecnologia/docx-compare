@@ -11,6 +11,7 @@ import os
 import re
 import signal
 import sys
+import tempfile
 import unicodedata
 import uuid
 from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -48,6 +49,120 @@ from processador_tags_modelo import ProcessadorTagsModelo
 
 # Carregar variáveis do .env
 load_dotenv()
+
+# ============================================================================
+# CLASSES PARA PROCESSAMENTO AST DO PANDOC
+# ============================================================================
+
+
+class PandocASTProcessor:
+    """Processa AST do Pandoc para extração de parágrafos estruturados."""
+
+    @staticmethod
+    def convert_docx_to_ast(docx_path: str) -> dict:
+        """Converte DOCX para AST JSON usando Pandoc."""
+        import json
+        import subprocess
+
+        try:
+            result = subprocess.run(
+                ["pandoc", docx_path, "-t", "json"],
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+
+            if result.returncode != 0:
+                raise RuntimeError(f"Erro no Pandoc: {result.stderr}")
+
+            return json.loads(result.stdout)
+
+        except subprocess.TimeoutExpired:
+            raise RuntimeError(f"Timeout na conversão do arquivo {docx_path}")
+        except json.JSONDecodeError as e:
+            raise RuntimeError(f"Erro ao parsear JSON do Pandoc: {e}")
+
+    @staticmethod
+    def extract_paragraphs_from_ast(ast_json: dict) -> list[dict]:
+        """Extrai parágrafos estruturados do AST."""
+        paragraphs = []
+        blocks = ast_json.get("blocks", [])
+
+        for block in blocks:
+            block_type = block.get("t")
+
+            if block_type == "Para":
+                para_info = PandocASTProcessor._extract_paragraph(block)
+                if para_info["text"].strip():
+                    paragraphs.append(para_info)
+
+            elif block_type == "Header":
+                para_info = PandocASTProcessor._extract_header(block)
+                if para_info["text"].strip():
+                    paragraphs.append(para_info)
+
+        return paragraphs
+
+    @staticmethod
+    def _extract_paragraph(block: dict) -> dict:
+        """Extrai texto e metadados de um parágrafo."""
+        content = block.get("c", [])
+        text, formatting = PandocASTProcessor._extract_inline_content(content)
+
+        # Detectar número de cláusula
+        clause_match = re.match(r"^(\d+\.(?:\d+)?)\s", text)
+        clause_number = clause_match.group(1) if clause_match else None
+
+        return {
+            "text": text,
+            "type": "Para",
+            "formatting": formatting,
+            "clause_number": clause_number,
+        }
+
+    @staticmethod
+    def _extract_header(block: dict) -> dict:
+        """Extrai texto de um cabeçalho."""
+        level = block.get("c", [None])[0]
+        content = block.get("c", [None, []])[1]
+        text, formatting = PandocASTProcessor._extract_inline_content(content)
+
+        return {
+            "text": text,
+            "type": f"Header{level}",
+            "formatting": formatting,
+            "clause_number": None,
+        }
+
+    @staticmethod
+    def _extract_inline_content(content: list) -> tuple[str, list[str]]:
+        """Extrai texto e formatações de conteúdo inline."""
+        text_parts = []
+        formatting_types = set()
+
+        def process_inline(inline_elem):
+            elem_type = inline_elem.get("t")
+
+            if elem_type == "Str":
+                text_parts.append(inline_elem.get("c", ""))
+            elif elem_type == "Space":
+                text_parts.append(" ")
+            elif elem_type == "SoftBreak" or elem_type == "LineBreak":
+                text_parts.append("\n")
+            elif elem_type == "Strong":
+                formatting_types.add("Bold")
+                for inner in inline_elem.get("c", []):
+                    process_inline(inner)
+            elif elem_type == "Emph":
+                formatting_types.add("Italic")
+                for inner in inline_elem.get("c", []):
+                    process_inline(inner)
+
+        for elem in content:
+            process_inline(elem)
+
+        return "".join(text_parts), list(formatting_types)
+
 
 app = Flask(__name__, template_folder="templates")
 CORS(app)
@@ -352,12 +467,13 @@ class DirectusAPI:
             },
         ]
 
-    def process_versao(self, versao_id, mock=False):
+    def process_versao(self, versao_id, mock=False, use_ast=True):
         """Processa uma versão específica
 
         Args:
             versao_id: ID da versão a ser processada
             mock: Se True, usa dados mockados. Se False ou não informado, usa dados reais do Directus
+            use_ast: Se True (PADRÃO), usa implementação AST do Pandoc (59.3% precisão). Se False, usa texto plano (51.9% precisão)
         """
         global diff_cache  # Declarar acesso à variável global
 
@@ -398,6 +514,13 @@ class DirectusAPI:
                     }
                 else:
                     versao_data = response.json()["data"]
+
+            # Se use_ast=True, usar processamento AST
+            if use_ast and not mock:
+                print("=" * 100)
+                print("🔬 USANDO IMPLEMENTAÇÃO AST (59.3% precisão)")
+                print("=" * 100)
+                return self._process_versao_com_ast(versao_id, versao_data)
 
             # Gerar conteúdo baseado no modo (mock ou real)
             if mock:
@@ -1891,6 +2014,586 @@ class DirectusAPI:
 
         return modificacoes
 
+    def _process_versao_com_ast(self, versao_id, versao_data):
+        """Processa versão usando implementação AST do Pandoc
+
+        Args:
+            versao_id: ID da versão
+            versao_data: Dados da versão do Directus
+
+        Returns:
+            dict: Resultado do processamento com modificações e métricas
+        """
+        from pathlib import Path
+
+        global diff_cache
+
+        try:
+            # 1. Baixar arquivos DOCX
+            arquivo_novo_id = versao_data.get("arquivo")
+            arquivo_original_id = self._get_arquivo_original(versao_data)
+
+            if not arquivo_novo_id or not arquivo_original_id:
+                return {"error": "Arquivos DOCX não encontrados para processamento AST"}
+
+            print(f"📥 Baixando arquivo original {arquivo_original_id}...")
+            original_docx = self._download_docx_to_temp(arquivo_original_id)
+
+            print(f"📥 Baixando arquivo modificado {arquivo_novo_id}...")
+            modified_docx = self._download_docx_to_temp(arquivo_novo_id)
+
+            # 2. Processar com AST
+            print("🔬 Processando documentos com AST do Pandoc...")
+
+            # Extrair parágrafos estruturados usando AST
+            print("📥 Convertendo documento original para AST...")
+            ast_original = PandocASTProcessor.convert_docx_to_ast(original_docx)
+            original_paras = PandocASTProcessor.extract_paragraphs_from_ast(
+                ast_original
+            )
+            print(f"✅ AST do documento original extraído: {len(original_paras)} parágrafos")
+
+            print("📥 Convertendo documento modificado para AST...")
+            ast_modified = PandocASTProcessor.convert_docx_to_ast(modified_docx)
+            modified_paras = PandocASTProcessor.extract_paragraphs_from_ast(
+                ast_modified
+            )
+            print(f"✅ AST do documento modificado extraído: {len(modified_paras)} parágrafos")
+
+            # Gerar diff usando parágrafos estruturados
+            print("🔍 Gerando HTML de comparação...")
+            diff_html = self._generate_diff_html_from_ast(original_paras, modified_paras)
+            print(f"✅ HTML de comparação gerado: {len(diff_html)} caracteres")
+
+            # Extrair modificações do diff
+            print("🔬 Extraindo modificações do HTML...")
+            modificacoes = self._extrair_modificacoes_do_diff_ast(
+                diff_html, original_paras, modified_paras
+            )
+
+            # Calcular métricas
+            tipos = {"ALTERACAO": 0, "REMOCAO": 0, "INSERCAO": 0}
+            for mod in modificacoes:
+                tipos[mod["tipo"]] = tipos.get(mod["tipo"], 0) + 1
+
+            print(f"✅ Total de modificações extraídas: {len(modificacoes)}")
+            print(f"  - ALTERACAO: {tipos['ALTERACAO']}")
+            print(f"  - REMOCAO: {tipos['REMOCAO']}")
+            print(f"  - INSERCAO: {tipos['INSERCAO']}")
+
+            resultado_ast = {
+                "modificacoes": modificacoes,
+                "metricas": {
+                    "total_modificacoes": len(modificacoes),
+                    "alteracoes": tipos["ALTERACAO"],
+                    "remocoes": tipos["REMOCAO"],
+                    "insercoes": tipos["INSERCAO"],
+                },
+                "diff_html": diff_html,
+                "texto_original": "\n".join(p["text"] for p in original_paras),
+                "texto_modificado": "\n".join(p["text"] for p in modified_paras),
+            }
+
+            # 3. Buscar tags do modelo para vinculação (igual ao processo normal)
+            tags_modelo = []
+            modelo_id = None
+
+            try:
+                contrato_id = versao_data.get("contrato")
+                if contrato_id:
+                    print(f"🔍 Buscando modelo do contrato {contrato_id}...")
+                    contrato_response = requests.get(
+                        f"{self.base_url}/items/contrato/{contrato_id}",
+                        headers=DIRECTUS_HEADERS,
+                        params={"fields": "modelo_contrato"},
+                        timeout=10,
+                    )
+                    if contrato_response.status_code == 200:
+                        modelo_id = contrato_response.json()["data"].get(
+                            "modelo_contrato"
+                        )
+
+                if modelo_id:
+                    print(f"🔍 Buscando tags do modelo {modelo_id}...")
+                    tags_response = requests.get(
+                        f"{self.base_url}/items/modelo_contrato_tag",
+                        headers=DIRECTUS_HEADERS,
+                        params={
+                            "filter[modelo_contrato][_eq]": modelo_id,
+                            "fields": "id,tag_nome,caminho_tag_inicio,caminho_tag_fim,posicao_inicio_texto,posicao_fim_texto,conteudo,clausulas.id,clausulas.numero,clausulas.nome",
+                            "limit": -1,
+                        },
+                        timeout=10,
+                    )
+                    if tags_response.status_code == 200:
+                        tags_modelo = tags_response.json().get("data", [])
+                        print(
+                            f"✅ Encontradas {len(tags_modelo)} tags do modelo para vinculação"
+                        )
+            except Exception as e:
+                print(f"⚠️ Erro ao buscar tags: {e}")
+
+            # 4. Vincular modificações AST às cláusulas
+            modificacoes = resultado_ast["modificacoes"]
+            if tags_modelo:
+                print("🔗 Vinculando modificações AST às cláusulas...")
+                # Extrair texto do arquivo modificado para vinculação
+                modified_text = self._download_and_extract_text(arquivo_novo_id)
+
+                if modified_text:
+                    resultado_vinculacao = self._vincular_modificacoes_clausulas_novo(
+                        modificacoes=modificacoes,
+                        tags_modelo=tags_modelo,
+                        texto_com_tags=modified_text,
+                        texto_original=modified_text,
+                    )
+
+                    if resultado_vinculacao and resultado_vinculacao.get(
+                        "modificacoes"
+                    ):
+                        modificacoes = resultado_vinculacao["modificacoes"]
+
+            # 5. Calcular blocos (usar HTML do AST)
+            diff_html = resultado_ast.get("diff_html", "")
+            resultado_blocos = self._calcular_blocos_avancado(versao_id, diff_html)
+
+            # 6. Criar registro no cache
+            diff_id = str(uuid.uuid4())
+            diff_data = {
+                "id": diff_id,
+                "versao_id": versao_id,
+                "versao_data": versao_data,
+                "original": resultado_ast.get("texto_original", ""),
+                "modified": resultado_ast.get("texto_modificado", ""),
+                "diff_html": diff_html,
+                "modificacoes": modificacoes,
+                "total_blocos": resultado_blocos.get("total_blocos", 1),
+                "blocos_detalhados": resultado_blocos.get("blocos_detalhados", []),
+                "metodo_calculo": resultado_blocos.get("metodo", "unknown"),
+                "metodo_deteccao": "AST_PANDOC",
+                "created_at": datetime.now().isoformat(),
+                "url": f"http://localhost:{FLASK_PORT}/view/{diff_id}",
+                "mode": "ast",
+                "metricas": resultado_ast.get("metricas", {}),
+            }
+
+            diff_cache[diff_id] = diff_data
+
+            # 7. Gravar resultados no Directus
+            print("\n" + "=" * 100)
+            print("💾 GRAVANDO RESULTADOS AST NO DIRECTUS")
+            print("=" * 100)
+
+            try:
+                # Atualizar versão com métricas AST
+                metricas = resultado_ast.get("metricas", {})
+                versao_update = {
+                    "total_modificacoes": metricas.get(
+                        "total_modificacoes", len(modificacoes)
+                    ),
+                    "alteracoes": metricas.get("alteracoes", 0),
+                    "remocoes": metricas.get("remocoes", 0),
+                    "insercoes": metricas.get("insercoes", 0),
+                    "metodo_deteccao": "AST_PANDOC",
+                    "status": "processada",
+                    "total_blocos": resultado_blocos.get("total_blocos", 1),
+                }
+
+                print(f"📝 Atualizando versão {versao_id} com métricas AST...")
+                versao_response = requests.patch(
+                    f"{self.base_url}/items/versao/{versao_id}",
+                    headers=DIRECTUS_HEADERS,
+                    json=versao_update,
+                    timeout=10,
+                )
+
+                if versao_response.status_code in [200, 204]:
+                    print("✅ Versão atualizada com métricas AST")
+                    print(
+                        f"   - Total modificações: {versao_update['total_modificacoes']}"
+                    )
+                    print(f"   - ALTERACAO: {versao_update['alteracoes']}")
+                    print(f"   - REMOCAO: {versao_update['remocoes']}")
+                    print(f"   - INSERCAO: {versao_update['insercoes']}")
+                    print(f"   - Blocos: {versao_update['total_blocos']}")
+                else:
+                    print(
+                        f"⚠️ Erro ao atualizar versão: HTTP {versao_response.status_code}"
+                    )
+                    print(f"   Resposta: {versao_response.text[:200]}")
+
+                # Gravar modificações individuais no Directus
+                print(f"\n📝 Gravando {len(modificacoes)} modificações no Directus...")
+                modificacoes_criadas = 0
+
+                for idx, mod in enumerate(modificacoes, 1):
+                    mod_data = {
+                        "versao": versao_id,
+                        "tipo": mod.get("tipo", "ALTERACAO"),
+                        "confianca": mod.get("confianca", 0.95),
+                        "clausula_original": mod.get("clausula_original"),
+                        "clausula_modificada": mod.get("clausula_modificada"),
+                        "conteudo_original": mod.get("conteudo", {}).get("original"),
+                        "conteudo_novo": mod.get("conteudo", {}).get("novo"),
+                        "posicao_linha": mod.get("posicao", {}).get("linha"),
+                        "posicao_coluna": mod.get("posicao", {}).get("coluna"),
+                        "metodo_deteccao": "AST_PANDOC",
+                    }
+
+                    # Limpar campos None
+                    mod_data = {k: v for k, v in mod_data.items() if v is not None}
+
+                    try:
+                        mod_response = requests.post(
+                            f"{self.base_url}/items/modificacao",
+                            headers=DIRECTUS_HEADERS,
+                            json=mod_data,
+                            timeout=10,
+                        )
+
+                        if mod_response.status_code in [200, 201]:
+                            modificacoes_criadas += 1
+                            if (
+                                idx <= 5 or idx % 10 == 0
+                            ):  # Mostrar primeiras 5 e múltiplos de 10
+                                print(f"  ✅ Modificação #{idx} ({mod['tipo']}) criada")
+                        else:
+                            print(
+                                f"  ⚠️ Erro ao criar modificação #{idx}: HTTP {mod_response.status_code}"
+                            )
+
+                    except Exception as e:
+                        print(f"  ⚠️ Erro ao gravar modificação #{idx}: {e}")
+
+                print(
+                    f"\n✅ Gravação concluída: {modificacoes_criadas}/{len(modificacoes)} modificações salvas no Directus"
+                )
+
+            except Exception as e:
+                print(f"⚠️ Erro ao gravar no Directus: {e}")
+                import traceback
+
+                traceback.print_exc()
+
+            # Limpar arquivos temporários
+            Path(original_docx).unlink(missing_ok=True)
+            Path(modified_docx).unlink(missing_ok=True)
+
+            print("✅ Processamento AST concluído!")
+            print(
+                f"📊 Resultados: {len(modificacoes)} modificações detectadas usando AST"
+            )
+
+            return {
+                "success": True,
+                "diff_id": diff_id,
+                "url": diff_data["url"],
+                "modificacoes": modificacoes,
+                "metricas": resultado_ast.get("metricas", {}),
+                "total_blocos": resultado_blocos.get("total_blocos", 1),
+                "metodo": "AST_PANDOC",
+            }
+
+        except Exception as e:
+            print(f"❌ Erro no processamento AST: {e}")
+            import traceback
+
+            traceback.print_exc()
+            return {"error": f"Erro no processamento AST: {str(e)}"}
+
+    def _generate_diff_html_from_ast(
+        self, original_paras: list[dict], modified_paras: list[dict]
+    ) -> str:
+        """Gera HTML de diff baseado em parágrafos estruturados do AST."""
+        html = ["<div class='diff-container'>"]
+
+        # Usar SequenceMatcher para comparar parágrafos
+        orig_texts = [p["text"] for p in original_paras]
+        mod_texts = [p["text"] for p in modified_paras]
+
+        matcher = difflib.SequenceMatcher(None, orig_texts, mod_texts, autojunk=False)
+
+        for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+            if tag == "equal":
+                # Parágrafos inalterados
+                for i in range(i1, i2):
+                    para = original_paras[i]
+                    text = self._escape_html(para["text"])
+                    if para.get("clause_number"):
+                        html.append(
+                            f"<div class='diff-unchanged clause-{para['clause_number']}'>{text}</div>"
+                        )
+                    else:
+                        html.append(f"<div class='diff-unchanged'>{text}</div>")
+
+            elif tag == "delete":
+                # Parágrafos removidos
+                for i in range(i1, i2):
+                    para = original_paras[i]
+                    text = self._escape_html(para["text"])
+                    clause_attr = (
+                        f" data-clause='{para['clause_number']}'"
+                        if para.get("clause_number")
+                        else ""
+                    )
+                    html.append(f"<div class='diff-removed'{clause_attr}>- {text}</div>")
+
+            elif tag == "insert":
+                # Parágrafos adicionados
+                for j in range(j1, j2):
+                    para = modified_paras[j]
+                    text = self._escape_html(para["text"])
+                    clause_attr = (
+                        f" data-clause='{para['clause_number']}'"
+                        if para.get("clause_number")
+                        else ""
+                    )
+                    html.append(f"<div class='diff-added'{clause_attr}>+ {text}</div>")
+
+            elif tag == "replace":
+                # Parágrafos modificados
+                for idx in range(max(i2 - i1, j2 - j1)):
+                    orig_idx = i1 + idx
+                    mod_idx = j1 + idx
+
+                    orig_para = original_paras[orig_idx] if orig_idx < i2 else None
+                    mod_para = modified_paras[mod_idx] if mod_idx < j2 else None
+
+                    if orig_para and mod_para:
+                        # Ambos existem - é uma alteração
+                        orig_text = self._escape_html(orig_para["text"])
+                        mod_text = self._escape_html(mod_para["text"])
+
+                        orig_clause = (
+                            f" data-clause='{orig_para['clause_number']}'"
+                            if orig_para.get("clause_number")
+                            else ""
+                        )
+                        mod_clause = (
+                            f" data-clause='{mod_para['clause_number']}'"
+                            if mod_para.get("clause_number")
+                            else ""
+                        )
+
+                        html.append(
+                            f"<div class='diff-removed'{orig_clause}>- {orig_text}</div>"
+                        )
+                        html.append(
+                            f"<div class='diff-added'{mod_clause}>+ {mod_text}</div>"
+                        )
+
+                    elif orig_para and not mod_para:
+                        # Só original - remoção
+                        orig_text = self._escape_html(orig_para["text"])
+                        clause_attr = (
+                            f" data-clause='{orig_para['clause_number']}'"
+                            if orig_para.get("clause_number")
+                            else ""
+                        )
+                        html.append(
+                            f"<div class='diff-removed'{clause_attr}>- {orig_text}</div>"
+                        )
+
+                    elif not orig_para and mod_para:
+                        # Só modificado - inserção
+                        mod_text = self._escape_html(mod_para["text"])
+                        clause_attr = (
+                            f" data-clause='{mod_para['clause_number']}'"
+                            if mod_para.get("clause_number")
+                            else ""
+                        )
+                        html.append(
+                            f"<div class='diff-added'{clause_attr}>+ {mod_text}</div>"
+                        )
+
+        html.append("</div>")
+        return "\n".join(html)
+
+    def _extrair_modificacoes_do_diff_ast(
+        self, diff_html: str, original_paras: list[dict], modified_paras: list[dict]
+    ) -> list[dict]:
+        """Extrai modificações do HTML de diff (versão AST)."""
+        modificacoes = []
+        modificacao_id = 1
+
+        # Parse HTML simples para extrair divs
+        removed_pattern = r"<div class='diff-removed'[^>]*>- (.*?)</div>"
+        added_pattern = r"<div class='diff-added'[^>]*>\+ (.*?)</div>"
+
+        removed_matches = list(re.finditer(removed_pattern, diff_html))
+        added_matches = list(re.finditer(added_pattern, diff_html))
+
+        # Extrair data-clause attributes
+        removed_with_clause = []
+        for match in removed_matches:
+            full_tag = diff_html[match.start() : match.end()]
+            clause_match = re.search(r"data-clause='([^']+)'", full_tag)
+            removed_with_clause.append(
+                {
+                    "text": match.group(1),
+                    "clause": clause_match.group(1) if clause_match else None,
+                    "position": match.start(),
+                }
+            )
+
+        added_with_clause = []
+        for match in added_matches:
+            full_tag = diff_html[match.start() : match.end()]
+            clause_match = re.search(r"data-clause='([^']+)'", full_tag)
+            added_with_clause.append(
+                {
+                    "text": match.group(1),
+                    "clause": clause_match.group(1) if clause_match else None,
+                    "position": match.start(),
+                }
+            )
+
+        # Agrupar modificações por proximidade
+        i = 0
+        j = 0
+
+        while i < len(removed_with_clause) or j < len(added_with_clause):
+            if i < len(removed_with_clause) and j < len(added_with_clause):
+                removed = removed_with_clause[i]
+                added = added_with_clause[j]
+
+                # Verificar se são pares relacionados
+                is_pair = False
+
+                # Critério 1: Mesma cláusula
+                if removed.get("clause") and added.get("clause"):
+                    if removed["clause"] == added["clause"]:
+                        is_pair = True
+
+                # Critério 2: Próximos no documento
+                if not is_pair and abs(removed["position"] - added["position"]) < 200:
+                    if added["position"] > removed["position"]:
+                        is_pair = True
+
+                if is_pair:
+                    # É uma ALTERACAO
+                    modificacoes.append(
+                        {
+                            "id": modificacao_id,
+                            "tipo": "ALTERACAO",
+                            "css_class": "diff-alteracao",
+                            "confianca": 0.95,
+                            "posicao": {"linha": modificacao_id, "coluna": 1},
+                            "clausula_original": removed.get("clause"),
+                            "clausula_modificada": added.get("clause"),
+                            "conteudo": {
+                                "original": self._unescape_html(removed["text"]),
+                                "novo": self._unescape_html(added["text"]),
+                            },
+                        }
+                    )
+                    i += 1
+                    j += 1
+                    modificacao_id += 1
+
+                elif removed["position"] < added["position"]:
+                    # Remoção pura
+                    modificacoes.append(
+                        {
+                            "id": modificacao_id,
+                            "tipo": "REMOCAO",
+                            "css_class": "diff-remocao",
+                            "confianca": 0.85,
+                            "posicao": {"linha": modificacao_id, "coluna": 1},
+                            "clausula_original": removed.get("clause"),
+                            "conteudo": {"original": self._unescape_html(removed["text"])},
+                        }
+                    )
+                    i += 1
+                    modificacao_id += 1
+
+                else:
+                    # Inserção pura
+                    modificacoes.append(
+                        {
+                            "id": modificacao_id,
+                            "tipo": "INSERCAO",
+                            "css_class": "diff-insercao",
+                            "confianca": 0.9,
+                            "posicao": {"linha": modificacao_id, "coluna": 1},
+                            "clausula_modificada": added.get("clause"),
+                            "conteudo": {"novo": self._unescape_html(added["text"])},
+                        }
+                    )
+                    j += 1
+                    modificacao_id += 1
+
+            elif i < len(removed_with_clause):
+                # Só remoções restantes
+                removed = removed_with_clause[i]
+                modificacoes.append(
+                    {
+                        "id": modificacao_id,
+                        "tipo": "REMOCAO",
+                        "css_class": "diff-remocao",
+                        "confianca": 0.85,
+                        "posicao": {"linha": modificacao_id, "coluna": 1},
+                        "clausula_original": removed.get("clause"),
+                        "conteudo": {"original": self._unescape_html(removed["text"])},
+                    }
+                )
+                i += 1
+                modificacao_id += 1
+
+            elif j < len(added_with_clause):
+                # Só inserções restantes
+                added = added_with_clause[j]
+                modificacoes.append(
+                    {
+                        "id": modificacao_id,
+                        "tipo": "INSERCAO",
+                        "css_class": "diff-insercao",
+                        "confianca": 0.9,
+                        "posicao": {"linha": modificacao_id, "coluna": 1},
+                        "clausula_modificada": added.get("clause"),
+                        "conteudo": {"novo": self._unescape_html(added["text"])},
+                    }
+                )
+                j += 1
+                modificacao_id += 1
+
+        return modificacoes
+
+    def _escape_html(self, text: str) -> str:
+        """Escapa caracteres HTML."""
+        return (
+            text.replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace('"', "&quot;")
+            .replace("'", "&#39;")
+        )
+
+    def _unescape_html(self, text: str) -> str:
+        """Reverte escape de HTML."""
+        return (
+            text.replace("&amp;", "&")
+            .replace("&lt;", "<")
+            .replace("&gt;", ">")
+            .replace("&quot;", '"')
+            .replace("&#39;", "'")
+        )
+
+    def _download_docx_to_temp(self, file_id):
+        """Baixa arquivo DOCX do Directus para arquivo temporário"""
+        url = f"{self.base_url}/assets/{file_id}"
+        response = requests.get(url, headers=DIRECTUS_HEADERS, timeout=30)
+
+        if response.status_code != 200:
+            raise RuntimeError(
+                f"Erro ao baixar arquivo {file_id}: HTTP {response.status_code}"
+            )
+
+        # Salvar em arquivo temporário
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as f:
+            f.write(response.content)
+            return f.name
+
     def _process_real_documents(self, versao_data):
         """Processa documentos reais obtidos do Directus"""
         try:
@@ -2106,7 +2809,7 @@ class DirectusAPI:
         # Usar algoritmo de diff mais sofisticado
         import difflib
 
-        # Dividir em parágrafos para melhor granularidade
+        # Dividir em unidades semânticas (cláusulas individuais)
         orig_paragraphs = self._split_into_semantic_units(original)
         mod_paragraphs = self._split_into_semantic_units(modified)
 
@@ -2117,7 +2820,10 @@ class DirectusAPI:
         current_clause = None
 
         # Usar SequenceMatcher para comparação mais inteligente
-        matcher = difflib.SequenceMatcher(None, orig_paragraphs, mod_paragraphs)
+        # autojunk=False para não ignorar linhas repetidas
+        matcher = difflib.SequenceMatcher(
+            None, orig_paragraphs, mod_paragraphs, autojunk=False
+        )
 
         for tag, i1, i2, j1, j2 in matcher.get_opcodes():
             if tag == "equal":
@@ -2161,12 +2867,46 @@ class DirectusAPI:
                         html.append(f"<div class='diff-added'>+ {para_escaped}</div>")
 
             elif tag == "replace":
-                # Conteúdo substituído - criar pares de modificação
-                orig_content = " ".join(orig_paragraphs[i1:i2]).strip()
-                mod_content = " ".join(mod_paragraphs[j1:j2]).strip()
+                # Conteúdo substituído - processar cada unidade individualmente
+                # para evitar agrupar modificações distintas
+                max_len = max(i2 - i1, j2 - j1)
 
-                if orig_content and mod_content:
-                    # Verificar se é preenchimento de campos (placeholders)
+                for idx in range(max_len):
+                    orig_idx = i1 + idx
+                    mod_idx = j1 + idx
+
+                    # Obter conteúdo original e modificado desta unidade
+                    orig_content = (
+                        orig_paragraphs[orig_idx].strip() if orig_idx < i2 else ""
+                    )
+                    mod_content = (
+                        mod_paragraphs[mod_idx].strip() if mod_idx < j2 else ""
+                    )
+
+                    # Se ambos vazios, pular
+                    if not orig_content and not mod_content:
+                        continue
+
+                    # Se apenas um lado tem conteúdo, é inserção ou remoção
+                    if not orig_content and mod_content:
+                        new_clause = self._identify_clause(mod_content)
+                        if new_clause and new_clause != current_clause:
+                            current_clause = new_clause
+                            html.append(
+                                f"<div class='clause-header'>📋 {current_clause}</div>"
+                            )
+                        html.append(
+                            f"<div class='diff-added'>+ {self._escape_html(mod_content)}</div>"
+                        )
+                        continue
+
+                    if orig_content and not mod_content:
+                        html.append(
+                            f"<div class='diff-removed'>- {self._escape_html(orig_content)}</div>"
+                        )
+                        continue
+
+                    # Ambos têm conteúdo - é substituição real
                     if self._is_field_replacement(orig_content, mod_content):
                         # Melhor apresentação para preenchimento de campos
                         field_info = self._extract_field_info(orig_content, mod_content)
@@ -2196,26 +2936,25 @@ class DirectusAPI:
         return result
 
     def _split_into_semantic_units(self, text):
-        """Divide texto em unidades semânticas (frases, parágrafos)"""
+        """Divide texto em unidades semânticas (cláusulas individuais)"""
 
-        # Dividir por quebras de linha duplas (parágrafos)
-        paragraphs = text.split("\n\n")
+        # Padrão para identificar cláusulas: número.número no início de linha
+        # Exemplos: 1.1, 1.2, 2.1, 2.2, etc.
+        # Também captura seções como "1." ou "2."
+        # Aceita espaço (\s) ou letra maiúscula ([A-Z]) após o número (para casos como "2.5Todas")
+        clause_pattern = r"\n(?=\d+\.(?:\d+)?[\s[A-Z])"
+
+        # Dividir pelo padrão mantendo o delimitador
+        segments = re.split(clause_pattern, text)
+
         units = []
-
-        for para in paragraphs:
-            para = para.strip()
-            if not para:
+        for segment in segments:
+            segment = segment.strip()
+            if not segment or len(segment) < 10:
                 continue
 
-            # Se o parágrafo é muito longo, dividir por frases
-            if len(para) > 200:
-                sentences = re.split(r"[.!?]\s+", para)
-                for sentence in sentences:
-                    sentence = sentence.strip()
-                    if sentence and len(sentence) > 10:
-                        units.append(sentence)
-            else:
-                units.append(para)
+            # Cada segmento é uma unidade (cláusula individual)
+            units.append(segment)
 
         return units
 
@@ -3217,7 +3956,8 @@ def process_document():
     Body JSON esperado:
     {
         "versao_id": "id_da_versao",
-        "mock": true/false (opcional, default: false)
+        "mock": true/false (opcional, default: false),
+        "use_ast": true/false (opcional, default: TRUE - AST 59.3% vs Texto 51.9%)
     }
     """
     data = request.json
@@ -3226,12 +3966,16 @@ def process_document():
 
     versao_id = data.get("versao_id") or data.get("doc_id")
     mock = data.get("mock", False)  # Default: usar dados reais
+    use_ast = data.get("use_ast", True)  # Default: USAR AST (melhor precisão)
 
     if not versao_id:
         return jsonify({"error": "versao_id é obrigatório"}), 400
 
-    print(f"🔍 Processando versão {versao_id} (modo: {'mock' if mock else 'real'})")
-    result = directus_api.process_versao(versao_id, mock=mock)
+    metodo = "AST (59.3%)" if use_ast else "Texto (51.9%)"
+    print(
+        f"🔍 Processando versão {versao_id} (modo: {'mock' if mock else 'real'}, método: {metodo})"
+    )
+    result = directus_api.process_versao(versao_id, mock=mock, use_ast=use_ast)
 
     if "error" in result:
         return jsonify(result), 500
