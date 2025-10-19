@@ -4020,20 +4020,24 @@ def process_modelo():
     modelo_id = data.get("modelo_id")
     dry_run = data.get("dry_run", False)
     use_ast = data.get("use_ast", True)  # AST como padrão
-    process_versions = data.get("process_versions", True)  # Processar versões por padrão
+    process_versions = data.get(
+        "process_versions", True
+    )  # Processar versões por padrão
 
     if not modelo_id:
         return jsonify({"error": "modelo_id é obrigatório"}), 400
 
     print(f"🔍 Processando modelo {modelo_id}")
-    print(f"   ⚙️  Configurações: dry_run={dry_run}, use_ast={use_ast}, process_versions={process_versions}")
+    print(
+        f"   ⚙️  Configurações: dry_run={dry_run}, use_ast={use_ast}, process_versions={process_versions}"
+    )
 
     try:
         resultado_final = {
             "modelo_id": modelo_id,
             "dry_run": dry_run,
             "use_ast": use_ast,
-            "status": "sucesso"
+            "status": "sucesso",
         }
 
         # 1. Processar tags do modelo (sempre executado)
@@ -4047,11 +4051,13 @@ def process_modelo():
             return jsonify(resultado_tags), 500
 
         # Adicionar resultados das tags
-        resultado_final.update({
-            "tags_encontradas": resultado_tags.get("tags_encontradas", 0),
-            "tags_criadas": resultado_tags.get("tags_criadas", 0),
-            "tags_orfas": resultado_tags.get("tags_orfas", 0),
-        })
+        resultado_final.update(
+            {
+                "tags_encontradas": resultado_tags.get("tags_encontradas", 0),
+                "tags_criadas": resultado_tags.get("tags_criadas", 0),
+                "tags_orfas": resultado_tags.get("tags_orfas", 0),
+            }
+        )
 
         # 2. Processar versões (se solicitado)
         if process_versions:
@@ -4075,7 +4081,9 @@ def process_modelo():
                     versao_numero = versao.get("versao", "N/A")
 
                     try:
-                        print(f"\n   🔄 Processando versão {versao_numero} ({versao_id})...")
+                        print(
+                            f"\n   🔄 Processando versão {versao_numero} ({versao_id})..."
+                        )
 
                         if use_ast:
                             print("      🔬 Usando implementação AST")
@@ -4084,90 +4092,134 @@ def process_modelo():
 
                         # Processar versão com ou sem AST
                         resultado_versao = api.process_versao(
-                            versao_id,
-                            mock=False,
-                            use_ast=use_ast
+                            versao_id, mock=False, use_ast=use_ast
                         )
 
-                        if resultado_versao and resultado_versao.get("status") == "sucesso":
+                        if (
+                            resultado_versao
+                            and resultado_versao.get("status") == "sucesso"
+                        ):
                             versoes_processadas += 1
-                            modificacoes_versao = len(resultado_versao.get("modificacoes", []))
+                            modificacoes_versao = len(
+                                resultado_versao.get("modificacoes", [])
+                            )
                             total_modificacoes += modificacoes_versao
-                            print(f"      ✅ Versão processada: {modificacoes_versao} modificações")
+                            print(
+                                f"      ✅ Versão processada: {modificacoes_versao} modificações"
+                            )
                         else:
                             versoes_com_erro += 1
-                            print("      ⚠️  Versão com erro ou status diferente de sucesso")
+                            print(
+                                "      ⚠️  Versão com erro ou status diferente de sucesso"
+                            )
 
                     except Exception as e:
                         versoes_com_erro += 1
                         print(f"      ❌ Erro ao processar versão {versao_numero}: {e}")
 
                 # Adicionar resultados do processamento de versões
-                resultado_final.update({
-                    "versoes_encontradas": len(versoes),
-                    "versoes_processadas": versoes_processadas,
-                    "versoes_com_erro": versoes_com_erro,
-                    "total_modificacoes": total_modificacoes,
-                })
+                resultado_final.update(
+                    {
+                        "versoes_encontradas": len(versoes),
+                        "versoes_processadas": versoes_processadas,
+                        "versoes_com_erro": versoes_com_erro,
+                        "total_modificacoes": total_modificacoes,
+                    }
+                )
             else:
                 print("   ⚠️  Nenhuma versão encontrada para processar")
-                resultado_final.update({
-                    "versoes_encontradas": 0,
-                    "versoes_processadas": 0,
-                    "versoes_com_erro": 0,
-                    "total_modificacoes": 0,
-                })
+                resultado_final.update(
+                    {
+                        "versoes_encontradas": 0,
+                        "versoes_processadas": 0,
+                        "versoes_com_erro": 0,
+                        "total_modificacoes": 0,
+                    }
+                )
         else:
             print("\n⏭️  ETAPA 2: Pulada (process_versions=False)")
 
         # 3. Resultados finais
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("✅ PROCESSAMENTO CONCLUÍDO")
-        print("="*80)
+        print("=" * 80)
         print("📊 Resumo:")
         print(f"   • Tags encontradas: {resultado_final.get('tags_encontradas', 0)}")
         print(f"   • Tags criadas: {resultado_final.get('tags_criadas', 0)}")
         if process_versions:
-            print(f"   • Versões processadas: {resultado_final.get('versoes_processadas', 0)}/{resultado_final.get('versoes_encontradas', 0)}")
-            print(f"   • Total de modificações: {resultado_final.get('total_modificacoes', 0)}")
-            print(f"   • Método: {'AST (Pandoc)' if use_ast else 'Original (SequenceMatcher)'}")
-        print("="*80)
+            print(
+                f"   • Versões processadas: {resultado_final.get('versoes_processadas', 0)}/{resultado_final.get('versoes_encontradas', 0)}"
+            )
+            print(
+                f"   • Total de modificações: {resultado_final.get('total_modificacoes', 0)}"
+            )
+            print(
+                f"   • Método: {'AST (Pandoc)' if use_ast else 'Original (SequenceMatcher)'}"
+            )
+        print("=" * 80)
 
         return jsonify(resultado_final), 200
 
     except Exception as e:
         print(f"❌ Erro ao processar modelo: {e}")
         import traceback
+
         traceback.print_exc()
         return jsonify({"error": str(e), "modelo_id": modelo_id, "status": "erro"}), 500
 
 
 def _buscar_versoes_do_modelo(modelo_id: str) -> list[dict]:
-    """Busca todas as versões de um modelo no Directus"""
+    """Busca todas as versões de um modelo no Directus
+
+    Estrutura: modelo_contrato → contrato → versao
+    Busca: versao.contrato.modelo_contrato = modelo_id
+    """
     try:
         url = f"{DIRECTUS_BASE_URL}/items/versao"
         params = {
-            "filter[contrato][_eq]": modelo_id,
-            "fields": "id,versao,status,date_created",
+            "filter[contrato][modelo_contrato][_eq]": modelo_id,  # Deep filter: versao → contrato → modelo_contrato
+            "fields": "id,versao,status,date_created,contrato.id,contrato.numero",
             "sort": "versao",
-            "limit": -1  # Sem limite
+            "limit": -1,  # Sem limite
         }
         headers = {
             "Authorization": f"Bearer {DIRECTUS_TOKEN}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
+
+        print(f"🔍 Buscando versões do modelo {modelo_id}")
+        print(f"   Filtro: contrato.modelo_contrato = {modelo_id}")
 
         response = requests.get(url, headers=headers, params=params, timeout=30)
 
         if response.status_code == 200:
             data = response.json()
-            return data.get("data", [])
+            versoes = data.get("data", [])
+            print(f"✅ Encontradas {len(versoes)} versões")
+
+            # Log das versões encontradas
+            for v in versoes:
+                contrato_info = v.get("contrato", {})
+                contrato_numero = (
+                    contrato_info.get("numero", "N/A")
+                    if isinstance(contrato_info, dict)
+                    else "N/A"
+                )
+                print(
+                    f"   • Versão {v.get('versao', 'N/A')} (Contrato: {contrato_numero})"
+                )
+
+            return versoes
         else:
             print(f"⚠️  Erro ao buscar versões: HTTP {response.status_code}")
+            print(f"   Resposta: {response.text[:200]}")
             return []
 
     except Exception as e:
         print(f"❌ Erro ao buscar versões do modelo: {e}")
+        import traceback
+
+        traceback.print_exc()
         return []
 
 
