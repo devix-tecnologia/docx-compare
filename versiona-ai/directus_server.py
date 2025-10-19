@@ -167,6 +167,17 @@ class PandocASTProcessor:
 app = Flask(__name__, template_folder="templates")
 CORS(app)
 
+# Registrar documentação Swagger
+try:
+    from swagger_docs import docs_blueprint
+
+    app.register_blueprint(docs_blueprint)
+    print("✅ Documentação Swagger disponível em /docs/")
+except ImportError as e:
+    print(f"⚠️  Não foi possível carregar documentação Swagger: {e}")
+except Exception as e:
+    print(f"❌ Erro ao registrar Swagger: {e}")
+
 # Cache de diffs para persistência
 diff_cache = {}
 
