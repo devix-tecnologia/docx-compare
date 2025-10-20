@@ -500,7 +500,7 @@ class DirectusAPI:
                 # Buscar: versão → contrato → modelo_contrato → tags
                 fields = (
                     "id,status,date_created,date_updated,versao,observacao,origem,arquivo,modifica_arquivo,"
-                    "contrato.id,contrato.modelo_contrato.id,contrato.modelo_contrato.arquivo_com_tags,"
+                    "contrato.id,contrato.modelo_contrato.id,contrato.modelo_contrato.arquivo_com_tags,contrato.modelo_contrato.arquivo_original,"
                     "contrato.modelo_contrato.tags.id,contrato.modelo_contrato.tags.tag_nome,"
                     "contrato.modelo_contrato.tags.caminho_tag_inicio,contrato.modelo_contrato.tags.caminho_tag_fim,"
                     "contrato.modelo_contrato.tags.posicao_inicio_texto,contrato.modelo_contrato.tags.posicao_fim_texto,"
@@ -792,60 +792,27 @@ class DirectusAPI:
                 except Exception as e:
                     print(f"❌ Erro ao converter modificação {idx + 1}: {e}")
 
-            # Atualizar versão com todas as modificações de uma vez (transação única)
-            update_data = {
-                "status": "concluido",
-                "modificacoes": {"create": modificacoes_directus},
-            }
+            # Usar função centralizada para atualizar versão com modificações
+            kwargs = {"status": "concluido"}
 
             # Adicionar arquivo_original se disponível
             if arquivo_original_id:
-                update_data["modifica_arquivo"] = arquivo_original_id
+                kwargs["modifica_arquivo"] = arquivo_original_id
                 print(f"📝 Atualizando modifica_arquivo: {arquivo_original_id}")
 
-            print(
-                f"📡 Enviando PATCH para versão {versao_id} com {len(modificacoes_directus)} modificações..."
+            resultado = self._atualizar_versao_com_modificacoes(
+                versao_id, modificacoes_directus, **kwargs
             )
 
-            response = requests.patch(
-                f"{self.base_url}/items/versao/{versao_id}",
-                headers=DIRECTUS_HEADERS,
-                json=update_data,
-                timeout=300,  # Timeout maior para transação (5 minutos)
-            )
-
-            if response.status_code == 200:
-                print(f"✅ Versão {versao_id} atualizada para status 'concluido'")
-                print(
-                    f"📊 Total: {len(modificacoes_directus)} modificações criadas em transação única"
-                )
-
-                # Extrair IDs das modificações criadas da resposta
-                response_data = response.json().get("data", {})
-                modificacoes_criadas = response_data.get("modificacoes", [])
-
+            if resultado["success"]:
                 return {
-                    "criadas": len(modificacoes_criadas),
+                    "criadas": resultado["modificacoes_criadas"],
                     "erros": len(modificacoes) - len(modificacoes_directus),
-                    "ids_criados": [
-                        m if isinstance(m, str) else m.get("id")
-                        for m in modificacoes_criadas
-                    ]
-                    if modificacoes_criadas
-                    else [],
+                    "ids_criados": resultado["ids_criados"],
                     "metodo": "transacao_unica",
                 }
             else:
-                error_msg = f"HTTP {response.status_code}"
-                try:
-                    error_detail = response.json()
-                    error_msg = error_detail.get("errors", [{}])[0].get(
-                        "message", error_msg
-                    )
-                    print(f"� Erro detalhado: {error_detail}")
-                except Exception:
-                    print(f"📄 Resposta: {response.text[:500]}")
-
+                error_msg = resultado.get("error", "Erro desconhecido")
                 print(f"❌ Erro ao atualizar versão: {error_msg}")
                 raise Exception(f"Falha ao persistir modificações: {error_msg}")
 
@@ -955,6 +922,88 @@ class DirectusAPI:
                 directus_mod["tags"] = str(tags)
 
         return directus_mod
+
+    def _atualizar_versao_com_modificacoes(
+        self, versao_id: str, modificacoes_directus: list[dict], **kwargs
+    ) -> dict:
+        """
+        Atualiza uma versão no Directus com modificações usando sintaxe "create".
+
+        Esta função centraliza a lógica de persistência de modificações, evitando duplicação
+        de código entre os métodos AST e não-AST.
+
+        Args:
+            versao_id: ID da versão a ser atualizada
+            modificacoes_directus: Lista de modificações no formato do Directus
+            **kwargs: Campos adicionais para atualizar na versão (status, modifica_arquivo, etc.)
+
+        Returns:
+            dict com informações sobre o resultado:
+                - success: bool indicando sucesso
+                - status_code: código HTTP da resposta
+                - modificacoes_criadas: número de modificações criadas
+                - response_data: dados da resposta (se sucesso)
+                - error: mensagem de erro (se falha)
+        """
+        print(
+            f"\n🔄 Enviando PATCH para versão {versao_id} com {len(modificacoes_directus)} modificações..."
+        )
+
+        # Montar dados de atualização
+        update_data = {
+            "modificacoes": {"create": modificacoes_directus}
+        }
+
+        # Adicionar campos extras (status, modifica_arquivo, métricas, etc.)
+        update_data.update(kwargs)
+
+        try:
+            response = requests.patch(
+                f"{self.base_url}/items/versao/{versao_id}",
+                headers=DIRECTUS_HEADERS,
+                json=update_data,
+                timeout=300,  # Timeout maior para transação (5 minutos)
+            )
+
+            if response.status_code == 200:
+                print(f"✅ Versão {versao_id} atualizada com sucesso")
+                print(
+                    f"   ➕ {len(modificacoes_directus)} modificações criadas em transação única"
+                )
+
+                # Extrair dados da resposta
+                response_data = response.json().get("data", {})
+                modificacoes_criadas = response_data.get("modificacoes", [])
+
+                return {
+                    "success": True,
+                    "status_code": 200,
+                    "modificacoes_criadas": len(modificacoes_criadas),
+                    "response_data": response_data,
+                    "ids_criados": [
+                        m if isinstance(m, str) else m.get("id")
+                        for m in modificacoes_criadas
+                    ] if modificacoes_criadas else [],
+                }
+            else:
+                error_msg = f"HTTP {response.status_code}: {response.text[:500]}"
+                print(f"⚠️ Erro ao atualizar versão: {error_msg}")
+                return {
+                    "success": False,
+                    "status_code": response.status_code,
+                    "modificacoes_criadas": 0,
+                    "error": error_msg,
+                }
+
+        except Exception as e:
+            error_msg = f"Exceção ao atualizar versão: {str(e)}"
+            print(f"⚠️ {error_msg}")
+            return {
+                "success": False,
+                "status_code": 0,
+                "modificacoes_criadas": 0,
+                "error": error_msg,
+            }
 
     # ============================================================================
     # FASE 2: CAMINHO FELIZ - MAPEAMENTO VIA OFFSET
@@ -2207,10 +2256,11 @@ class DirectusAPI:
                     )
                     print(f"   Resposta: {versao_response.text[:200]}")
 
-                # Gravar modificações individuais no Directus
-                print(f"\n📝 Gravando {len(modificacoes)} modificações no Directus...")
-                modificacoes_criadas = 0
-                modificacoes_ids = []  # Coletar IDs das modificações criadas
+                # Preparar modificações para envio (objetos sem ID)
+                print(
+                    f"\n📝 Preparando {len(modificacoes)} modificações para o Directus..."
+                )
+                modificacoes_directus = []
 
                 for idx, mod in enumerate(modificacoes, 1):
                     # Mapear campos corretamente para o schema do Directus
@@ -2218,8 +2268,8 @@ class DirectusAPI:
                     # conteudo = texto original
                     # alteracao = texto novo/modificado
                     # clausula = ID da cláusula vinculada (se houver)
+                    # SEM campo "versao" - será vinculado automaticamente pelo Directus
                     mod_data = {
-                        "versao": versao_id,
                         "categoria": mod.get("tipo", "ALTERACAO"),  # tipo → categoria
                         "conteudo": mod.get("conteudo", {}).get(
                             "original"
@@ -2238,67 +2288,21 @@ class DirectusAPI:
 
                     # Limpar campos None
                     mod_data = {k: v for k, v in mod_data.items() if v is not None}
+                    modificacoes_directus.append(mod_data)
 
-                    try:
-                        mod_response = requests.post(
-                            f"{self.base_url}/items/modificacao",
-                            headers=DIRECTUS_HEADERS,
-                            json=mod_data,
-                            timeout=10,
-                        )
+                    if (
+                        idx <= 5 or idx % 10 == 0
+                    ):  # Mostrar primeiras 5 e múltiplos de 10
+                        print(f"  ✅ Modificação #{idx} ({mod['tipo']}) preparada")
 
-                        if mod_response.status_code in [200, 201]:
-                            modificacoes_criadas += 1
-                            # Coletar ID da modificação criada
-                            mod_id = mod_response.json().get("data", {}).get("id")
-                            if mod_id:
-                                modificacoes_ids.append(mod_id)
-                            if (
-                                idx <= 5 or idx % 10 == 0
-                            ):  # Mostrar primeiras 5 e múltiplos de 10
-                                print(
-                                    f"  ✅ Modificação #{idx} ({mod['tipo']}) criada - ID: {mod_id}"
-                                )
-                        else:
-                            print(
-                                f"  ⚠️ Erro ao criar modificação #{idx}: HTTP {mod_response.status_code}"
-                            )
-
-                    except Exception as e:
-                        print(f"  ⚠️ Erro ao gravar modificação #{idx}: {e}")
-
-                print(
-                    f"\n✅ Gravação concluída: {modificacoes_criadas}/{len(modificacoes)} modificações salvas no Directus"
+                # Usar função centralizada para atualizar versão com modificações
+                # Não incluir status aqui pois já foi setado como "processada" no PATCH de métricas acima
+                resultado = self._atualizar_versao_com_modificacoes(
+                    versao_id, modificacoes_directus
                 )
 
-                # Atualizar versão com array de IDs das modificações
-                # Isso faz o Directus automaticamente remover modificações antigas não incluídas no array
-                if modificacoes_ids:
-                    print(
-                        f"\n🔄 Atualizando versão com {len(modificacoes_ids)} modificações vinculadas..."
-                    )
-                    versao_mod_update = {"modificacoes": modificacoes_ids}
-
-                    try:
-                        versao_mod_response = requests.patch(
-                            f"{self.base_url}/items/versao/{versao_id}",
-                            headers=DIRECTUS_HEADERS,
-                            json=versao_mod_update,
-                            timeout=10,
-                        )
-
-                        if versao_mod_response.status_code in [200, 204]:
-                            print("✅ Versão atualizada com modificações vinculadas")
-                            print(
-                                "   Modificações antigas removidas automaticamente pelo Directus"
-                            )
-                        else:
-                            print(
-                                f"⚠️ Erro ao vincular modificações: HTTP {versao_mod_response.status_code}"
-                            )
-                            print(f"   Resposta: {versao_mod_response.text[:200]}")
-                    except Exception as e:
-                        print(f"⚠️ Erro ao vincular modificações à versão: {e}")
+                if not resultado["success"]:
+                    print(f"⚠️ Erro ao persistir modificações: {resultado.get('error')}")
 
             except Exception as e:
                 print(f"⚠️ Erro ao gravar no Directus: {e}")
@@ -2673,7 +2677,21 @@ class DirectusAPI:
     def _get_arquivo_original(self, versao_data):
         """Busca o arquivo original/anterior baseado na lógica de negócio"""
         try:
-            contrato_id = versao_data.get("contrato")
+            # Extrair ID do contrato (pode ser string ou objeto nested)
+            contrato = versao_data.get("contrato")
+            if isinstance(contrato, dict):
+                contrato_id = contrato.get("id")
+                # Se já temos modelo_contrato nested, usar diretamente
+                modelo_contrato = contrato.get("modelo_contrato")
+                if isinstance(modelo_contrato, dict):
+                    arquivo_original_id = modelo_contrato.get("arquivo_original")
+                    if arquivo_original_id:
+                        print(f"✅ Usando arquivo_original do nested: {arquivo_original_id}")
+                        return arquivo_original_id
+            else:
+                contrato_id = contrato
+                modelo_contrato = None
+
             versao_atual_date = versao_data.get("date_created")
 
             if not contrato_id or not versao_atual_date:

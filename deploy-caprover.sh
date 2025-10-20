@@ -64,21 +64,29 @@ read -p "$(echo -e ${YELLOW}🔨 Fazer build da imagem antes? [s/N]: ${NC})" -n 
 echo
 if [[ $REPLY =~ ^[Ss]$ ]]; then
     echo -e "${BLUE}🔨 Buildando imagem...${NC}"
+    echo ""
 
-    # Capturar output do build
-    BUILD_OUTPUT=$(./versiona-ai/build-minimal.sh 2>&1)
-    BUILD_EXIT_CODE=$?
+    # Executar build e capturar output em arquivo temporário
+    BUILD_LOG=$(mktemp)
 
-    # Mostrar output do build
-    echo "$BUILD_OUTPUT"
+    # Executar build mostrando output em tempo real E salvando em arquivo
+    ./versiona-ai/build-minimal.sh 2>&1 | tee "$BUILD_LOG"
+    BUILD_EXIT_CODE=${PIPESTATUS[0]}
+
+    echo ""
 
     if [ $BUILD_EXIT_CODE -ne 0 ]; then
-        echo -e "${RED}❌ Erro no build!${NC}"
+        echo -e "${RED}❌ Erro no build! Exit code: $BUILD_EXIT_CODE${NC}"
+        echo -e "${RED}❌ Abortando deploy.${NC}"
+        rm -f "$BUILD_LOG"
         exit 1
     fi
 
     # Extrair a versão gerada do output (linha que contém "Versão: ")
-    BUILD_VERSION=$(echo "$BUILD_OUTPUT" | grep "🔖 Versão:" | awk '{print $3}')
+    BUILD_VERSION=$(grep "🔖 Versão:" "$BUILD_LOG" | awk '{print $3}')
+
+    # Limpar arquivo temporário
+    rm -f "$BUILD_LOG"
 
     if [ -n "$BUILD_VERSION" ]; then
         # Construir o nome completo da imagem com a versão específica
