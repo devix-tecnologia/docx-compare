@@ -47,6 +47,9 @@ except ImportError:
 # Importar processador de tags de modelo
 from processador_tags_modelo import ProcessadorTagsModelo
 
+# Importar repositório Directus
+from repositorio import DirectusRepository
+
 # Carregar variáveis do .env
 load_dotenv()
 
@@ -311,64 +314,29 @@ class DirectusAPI:
         self.base_url = DIRECTUS_BASE_URL.rstrip("/")
         self.token = DIRECTUS_TOKEN
         self.connected = False
+        # Inicializar repositório para acesso aos dados
+        self.repo = DirectusRepository(self.base_url)
 
     def test_connection(self):
-        """Testa a conexão com o Directus"""
-        try:
-            response = requests.get(
-                f"{self.base_url}/server/ping", headers=DIRECTUS_HEADERS, timeout=10
-            )
-            self.connected = response.status_code == 200
-            return self.connected
-        except Exception as e:
-            print(f"❌ Erro ao conectar com Directus: {e}")
-            self.connected = False
-            return False
+        """Testa a conexão com o Directus usando o repositório"""
+        result = self.repo.test_connection()
+        self.connected = result['success']
+        if not self.connected:
+            print(f"❌ Erro ao conectar com Directus: {result['message']}")
+        return self.connected
 
     def get_contratos(self):
-        """Busca contratos do Directus"""
+        """Busca contratos do Directus usando o repositório"""
         print("🚀 Iniciando get_contratos")
         try:
-            # Primeiro, vamos buscar as coleções disponíveis
-            response = requests.get(
-                f"{self.base_url}/collections", headers=DIRECTUS_HEADERS, timeout=10
-            )
+            # Buscar contratos com limite de 10 usando o repositório
+            contratos = self.repo.get_contratos(limit=10)
 
-            if response.status_code != 200:
-                print(f"❌ Erro ao buscar coleções: {response.status_code}")
-                return self._get_mock_contratos()
-
-            collections = response.json()["data"]
-            print(
-                f"📋 Coleções disponíveis: {[c['collection'] for c in collections[:10]]}"
-            )
-
-            # Buscar contratos ou versões
-            contract_collections = [
-                c
-                for c in collections
-                if "contrat" in c["collection"].lower()
-                or "versao" in c["collection"].lower()
-            ]
-
-            if contract_collections:
-                collection_name = contract_collections[0]["collection"]
-                print(f"🔍 Buscando dados na coleção: {collection_name}")
-
-                response = requests.get(
-                    f"{self.base_url}/items/{collection_name}?limit=10",
-                    headers=DIRECTUS_HEADERS,
-                    timeout=10,
-                )
-
-                if response.status_code == 200:
-                    data = response.json()["data"]
-                    return self._format_contratos(data, collection_name)
-                else:
-                    print(f"❌ Erro ao buscar contratos: {response.status_code}")
-                    return self._get_mock_contratos()
+            if contratos:
+                print(f"✅ {len(contratos)} contratos encontrados")
+                return self._format_contratos(contratos, "contrato")
             else:
-                print("❌ Nenhuma coleção de contratos encontrada")
+                print("⚠️ Nenhum contrato encontrado, usando mock")
                 return self._get_mock_contratos()
 
         except Exception as e:
@@ -496,73 +464,45 @@ class DirectusAPI:
                 if not versao_data:
                     return {"error": f"Versão mock {versao_id} não encontrada"}
             else:
-                # Buscar dados reais do Directus com nested fields (1 única requisição!)
-                # Buscar: versão → contrato → modelo_contrato → tags
-                fields = (
-                    "id,status,date_created,date_updated,versao,observacao,origem,arquivo,modifica_arquivo,"
-                    "contrato.id,contrato.modelo_contrato.id,contrato.modelo_contrato.arquivo_com_tags,contrato.modelo_contrato.arquivo_original,"
-                    "contrato.modelo_contrato.tags.id,contrato.modelo_contrato.tags.tag_nome,"
-                    "contrato.modelo_contrato.tags.caminho_tag_inicio,contrato.modelo_contrato.tags.caminho_tag_fim,"
-                    "contrato.modelo_contrato.tags.posicao_inicio_texto,contrato.modelo_contrato.tags.posicao_fim_texto,"
-                    "contrato.modelo_contrato.tags.conteudo,"
-                    "contrato.modelo_contrato.tags.clausulas.id,contrato.modelo_contrato.tags.clausulas.numero,"
-                    "contrato.modelo_contrato.tags.clausulas.nome"
-                )
-                url = f"{self.base_url}/items/versao/{versao_id}?fields={fields}"
-                print(
-                    "🔍 Buscando versão + contrato + modelo + tags no Directus (1 requisição)..."
-                )
-                print(
-                    f"🔍 Headers configurados: Authorization presente = {bool(DIRECTUS_HEADERS.get('Authorization'))}"
-                )
+                # Buscar versão com TODOS os campos necessários (1 requisição!)
+                print("🔍 Buscando versão + contrato + modelo + tags no Directus (1 requisição)...")
+                versao_data = self.repo.get_versao_para_processar(versao_id)
 
-                response = requests.get(
-                    url,
-                    headers=DIRECTUS_HEADERS,
-                    timeout=30,  # Timeout maior para nested query
-                )
-
-                print(f"📡 Resposta do Directus: HTTP {response.status_code}")
-                if response.status_code != 200:
-                    print(f"📄 Corpo da resposta: {response.text[:500]}")
-
-                if response.status_code != 200:
+                if not versao_data:
                     # No modo real, falha do Directus é erro (não usar mock como fallback)
-                    print(
-                        f"❌ Falha no Directus para versão {versao_id}: HTTP {response.status_code}"
-                    )
+                    print(f"❌ Versão {versao_id} não encontrada no Directus")
                     return {
-                        "error": f"Versão {versao_id} não encontrada no Directus (HTTP {response.status_code})"
+                        "error": f"Versão {versao_id} não encontrada no Directus"
                     }
-                else:
-                    versao_data = response.json()["data"]
 
-                    # Extrair dados nested para uso posterior
-                    contrato_data = versao_data.get("contrato")
-                    if isinstance(contrato_data, dict):
-                        modelo_data = contrato_data.get("modelo_contrato")
-                        if isinstance(modelo_data, dict):
-                            tags_modelo_nested = modelo_data.get("tags", [])
-                            arquivo_com_tags_id_nested = modelo_data.get(
-                                "arquivo_com_tags"
-                            )
+                print(f"✅ Versão {versao_id} carregada com sucesso")
 
-                            print("✅ Dados carregados em 1 requisição:")
-                            print(f"   - Versão: {versao_id}")
-                            print(f"   - Contrato: {contrato_data.get('id')}")
-                            print(f"   - Modelo: {modelo_data.get('id')}")
-                            print(f"   - Tags: {len(tags_modelo_nested)}")
-                            print(
-                                f"   - Arquivo com tags: {arquivo_com_tags_id_nested}"
-                            )
-                        else:
-                            tags_modelo_nested = []
-                            arquivo_com_tags_id_nested = None
-                            print("⚠️ Modelo não encontrado no contrato")
+                # Extrair dados nested para uso posterior
+                contrato_data = versao_data.get("contrato")
+                if isinstance(contrato_data, dict):
+                    modelo_data = contrato_data.get("modelo_contrato")
+                    if isinstance(modelo_data, dict):
+                        tags_modelo_nested = modelo_data.get("tags", [])
+                        arquivo_com_tags_id_nested = modelo_data.get(
+                            "arquivo_com_tags"
+                        )
+
+                        print("✅ Dados carregados em 1 requisição:")
+                        print(f"   - Versão: {versao_id}")
+                        print(f"   - Contrato: {contrato_data.get('id')}")
+                        print(f"   - Modelo: {modelo_data.get('id')}")
+                        print(f"   - Tags: {len(tags_modelo_nested)}")
+                        print(
+                            f"   - Arquivo com tags: {arquivo_com_tags_id_nested}"
+                        )
                     else:
                         tags_modelo_nested = []
                         arquivo_com_tags_id_nested = None
-                        print("⚠️ Contrato não encontrado na versão")
+                        print("⚠️ Modelo não encontrado no contrato")
+                else:
+                    tags_modelo_nested = []
+                    arquivo_com_tags_id_nested = None
+                    print("⚠️ Contrato não encontrado na versão")
 
             # Se use_ast=True, usar processamento AST
             if use_ast and not mock:
@@ -927,7 +867,7 @@ class DirectusAPI:
         self, versao_id: str, modificacoes_directus: list[dict], **kwargs
     ) -> dict:
         """
-        Atualiza uma versão no Directus com modificações usando sintaxe "create".
+        Atualiza uma versão no Directus com modificações.
 
         Esta função centraliza a lógica de persistência de modificações, evitando duplicação
         de código entre os métodos AST e não-AST.
@@ -935,7 +875,7 @@ class DirectusAPI:
         Args:
             versao_id: ID da versão a ser atualizada
             modificacoes_directus: Lista de modificações no formato do Directus
-            **kwargs: Campos adicionais para atualizar na versão (status, modifica_arquivo, etc.)
+            **kwargs: Campos adicionais (status, modifica_arquivo, métricas, etc.)
 
         Returns:
             dict com informações sobre o resultado:
@@ -943,66 +883,57 @@ class DirectusAPI:
                 - status_code: código HTTP da resposta
                 - modificacoes_criadas: número de modificações criadas
                 - response_data: dados da resposta (se sucesso)
+                - ids_criados: lista de IDs criados
                 - error: mensagem de erro (se falha)
         """
         print(
-            f"\n🔄 Enviando PATCH para versão {versao_id} com {len(modificacoes_directus)} modificações..."
+            f"\n🔄 Registrando resultado do processamento da versão {versao_id}..."
+        )
+        print(f"   📊 Total de modificações: {len(modificacoes_directus)}")
+
+        # Extrair parâmetros conhecidos
+        status = kwargs.get("status", "concluido")
+        arquivo_original_id = kwargs.get("modifica_arquivo")
+
+        # Extrair métricas se houver
+        metricas = {}
+        if "total_blocos" in kwargs:
+            metricas["total_blocos"] = kwargs["total_blocos"]
+        if "taxa_vinculacao" in kwargs:
+            metricas["taxa_vinculacao"] = kwargs["taxa_vinculacao"]
+        if "metodo_processamento" in kwargs:
+            metricas["metodo_processamento"] = kwargs["metodo_processamento"]
+
+        # Usar método semântico do repositório
+        result = self.repo.registrar_resultado_processamento_versao(
+            versao_id=versao_id,
+            modificacoes=modificacoes_directus,
+            status=status,
+            arquivo_original_id=arquivo_original_id,
+            metricas=metricas if metricas else None,
+            timeout=300
         )
 
-        # Montar dados de atualização
-        update_data = {
-            "modificacoes": {"create": modificacoes_directus}
-        }
-
-        # Adicionar campos extras (status, modifica_arquivo, métricas, etc.)
-        update_data.update(kwargs)
-
-        try:
-            response = requests.patch(
-                f"{self.base_url}/items/versao/{versao_id}",
-                headers=DIRECTUS_HEADERS,
-                json=update_data,
-                timeout=300,  # Timeout maior para transação (5 minutos)
+        if result['success']:
+            print(f"✅ Versão {versao_id} atualizada com sucesso")
+            print(
+                f"   ➕ {result['modificacoes_criadas']} modificações criadas em transação única"
             )
 
-            if response.status_code == 200:
-                print(f"✅ Versão {versao_id} atualizada com sucesso")
-                print(
-                    f"   ➕ {len(modificacoes_directus)} modificações criadas em transação única"
-                )
-
-                # Extrair dados da resposta
-                response_data = response.json().get("data", {})
-                modificacoes_criadas = response_data.get("modificacoes", [])
-
-                return {
-                    "success": True,
-                    "status_code": 200,
-                    "modificacoes_criadas": len(modificacoes_criadas),
-                    "response_data": response_data,
-                    "ids_criados": [
-                        m if isinstance(m, str) else m.get("id")
-                        for m in modificacoes_criadas
-                    ] if modificacoes_criadas else [],
-                }
-            else:
-                error_msg = f"HTTP {response.status_code}: {response.text[:500]}"
-                print(f"⚠️ Erro ao atualizar versão: {error_msg}")
-                return {
-                    "success": False,
-                    "status_code": response.status_code,
-                    "modificacoes_criadas": 0,
-                    "error": error_msg,
-                }
-
-        except Exception as e:
-            error_msg = f"Exceção ao atualizar versão: {str(e)}"
-            print(f"⚠️ {error_msg}")
+            return {
+                "success": True,
+                "status_code": result['status_code'],
+                "modificacoes_criadas": result['modificacoes_criadas'],
+                "response_data": result.get('data', {}),
+                "ids_criados": result['ids_criados'],
+            }
+        else:
+            print(f"⚠️ Erro ao atualizar versão: {result.get('error')}")
             return {
                 "success": False,
-                "status_code": 0,
+                "status_code": result['status_code'],
                 "modificacoes_criadas": 0,
-                "error": error_msg,
+                "error": result.get('error', 'Erro desconhecido'),
             }
 
     # ============================================================================
@@ -2675,22 +2606,24 @@ class DirectusAPI:
             raise e
 
     def _get_arquivo_original(self, versao_data):
-        """Busca o arquivo original/anterior baseado na lógica de negócio"""
+        """
+        Busca o arquivo original/anterior baseado na lógica de negócio.
+
+        Usa o repositório para acesso aos dados, mantendo apenas a lógica de negócio aqui.
+        """
         try:
-            # Extrair ID do contrato (pode ser string ou objeto nested)
+            # Primeiro, tentar extrair arquivo_original_id diretamente dos dados nested
+            arquivo_id = self.repo.get_arquivo_id(versao_data)
+            if arquivo_id:
+                print(f"✅ Usando arquivo_original do nested: {arquivo_id}")
+                return arquivo_id
+
+            # Extrair ID do contrato
             contrato = versao_data.get("contrato")
             if isinstance(contrato, dict):
                 contrato_id = contrato.get("id")
-                # Se já temos modelo_contrato nested, usar diretamente
-                modelo_contrato = contrato.get("modelo_contrato")
-                if isinstance(modelo_contrato, dict):
-                    arquivo_original_id = modelo_contrato.get("arquivo_original")
-                    if arquivo_original_id:
-                        print(f"✅ Usando arquivo_original do nested: {arquivo_original_id}")
-                        return arquivo_original_id
             else:
                 contrato_id = contrato
-                modelo_contrato = None
 
             versao_atual_date = versao_data.get("date_created")
 
@@ -2769,33 +2702,22 @@ class DirectusAPI:
             return None
 
     def _download_and_extract_text(self, arquivo_id):
-        """Baixa um arquivo do Directus e extrai o texto"""
+        """Baixa um arquivo do Directus e extrai o texto usando o repositório"""
         try:
-            # URL para download do arquivo
-            download_url = f"{self.base_url}/assets/{arquivo_id}"
+            # Usar repositório para baixar arquivo
+            temp_path = self.repo.download_file(arquivo_id)
 
-            response = requests.get(download_url, headers=DIRECTUS_HEADERS, timeout=300)
-
-            if response.status_code != 200:
-                print(f"❌ Erro ao baixar arquivo {arquivo_id}: {response.status_code}")
+            if not temp_path or not temp_path.exists():
+                print(f"❌ Erro ao baixar arquivo {arquivo_id}")
                 return None
-
-            # Salvar arquivo temporariamente
-            import os
-            import tempfile
-
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as temp_file:
-                temp_file.write(response.content)
-                temp_path = temp_file.name
 
             try:
                 # Usar o módulo docx_utils existente para extrair texto
                 import sys
-
                 sys.path.append("/Users/sidarta/repositorios/docx-compare")
                 from docx_utils import convert_docx_to_text
 
-                text = convert_docx_to_text(temp_path)
+                text = convert_docx_to_text(str(temp_path))
                 return text
             except ImportError as e:
                 print(f"❌ Erro ao importar docx_utils: {e}")
@@ -2803,7 +2725,7 @@ class DirectusAPI:
                 try:
                     from docx import Document  # type: ignore
 
-                    doc = Document(temp_path)
+                    doc = Document(str(temp_path))
                     paragraphs = [p.text for p in doc.paragraphs if p.text.strip()]
                     return "\n".join(paragraphs)
                 except ImportError:
@@ -2811,6 +2733,7 @@ class DirectusAPI:
                     return None
             finally:
                 # Limpar arquivo temporário
+                import os
                 os.unlink(temp_path)
 
         except Exception as e:
@@ -3735,27 +3658,14 @@ def _get_versao_json(versao_id):
         diff_data = diff_cache[versao_id]
         return jsonify(diff_data)
 
-    # Caso contrário, buscar do Directus
+    # Caso contrário, buscar do Directus usando o repositório
     try:
-        # Buscar versão COM TODOS os relacionamentos em UMA requisição
-        params = {
-            "fields": "*,modificacoes.*,modificacoes.clausula.*,contrato.*,contrato.modelo_contrato.*"
-        }
-
-        response = requests.get(
-            f"{DIRECTUS_BASE_URL}/items/versao/{versao_id}",
-            headers=DIRECTUS_HEADERS,
-            params=params,
-            timeout=30,
-        )
-
         print(f"🔍 Buscando versão {versao_id} com relacionamentos...")
-        print(f"📡 Status: {response.status_code}")
 
-        if response.status_code != 200:
-            return jsonify({"error": "Versão não encontrada"}), 404
+        # Usar método semântico do repositório
+        versao_completa = directus_api.repo.get_versao_completa_para_view(versao_id)
 
-        versao_completa = response.json().get("data")
+        print(f"📡 Versão carregada: {bool(versao_completa)}")
 
         if not versao_completa:
             return jsonify({"error": "Versão não encontrada"}), 404
@@ -4255,45 +4165,27 @@ def _buscar_versoes_do_modelo(modelo_id: str) -> list[dict]:
     Busca: versao.contrato.modelo_contrato = modelo_id
     """
     try:
-        url = f"{DIRECTUS_BASE_URL}/items/versao"
-        params = {
-            "filter[contrato][modelo_contrato][_eq]": modelo_id,  # Deep filter: versao → contrato → modelo_contrato
-            "fields": "id,versao,status,date_created,contrato.id,contrato.numero",
-            "sort": "versao",
-            "limit": -1,  # Sem limite
-        }
-        headers = {
-            "Authorization": f"Bearer {DIRECTUS_TOKEN}",
-            "Content-Type": "application/json",
-        }
-
         print(f"🔍 Buscando versões do modelo {modelo_id}")
         print(f"   Filtro: contrato.modelo_contrato = {modelo_id}")
 
-        response = requests.get(url, headers=headers, params=params, timeout=30)
+        # Usar método semântico do repositório
+        versoes = directus_api.repo.get_versoes_por_modelo(modelo_id)
 
-        if response.status_code == 200:
-            data = response.json()
-            versoes = data.get("data", [])
-            print(f"✅ Encontradas {len(versoes)} versões")
+        print(f"✅ Encontradas {len(versoes)} versões")
 
-            # Log das versões encontradas
-            for v in versoes:
-                contrato_info = v.get("contrato", {})
-                contrato_numero = (
-                    contrato_info.get("numero", "N/A")
-                    if isinstance(contrato_info, dict)
-                    else "N/A"
-                )
-                print(
-                    f"   • Versão {v.get('versao', 'N/A')} (Contrato: {contrato_numero})"
-                )
+        # Log das versões encontradas
+        for v in versoes:
+            contrato_info = v.get("contrato", {})
+            contrato_numero = (
+                contrato_info.get("numero", "N/A")
+                if isinstance(contrato_info, dict)
+                else "N/A"
+            )
+            print(
+                f"   • Versão {v.get('versao', 'N/A')} (Contrato: {contrato_numero})"
+            )
 
-            return versoes
-        else:
-            print(f"⚠️  Erro ao buscar versões: HTTP {response.status_code}")
-            print(f"   Resposta: {response.text[:200]}")
-            return []
+        return versoes
 
     except Exception as e:
         print(f"❌ Erro ao buscar versões do modelo: {e}")

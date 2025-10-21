@@ -11,6 +11,7 @@ RUN uv pip install --system flask-restx>=1.3.0
 
 # Copiar código atualizado do servidor Python
 COPY versiona-ai/directus_server.py /app/versiona-ai/
+COPY versiona-ai/repositorio.py /app/versiona-ai/
 COPY versiona-ai/wsgi.py /app/versiona-ai/
 COPY versiona-ai/swagger_docs.py /app/versiona-ai/
 COPY versiona-ai/processador_tags_modelo.py /app/versiona-ai/
