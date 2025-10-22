@@ -1,0 +1,64 @@
+### Variáveis
+@baseUrl = https://contract.devix.co
+@token = g52oLdjEmwURNK4KmqjAXEtY3e4DCUzP
+@versaoId = 73b215cb-7e38-4e8c-80a7-4be90f21d654
+
+### Obtem dados do usuario logado
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{token}}
+
+### Obtem versoes disponíveis
+GET {{baseUrl}}/items/versao?limit=1&fields=*,modificacoes.*,contrato.*,contrato.modelo_contrato.*,contrato.modelo_contrato.tags.*,contrato.modelo_contrato.tags.clausulas.*&deep[contrato.modelo_contrato.tags][_limit]=-1&deep[contrato.modelo_contrato.tags.clausulas][_limit]=-1
+Authorization: Bearer {{token}}
+
+### 1. Teste básico - buscar versão sem fields
+GET {{baseUrl}}/items/versao/{{versaoId}}
+Authorization: Bearer {{token}}
+
+### 2. Buscar versão com todos os campos (*)
+GET {{baseUrl}}/items/versao/{{versaoId}}?fields=*
+Authorization: Bearer {{token}}
+
+### 3. Buscar versão com wildcards nested (*,contrato.*,contrato.modelo_contrato.*)
+GET {{baseUrl}}/items/versao/{{versaoId}}?fields=*,contrato.*,contrato.modelo_contrato.*
+Authorization: Bearer {{token}}
+
+### 4. Buscar versão completa com todos os relacionamentos (*.*)
+GET {{baseUrl}}/items/versao/{{versaoId}}?fields=*.*
+Authorization: Bearer {{token}}
+
+### 5. Buscar versão com campos específicos básicos
+GET {{baseUrl}}/items/versao/{{versaoId}}?fields=id,status,versao,date_created
+Authorization: Bearer {{token}}
+
+### 6. Buscar versão com contrato nested
+GET {{baseUrl}}/items/versao/{{versaoId}}?fields=id,status,contrato.id,contrato.modelo_contrato.id
+Authorization: Bearer {{token}}
+
+### 7. Buscar modificações da versão (sabemos que funciona)
+GET {{baseUrl}}/items/modificacao?filter[versao][_eq]={{versaoId}}&limit=5&fields=id,categoria,versao
+Authorization: Bearer {{token}}
+
+### 8. Buscar modificações com nested de versao
+GET {{baseUrl}}/items/modificacao?filter[versao][_eq]={{versaoId}}&limit=1&fields=*,versao.*
+Authorization: Bearer {{token}}
+
+### 9. Testar permissões - listar versões (apenas IDs)
+GET {{baseUrl}}/items/versao?limit=1&fields=id
+Authorization: Bearer {{token}}
+
+### 10. Buscar versão do jeito que get_versao_para_processar tenta
+GET {{baseUrl}}/items/versao/{{versaoId}}?fields=*,contrato.*,contrato.modelo_contrato.*,contrato.modelo_contrato.tags.*,contrato.modelo_contrato.tags.clausulas.*&deep[contrato.modelo_contrato.tags][_limit]=100&deep[contrato.modelo_contrato.tags.clausulas][_limit]=50
+Authorization: Bearer {{token}}
+
+### 11. API de processamento - verificar se está rodando
+GET https://ignai-contract-ia.paas.node10.de.vix.br/health
+
+### 12. Processar versão via API (POST)
+POST https://ignai-contract-ia.paas.node10.de.vix.br/api/process
+Content-Type: application/json
+
+{
+  "versao_id": "{{versaoId}}",
+  "use_ast": true
+}

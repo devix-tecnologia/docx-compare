@@ -99,7 +99,8 @@ modificacao_model = api.model(
         "clausula_original": fields.String(description="Cláusula original"),
         "clausula_modificada": fields.String(description="Cláusula modificada"),
         "conteudo": fields.Raw(
-            description="Conteúdo original e novo", example={"original": "...", "novo": "..."}
+            description="Conteúdo original e novo",
+            example={"original": "...", "novo": "..."},
         ),
     },
 )

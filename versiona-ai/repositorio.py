@@ -13,11 +13,12 @@ Responsabilidades:
 """
 
 import os
-import requests
 import tempfile
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Any
+from typing import Any
+
+import requests
 
 
 class DirectusRepository:
@@ -28,7 +29,7 @@ class DirectusRepository:
     testabilidade através de mocks e separação clara de responsabilidades.
     """
 
-    def __init__(self, base_url: str, token: Optional[str] = None):
+    def __init__(self, base_url: str, token: str | None = None):
         """
         Inicializa o repositório.
 
@@ -36,15 +37,15 @@ class DirectusRepository:
             base_url: URL base do Directus (ex: https://api.exemplo.com)
             token: Token de autenticação (se None, busca de DIRECTUS_TOKEN env var)
         """
-        self.base_url = base_url.rstrip('/')
+        self.base_url = base_url.rstrip("/")
 
         # Configurar headers com token
         if token is None:
-            token = os.getenv('DIRECTUS_TOKEN')
+            token = os.getenv("DIRECTUS_TOKEN")
 
         self.headers = {
-            'Authorization': f'Bearer {token}',
-            'Content-Type': 'application/json'
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
         }
 
     # ============================================================================
@@ -54,14 +55,17 @@ class DirectusRepository:
     def get_versao(
         self,
         versao_id: str,
-        fields: Optional[list[str]] = None
-    ) -> Optional[dict[str, Any]]:
+        fields: list[str] | None = None,
+        deep: dict[str, dict[str, Any]] | None = None,
+    ) -> dict[str, Any] | None:
         """
-        Busca uma versão específica com campos aninhados.
+        Busca uma versão pelo ID.
 
         Args:
             versao_id: ID da versão
             fields: Lista de campos a buscar (suporta nested: "contrato.modelo_contrato.arquivo_original")
+            deep: Parâmetros deep para limitar relacionamentos nested
+                  Ex: {"contrato.modelo_contrato.tags": {"_limit": 100}}
 
         Returns:
             dict com dados da versão ou None se não encontrada
@@ -71,24 +75,29 @@ class DirectusRepository:
         """
         params = {}
         if fields:
-            params['fields'] = ','.join(fields)
+            params["fields"] = ",".join(fields)
+
+        if deep:
+            for key, value in deep.items():
+                for param_name, param_value in value.items():
+                    params[f"deep[{key}][{param_name}]"] = param_value
 
         response = requests.get(
             f"{self.base_url}/items/versao/{versao_id}",
             headers=self.headers,
             params=params,
-            timeout=30
+            timeout=30,
         )
 
         if response.status_code == 200:
-            return response.json().get('data')
+            return response.json().get("data")
         elif response.status_code == 404:
             return None
         else:
             response.raise_for_status()
             return None
 
-    def get_versao_para_processar(self, versao_id: str) -> Optional[dict[str, Any]]:
+    def get_versao_para_processar(self, versao_id: str) -> dict[str, Any] | None:
         """
         Busca uma versão com TODOS os campos necessários para processamento.
 
@@ -109,38 +118,25 @@ class DirectusRepository:
         Raises:
             requests.RequestException: Em caso de erro de comunicação
         """
-        # Campos necessários para processamento completo
+        # Usar wildcards para evitar problemas de permissão com campos específicos
+        # O Directus retorna apenas os campos que o token tem permissão de acessar
         fields = [
-            # Campos da versão
-            "id", "status", "date_created", "date_updated", "versao",
-            "observacao", "origem", "arquivo", "modifica_arquivo",
-
-            # Contrato
-            "contrato.id",
-
-            # Modelo de contrato
-            "contrato.modelo_contrato.id",
-            "contrato.modelo_contrato.arquivo_com_tags",
-            "contrato.modelo_contrato.arquivo_original",
-
-            # Tags do modelo com posições e conteúdo
-            "contrato.modelo_contrato.tags.id",
-            "contrato.modelo_contrato.tags.tag_nome",
-            "contrato.modelo_contrato.tags.caminho_tag_inicio",
-            "contrato.modelo_contrato.tags.caminho_tag_fim",
-            "contrato.modelo_contrato.tags.posicao_inicio_texto",
-            "contrato.modelo_contrato.tags.posicao_fim_texto",
-            "contrato.modelo_contrato.tags.conteudo",
-
-            # Cláusulas vinculadas às tags
-            "contrato.modelo_contrato.tags.clausulas.id",
-            "contrato.modelo_contrato.tags.clausulas.numero",
-            "contrato.modelo_contrato.tags.clausulas.nome"
+            "*",  # Todos os campos da versão
+            "contrato.*",  # Dados do contrato
+            "contrato.modelo_contrato.*",  # Dados do modelo incluindo arquivos
+            "contrato.modelo_contrato.tags.*",  # Tags do modelo com posições
+            "contrato.modelo_contrato.tags.clausulas.*",  # Cláusulas vinculadas
         ]
 
-        return self.get_versao(versao_id, fields=fields)
+        # -1 = buscar todos os itens (sem limite)
+        deep = {
+            "contrato.modelo_contrato.tags": {"_limit": -1},
+            "contrato.modelo_contrato.tags.clausulas": {"_limit": -1},
+        }
 
-    def get_versao_completa_para_view(self, versao_id: str) -> Optional[dict[str, Any]]:
+        return self.get_versao(versao_id, fields=fields, deep=deep)
+
+    def get_versao_completa_para_view(self, versao_id: str) -> dict[str, Any] | None:
         """
         Busca uma versão com TODOS os relacionamentos para exibição no frontend.
 
@@ -169,7 +165,7 @@ class DirectusRepository:
             "modificacoes.*",  # Todos os campos de cada modificação
             "modificacoes.clausula.*",  # Cláusula vinculada de cada modificação
             "contrato.*",  # Dados do contrato
-            "contrato.modelo_contrato.*"  # Dados do modelo
+            "contrato.modelo_contrato.*",  # Dados do modelo
         ]
 
         return self.get_versao(versao_id, fields=fields)
@@ -201,7 +197,7 @@ class DirectusRepository:
             f"{self.base_url}/items/versao",
             headers=self.headers,
             params=params,
-            timeout=30
+            timeout=30,
         )
 
         if response.status_code == 200:
@@ -212,10 +208,7 @@ class DirectusRepository:
             return []
 
     def update_versao(
-        self,
-        versao_id: str,
-        data: dict[str, Any],
-        timeout: int = 300
+        self, versao_id: str, data: dict[str, Any], timeout: int = 300
     ) -> dict[str, Any]:
         """
         Atualiza uma versão no Directus.
@@ -240,37 +233,33 @@ class DirectusRepository:
                 f"{self.base_url}/items/versao/{versao_id}",
                 headers=self.headers,
                 json=data,
-                timeout=timeout
+                timeout=timeout,
             )
 
             if response.status_code == 200:
                 return {
-                    'success': True,
-                    'status_code': 200,
-                    'data': response.json().get('data', {})
+                    "success": True,
+                    "status_code": 200,
+                    "data": response.json().get("data", {}),
                 }
             else:
                 return {
-                    'success': False,
-                    'status_code': response.status_code,
-                    'error': f"HTTP {response.status_code}: {response.text[:500]}"
+                    "success": False,
+                    "status_code": response.status_code,
+                    "error": f"HTTP {response.status_code}: {response.text[:500]}",
                 }
 
         except Exception as e:
-            return {
-                'success': False,
-                'status_code': 0,
-                'error': f"Exceção: {str(e)}"
-            }
+            return {"success": False, "status_code": 0, "error": f"Exceção: {str(e)}"}
 
     def registrar_resultado_processamento_versao(
         self,
         versao_id: str,
         modificacoes: list[dict[str, Any]],
         status: str = "concluido",
-        arquivo_original_id: Optional[str] = None,
-        metricas: Optional[dict[str, Any]] = None,
-        timeout: int = 300
+        arquivo_original_id: str | None = None,
+        metricas: dict[str, Any] | None = None,
+        timeout: int = 300,
     ) -> dict[str, Any]:
         """
         Registra o resultado do processamento de uma versão no Directus.
@@ -307,22 +296,22 @@ class DirectusRepository:
             ...         "conteudo": "texto original",
             ...         "alteracao": "texto novo",
             ...         "posicao_inicio": 100,
-            ...         "posicao_fim": 200
+            ...         "posicao_fim": 200,
             ...     }
             ... ]
             >>> result = repo.registrar_resultado_processamento_versao(
             ...     versao_id="versao-123",
             ...     modificacoes=modificacoes,
-            ...     arquivo_original_id="arquivo-456"
+            ...     arquivo_original_id="arquivo-456",
             ... )
-            >>> if result['success']:
+            >>> if result["success"]:
             ...     print(f"Criadas {result['modificacoes_criadas']} modificações")
         """
         # Montar dados de atualização
         update_data: dict[str, Any] = {
             "modificacoes": modificacoes,
             "status": status,
-            "data_hora_processamento": datetime.now().isoformat()
+            "data_hora_processamento": datetime.now().isoformat(),
         }
 
         # Adicionar arquivo original se fornecido
@@ -343,33 +332,33 @@ class DirectusRepository:
         result = self.update_versao(versao_id, update_data, timeout=timeout)
 
         # Enriquecer resultado com informações específicas
-        if result['success']:
+        if result["success"]:
             response_data = result.get("data", {})
             modificacoes_criadas = response_data.get("modificacoes", [])
 
             return {
                 "success": True,
-                "status_code": result['status_code'],
+                "status_code": result["status_code"],
                 "modificacoes_criadas": len(modificacoes_criadas),
                 "ids_criados": [
                     m if isinstance(m, str) else m.get("id")
                     for m in modificacoes_criadas
-                ] if modificacoes_criadas else [],
-                "data": response_data
+                ]
+                if modificacoes_criadas
+                else [],
+                "data": response_data,
             }
         else:
             return {
                 "success": False,
-                "status_code": result['status_code'],
+                "status_code": result["status_code"],
                 "modificacoes_criadas": 0,
                 "ids_criados": [],
-                "error": result.get('error', 'Erro desconhecido')
+                "error": result.get("error", "Erro desconhecido"),
             }
 
     def get_modificacoes_versao(
-        self,
-        versao_id: str,
-        fields: Optional[list[str]] = None
+        self, versao_id: str, fields: list[str] | None = None
     ) -> list[dict[str, Any]]:
         """
         Busca todas as modificações de uma versão.
@@ -385,31 +374,236 @@ class DirectusRepository:
             requests.RequestException: Em caso de erro de comunicação
         """
         params = {
-            'filter[versao][_eq]': versao_id,
-            'limit': -1  # Sem limite
+            "filter[versao][_eq]": versao_id,
+            "limit": -1,  # Sem limite
         }
 
         if fields:
-            params['fields'] = ','.join(fields)
+            params["fields"] = ",".join(fields)
 
         response = requests.get(
             f"{self.base_url}/items/modificacao",
             headers=self.headers,
             params=params,
-            timeout=30
+            timeout=30,
+        )
+        response.raise_for_status()
+
+        return response.json().get("data", [])
+
+    def get_resumo_processamento_versao(self, versao_id: str) -> dict[str, Any]:
+        """
+        Retorna um resumo do processamento de uma versão.
+
+        Útil para verificar se o processamento foi bem-sucedido e
+        se as modificações foram registradas corretamente.
+
+        Args:
+            versao_id: ID da versão a verificar
+
+        Returns:
+            dict com:
+                - versao_id: str
+                - status: str (status da versão no Directus)
+                - total_modificacoes: int
+                - modificacoes_por_categoria: dict[str, int]
+                - modificacoes_com_clausula: int
+                - taxa_vinculacao: float (%)
+                - data_processamento: str (ISO 8601)
+                - modificacoes_sample: list[dict] (primeiras 3)
+
+        Raises:
+            requests.RequestException: Em caso de erro de comunicação
+        """
+        # Buscar modificações com informações básicas + cláusula
+        modificacoes = self.get_modificacoes_versao(
+            versao_id,
+            fields=[
+                "id",
+                "categoria",
+                "clausula",
+                "date_created",
+                "posicao_inicio",
+                "posicao_fim",
+            ],
         )
 
-        if response.status_code == 200:
-            return response.json().get('data', [])
-        else:
-            response.raise_for_status()
-            return []
+        # Calcular estatísticas
+        total = len(modificacoes)
+        categorias: dict[str, int] = {}
+        com_clausula = 0
+
+        for mod in modificacoes:
+            categoria = mod.get("categoria", "unknown")
+            categorias[categoria] = categorias.get(categoria, 0) + 1
+
+            if mod.get("clausula"):
+                com_clausula += 1
+
+        taxa_vinculacao = (com_clausula / total * 100) if total > 0 else 0.0
+
+        # Pegar data de processamento da modificação mais recente
+        data_processamento = None
+        if modificacoes:
+            # Ordenar por data e pegar a mais recente
+            sorted_mods = sorted(
+                modificacoes, key=lambda m: m.get("date_created", ""), reverse=True
+            )
+            data_processamento = sorted_mods[0].get("date_created")
+
+        # Buscar status da versão (simples, sem nested)
+        versao_response = requests.get(
+            f"{self.base_url}/items/versao/{versao_id}",
+            headers=self.headers,
+            params={"fields": "status"},
+            timeout=10,
+        )
+
+        status = "unknown"
+        if versao_response.status_code == 200:
+            versao_data = versao_response.json().get("data", {})
+            status = versao_data.get("status", "unknown")
+
+        return {
+            "versao_id": versao_id,
+            "status": status,
+            "total_modificacoes": total,
+            "modificacoes_por_categoria": categorias,
+            "modificacoes_com_clausula": com_clausula,
+            "taxa_vinculacao": round(taxa_vinculacao, 2),
+            "data_processamento": data_processamento,
+            "modificacoes_sample": modificacoes[:3],  # Primeiras 3 para inspeção
+        }
+
+    def verificar_modificacoes_versao(self, versao_id: str) -> dict[str, Any]:
+        """
+        Verifica se a versão foi processada e se possui modificações registradas.
+
+        Método simples que retorna True/False sobre o estado do processamento.
+        Use este método para validações rápidas e checks de sanidade.
+
+        Args:
+            versao_id: ID da versão a verificar
+
+        Returns:
+            dict com:
+                - sucesso: bool (True se tem modificações)
+                - total_modificacoes: int
+                - possui_vinculacao: bool (pelo menos 1 modificação tem cláusula)
+                - status_versao: str
+                - erro: Optional[str] (mensagem de erro se falhou)
+        """
+        try:
+            # Buscar apenas contagem de modificações
+            modificacoes = self.get_modificacoes_versao(
+                versao_id, fields=["id", "clausula"]
+            )
+
+            total = len(modificacoes)
+            possui_vinculacao = any(mod.get("clausula") for mod in modificacoes)
+
+            # Buscar status da versão
+            versao_response = requests.get(
+                f"{self.base_url}/items/versao/{versao_id}",
+                headers=self.headers,
+                params={"fields": "status"},
+                timeout=10,
+            )
+
+            status_versao = "unknown"
+            if versao_response.status_code == 200:
+                versao_data = versao_response.json().get("data", {})
+                status_versao = versao_data.get("status", "unknown")
+
+            return {
+                "sucesso": total > 0,
+                "total_modificacoes": total,
+                "possui_vinculacao": possui_vinculacao,
+                "status_versao": status_versao,
+                "erro": None,
+            }
+
+        except requests.RequestException as e:
+            return {
+                "sucesso": False,
+                "total_modificacoes": 0,
+                "possui_vinculacao": False,
+                "status_versao": "error",
+                "erro": str(e),
+            }
+
+    def comparar_modificacoes_entre_versoes(
+        self, versao_id_1: str, versao_id_2: str
+    ) -> dict[str, Any]:
+        """
+        Compara modificações entre duas versões (útil para verificar reprocessamento).
+
+        Use este método para confirmar se reprocessamento substitui ou acumula modificações.
+
+        Args:
+            versao_id_1: ID da primeira versão
+            versao_id_2: ID da segunda versão (geralmente reprocessamento da primeira)
+
+        Returns:
+            dict com:
+                - versao_1_total: int
+                - versao_2_total: int
+                - diferenca: int (pode ser negativa)
+                - ids_apenas_v1: list[str]
+                - ids_apenas_v2: list[str]
+                - ids_comuns: list[str]
+                - conclusao: str ("substitui", "acumula", "igual", ou "erro")
+        """
+        try:
+            # Buscar IDs de ambas as versões
+            mods_v1 = self.get_modificacoes_versao(versao_id_1, fields=["id"])
+            mods_v2 = self.get_modificacoes_versao(versao_id_2, fields=["id"])
+
+            ids_v1 = {mod["id"] for mod in mods_v1}
+            ids_v2 = {mod["id"] for mod in mods_v2}
+
+            apenas_v1 = list(ids_v1 - ids_v2)
+            apenas_v2 = list(ids_v2 - ids_v1)
+            comuns = list(ids_v1 & ids_v2)
+
+            # Determinar conclusão
+            if versao_id_1 == versao_id_2:
+                conclusao = "igual"
+            elif len(comuns) == 0 and len(apenas_v2) > 0:
+                conclusao = "substitui"
+            elif len(apenas_v1) > 0 and len(apenas_v2) > 0:
+                conclusao = "acumula"
+            elif len(apenas_v1) == 0 and len(apenas_v2) == 0:
+                conclusao = "igual"
+            else:
+                conclusao = "parcial"
+
+            return {
+                "versao_1_total": len(ids_v1),
+                "versao_2_total": len(ids_v2),
+                "diferenca": len(ids_v2) - len(ids_v1),
+                "ids_apenas_v1": apenas_v1,
+                "ids_apenas_v2": apenas_v2,
+                "ids_comuns": comuns,
+                "conclusao": conclusao,
+            }
+
+        except requests.RequestException as e:
+            return {
+                "versao_1_total": 0,
+                "versao_2_total": 0,
+                "diferenca": 0,
+                "ids_apenas_v1": [],
+                "ids_apenas_v2": [],
+                "ids_comuns": [],
+                "conclusao": f"erro: {e}",
+            }
 
     # ============================================================================
     # MÉTODOS DE ARQUIVO
     # ============================================================================
 
-    def get_arquivo_id(self, versao_data: dict[str, Any]) -> Optional[str]:
+    def get_arquivo_id(self, versao_data: dict[str, Any]) -> str | None:
         """
         Extrai o ID do arquivo original de uma versão.
 
@@ -424,21 +618,21 @@ class DirectusRepository:
             ID do arquivo ou None se não encontrado
         """
         try:
-            contrato = versao_data.get('contrato', {})
+            contrato = versao_data.get("contrato", {})
             if not contrato:
                 return None
 
-            modelo = contrato.get('modelo_contrato', {})
+            modelo = contrato.get("modelo_contrato", {})
             if not modelo:
                 return None
 
-            arquivo = modelo.get('arquivo_original')
+            arquivo = modelo.get("arquivo_original")
             if not arquivo:
                 return None
 
             # Se arquivo é dict (nested object), pegar o 'id'
             if isinstance(arquivo, dict):
-                return arquivo.get('id')
+                return arquivo.get("id")
 
             # Se arquivo é string, é o próprio ID
             if isinstance(arquivo, str):
@@ -450,10 +644,8 @@ class DirectusRepository:
             return None
 
     def download_file(
-        self,
-        file_id: str,
-        output_path: Optional[Path] = None
-    ) -> Optional[Path]:
+        self, file_id: str, output_path: Path | None = None
+    ) -> Path | None:
         """
         Faz download de um arquivo do Directus.
 
@@ -468,9 +660,7 @@ class DirectusRepository:
             requests.RequestException: Em caso de erro de comunicação
         """
         response = requests.get(
-            f"{self.base_url}/assets/{file_id}",
-            headers=self.headers,
-            timeout=60
+            f"{self.base_url}/assets/{file_id}", headers=self.headers, timeout=60
         )
 
         if response.status_code != 200:
@@ -479,10 +669,7 @@ class DirectusRepository:
 
         # Se não forneceu path, criar arquivo temporário
         if output_path is None:
-            temp_file = tempfile.NamedTemporaryFile(
-                delete=False,
-                suffix='.docx'
-            )
+            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".docx")
             output_path = Path(temp_file.name)
             temp_file.close()
 
@@ -495,9 +682,7 @@ class DirectusRepository:
     # ============================================================================
 
     def get_clausulas_modelo(
-        self,
-        modelo_contrato_id: str,
-        fields: Optional[list[str]] = None
+        self, modelo_contrato_id: str, fields: list[str] | None = None
     ) -> list[dict[str, Any]]:
         """
         Busca todas as cláusulas de um modelo de contrato.
@@ -512,23 +697,20 @@ class DirectusRepository:
         Raises:
             requests.RequestException: Em caso de erro de comunicação
         """
-        params = {
-            'filter[modelo_contrato][_eq]': modelo_contrato_id,
-            'limit': -1
-        }
+        params = {"filter[modelo_contrato][_eq]": modelo_contrato_id, "limit": -1}
 
         if fields:
-            params['fields'] = ','.join(fields)
+            params["fields"] = ",".join(fields)
 
         response = requests.get(
             f"{self.base_url}/items/clausula",
             headers=self.headers,
             params=params,
-            timeout=30
+            timeout=30,
         )
 
         if response.status_code == 200:
-            return response.json().get('data', [])
+            return response.json().get("data", [])
         else:
             response.raise_for_status()
             return []
@@ -539,9 +721,9 @@ class DirectusRepository:
 
     def get_contratos(
         self,
-        filters: Optional[dict[str, Any]] = None,
-        fields: Optional[list[str]] = None,
-        limit: int = -1
+        filters: dict[str, Any] | None = None,
+        fields: list[str] | None = None,
+        limit: int = -1,
     ) -> list[dict[str, Any]]:
         """
         Lista contratos com filtros opcionais.
@@ -557,25 +739,25 @@ class DirectusRepository:
         Raises:
             requests.RequestException: Em caso de erro de comunicação
         """
-        params: dict[str, Any] = {'limit': limit}
+        params: dict[str, Any] = {"limit": limit}
 
         if fields:
-            params['fields'] = ','.join(fields)
+            params["fields"] = ",".join(fields)
 
         if filters:
             # Converter dict de filtros para query params do Directus
             for key, value in filters.items():
-                params[f'filter[{key}]'] = value
+                params[f"filter[{key}]"] = value
 
         response = requests.get(
             f"{self.base_url}/items/contrato",
             headers=self.headers,
             params=params,
-            timeout=30
+            timeout=30,
         )
 
         if response.status_code == 200:
-            return response.json().get('data', [])
+            return response.json().get("data", [])
         else:
             response.raise_for_status()
             return []
@@ -596,20 +778,16 @@ class DirectusRepository:
         """
         try:
             response = requests.get(
-                f"{self.base_url}/server/info",
-                headers=self.headers,
-                timeout=10
+                f"{self.base_url}/server/info", headers=self.headers, timeout=10
             )
 
             return {
-                'success': response.status_code == 200,
-                'status_code': response.status_code,
-                'message': 'Conectado' if response.status_code == 200 else f'HTTP {response.status_code}'
+                "success": response.status_code == 200,
+                "status_code": response.status_code,
+                "message": "Conectado"
+                if response.status_code == 200
+                else f"HTTP {response.status_code}",
             }
 
         except Exception as e:
-            return {
-                'success': False,
-                'status_code': 0,
-                'message': f'Erro: {str(e)}'
-            }
+            return {"success": False, "status_code": 0, "message": f"Erro: {str(e)}"}

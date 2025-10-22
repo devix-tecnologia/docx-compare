@@ -22,7 +22,7 @@ from tests.fixtures.contrato_vigencia_fixture import (
 def criar_docx_temporario(texto: str, nome: str) -> str:
     """
     Cria um arquivo DOCX temporário a partir de texto.
-    
+
     Nota: Esta é uma implementação simplificada.
     Em produção, usaríamos python-docx para criar DOCXs reais.
     """
@@ -135,17 +135,25 @@ def comparar_implementacoes():
         print("=" * 100)
 
         print("\n📊 Diferenças quantitativas:")
-        print(f"   Total: Original={len(mods_original)} vs AST={metricas_ast['total_modificacoes']}")
-        print(f"   ALTERACAO: Original={tipos_original['ALTERACAO']} vs AST={metricas_ast['alteracoes']}")
-        print(f"   REMOCAO: Original={tipos_original['REMOCAO']} vs AST={metricas_ast['remocoes']}")
-        print(f"   INSERCAO: Original={tipos_original['INSERCAO']} vs AST={metricas_ast['insercoes']}")
+        print(
+            f"   Total: Original={len(mods_original)} vs AST={metricas_ast['total_modificacoes']}"
+        )
+        print(
+            f"   ALTERACAO: Original={tipos_original['ALTERACAO']} vs AST={metricas_ast['alteracoes']}"
+        )
+        print(
+            f"   REMOCAO: Original={tipos_original['REMOCAO']} vs AST={metricas_ast['remocoes']}"
+        )
+        print(
+            f"   INSERCAO: Original={tipos_original['INSERCAO']} vs AST={metricas_ast['insercoes']}"
+        )
 
         # Esperado: 7 modificações (1.1 ALTERACAO, 1.2 REMOCAO, 1.4-1.5 ALTERACAO, 2.2-2.3 ALTERACAO, 2.5 INSERCAO)
         esperado = {
             "total": 7,
             "ALTERACAO": 4,  # 1.1, 1.4, 2.2, 2.3
-            "REMOCAO": 1,    # 1.2
-            "INSERCAO": 1,   # 2.5
+            "REMOCAO": 1,  # 1.2
+            "INSERCAO": 1,  # 2.5
         }
 
         print("\n🎯 Comparação com resultado esperado:")
@@ -171,9 +179,13 @@ def comparar_implementacoes():
         print(f"   Implementação AST: {score_ast:.1%}")
 
         if score_ast > score_original:
-            print(f"\n✅ VENCEDOR: Implementação AST (+{(score_ast - score_original)*100:.1f}%)")
+            print(
+                f"\n✅ VENCEDOR: Implementação AST (+{(score_ast - score_original) * 100:.1f}%)"
+            )
         elif score_original > score_ast:
-            print(f"\n✅ VENCEDOR: Implementação Original (+{(score_original - score_ast)*100:.1f}%)")
+            print(
+                f"\n✅ VENCEDOR: Implementação Original (+{(score_original - score_ast) * 100:.1f}%)"
+            )
         else:
             print("\n🤝 EMPATE: Ambas com mesma precisão")
 
@@ -202,7 +214,7 @@ def comparar_implementacoes():
 def calcular_score(tipos: dict, total: int, esperado: dict) -> float:
     """
     Calcula score de precisão comparando com esperado.
-    
+
     Score = (acertos / total_esperado)
     """
     acertos = 0

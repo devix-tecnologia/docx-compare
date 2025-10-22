@@ -136,15 +136,15 @@ def comparar_resultados(resultado_original: dict, resultado_ast: dict):
         count_orig = tipos_original.get(tipo, 0)
         count_ast = tipos_ast.get(tipo, 0)
         diff = count_ast - count_orig
-        print(
-            f"{tipo:<15} {count_orig:<12} {count_ast:<12} {diff:+d}"
-        )
+        print(f"{tipo:<15} {count_orig:<12} {count_ast:<12} {diff:+d}")
 
     # Análise de vantagens
     print("\n🎯 Análise:")
 
     if len(mods_ast) > len(mods_original):
-        print(f"  ✅ AST detectou {len(mods_ast) - len(mods_original)} modificações a mais")
+        print(
+            f"  ✅ AST detectou {len(mods_ast) - len(mods_original)} modificações a mais"
+        )
     elif len(mods_ast) < len(mods_original):
         print(
             f"  ⚠️ AST detectou {len(mods_original) - len(mods_ast)} modificações a menos"
@@ -171,9 +171,7 @@ def comparar_resultados(resultado_original: dict, resultado_ast: dict):
     ):
         print("  ✅ Use AST (use_ast=true) para melhor precisão e detecção de tipos")
     else:
-        print(
-            "  ℹ️ Ambas as implementações tiveram desempenho similar neste documento"
-        )
+        print("  ℹ️ Ambas as implementações tiveram desempenho similar neste documento")
 
 
 def main():

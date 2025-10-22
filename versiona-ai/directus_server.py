@@ -320,7 +320,7 @@ class DirectusAPI:
     def test_connection(self):
         """Testa a conexão com o Directus usando o repositório"""
         result = self.repo.test_connection()
-        self.connected = result['success']
+        self.connected = result["success"]
         if not self.connected:
             print(f"❌ Erro ao conectar com Directus: {result['message']}")
         return self.connected
@@ -465,17 +465,21 @@ class DirectusAPI:
                     return {"error": f"Versão mock {versao_id} não encontrada"}
             else:
                 # Buscar versão com TODOS os campos necessários (1 requisição!)
-                print("🔍 Buscando versão + contrato + modelo + tags no Directus (1 requisição)...")
+                print(
+                    "🔍 Buscando versão + contrato + modelo + tags no Directus (1 requisição)..."
+                )
                 versao_data = self.repo.get_versao_para_processar(versao_id)
 
                 if not versao_data:
                     # No modo real, falha do Directus é erro (não usar mock como fallback)
                     print(f"❌ Versão {versao_id} não encontrada no Directus")
-                    return {
-                        "error": f"Versão {versao_id} não encontrada no Directus"
-                    }
+                    return {"error": f"Versão {versao_id} não encontrada no Directus"}
 
                 print(f"✅ Versão {versao_id} carregada com sucesso")
+                print(f"🔍 DEBUG: type(versao_data) = {type(versao_data)}")
+                print(
+                    f"🔍 DEBUG: versao_data keys = {versao_data.keys() if isinstance(versao_data, dict) else 'NOT A DICT!'}"
+                )
 
                 # Extrair dados nested para uso posterior
                 contrato_data = versao_data.get("contrato")
@@ -483,18 +487,14 @@ class DirectusAPI:
                     modelo_data = contrato_data.get("modelo_contrato")
                     if isinstance(modelo_data, dict):
                         tags_modelo_nested = modelo_data.get("tags", [])
-                        arquivo_com_tags_id_nested = modelo_data.get(
-                            "arquivo_com_tags"
-                        )
+                        arquivo_com_tags_id_nested = modelo_data.get("arquivo_com_tags")
 
                         print("✅ Dados carregados em 1 requisição:")
                         print(f"   - Versão: {versao_id}")
                         print(f"   - Contrato: {contrato_data.get('id')}")
                         print(f"   - Modelo: {modelo_data.get('id')}")
                         print(f"   - Tags: {len(tags_modelo_nested)}")
-                        print(
-                            f"   - Arquivo com tags: {arquivo_com_tags_id_nested}"
-                        )
+                        print(f"   - Arquivo com tags: {arquivo_com_tags_id_nested}")
                     else:
                         tags_modelo_nested = []
                         arquivo_com_tags_id_nested = None
@@ -886,9 +886,7 @@ class DirectusAPI:
                 - ids_criados: lista de IDs criados
                 - error: mensagem de erro (se falha)
         """
-        print(
-            f"\n🔄 Registrando resultado do processamento da versão {versao_id}..."
-        )
+        print(f"\n🔄 Registrando resultado do processamento da versão {versao_id}...")
         print(f"   📊 Total de modificações: {len(modificacoes_directus)}")
 
         # Extrair parâmetros conhecidos
@@ -911,10 +909,10 @@ class DirectusAPI:
             status=status,
             arquivo_original_id=arquivo_original_id,
             metricas=metricas if metricas else None,
-            timeout=300
+            timeout=300,
         )
 
-        if result['success']:
+        if result["success"]:
             print(f"✅ Versão {versao_id} atualizada com sucesso")
             print(
                 f"   ➕ {result['modificacoes_criadas']} modificações criadas em transação única"
@@ -922,18 +920,18 @@ class DirectusAPI:
 
             return {
                 "success": True,
-                "status_code": result['status_code'],
-                "modificacoes_criadas": result['modificacoes_criadas'],
-                "response_data": result.get('data', {}),
-                "ids_criados": result['ids_criados'],
+                "status_code": result["status_code"],
+                "modificacoes_criadas": result["modificacoes_criadas"],
+                "response_data": result.get("data", {}),
+                "ids_criados": result["ids_criados"],
             }
         else:
             print(f"⚠️ Erro ao atualizar versão: {result.get('error')}")
             return {
                 "success": False,
-                "status_code": result['status_code'],
+                "status_code": result["status_code"],
                 "modificacoes_criadas": 0,
-                "error": result.get('error', 'Erro desconhecido'),
+                "error": result.get("error", "Erro desconhecido"),
             }
 
     # ============================================================================
@@ -2002,6 +2000,12 @@ class DirectusAPI:
         global diff_cache
 
         try:
+            # Validar que versao_data é um dict
+            if not isinstance(versao_data, dict):
+                return {
+                    "error": f"versao_data deve ser dict, recebeu {type(versao_data).__name__}: {versao_data}"
+                }
+
             # 1. Baixar arquivos DOCX
             arquivo_novo_id = versao_data.get("arquivo")
             arquivo_original_id = self._get_arquivo_original(versao_data)
@@ -2382,7 +2386,6 @@ class DirectusAPI:
     ) -> list[dict]:
         """Extrai modificações do HTML de diff (versão AST)."""
         modificacoes = []
-        modificacao_id = 1
 
         # Parse HTML simples para extrair divs
         removed_pattern = r"<div class='diff-removed'[^>]*>- (.*?)</div>"
@@ -2448,11 +2451,10 @@ class DirectusAPI:
                     # É uma ALTERACAO
                     modificacoes.append(
                         {
-                            "id": modificacao_id,
                             "tipo": "ALTERACAO",
                             "css_class": "diff-alteracao",
                             "confianca": 0.95,
-                            "posicao": {"linha": modificacao_id, "coluna": 1},
+                            "posicao": {"linha": i + 1, "coluna": 1},
                             "clausula_original": removed.get("clause"),
                             "clausula_modificada": added.get("clause"),
                             "conteudo": {
@@ -2463,17 +2465,15 @@ class DirectusAPI:
                     )
                     i += 1
                     j += 1
-                    modificacao_id += 1
 
                 elif removed["position"] < added["position"]:
                     # Remoção pura
                     modificacoes.append(
                         {
-                            "id": modificacao_id,
                             "tipo": "REMOCAO",
                             "css_class": "diff-remocao",
                             "confianca": 0.85,
-                            "posicao": {"linha": modificacao_id, "coluna": 1},
+                            "posicao": {"linha": i + 1, "coluna": 1},
                             "clausula_original": removed.get("clause"),
                             "conteudo": {
                                 "original": self._unescape_html(removed["text"])
@@ -2481,57 +2481,50 @@ class DirectusAPI:
                         }
                     )
                     i += 1
-                    modificacao_id += 1
 
                 else:
                     # Inserção pura
                     modificacoes.append(
                         {
-                            "id": modificacao_id,
                             "tipo": "INSERCAO",
                             "css_class": "diff-insercao",
                             "confianca": 0.9,
-                            "posicao": {"linha": modificacao_id, "coluna": 1},
+                            "posicao": {"linha": j + 1, "coluna": 1},
                             "clausula_modificada": added.get("clause"),
                             "conteudo": {"novo": self._unescape_html(added["text"])},
                         }
                     )
                     j += 1
-                    modificacao_id += 1
 
             elif i < len(removed_with_clause):
                 # Só remoções restantes
                 removed = removed_with_clause[i]
                 modificacoes.append(
                     {
-                        "id": modificacao_id,
                         "tipo": "REMOCAO",
                         "css_class": "diff-remocao",
                         "confianca": 0.85,
-                        "posicao": {"linha": modificacao_id, "coluna": 1},
+                        "posicao": {"linha": i + 1, "coluna": 1},
                         "clausula_original": removed.get("clause"),
                         "conteudo": {"original": self._unescape_html(removed["text"])},
                     }
                 )
                 i += 1
-                modificacao_id += 1
 
             elif j < len(added_with_clause):
                 # Só inserções restantes
                 added = added_with_clause[j]
                 modificacoes.append(
                     {
-                        "id": modificacao_id,
                         "tipo": "INSERCAO",
                         "css_class": "diff-insercao",
                         "confianca": 0.9,
-                        "posicao": {"linha": modificacao_id, "coluna": 1},
+                        "posicao": {"linha": j + 1, "coluna": 1},
                         "clausula_modificada": added.get("clause"),
                         "conteudo": {"novo": self._unescape_html(added["text"])},
                     }
                 )
                 j += 1
-                modificacao_id += 1
 
         return modificacoes
 
@@ -2553,6 +2546,12 @@ class DirectusAPI:
     def _process_real_documents(self, versao_data):
         """Processa documentos reais obtidos do Directus"""
         try:
+            # Validar que versao_data é um dict
+            if not isinstance(versao_data, dict):
+                raise ValueError(
+                    f"versao_data deve ser dict, recebeu {type(versao_data).__name__}: {versao_data}"
+                )
+
             # LÓGICA CORRETA:
             # versao.arquivo = NOVO/MODIFICADO (versão atual)
             # Arquivo anterior = versão anterior (date_created menor) OU contrato.modelo_contrato.arquivo_original
@@ -2714,6 +2713,7 @@ class DirectusAPI:
             try:
                 # Usar o módulo docx_utils existente para extrair texto
                 import sys
+
                 sys.path.append("/Users/sidarta/repositorios/docx-compare")
                 from docx_utils import convert_docx_to_text
 
@@ -2734,6 +2734,7 @@ class DirectusAPI:
             finally:
                 # Limpar arquivo temporário
                 import os
+
                 os.unlink(temp_path)
 
         except Exception as e:
@@ -3060,7 +3061,6 @@ class DirectusAPI:
             Lista de modificações com posicao_inicio e posicao_fim
         """
         modificacoes = []
-        modificacao_id = 1
 
         print("🔍 Iniciando extração de modificações do diff HTML")
 
@@ -3152,7 +3152,6 @@ class DirectusAPI:
                     # Alteração
                     modificacoes.append(
                         {
-                            "id": modificacao_id,
                             "tipo": "ALTERACAO",
                             "css_class": "diff-alteracao",
                             "confianca": 0.95,
@@ -3169,7 +3168,6 @@ class DirectusAPI:
                     # Inserção
                     modificacoes.append(
                         {
-                            "id": modificacao_id,
                             "tipo": "INSERCAO",
                             "css_class": "diff-insercao",
                             "confianca": 0.9,
@@ -3186,7 +3184,6 @@ class DirectusAPI:
                     # Remoção
                     modificacoes.append(
                         {
-                            "id": modificacao_id,
                             "tipo": "REMOCAO",
                             "css_class": "diff-remocao",
                             "confianca": 0.85,
@@ -3199,8 +3196,6 @@ class DirectusAPI:
                             ),
                         }
                     )
-
-                modificacao_id += 1
 
             print(f"✅ {len(modificacoes)} modificações extraídas do diff")
             if modificacoes and modificacoes[0].get("posicao_inicio") is not None:
@@ -4181,9 +4176,7 @@ def _buscar_versoes_do_modelo(modelo_id: str) -> list[dict]:
                 if isinstance(contrato_info, dict)
                 else "N/A"
             )
-            print(
-                f"   • Versão {v.get('versao', 'N/A')} (Contrato: {contrato_numero})"
-            )
+            print(f"   • Versão {v.get('versao', 'N/A')} (Contrato: {contrato_numero})")
 
         return versoes
 
