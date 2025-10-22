@@ -50,6 +50,9 @@ from processador_tags_modelo import ProcessadorTagsModelo
 # Importar repositório Directus
 from repositorio import DirectusRepository
 
+# Versão da aplicação
+APP_VERSION = "1.0.0-20251022-113521"  # Formato: MAJOR.MINOR.PATCH-YYYYMMDD-HHMMSS
+
 # Carregar variáveis do .env
 load_dotenv()
 
@@ -3416,11 +3419,12 @@ def serve_assets(filename):
 @app.route("/health", methods=["GET"])
 @app.route("/health", methods=["GET"])
 def health_check():
-    """Health check com status do Directus"""
+    """Health check com status do Directus e versão da aplicação"""
     directus_status = directus_api.test_connection()
     return jsonify(
         {
             "status": "ok",
+            "version": APP_VERSION,
             "timestamp": datetime.now().isoformat(),
             "directus_connected": directus_status,
             "directus_url": DIRECTUS_BASE_URL,
