@@ -415,7 +415,7 @@ class DirectusRepository:
         Raises:
             requests.RequestException: Em caso de erro de comunicação
         """
-        # Buscar modificações com informações básicas + cláusula
+        # Buscar modificações com informações básicas + cláusula + conteúdos
         modificacoes = self.get_modificacoes_versao(
             versao_id,
             fields=[
@@ -425,6 +425,8 @@ class DirectusRepository:
                 "date_created",
                 "posicao_inicio",
                 "posicao_fim",
+                "conteudo",
+                "alteracao",
             ],
         )
 

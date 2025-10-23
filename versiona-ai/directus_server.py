@@ -51,7 +51,7 @@ from processador_tags_modelo import ProcessadorTagsModelo
 from repositorio import DirectusRepository
 
 # Versão da aplicação
-APP_VERSION = "1.0.0-20251022-113521"  # Formato: MAJOR.MINOR.PATCH-YYYYMMDD-HHMMSS
+APP_VERSION = "1.0.1-20251022-123000"  # Fix: Suporte a diferentes versões do Pandoc AST
 
 # Carregar variáveis do .env
 load_dotenv()
@@ -147,6 +147,15 @@ class PandocASTProcessor:
         formatting_types = set()
 
         def process_inline(inline_elem):
+            # Se o elemento for uma string diretamente, adicionar como texto
+            if isinstance(inline_elem, str):
+                text_parts.append(inline_elem)
+                return
+
+            # Se não for dict, ignorar
+            if not isinstance(inline_elem, dict):
+                return
+
             elem_type = inline_elem.get("t")
 
             if elem_type == "Str":
@@ -2004,14 +2013,24 @@ class DirectusAPI:
 
         try:
             # Validar que versao_data é um dict
+            print(f"🔍 DEBUG AST: type(versao_data) = {type(versao_data)}")
+            print(
+                f"🔍 DEBUG AST: versao_data = {versao_data if not isinstance(versao_data, dict) else 'dict com keys: ' + str(list(versao_data.keys())[:5])}"
+            )
+
             if not isinstance(versao_data, dict):
-                return {
-                    "error": f"versao_data deve ser dict, recebeu {type(versao_data).__name__}: {versao_data}"
-                }
+                error_msg = f"versao_data deve ser dict, recebeu {type(versao_data).__name__}: {versao_data}"
+                print(f"❌ ERROR: {error_msg}")
+                return {"error": error_msg}
 
             # 1. Baixar arquivos DOCX
+            print("🔍 DEBUG: Obtendo arquivo_novo_id...")
             arquivo_novo_id = versao_data.get("arquivo")
+            print(f"🔍 DEBUG: arquivo_novo_id = {arquivo_novo_id}")
+
+            print("🔍 DEBUG: Obtendo arquivo_original_id...")
             arquivo_original_id = self._get_arquivo_original(versao_data)
+            print(f"🔍 DEBUG: arquivo_original_id = {arquivo_original_id}")
 
             if not arquivo_novo_id or not arquivo_original_id:
                 return {"error": "Arquivos DOCX não encontrados para processamento AST"}
@@ -2677,10 +2696,29 @@ class DirectusAPI:
             print(f"🔍 DEBUG: Response status={response.status_code}")
             if response.status_code == 200:
                 contrato_data = response.json().get("data", {})
-                print(f"🔍 DEBUG: contrato_data={contrato_data}")
+                print(
+                    f"🔍 DEBUG: contrato_data type={type(contrato_data)}, value={contrato_data}"
+                )
+
+                if not isinstance(contrato_data, dict):
+                    print(
+                        f"❌ ERROR: contrato_data não é dict! É {type(contrato_data)}"
+                    )
+                    return None
+
                 modelo_contrato = contrato_data.get("modelo_contrato")
-                print(f"🔍 DEBUG: modelo_contrato={modelo_contrato}")
+                print(
+                    f"🔍 DEBUG: modelo_contrato type={type(modelo_contrato)}, value={modelo_contrato}"
+                )
+
                 if modelo_contrato:
+                    if not isinstance(modelo_contrato, dict):
+                        print(
+                            f"❌ ERROR: modelo_contrato não é dict! É {type(modelo_contrato)}: {modelo_contrato}"
+                        )
+                        # Se for string UUID, não tem arquivo_original nested, retorna None
+                        return None
+
                     arquivo_original_id = modelo_contrato.get("arquivo_original")
                     print(f"🔍 DEBUG: arquivo_original_id={arquivo_original_id}")
                     if arquivo_original_id:

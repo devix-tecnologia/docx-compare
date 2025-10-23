@@ -317,6 +317,35 @@ def exibir_resumo(versao_id: str) -> dict:
             for cat, count in sorted(resumo["modificacoes_por_categoria"].items()):
                 print(f"   - {cat}: {count}")
 
+        # Exibir sample de modificações (para análise detalhada)
+        if resumo.get("modificacoes_sample"):
+            print("\n📝 Sample de Modificações (primeiras 3):")
+            for i, mod in enumerate(resumo["modificacoes_sample"], 1):
+                print(f"\n   Modificação {i}:")
+                print(f"      ID: {mod.get('id')}")
+                print(f"      Categoria: {mod.get('categoria')}")
+                print(
+                    f"      Posição: {mod.get('posicao_inicio')} - {mod.get('posicao_fim')}"
+                )
+                print(f"      Cláusula: {mod.get('clausula') or 'N/A'}")
+                print(f"      Data: {mod.get('date_created')}")
+
+                # Exibir conteúdo (limitado a 100 caracteres)
+                conteudo = mod.get("conteudo", "")
+                if conteudo:
+                    conteudo_preview = (
+                        conteudo[:100] + "..." if len(conteudo) > 100 else conteudo
+                    )
+                    print(f"      Conteúdo: {conteudo_preview}")
+
+                # Exibir alteração (limitado a 100 caracteres)
+                alteracao = mod.get("alteracao", "")
+                if alteracao:
+                    alteracao_preview = (
+                        alteracao[:100] + "..." if len(alteracao) > 100 else alteracao
+                    )
+                    print(f"      Alteração: {alteracao_preview}")
+
         print("\n" + "=" * 70)
 
         return {"sucesso": True, "resumo": resumo, "erro": None}
