@@ -2406,8 +2406,19 @@ class DirectusAPI:
     def _extrair_modificacoes_do_diff_ast(
         self, diff_html: str, _original_paras: list[dict], _modified_paras: list[dict]
     ) -> list[dict]:
-        """Extrai modificações do HTML de diff (versão AST)."""
+        """Extrai modificações do HTML de diff (versão AST).
+
+        Usa múltiplos critérios para parear REMOCAO + INSERCAO como ALTERACAO:
+        1. Mesma cláusula (data-clause)
+        2. Proximidade de posição (< 200 chars)
+        3. Similaridade textual (> 60%) - Usa difflib.SequenceMatcher
+        """
+        from difflib import SequenceMatcher
+
         modificacoes = []
+
+        # Threshold de similaridade para considerar ALTERACAO (60%)
+        SIMILARITY_THRESHOLD = 0.6
 
         # Parse HTML simples para extrair divs
         removed_pattern = r"<div class='diff-removed'[^>]*>- (.*?)</div>"
@@ -2441,7 +2452,7 @@ class DirectusAPI:
                 }
             )
 
-        # Agrupar modificações por proximidade
+        # Agrupar modificações por proximidade e similaridade
         i = 0
         j = 0
 
@@ -2461,7 +2472,7 @@ class DirectusAPI:
                 ):
                     is_pair = True
 
-                # Critério 2: Próximos no documento
+                # Critério 2: Próximos no documento (< 200 chars)
                 if (
                     not is_pair
                     and abs(removed["position"] - added["position"]) < 200
@@ -2469,8 +2480,21 @@ class DirectusAPI:
                 ):
                     is_pair = True
 
+                # Critério 3: Alta similaridade textual (> 60%)
+                # Este critério é aplicado mesmo quando distância > 200 chars
+                if not is_pair:
+                    # Decodificar HTML entities para comparação correta
+                    removed_text = self._unescape_html(removed["text"])
+                    added_text = self._unescape_html(added["text"])
+
+                    # Calcular similaridade usando SequenceMatcher
+                    similarity = SequenceMatcher(None, removed_text, added_text).ratio()
+
+                    if similarity > SIMILARITY_THRESHOLD:
+                        is_pair = True
+
                 if is_pair:
-                    # É uma ALTERACAO
+                    # É uma ALTERACAO (pareada por: mesma_clausula, proximidade ou similaridade)
                     modificacoes.append(
                         {
                             "tipo": "ALTERACAO",
@@ -2489,7 +2513,7 @@ class DirectusAPI:
                     j += 1
 
                 elif removed["position"] < added["position"]:
-                    # Remoção pura
+                    # Remoção pura (não foi possível parear)
                     modificacoes.append(
                         {
                             "tipo": "REMOCAO",
@@ -2505,7 +2529,7 @@ class DirectusAPI:
                     i += 1
 
                 else:
-                    # Inserção pura
+                    # Inserção pura (não foi possível parear)
                     modificacoes.append(
                         {
                             "tipo": "INSERCAO",
@@ -2519,7 +2543,7 @@ class DirectusAPI:
                     j += 1
 
             elif i < len(removed_with_clause):
-                # Só remoções restantes
+                # Só remoções restantes (fim do documento)
                 removed = removed_with_clause[i]
                 modificacoes.append(
                     {
@@ -2534,7 +2558,7 @@ class DirectusAPI:
                 i += 1
 
             elif j < len(added_with_clause):
-                # Só inserções restantes
+                # Só inserções restantes (fim do documento)
                 added = added_with_clause[j]
                 modificacoes.append(
                     {
