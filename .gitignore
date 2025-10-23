@@ -6,8 +6,9 @@ diff_output.html
 # Diretórios de resultados
 results/
 results/*.html
-outputs/
-outputs/*.html
+# Resultados gerados
+results/
+results/*.html
 
 # Logs da API
 *.log
@@ -39,13 +40,14 @@ venv.bak/
 htmlcov/
 .tox/
 coverage.xml
+.coverage.*
 *.cover
+*.coverage*
 
 # Configuração local
 .env
 
-# IDEs
-.vscode/
+# IDEs - permitir configurações do workspace
 .idea/
 *.swp
 *.swo

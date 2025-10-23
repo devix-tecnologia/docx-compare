@@ -1,0 +1,95 @@
+# Dockerfile multi-stage para CapRover - Frontend + API
+
+# Stage 1: Build do Frontend Vue.js
+FROM node:22-alpine3.20 AS frontend-builder
+
+# Instalar dependências do sistema
+RUN apk update && apk upgrade && \
+    apk add --no-cache curl ca-certificates tzdata && \
+    rm -rf /var/cache/apk/* /tmp/* /var/tmp/*
+
+# Instalar pnpm globalmente
+RUN npm install -g pnpm
+
+# Criar usuário não-root para build
+RUN addgroup -g 1001 -S nodeuser && \
+    adduser -S -D -H -u 1001 -h /home/nodeuser -s /bin/sh -G nodeuser nodeuser
+
+# Definir diretório de trabalho
+WORKDIR /app
+RUN chown nodeuser:nodeuser /app
+USER nodeuser
+
+# Copiar arquivos de configuração do frontend
+COPY --chown=nodeuser:nodeuser web/package*.json web/pnpm-lock.yaml ./
+
+# Instalar dependências
+RUN pnpm install --frozen-lockfile
+
+# Copiar código fonte do frontend
+COPY --chown=nodeuser:nodeuser web/src/ ./src/
+COPY --chown=nodeuser:nodeuser web/index.html web/vite.config.js web/tsconfig.json web/tsconfig.node.json ./
+
+# Build do frontend para produção
+ENV NODE_ENV=production
+ENV VITE_API_BASE_URL=/api
+RUN pnpm build:vite
+
+# Stage 2: Setup da API Python
+FROM python:3.13-slim AS api-builder
+
+# Instalar dependências do sistema e uv
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install uv
+
+# Copiar arquivos de configuração do projeto Python (do diretório pai)
+WORKDIR /app
+COPY ../pyproject.toml ../uv.lock ./
+
+# Instalar dependências Python
+RUN uv sync --frozen
+
+# Copiar código da aplicação
+COPY . ./versiona-ai/
+
+# Stage 3: Produção com Nginx + Python
+FROM nginx:1.25-alpine
+
+# Instalar Python, uv e dependências necessárias
+RUN apk add --no-cache \
+    python3 \
+    py3-pip \
+    curl \
+    supervisor && \
+    pip3 install uv
+
+# Criar usuários e diretórios
+RUN adduser -D -S -h /app app && \
+    mkdir -p /app /var/log/supervisor /run/supervisor && \
+    chown -R app:app /app
+
+# Copiar frontend buildado para o Nginx
+COPY --from=frontend-builder /app/dist /usr/share/nginx/html
+
+# Copiar dependências Python e código da API
+COPY --from=api-builder /app /app
+
+# Copiar configurações
+COPY nginx.caprover.conf /etc/nginx/nginx.conf
+COPY supervisord.caprover.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Definir permissões
+RUN chown -R app:app /app
+
+# Expor porta do Nginx
+EXPOSE 80
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost/health || exit 1
+
+# Comando para iniciar Supervisor (que gerencia Nginx + API)
+CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

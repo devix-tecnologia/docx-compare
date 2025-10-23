@@ -1,0 +1,16 @@
+{
+  "description": "Expectativas mínimas para teste de regressão da versão 99090886",
+  "versao_id": "99090886-7f43-45c9-bfe4-ec6eddd6cde0",
+  "min_vinculacao_taxa": 40.0,
+  "min_cobertura_taxa": 45.0,
+  "min_similaridade": 0.9,
+  "metodo_esperado": "conteudo",
+  "baseline": {
+    "vinculadas": 23,
+    "revisao_manual": 2,
+    "nao_vinculadas": 30,
+    "taxa_sucesso": 41.81818181818181,
+    "taxa_cobertura": 45.45454545454545
+  },
+  "note": "Estes valores são baseados no resultado do commit e4cc120 (conteúdo + fuzzy matching)"
+}

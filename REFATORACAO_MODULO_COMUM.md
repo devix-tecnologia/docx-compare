@@ -150,7 +150,7 @@ docx_diff_viewer.py: ~250 linhas (sem duplicações)
 ```bash
 # Funcionamento validado
 python docx_diff_viewer.py original.docx modificado.docx resultado.html
-✅ Diff HTML gerado em: outputs/teste_modulo_comum.html
+✅ Diff HTML gerado em: results/teste_modulo_comum.html
 
 python exemplo_docx_utils.py  
 ✅ Demonstração concluída com sucesso!

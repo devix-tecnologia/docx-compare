@@ -1,0 +1,131 @@
+# All-in-one - Baseado na API existente
+FROM docker-registry.de.vix.br/versiona-ai:20250924-054638
+
+# Instalar Nginx, Supervisor, Pandoc e Curl
+USER root
+RUN apt-get update && apt-get install -y nginx supervisor pandoc curl && \
+    rm -rf /var/lib/apt/lists/*
+
+# Instalar flask-restx para documentação Swagger usando uv
+RUN uv pip install --system flask-restx>=1.3.0
+
+# Copiar código atualizado do servidor Python
+COPY versiona-ai/directus_server.py /app/versiona-ai/
+COPY versiona-ai/repositorio.py /app/versiona-ai/
+COPY versiona-ai/wsgi.py /app/versiona-ai/
+COPY versiona-ai/swagger_docs.py /app/versiona-ai/
+COPY versiona-ai/processador_tags_modelo.py /app/versiona-ai/
+COPY versiona-ai/agrupador_posicional.py /app/versiona-ai/
+
+# Copiar frontend
+COPY versiona-ai/web/dist/ /usr/share/nginx/html/
+
+# Configuração mínima do Nginx - remover padrão e criar novo
+RUN rm -f /etc/nginx/sites-enabled/default && \
+    echo 'server { \
+    listen 80; \
+    root /usr/share/nginx/html; \
+    index index.html; \
+    access_log /dev/stdout; \
+    error_log /dev/stderr; \
+    location /docs/ { \
+    proxy_pass http://127.0.0.1:8000/docs/; \
+    proxy_set_header Host $host; \
+    proxy_set_header X-Real-IP $remote_addr; \
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; \
+    } \
+    location /swagger.json { \
+    proxy_pass http://127.0.0.1:8000/swagger.json; \
+    proxy_set_header Host $host; \
+    proxy_set_header X-Real-IP $remote_addr; \
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; \
+    } \
+    location /swaggerui/ { \
+    proxy_pass http://127.0.0.1:8000/swaggerui/; \
+    proxy_set_header Host $host; \
+    proxy_set_header X-Real-IP $remote_addr; \
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; \
+    } \
+    location /api/ { \
+    proxy_pass http://127.0.0.1:8000/api/; \
+    proxy_set_header Host $host; \
+    proxy_set_header X-Real-IP $remote_addr; \
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; \
+    } \
+    location /health { proxy_pass http://127.0.0.1:8000/health; } \
+    location /health-full { \
+    access_log off; \
+    return 200 "checking..."; \
+    add_header Content-Type text/plain; \
+    } \
+    location / { try_files $uri $uri/ /index.html; } \
+    }' > /etc/nginx/sites-available/default && \
+    ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+
+# Configuração mínima do Supervisor
+RUN mkdir -p /var/log/supervisor && \
+    echo '[supervisord]' > /etc/supervisor/supervisord.conf && \
+    echo 'nodaemon=true' >> /etc/supervisor/supervisord.conf && \
+    echo 'user=root' >> /etc/supervisor/supervisord.conf && \
+    echo 'logfile=/var/log/supervisor/supervisord.log' >> /etc/supervisor/supervisord.conf && \
+    echo 'loglevel=info' >> /etc/supervisor/supervisord.conf && \
+    echo 'pidfile=/var/run/supervisord.pid' >> /etc/supervisor/supervisord.conf && \
+    echo '' >> /etc/supervisor/supervisord.conf && \
+    echo '[unix_http_server]' >> /etc/supervisor/supervisord.conf && \
+    echo 'file=/var/run/supervisor.sock' >> /etc/supervisor/supervisord.conf && \
+    echo '' >> /etc/supervisor/supervisord.conf && \
+    echo '[supervisorctl]' >> /etc/supervisor/supervisord.conf && \
+    echo 'serverurl=unix:///var/run/supervisor.sock' >> /etc/supervisor/supervisord.conf && \
+    echo '' >> /etc/supervisor/supervisord.conf && \
+    echo '[rpcinterface:supervisor]' >> /etc/supervisor/supervisord.conf && \
+    echo 'supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface' >> /etc/supervisor/supervisord.conf && \
+    echo '' >> /etc/supervisor/supervisord.conf && \
+    echo '[include]' >> /etc/supervisor/supervisord.conf && \
+    echo 'files = /etc/supervisor/conf.d/*.conf' >> /etc/supervisor/supervisord.conf
+
+# Configuração dos processos
+RUN mkdir -p /etc/supervisor/conf.d && \
+    echo '[program:nginx]' > /etc/supervisor/conf.d/nginx.conf && \
+    echo 'command=/usr/sbin/nginx -g "daemon off;"' >> /etc/supervisor/conf.d/nginx.conf && \
+    echo 'stdout_logfile=/dev/stdout' >> /etc/supervisor/conf.d/nginx.conf && \
+    echo 'stderr_logfile=/dev/stderr' >> /etc/supervisor/conf.d/nginx.conf && \
+    echo 'stdout_logfile_maxbytes=0' >> /etc/supervisor/conf.d/nginx.conf && \
+    echo 'stderr_logfile_maxbytes=0' >> /etc/supervisor/conf.d/nginx.conf && \
+    echo 'autostart=true' >> /etc/supervisor/conf.d/nginx.conf && \
+    echo 'autorestart=true' >> /etc/supervisor/conf.d/nginx.conf && \
+    echo '' >> /etc/supervisor/conf.d/nginx.conf && \
+    echo '[program:api]' >> /etc/supervisor/conf.d/nginx.conf && \
+    echo 'command=/app/.venv/bin/python -m flask run --host=127.0.0.1 --port=%(ENV_FLASK_PORT)s' >> /etc/supervisor/conf.d/nginx.conf && \
+    echo 'directory=/app/versiona-ai' >> /etc/supervisor/conf.d/nginx.conf && \
+    echo 'user=root' >> /etc/supervisor/conf.d/nginx.conf && \
+    echo 'environment=FLASK_APP="wsgi:app",DIRECTUS_BASE_URL="%(ENV_DIRECTUS_BASE_URL)s",DIRECTUS_TOKEN="%(ENV_DIRECTUS_TOKEN)s"' >> /etc/supervisor/conf.d/nginx.conf && \
+    echo 'stdout_logfile=/dev/stdout' >> /etc/supervisor/conf.d/nginx.conf && \
+    echo 'stderr_logfile=/dev/stderr' >> /etc/supervisor/conf.d/nginx.conf && \
+    echo 'stdout_logfile_maxbytes=0' >> /etc/supervisor/conf.d/nginx.conf && \
+    echo 'stderr_logfile_maxbytes=0' >> /etc/supervisor/conf.d/nginx.conf && \
+    echo 'autostart=true' >> /etc/supervisor/conf.d/nginx.conf && \
+    echo 'autorestart=true' >> /etc/supervisor/conf.d/nginx.conf
+
+# Script de health check completo
+RUN echo '#!/bin/bash' > /usr/local/bin/health-check.sh && \
+    echo 'set -e' >> /usr/local/bin/health-check.sh && \
+    echo 'echo "Checking frontend..."' >> /usr/local/bin/health-check.sh && \
+    echo 'curl -f http://localhost/ > /dev/null 2>&1 || { echo "Frontend failed"; exit 1; }' >> /usr/local/bin/health-check.sh && \
+    echo 'echo "Checking API..."' >> /usr/local/bin/health-check.sh && \
+    echo 'curl -f http://localhost/health > /dev/null 2>&1 || { echo "API failed"; exit 1; }' >> /usr/local/bin/health-check.sh && \
+    echo 'echo "All checks passed"' >> /usr/local/bin/health-check.sh && \
+    chmod +x /usr/local/bin/health-check.sh
+
+# Variáveis de ambiente padrão
+ENV FLASK_PORT=8000
+ENV DIRECTUS_BASE_URL=https://contract.devix.co
+
+# Expor porta
+EXPOSE 80
+
+# Health check Docker
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD /usr/local/bin/health-check.sh
+
+# Comando principal
+CMD ["/usr/bin/supervisord"]

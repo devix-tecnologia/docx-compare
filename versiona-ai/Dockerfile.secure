@@ -1,0 +1,78 @@
+# Dockerfile All-in-One Seguro: Frontend + Backend + Nginx Proxy
+# Stage 1: Build do Frontend Vue.js
+FROM node:22-alpine3.20 AS frontend-builder
+
+RUN apk add --no-cache curl ca-certificates && \
+    npm install -g pnpm && \
+    addgroup -g 1001 -S nodeuser && \
+    adduser -S -D -H -u 1001 -h /home/nodeuser -s /bin/sh -G nodeuser nodeuser
+
+WORKDIR /app
+RUN chown nodeuser:nodeuser /app
+USER nodeuser
+
+# Build do frontend
+COPY --chown=nodeuser:nodeuser versiona-ai/web/package*.json versiona-ai/web/pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+
+COPY --chown=nodeuser:nodeuser versiona-ai/web/src/ ./src/
+COPY --chown=nodeuser:nodeuser versiona-ai/web/index.html versiona-ai/web/vite.config.js versiona-ai/web/tsconfig.json versiona-ai/web/tsconfig.node.json ./
+
+ENV NODE_ENV=production
+ENV VITE_API_BASE_URL=/api
+RUN pnpm build:vite
+
+# Stage 2: Setup da API Python
+FROM python:3.13-slim AS api-builder
+
+RUN apt-get update && apt-get install -y curl git && \
+    rm -rf /var/lib/apt/lists/* && \
+    pip install uv
+
+WORKDIR /app
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen
+
+COPY versiona-ai/ ./versiona-ai/
+
+# Stage 3: Produção All-in-One
+FROM python:3.13-slim
+
+# Instalar Nginx, Supervisor e dependências de segurança
+RUN apt-get update && apt-get install -y \
+    nginx \
+    supervisor \
+    iptables \
+    iptables-persistent \
+    curl \
+    wget \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install uv
+
+# Criar usuários e diretórios
+RUN useradd --create-home --shell /bin/bash app && \
+    mkdir -p /var/log/supervisor /app/logs && \
+    chown -R app:app /app
+
+# Copiar frontend e backend
+COPY --from=frontend-builder /app/dist /usr/share/nginx/html
+COPY --from=api-builder /app /app
+
+# Copiar arquivos de configuração (do contexto versiona-ai/)
+COPY versiona-ai/nginx.allinone.conf /etc/nginx/nginx.conf
+COPY versiona-ai/supervisord.allinone.conf /etc/supervisor/conf.d/supervisord.conf
+COPY versiona-ai/setup-firewall.sh /app/setup-firewall.sh
+
+RUN chmod +x /app/setup-firewall.sh && \
+    chown -R app:app /app && \
+    chown -R www-data:www-data /usr/share/nginx/html
+
+# Expor apenas porta 80
+EXPOSE 80
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost/health || exit 1
+
+# Iniciar todos os serviços via Supervisor
+CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

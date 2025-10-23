@@ -1,0 +1,23 @@
+[
+  {
+    "nome": "1",
+    "conteudo": "Cláusula 1: O contratante compromete-se a pagar o valor acordado.",
+    "posicao_no_original": 35,
+    "posicao_no_tagueado": 40,
+    "clausula_id": "clausula-1"
+  },
+  {
+    "nome": "2",
+    "conteudo": "Cláusula 2: O contratado deve entregar o serviço no prazo.",
+    "posicao_no_original": 100,
+    "posicao_no_tagueado": 115,
+    "clausula_id": "clausula-2"
+  },
+  {
+    "nome": "3",
+    "conteudo": "Cláusula 3: As partes concordam com os termos estabelecidos.",
+    "posicao_no_original": 162,
+    "posicao_no_tagueado": 182,
+    "clausula_id": "clausula-3"
+  }
+]

@@ -1,0 +1,86 @@
+# Arquivos e diretórios ignorados no build Docker
+
+# Ambientes virtuais
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Arquivos de desenvolvimento
+.env
+.env.local
+.env.development
+*.log
+*.pid
+
+# Cache e temporários
+.pytest_cache/
+.coverage
+.ruff_cache/
+htmlcov/
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Documentação e exemplos
+README.md
+docs/
+
+# Ignorar node_modules mas manter dist para build simples
+**/node_modules
+**/.next
+**/build
+**/coverage
+
+# Git e outros VCS
+.git
+.gitignore
+.gitattributes
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-*
+
+# Arquivos grandes de teste
+**/test-*.docx
+**/exemplo-*.docx
+documentos/
+exemplos/
+results/
+
+# Scripts de desenvolvimento
+*.sh
+!start*.sh
+exemplos/
+tests/
+*.md
+
+# Git
+.git/
+.gitignore
+.github/
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Logs e outputs
+logs/
+outputs/
+results/
+results_modelo/
+
+# Arquivos específicos do desenvolvimento
+validar_estrutura.py
+simple_api_server.py
+api_server.py

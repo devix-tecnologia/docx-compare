@@ -1,0 +1,47 @@
+{
+  "name": "versiona-ai-web",
+  "version": "1.0.0",
+  "description": "Visualizador web para Versiona AI - Sistema de comparação de documentos",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "build:vite": "vite build",
+    "preview": "vite preview",
+    "serve": "vite preview --port 3000",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "type-check": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "diff": "^8.0.2",
+    "diff2html": "^3.4.52",
+    "vue": "^3.4.0",
+    "vue-diff": "^1.2.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "@vitejs/plugin-vue": "^5.0.0",
+    "eslint": "^9.0.0",
+    "eslint-plugin-vue": "^9.28.0",
+    "globals": "^15.0.0",
+    "prettier": "^3.3.0",
+    "typescript": "^5.3.0",
+    "vite": "^5.0.0",
+    "vue-eslint-parser": "^9.4.3",
+    "vue-tsc": "^3.0.7"
+  },
+  "keywords": [
+    "vue3",
+    "diff",
+    "documents",
+    "comparison",
+    "versiona-ai"
+  ],
+  "author": "Versiona AI Team",
+  "license": "MIT"
+}

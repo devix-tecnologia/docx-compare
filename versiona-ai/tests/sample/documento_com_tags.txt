@@ -1,0 +1,7 @@
+Este é um contrato de exemplo.
+
+{{1}}Cláusula 1: O contratante compromete-se a pagar o valor acordado.{{/1}}
+
+{{2}}Cláusula 2: O contratado deve entregar o serviço no prazo.{{/2}}
+
+{{3}}Cláusula 3: As partes concordam com os termos estabelecidos.{{/3}}

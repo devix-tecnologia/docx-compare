@@ -1,0 +1,64 @@
+{
+  "webhooks": [
+    {
+      "name": "Processar Modelo de Contrato",
+      "method": "POST",
+      "url": "https://ignai-contract-ia.paas.node10.de.vix.br/api/process-modelo",
+      "status": "active",
+      "data": true,
+      "actions": ["items.update"],
+      "collections": ["modelo_contrato"],
+      "headers": [
+        {
+          "header": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "modelo_id": "{{$trigger.key}}",
+        "use_ast": true,
+        "process_tags": true,
+        "process_versions": true,
+        "dry_run": false
+      },
+      "filters": {
+        "_and": [
+          {
+            "status": {
+              "_eq": "processar"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Processar Versão",
+      "method": "POST",
+      "url": "https://ignai-contract-ia.paas.node10.de.vix.br/api/process",
+      "status": "active",
+      "data": true,
+      "actions": ["items.update"],
+      "collections": ["versao"],
+      "headers": [
+        {
+          "header": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "versao_id": "{{$trigger.key}}",
+        "use_ast": true,
+        "mock": false
+      },
+      "filters": {
+        "_and": [
+          {
+            "status": {
+              "_eq": "processar"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

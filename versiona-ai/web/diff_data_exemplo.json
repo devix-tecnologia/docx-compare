@@ -1,0 +1,114 @@
+{
+  "metadata": {
+    "timestamp": "2025-09-11T12:49:19.703972",
+    "total_documentos": 1,
+    "versao_sistema": "1.0.0"
+  },
+  "documentos": [
+    {
+      "id": "doc_1",
+      "estatisticas": {
+        "total_modificacoes": 3,
+        "total_blocos": 1,
+        "tempo_processamento": 0.002679109573364258
+      },
+      "modificacoes": [
+        {
+          "id": "mock_mod_1_valor_preco",
+          "tipo": "alteracao",
+          "posicao": {
+            "linha": 1,
+            "coluna": 25,
+            "offset": 25
+          },
+          "conteudo": {
+            "original": "{{valor}}",
+            "novo": "{{preco}}"
+          },
+          "confianca": 0.95,
+          "tags_relacionadas": ["valor", "preco"],
+          "css_class": "diff-alteracao",
+          "destaque_cor": "#ff6b6b"
+        },
+        {
+          "id": "mock_mod_2_dias_uteis_corridos",
+          "tipo": "alteracao",
+          "posicao": {
+            "linha": 3,
+            "coluna": 15,
+            "offset": 85
+          },
+          "conteudo": {
+            "original": "dias úteis",
+            "novo": "dias corridos"
+          },
+          "confianca": 0.9,
+          "tags_relacionadas": ["prazo"],
+          "css_class": "diff-alteracao",
+          "destaque_cor": "#ff6b6b"
+        },
+        {
+          "id": "mock_mod_3_insercao_alterado",
+          "tipo": "insercao",
+          "posicao": {
+            "linha": 2,
+            "coluna": 50,
+            "offset": 70
+          },
+          "conteudo": {
+            "original": "",
+            "novo": " alterado"
+          },
+          "confianca": 0.85,
+          "tags_relacionadas": [],
+          "css_class": "diff-insercao",
+          "destaque_cor": "#8ce99a"
+        }
+      ],
+      "blocos": [
+        {
+          "id": "bloco_1",
+          "tipo_predominante": "alteracao",
+          "relevancia": 0.3,
+          "modificacoes_ids": [
+            "mock_mod_1_valor_preco",
+            "mock_mod_2_dias_uteis_corridos",
+            "mock_mod_3_insercao_alterado"
+          ],
+          "resumo": "3 modificações do tipo alteracao",
+          "css_class": "bloco-alteracao"
+        }
+      ],
+      "conteudo_comparacao": {
+        "original": "CONTRATO DE PRESTAÇÃO DE SERVIÇOS\n\n        Entre {{contratante}} e {{contratada}}, fica estabelecido:\n\n        1. OBJETO: Prestação de serviços de {{tipo_servico}}\n        2. VALOR: R$ {{valor}} reais\n        3. PRAZO: {{prazo}} dias úteis\n        4. PAGAMENTO: Em {{forma_pagamento}}\n\n        Documento original gerado em {{data_geracao}}.",
+        "modificado": "CONTRATO DE PRESTAÇÃO DE SERVIÇOS ALTERADO\n\n        Entre {{contratante}} e {{contratada}}, fica estabelecido:\n\n        1. OBJETO: Prestação de serviços de {{tipo_servico}}\n        2. VALOR: R$ {{preco}} reais\n        3. PRAZO: {{prazo}} dias corridos\n        4. PAGAMENTO: Em {{forma_pagamento}}\n        5. REAJUSTE: Aplicável conforme índice {{indice_reajuste}}\n\n        Documento modificado gerado em {{data_geracao}}.",
+        "diff_highlights": [
+          {
+            "inicio": 25,
+            "fim": 34,
+            "tipo": "alteracao",
+            "confianca": 0.95,
+            "texto_original": "{{valor}}",
+            "texto_novo": "{{preco}}"
+          },
+          {
+            "inicio": 85,
+            "fim": 95,
+            "tipo": "alteracao",
+            "confianca": 0.9,
+            "texto_original": "dias úteis",
+            "texto_novo": "dias corridos"
+          },
+          {
+            "inicio": 70,
+            "fim": 70,
+            "tipo": "insercao",
+            "confianca": 0.85,
+            "texto_original": "",
+            "texto_novo": " alterado"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+# Dockerfile otimizado para CapRover - Apenas Frontend
+# A API será separada, usando apenas o frontend neste container
+
+# Stage 1: Build do Frontend Vue.js
+FROM node:22-alpine3.20 AS frontend-builder
+
+# Instalar dependências do sistema
+RUN apk update && apk upgrade && \
+    apk add --no-cache curl ca-certificates && \
+    rm -rf /var/cache/apk/*
+
+# Instalar pnpm globalmente
+RUN npm install -g pnpm
+
+# Criar usuário não-root para build
+RUN addgroup -g 1001 -S nodeuser && \
+    adduser -S -D -H -u 1001 -h /home/nodeuser -s /bin/sh -G nodeuser nodeuser
+
+# Definir diretório de trabalho
+WORKDIR /app
+RUN chown nodeuser:nodeuser /app
+USER nodeuser
+
+# Copiar arquivos de configuração do frontend
+COPY --chown=nodeuser:nodeuser web/package*.json web/pnpm-lock.yaml ./
+
+# Instalar dependências
+RUN pnpm install --frozen-lockfile
+
+# Copiar código fonte do frontend
+COPY --chown=nodeuser:nodeuser web/src/ ./src/
+COPY --chown=nodeuser:nodeuser web/index.html web/vite.config.js web/tsconfig.json web/tsconfig.node.json ./
+
+# Build do frontend para produção
+ENV NODE_ENV=production
+ENV VITE_API_BASE_URL=/api
+RUN pnpm build:vite
+
+# Stage 2: Produção com Nginx
+FROM nginx:1.25-alpine
+
+# Copiar frontend buildado
+COPY --from=frontend-builder /app/dist /usr/share/nginx/html
+
+# Configurar Nginx
+COPY nginx.frontend.conf /etc/nginx/nginx.conf
+
+# Criar usuário nginx se não existir e definir permissões
+RUN addgroup -S nginx 2>/dev/null || true && \
+    adduser -S -D -H -G nginx nginx 2>/dev/null || true && \
+    chown -R nginx:nginx /usr/share/nginx/html /var/cache/nginx /var/log/nginx && \
+    chmod -R 755 /usr/share/nginx/html
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost/ || exit 1
+
+# Expor porta
+EXPOSE 80
+
+# Usar usuário não-root
+USER nginx
+
+# Comando para iniciar Nginx
+CMD ["nginx", "-g", "daemon off;"]

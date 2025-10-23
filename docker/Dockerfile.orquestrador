@@ -1,0 +1,50 @@
+FROM python:3.13-slim
+
+# Definir diretório de trabalho
+WORKDIR /app
+
+# Instalar dependências do sistema
+RUN apt-get update && apt-get install -y \
+    pandoc \
+    curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Copiar arquivos de dependências
+COPY requirements.txt pyproject.toml ./
+
+# Instalar dependências Python
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
+
+# Copiar código da aplicação
+COPY . .
+
+# Criar diretórios necessários
+RUN mkdir -p results logs
+
+# Definir variáveis de ambiente
+ENV PYTHONPATH=/app \
+    FLASK_ENV=production \
+    RESULTS_DIR=/app/results \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    ORQUESTRADOR_MODO=sequencial \
+    ORQUESTRADOR_INTERVALO=60 \
+    ORQUESTRADOR_PORTA=5007 \
+    ORQUESTRADOR_VERBOSE=false
+
+# Definir usuário não-root
+RUN useradd -m -u 1000 appuser \
+    && chown -R appuser:appuser /app
+USER appuser
+
+# Expor porta do orquestrador
+EXPOSE 5007
+
+# Health check para o orquestrador
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:5007/health || exit 1
+
+# Comando de inicialização com Gunicorn para o orquestrador
+CMD ["gunicorn", "-c", "config/gunicorn_orquestrador.conf.py", "config.wsgi_orquestrador:app"]

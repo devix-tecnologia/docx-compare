@@ -1,0 +1,33 @@
+# Debug Dockerfile - Para entender o problema
+FROM docker-registry.de.vix.br/versiona-ai:20250924-054638
+
+USER root
+
+# Criar diretório de logs com permissões
+RUN mkdir -p /app/logs && \
+    chown -R app:app /app/logs && \
+    mkdir -p /var/log/supervisor
+
+# Testar comando simples primeiro
+USER app
+WORKDIR /app/versiona-ai
+
+# Script de debug
+RUN echo '#!/bin/bash' > /tmp/debug.sh && \
+    echo 'echo "=== DEBUG GUNICORN ==="' >> /tmp/debug.sh && \
+    echo 'echo "Current user: $(whoami)"' >> /tmp/debug.sh && \
+    echo 'echo "Current dir: $(pwd)"' >> /tmp/debug.sh && \
+    echo 'echo "Files present:"' >> /tmp/debug.sh && \
+    echo 'ls -la wsgi.py' >> /tmp/debug.sh && \
+    echo 'echo "Python path:"' >> /tmp/debug.sh && \
+    echo 'python3 -c "import sys; print(sys.path)"' >> /tmp/debug.sh && \
+    echo 'echo "Testing wsgi import:"' >> /tmp/debug.sh && \
+    echo 'python3 -c "import wsgi; print(wsgi)"' >> /tmp/debug.sh && \
+    echo 'echo "Testing gunicorn command:"' >> /tmp/debug.sh && \
+    echo '/usr/local/bin/uv run gunicorn wsgi:app --bind 127.0.0.1:8001 --check-config' >> /tmp/debug.sh && \
+    echo 'echo "Exit code: $?"' >> /tmp/debug.sh
+
+USER root
+RUN chmod +x /tmp/debug.sh
+
+CMD ["/bin/bash", "/tmp/debug.sh"]

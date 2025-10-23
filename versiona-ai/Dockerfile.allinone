@@ -1,0 +1,285 @@
+# Dockerfile All-in-One: Frontend + Backend + Nginx Proxy + Security
+# Stage 1: Build do Frontend Vue.js
+FROM node:22-alpine3.20 AS frontend-builder
+
+# Instalar dependências do sistema
+RUN apk update && apk upgrade && \
+    apk add --no-cache curl ca-certificates && \
+    rm -rf /var/cache/apk/*
+
+# Instalar pnpm globalmente
+RUN npm install -g pnpm
+
+# Criar usuário não-root
+RUN addgroup -g 1001 -S nodeuser && \
+    adduser -S -D -H -u 1001 -h /home/nodeuser -s /bin/sh -G nodeuser nodeuser
+
+WORKDIR /app
+RUN chown nodeuser:nodeuser /app
+USER nodeuser
+
+# Build do frontend
+COPY --chown=nodeuser:nodeuser web/package*.json web/pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+
+COPY --chown=nodeuser:nodeuser web/src/ ./src/
+COPY --chown=nodeuser:nodeuser web/index.html web/vite.config.js web/tsconfig.json web/tsconfig.node.json ./
+
+ENV NODE_ENV=production
+ENV VITE_API_BASE_URL=/api
+RUN pnpm build:vite
+
+# Stage 2: Setup da API Python
+FROM python:3.13-slim AS api-builder
+
+# Instalar dependências e uv
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install uv
+
+WORKDIR /app
+COPY ../pyproject.toml ../uv.lock ./
+RUN uv sync --frozen
+
+COPY . ./versiona-ai/
+
+# Stage 3: Produção - Nginx + Python + Supervisor + Security
+FROM python:3.13-slim AS production
+
+# Instalar Nginx, Supervisor, iptables e dependências
+RUN apt-get update && apt-get install -y \
+    nginx \
+    supervisor \
+    iptables \
+    iptables-persistent \
+    curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install uv
+
+# Criar usuários e diretórios
+RUN useradd --create-home --shell /bin/bash app && \
+    mkdir -p /var/log/supervisor /run/supervisor /var/log/nginx /app/logs && \
+    chown -R app:app /app
+
+# Copiar frontend buildado
+COPY --from=frontend-builder /app/dist /usr/share/nginx/html
+
+# Copiar dependências Python e código da API
+COPY --from=api-builder /app /app
+
+# Configurar Nginx com proxy reverso e segurança
+RUN cat > /etc/nginx/nginx.conf << 'EOF'
+user www-data;
+worker_processes auto;
+pid /run/nginx.pid;
+
+events {
+worker_connections 1024;
+use epoll;
+}
+
+http {
+include /etc/nginx/mime.types;
+default_type application/octet-stream;
+
+# Logs
+log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+'$status $body_bytes_sent "$http_referer" '
+'"$http_user_agent" "$http_x_forwarded_for"';
+
+access_log /var/log/nginx/access.log main;
+error_log /var/log/nginx/error.log warn;
+
+# Otimizações
+sendfile on;
+tcp_nopush on;
+tcp_nodelay on;
+keepalive_timeout 65;
+gzip on;
+gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
+
+# Segurança
+server_tokens off;
+add_header X-Frame-Options "SAMEORIGIN" always;
+add_header X-Content-Type-Options "nosniff" always;
+add_header X-XSS-Protection "1; mode=block" always;
+
+# Rate limiting
+limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
+limit_req_zone $binary_remote_addr zone=static:10m rate=50r/s;
+
+server {
+listen 80;
+server_name _;
+root /usr/share/nginx/html;
+index index.html;
+
+# Frontend estático com rate limiting
+location / {
+limit_req zone=static burst=20 nodelay;
+try_files $uri $uri/ /index.html;
+
+# Cache para arquivos estáticos
+location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
+expires 1y;
+add_header Cache-Control "public, immutable";
+}
+
+# SPA fallback sem cache
+location = /index.html {
+add_header Cache-Control "no-cache, must-revalidate";
+expires 0;
+}
+}
+
+# API proxy com rate limiting e segurança
+location /api/ {
+limit_req zone=api burst=5 nodelay;
+
+# Proxy para backend interno
+proxy_pass http://127.0.0.1:8001/;
+proxy_set_header Host $host;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_set_header X-Forwarded-Proto $scheme;
+
+# Timeouts para operações longas
+proxy_connect_timeout 10s;
+proxy_send_timeout 300s;
+proxy_read_timeout 300s;
+
+# Security headers específicos para API
+add_header X-Content-Type-Options "nosniff" always;
+add_header X-Frame-Options "DENY" always;
+}
+
+# Health check público
+location /health {
+proxy_pass http://127.0.0.1:8001/health;
+access_log off;
+}
+
+# Bloquear acesso direto à API interna
+location /internal/ {
+deny all;
+return 403;
+}
+
+# Favicon
+location = /favicon.ico {
+return 204;
+access_log off;
+}
+}
+}
+EOF
+
+# Configurar Supervisor para gerenciar serviços
+RUN cat > /etc/supervisor/conf.d/supervisord.conf << 'EOF'
+[supervisord]
+nodaemon=true
+logfile=/var/log/supervisor/supervisord.log
+pidfile=/run/supervisor/supervisord.pid
+user=root
+
+[program:nginx]
+command=nginx -g "daemon off;"
+autostart=true
+autorestart=true
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+user=root
+priority=100
+
+[program:api]
+command=/usr/local/bin/uv run gunicorn --config /app/versiona-ai/deploy/gunicorn.conf.py versiona-ai.wsgi:app
+directory=/app
+autostart=true
+autorestart=true
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+user=app
+environment=PYTHONUNBUFFERED=1,PYTHONDONTWRITEBYTECODE=1,FLASK_PORT=8001
+priority=200
+
+[program:firewall]
+command=/app/setup-firewall.sh
+autostart=true
+autorestart=false
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+user=root
+priority=50
+EOF
+
+# Script de configuração do firewall
+RUN cat > /app/setup-firewall.sh << 'EOF'
+#!/bin/bash
+# Configuração do firewall restritivo
+
+# Limpar regras existentes
+iptables -F
+iptables -X
+iptables -t nat -F
+iptables -t nat -X
+
+# Política padrão: DENY
+iptables -P INPUT DROP
+iptables -P FORWARD DROP
+iptables -P OUTPUT DROP
+
+# Permitir loopback (necessário para comunicação interna)
+iptables -A INPUT -i lo -j ACCEPT
+iptables -A OUTPUT -o lo -j ACCEPT
+
+# Permitir conexões estabelecidas
+iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+iptables -A OUTPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+# Permitir entrada na porta 80 (HTTP)
+iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+
+# Permitir saída para DNS (necessário para resolução)
+iptables -A OUTPUT -p udp --dport 53 -j ACCEPT
+iptables -A OUTPUT -p tcp --dport 53 -j ACCEPT
+
+# Permitir APENAS conexões para Directus (se necessário)
+# iptables -A OUTPUT -p tcp -d contract.devix.co --dport 443 -j ACCEPT
+
+# BLOQUEAR todo o resto da internet
+iptables -A OUTPUT -p tcp --dport 80 -j REJECT
+iptables -A OUTPUT -p tcp --dport 443 -j REJECT
+
+# Salvar regras
+iptables-save > /etc/iptables/rules.v4
+
+echo "✅ Firewall configurado: Acesso à internet BLOQUEADO"
+echo "🔒 Apenas comunicação interna e porta 80 permitida"
+
+# Manter script rodando
+while true; do sleep 3600; done
+EOF
+
+RUN chmod +x /app/setup-firewall.sh
+
+# Definir permissões
+RUN chown -R app:app /app && \
+    chown -R www-data:www-data /usr/share/nginx/html
+
+# Expor apenas porta 80
+EXPOSE 80
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost/health || exit 1
+
+# Comando para iniciar Supervisor (gerencia todos os serviços)
+CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
