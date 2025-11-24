@@ -2487,8 +2487,14 @@ class DirectusAPI:
                     removed_text = self._unescape_html(removed["text"])
                     added_text = self._unescape_html(added["text"])
 
-                    # Calcular similaridade usando SequenceMatcher
-                    similarity = SequenceMatcher(None, removed_text, added_text).ratio()
+                    # Normalizar para comparação case-insensitive (Task 007)
+                    removed_normalized = self._normalize_for_comparison(removed_text)
+                    added_normalized = self._normalize_for_comparison(added_text)
+
+                    # Calcular similaridade usando textos normalizados
+                    similarity = SequenceMatcher(
+                        None, removed_normalized, added_normalized
+                    ).ratio()
 
                     if similarity > SIMILARITY_THRESHOLD:
                         is_pair = True
@@ -3005,6 +3011,40 @@ class DirectusAPI:
             .replace("&quot;", '"')
             .replace("&#39;", "'")
         )
+
+    def _normalize_for_comparison(self, text: str) -> str:
+        """
+        Normaliza texto para comparação case-insensitive (Task 007).
+
+        Usado na análise de similaridade textual para parear modificações
+        que diferem apenas por case, pontuação ou espaços.
+
+        Args:
+            text: Texto a ser normalizado
+
+        Returns:
+            Texto normalizado (lowercase, espaços/pontuação uniformizados)
+        """
+        import re
+        import unicodedata
+
+        # Lowercase
+        text = text.lower()
+
+        # Normalizar Unicode (NFD -> NFC)
+        text = unicodedata.normalize("NFC", text)
+
+        # Normalizar espaços múltiplos
+        text = re.sub(r"\s+", " ", text)
+
+        # Remover espaços no início/fim
+        text = text.strip()
+
+        # Normalizar pontuação comum
+        text = re.sub(r"\s*,\s*", ", ", text)
+        text = re.sub(r"\s*\.\s*", ". ", text)
+
+        return text
 
     def _is_field_replacement(self, original, _modified):
         """Detecta se é preenchimento de campo (placeholder -> valor)"""

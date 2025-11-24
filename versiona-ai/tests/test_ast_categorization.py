@@ -418,5 +418,88 @@ def test_categorization_logic_split_incorreto():
     print("✅ Solução: Verificar similaridade e criar 1 ALTERACAO quando > 60%")
 
 
+def test_alteracao_case_insensitive_deve_ser_pareada(mock_repositorio):
+    """
+    Textos idênticos exceto por case devem ser pareados como ALTERACAO (Task 007)
+
+    Caso real da versão 95174b7a:
+    - Original: "2.2. Se aplicável, a retroatividade..."
+    - Novo: "2.2. SE APLICÁVEL, A RETROATIVIDADE..."
+
+    Similaridade esperada: ~95% (apenas case diferente)
+    Comportamento esperado: 1 ALTERACAO (não 2 modificações separadas)
+    """
+    from directus_server import DirectusAPI, PandocASTProcessor
+
+    # Criar instância da API com repositório mockado
+    with patch("directus_server.DirectusRepository", return_value=mock_repositorio):
+        api = DirectusAPI()
+        api.repo = mock_repositorio
+
+    # Mock do diff HTML com textos case-different
+    # SEM data-clause E distância > 200 chars para forçar critério 3 (similaridade)
+    mock_diff_html = """
+    <div class='diff-removed'>- 2.2. Se aplicável, a retroatividade dos efeitos do CONTRATO, não ocasionará qualquer prejuízo das obrigações da CONTRATADA sem acarretar quaisquer penalidades, compensação ou lucros cessantes para a CONTRATANTE, conforme prazo descrito no QUADRO RESUMO.</div>
+    <p>Texto intermediário para aumentar a distância além de 200 caracteres no HTML...</p>
+    <p>Mais texto intermediário para forçar o algoritmo a usar o critério 3 (similaridade textual)...</p>
+    <p>Ainda mais texto para garantir distância > 200 chars e desabilitar critério 2 (proximidade)...</p>
+    <div class='diff-added'>+ 2.2. SE APLICÁVEL, A RETROATIVIDADE DOS EFEITOS DO CONTRATO NÃO OCASIONARÁ QUALQUER PREJUÍZO DAS OBRIGAÇÕES DA CONTRATADA, SEM ACARRETAR QUAISQUER PENALIDADES, COMPENSAÇÃO OU LUCROS CESSANTES PARA A CONTRATANTE, CONFORME PRAZO DESCRITO NO QUADRO RESUMO.</div>
+    """
+
+    # Mock ASTs simples (não precisamos de conteúdo real para este teste)
+    mock_ast_original = {"pandoc-api-version": [1, 23, 1], "meta": {}, "blocks": []}
+    mock_ast_modificado = {"pandoc-api-version": [1, 23, 1], "meta": {}, "blocks": []}
+
+    # Mock do Pandoc
+    with (
+        patch.object(PandocASTProcessor, "convert_docx_to_ast") as mock_convert,
+        patch.object(api, "_download_docx_to_temp") as mock_download,
+        patch.object(api, "_generate_diff_html_from_ast") as mock_diff,
+    ):
+        # Configurar mocks
+        mock_convert.side_effect = [mock_ast_original, mock_ast_modificado]
+        mock_download.side_effect = ["/tmp/original.docx", "/tmp/modificado.docx"]
+        mock_diff.return_value = mock_diff_html
+
+        # Processar versão
+        resultado = api._process_versao_com_ast(
+            "test-version-id", mock_repositorio.get_versao.return_value
+        )
+
+    # Validações
+    assert "modificacoes" in resultado, "Deve retornar modificações"
+    modificacoes = resultado["modificacoes"]
+
+    # Debug
+    print(f"\n🔍 Total de modificações: {len(modificacoes)}")
+    for i, mod in enumerate(modificacoes, 1):
+        tipo = mod.get("tipo", mod.get("categoria", "UNKNOWN"))
+        print(f"  Mod {i}: {tipo}")
+
+    # TESTE PRINCIPAL: Deve ser 1 ALTERACAO (não 2 mods separadas)
+    assert len(modificacoes) == 1, (
+        f"Deve ter 1 ALTERACAO, mas tem {len(modificacoes)} modificações. "
+        f"Textos case-different devem ser pareados!"
+    )
+
+    mod = modificacoes[0]
+    tipo = mod.get("tipo", mod.get("categoria", "UNKNOWN"))
+    assert tipo == "ALTERACAO", f"Deve ser ALTERACAO, mas é {tipo}"
+
+    # Verificar que textos originais foram preservados (case mantido)
+    conteudo_dict = mod.get("conteudo", {})
+    if isinstance(conteudo_dict, dict):
+        original = conteudo_dict.get("original", "")
+        novo = conteudo_dict.get("novo", "")
+
+        # Original deve ter case misto ("Se aplicável")
+        assert "Se aplicável" in original or "se aplicável" in original.lower()
+
+        # Novo deve ter UPPERCASE
+        assert "SE APLICÁVEL" in novo
+
+        print("✅ Case original preservado: 'Se aplicável' → 'SE APLICÁVEL'")
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
