@@ -1,10 +1,12 @@
 # Task 005: Persistir Dados de Vinculação no Directus
 
-## Objetivo
+Status: pending
+
+## Descrição
 
 Adicionar campos de metadados de vinculação à coleção `modificacao` no Directus e persistir esses dados durante o processamento, enriquecendo as informações sobre como cada modificação foi vinculada a uma cláusula.
 
-## Contexto
+### Contexto
 
 Atualmente, o sistema:
 

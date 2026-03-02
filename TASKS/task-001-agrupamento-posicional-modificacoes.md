@@ -1,6 +1,8 @@
 # TASK-001: Agrupamento Posicional de Modificações
 
-## 📋 Resumo da Task
+Status: pending
+
+## Descrição
 
 Implementar sistema de agrupamento posicional que associa modificações de versões às tags/blocos de documentos baseado em posições exatas no texto.
 

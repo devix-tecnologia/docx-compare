@@ -1,16 +1,8 @@
 # Task 006 - Corrigir Categorização AST: ALTERACAO vs REMOCAO+INSERCAO
 
-## Status
-
-concluida
-
-## Tipo
-
-fix
-
-## Responsável
-
-IA/Equipe
+Status: done
+Type: fix
+Assignee: IA/Equipe
 
 ## Descrição
 
@@ -103,7 +95,6 @@ Exemplo (Modificações 2 e 3):
 ## Abordagem Sugerida
 
 1. **Modificar `_extrair_modificacoes_do_diff_ast`**:
-
    - Após identificar REMOCAO e INSERCAO não pareadas pelos critérios atuais
    - Calcular similaridade textual usando `SequenceMatcher(None, texto_removido, texto_inserido).ratio()`
    - Se similaridade > 0.6 (60%), parear como ALTERACAO

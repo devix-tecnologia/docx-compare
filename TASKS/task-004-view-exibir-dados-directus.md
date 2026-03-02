@@ -1,10 +1,12 @@
 # Task 004: Alterar /view para exibir dados do Directus
 
-## Objetivo
+Status: pending
+
+## Descrição
 
 Modificar o endpoint `/view` (visualizador de diferenças) para buscar e exibir os dados processados que foram armazenados no Directus durante o processamento da versão, ao invés de reprocessar ou usar dados temporários.
 
-## Contexto
+### Contexto
 
 Atualmente, o endpoint `/view` pode estar:
 
@@ -268,23 +270,19 @@ def _calcular_metricas(modificacoes: list[dict]) -> dict:
 ## Benefícios
 
 1. **Performance**:
-
    - ✅ Uma única requisição HTTP ao Directus
    - ✅ Não reprocessa a versão a cada visualização
    - ✅ Reduz latência de rede (1 request vs 3+ requests)
 
 2. **Consistência**:
-
    - ✅ Exibe exatamente o que foi processado e persistido
    - ✅ Dados carregados atomicamente (snapshot consistente)
 
 3. **Rastreabilidade**:
-
    - ✅ Dados vêm diretamente do banco de dados
    - ✅ Contrato e modelo disponíveis para contexto
 
 4. **Escalabilidade**:
-
    - ✅ Múltiplos usuários podem visualizar sem sobrecarregar processamento
    - ✅ Menos carga no servidor Directus
 

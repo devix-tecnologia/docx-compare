@@ -1,10 +1,8 @@
 # Task 007: Normalizar Case na Comparação de Similaridade AST
 
-**Data:** 2025-10-22
-**Status:** concluida ✅
-**Prioridade:** CRÍTICA 🔴---
+Status: done
 
-## 📋 Descrição do Problema
+## Descrição
 
 A comparação de similaridade textual no processamento AST está **case-sensitive**, fazendo com que textos idênticos (exceto por maiúsculas/minúsculas) não sejam pareados como ALTERACAO.
 

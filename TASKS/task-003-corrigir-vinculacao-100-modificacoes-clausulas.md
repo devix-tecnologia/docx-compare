@@ -1,16 +1,17 @@
 # Task 003: Corrigir Vinculação de Modificações às Cláusulas (Meta: 100%)
 
+Status: in-progress
+
+## Descrição
+
 **Data de Criação:** 2025-10-11
 **Última Atualização:** 2025-10-12
-**Status:** 🟡 Em Implementação - Diagnóstico Completo
 **Prioridade:** Alta
 **Responsável:** A definir
 
----
+### Resultados de Investigação (2025-10-12)
 
-## 🔬 Resultados de Investigação (2025-10-12)
-
-### Descoberta Crítica: Sistema de Coordenadas Triplo
+**Descoberta Crítica: Sistema de Coordenadas Triplo**
 
 Durante a implementação, descobrimos que o problema é mais complexo que o inicialmente previsto. Existem **TRÊS sistemas de coordenadas**, não dois:
 
@@ -64,12 +65,10 @@ O algoritmo offset atual:
 ### Próximos Passos Identificados
 
 1. **Opção A (Ideal):** Corrigir offset para mapear diretamente para versão modificada
-
    - Requer calcular diferenças entre modelo SEM e versão
    - Mais complexo, mas mantém precisão do offset
 
 2. **Opção B (Pragmática):** Melhorar método de conteúdo
-
    - Adicionar fallbacks mais robustos
    - Usar similaridade fuzzy para tags alteradas
    - Mais simples, já mostra resultados 2.5x melhores
@@ -506,16 +505,13 @@ def normalizar_texto(texto):
 1.  **`versiona-ai/directus_server.py`**
 
     **Funções a Criar:**
-
     - **`_vincular_modificacoes_clausulas_unificado()`** (nova - principal)
-
       - Implementa a lógica `if/else` do algoritmo unificado
       - Calcula similaridade e escolhe entre Caminho Feliz ou Real
       - Retorna dict com vinculadas/nao_vinculadas/revisao_manual
       - **Assinatura:** `(tags, modificacoes, arquivo_original_versao, arquivo_com_tags) → dict`
 
     - **`_mapear_tags_via_offset()`** (nova - Caminho Feliz)
-
       - Implementa o cálculo de offset acumulado para tags aninhadas
       - Percorre arquivo COM tags, identifica todas as tags via regex
       - Para cada tag, calcula: `posicao_original = posicao_com_tags - offset_acumulado`
@@ -523,7 +519,6 @@ def normalizar_texto(texto):
       - **Complexidade:** O(N log N) onde N = número de tags
 
     - **`_inferir_posicoes_via_conteudo_com_contexto()`** (nova - Caminho Real)
-
       - Implementa busca por subsequência com contexto de vizinhança
       - Para cada tag: extrai conteúdo + 50 chars antes + 50 chars depois
       - Tenta match com contexto completo, depois parcial, depois só conteúdo
@@ -533,7 +528,6 @@ def normalizar_texto(texto):
       - **Otimização:** Usar índice de n-gramas para reduzir M
 
     - **`_vincular_por_sobreposicao_com_score()`** (nova)
-
       - Lógica final de vinculação com coordenadas já alinhadas
       - Para cada modificação, encontra tags que se sobrepõem
       - Calcula score: `tag.score_inferencia × percentual_sobreposicao × fator_contexto`
@@ -541,13 +535,11 @@ def normalizar_texto(texto):
       - **Assinatura:** `(modificacoes, tags_mapeadas) → dict`
 
     - **`_calcular_similaridade_textos()`** (nova - utilitário)
-
       - Calcula similaridade entre dois textos normalizados
       - Usa algoritmo de distância de Levenshtein ou ratio do difflib
       - **Assinatura:** `(texto1, texto2) → float (0.0 a 1.0)`
 
     - **`_construir_indice_ngramas()`** (nova - otimização)
-
       - Constrói índice de n-gramas para busca rápida
       - **Assinatura:** `(texto, n=20) → Dict[str, List[int]]`
       - **Opcional:** Implementar apenas se performance for problema
@@ -595,50 +587,41 @@ def normalizar_texto(texto):
 2.  **`versiona-ai/tests/test_vinculacao_formatacao.py`**
 
     **Testes Existentes (Manter e Adaptar):**
-
     - `test_vinculacao_com_formatacao_variada()` - Validar normalização
     - `test_vinculacao_com_normalizacao()` - Validar estratégia de normalização
     - `test_vinculacao_com_mock_completo()` - Testar com mocks (adaptar para novo algoritmo)
 
     **Novos Testes a Criar:**
-
     - **`test_caminho_feliz_offset_simples()`**
-
       - Arquivo original idêntico ao arquivo COM tags (sem as tags)
       - Tags não aninhadas, posições simples
       - **Esperado:** 100% de vinculação, todos com score 1.0
 
     - **`test_caminho_feliz_offset_tags_aninhadas()`**
-
       - Tags aninhadas: `{{TAG-1}}...{{TAG-1.1}}...{{/TAG-1.1}}...{{/TAG-1}}`
       - Validar que offset acumulado funciona corretamente
       - **Esperado:** 100% de vinculação, posições corretas mesmo com aninhamento
 
     - **`test_caminho_real_contexto_completo()`**
-
       - Arquivo original DIFERENTE do arquivo COM tags
       - Modificações com contexto único que permite inferência precisa
       - **Esperado:** ≥90% de vinculação, scores entre 0.8-0.9
 
     - **`test_caminho_real_texto_ambiguo()`**
-
       - Múltiplas cláusulas com texto similar
       - Contexto de vizinhança diferencia
       - **Esperado:** Vinculação correta usando contexto, score 0.9
 
     - **`test_modificacao_cruzando_fronteiras()`**
-
       - Modificação que afeta duas cláusulas (50% em cada)
       - **Esperado:** Vinculada à cláusula principal, flag `multi_clausula=True`
 
     - **`test_score_confianca_e_categorizacao()`**
-
       - Mix de modificações com diferentes scores
       - **Esperado:** Categorização correta (vinculadas / revisao / nao_vinculadas)
       - Validar thresholds: 0.7 e 0.4
 
     - **`test_similaridade_threshold()`**
-
       - Testar com diferentes níveis de similaridade: 0.96, 0.94, 0.90
       - **Esperado:** ≥0.95 usa Caminho Feliz, <0.95 usa Caminho Real
 
@@ -648,9 +631,7 @@ def normalizar_texto(texto):
       - **Esperado:** Resultados idênticos independente da formatação
 
 3.  **`versiona-ai/tests/test_vinculacao_performance.py`** (novo arquivo)
-
     - **`test_performance_100_tags_200kb()`**
-
       - Simular documento com 100 tags e ~200KB de texto
       - Medir tempo de execução
       - **Meta:** < 5 segundos sem otimizações, < 2 segundos com índice n-gramas
@@ -746,12 +727,10 @@ tail -500 /tmp/flask_server.log | grep "📋 Cláusula vinculada" | wc -l
 **Validar com Múltiplas Versões:**
 
 1. **Versão 99090886 (baseline):**
-
    - Antes: 8/55 (14.5%)
    - Meta: ≥50/55 (90%+)
 
 2. **Versão com documentos idênticos (Caminho Feliz):**
-
    - Meta: 100% com score 1.0
 
 3. **Versão com documentos divergentes (Caminho Real):**
@@ -768,13 +747,11 @@ tail -500 /tmp/flask_server.log | grep "📋 Cláusula vinculada" | wc -l
 ### Fase 1: Fundação (Estimativa: 4-6 horas)
 
 1. **Criar estruturas de dados:**
-
    - Classes `TagMapeada` e `ResultadoVinculacao`
    - Função `normalizar_texto()` centralizada
    - ✅ **Validação:** Testes unitários simples para normalização
 
 2. **Implementar função de similaridade:**
-
    - `_calcular_similaridade_textos()` usando `difflib.SequenceMatcher`
    - ✅ **Validação:** Testar com pares conhecidos (idênticos = 1.0, diferentes = <0.9)
 
@@ -786,14 +763,12 @@ tail -500 /tmp/flask_server.log | grep "📋 Cláusula vinculada" | wc -l
 ### Fase 2: Caminho Feliz (Estimativa: 6-8 horas)
 
 4. **Implementar `_mapear_tags_via_offset()`:**
-
    - Regex para encontrar todas as tags: `r'\{\{/?[^}]+\}\}'`
    - Loop acumulando offsets
    - Recalcular posições das tags
    - ✅ **Validação:** Testar com documento simples (3 tags, não aninhadas)
 
 5. **Criar testes do Caminho Feliz:**
-
    - `test_caminho_feliz_offset_simples()`
    - `test_caminho_feliz_offset_tags_aninhadas()`
    - ✅ **Validação:** 100% de vinculação nos testes
@@ -806,14 +781,12 @@ tail -500 /tmp/flask_server.log | grep "📋 Cláusula vinculada" | wc -l
 ### Fase 3: Caminho Real (Estimativa: 8-12 horas)
 
 7. **Implementar `_inferir_posicoes_via_conteudo_com_contexto()`:**
-
    - Extrair conteúdo + contexto (50 chars antes/depois)
    - Busca com contexto completo → parcial → conteúdo
    - Atribuir score baseado no método
    - ✅ **Validação:** `test_caminho_real_contexto_completo()`
 
 8. **Lidar com ambiguidade:**
-
    - Implementar detecção de múltiplos candidatos
    - Usar contexto de vizinhança para desambiguar
    - ✅ **Validação:** `test_caminho_real_texto_ambiguo()`
@@ -826,13 +799,11 @@ tail -500 /tmp/flask_server.log | grep "📋 Cláusula vinculada" | wc -l
 ### Fase 4: Sistema de Score e Categorização (Estimativa: 4-6 horas)
 
 10. **Implementar `_vincular_por_sobreposicao_com_score()`:**
-
     - Calcular score final: `tag.score × sobreposicao × fator_contexto`
     - Categorizar: alta (≥0.7), média (0.4-0.69), baixa (<0.4)
     - ✅ **Validação:** `test_score_confianca_e_categorizacao()`
 
 11. **Adicionar logs detalhados:**
-
     - Log de estatísticas (vinculadas/revisão/não vinculadas)
     - Log de qual caminho foi usado
     - Log de scores por modificação
@@ -846,13 +817,11 @@ tail -500 /tmp/flask_server.log | grep "📋 Cláusula vinculada" | wc -l
 ### Fase 5: Casos de Borda e Otimização (Estimativa: 6-8 horas)
 
 13. **Modificações multi-cláusula:**
-
     - Detectar sobreposição ≥30% em múltiplas cláusulas
     - Vincular a array em vez de single
     - ✅ **Validação:** `test_modificacao_cruzando_fronteiras()`
 
 14. **Otimização de performance (se necessário):**
-
     - Implementar `_construir_indice_ngramas()` se tempo > 5 segundos
     - Paralelização com `multiprocessing` se tempo > 10 segundos
     - ✅ **Validação:** `test_performance_100_tags_200kb()` (meta: <5s)
@@ -865,7 +834,6 @@ tail -500 /tmp/flask_server.log | grep "📋 Cláusula vinculada" | wc -l
 ### Fase 6: Documentação e Deploy (Estimativa: 2-4 horas)
 
 16. **Documentar algoritmo:**
-
     - Atualizar README com explicação detalhada
     - Diagramas de fluxo (Caminho Feliz vs Real)
     - Exemplos de uso
@@ -1068,12 +1036,10 @@ def validar_resultado(resultado: ResultadoVinculacao, tags_totais: int):
 ### APIs e Bibliotecas Utilizadas
 
 - **Directus API:** https://contract.devix.co
-
   - Token: `S1okNXYabq9TL1gVj0TxiNEdu0md_F3d` (permissões limitadas)
   - Documentação: https://directus.io/docs/guides/ai/mcp
 
 - **Python difflib:** Para cálculo de similaridade
-
   - `difflib.SequenceMatcher(None, texto1, texto2).ratio()`
   - Documentação: https://docs.python.org/3/library/difflib.html
 
@@ -1084,13 +1050,11 @@ def validar_resultado(resultado: ResultadoVinculacao, tags_totais: int):
 ### Algoritmos e Conceitos
 
 1. **Longest Common Subsequence (LCS):**
-
    - Usado para inferir posições quando documentos divergem
    - Complexidade: O(n×m) no pior caso
    - Otimização: Índice de n-gramas reduz para O(n) amortizado
 
 2. **Offset Acumulado:**
-
    - Técnica para mapear coordenadas entre documentos com inserções
    - Similar ao usado em diffs (unified diff format)
    - Complexidade: O(N log N) por ordenação
@@ -1225,21 +1189,18 @@ tail -100 /tmp/flask_server.log | grep -E "(ERROR|Exception)"
 #### Problemas Encontrados e Soluções
 
 1. **Problema: Sistema de Coordenadas Triplo**
-
    - **Descoberta:** Não são 2 sistemas (modelo COM/SEM tags), mas 3 (modelo COM, modelo SEM, versão modificada)
    - **Impacto:** Offset mapeava modelo COM→SEM, mas modificações consideravam diferença SEM→versão
    - **Evidência:** Sobreposições de 2-7 chars ao invés de centenas (desalinhamento claro)
    - **Solução temporária:** Forçar uso do método de conteúdo
 
 2. **Problema: Offset com Desalinhamento**
-
    - **Sintoma:** 16.4% de vinculação (9/55) com método offset
    - **Causa:** Tags mapeadas para modelo SEM tags (203k chars), mas modificações consideram versão modificada (209k chars)
    - **Exemplo:** `Mod[143844-144476]` ∩ `Tag[143399-143848]` = apenas 4 chars (deveria ter ~400!)
    - **Status:** ❌ Não resolvido - requer refatoração do algoritmo offset
 
 3. **Problema: Conteúdo Perde Tags Alteradas**
-
    - **Sintoma:** 41.8% de vinculação (23/55), mas 10 tags não encontradas
    - **Causa:** Tags cujo conteúdo textual foi modificado não são encontradas por busca literal
    - **Tags perdidas:** `16.8.1, 11.1, 12.1, 14.1, 16.9.2, 12.2, 15.2.1, 1.1, 7.5.1, 15.1.1`
@@ -1281,25 +1242,21 @@ if tamanho_sobreposicao > 0:
 ### Melhorias Futuras
 
 1. **Corrigir Algoritmo Offset (Prioridade Alta)**
-
    - Mapear modelo COM tags → versão modificada (não modelo SEM)
    - Requer diff entre modelo SEM e versão modificada
    - Potencial de alcançar 90%+ com precisão do offset
 
 2. **Melhorar Método de Conteúdo (Prioridade Média)**
-
    - Implementar fuzzy matching para tags levemente alteradas
    - Usar `difflib.get_close_matches()` ou Levenshtein distance
    - Threshold: 85% de similaridade para match
 
 3. **Abordagem Híbrida (Prioridade Alta)**
-
    - Tentar conteúdo primeiro (mais robusto para tags alteradas)
    - Usar offset como fallback (para tags não encontradas)
    - Combinar scores de ambos os métodos
 
 4. **Interface de Revisão Manual**
-
    - Dashboard para modificações com score 0.4-0.69
    - Mostrar candidatos e contexto
    - Permitir vinculação manual

@@ -1,10 +1,12 @@
 # Task 002: Integrar Processamento de Tags ao Fluxo Versiona-AI
 
-## 🎯 Objetivo
+Status: pending
+
+## Descrição
 
 Integrar a rotina de processamento de modelo de contrato (que cria tags em `modelo_contrato_tag`) ao fluxo atual de processamento de versões no `versiona-ai`.
 
-## 📋 Problema Identificado
+### Problema Identificado
 
 1. ✅ O código de vinculação de modificações a cláusulas **existe e está correto** em `directus_server.py`
 2. ❌ O código **nunca é executado** porque não existem tags em `modelo_contrato_tag`
