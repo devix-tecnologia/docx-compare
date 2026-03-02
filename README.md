@@ -15,7 +15,8 @@ python -m src.docx_compare.core.docx_diff_viewer doc1.docx doc2.docx
 
 ## 📚 Documentação Detalhada
 
-- **[🎯 Orquestrador](docs/ORQUESTRADOR.md)** - Guia completo do orquestrador de processadores
+- **[�️ Arquitetura e Fluxo](docs/ARQUITETURA_E_FLUXO.md)** - **★ Explicação completa do funcionamento do sistema**
+- **[�🎯 Orquestrador](docs/ORQUESTRADOR.md)** - Guia completo do orquestrador de processadores
 - **[📡 API Documentation](API_DOCUMENTATION.md)** - Endpoints e APIs REST disponíveis
 - **[🔧 Deployment](DEPLOYMENT.md)** - Guia de deployment e produção
 - **[🧪 DRY RUN](DRY_RUN_DOCUMENTATION.md)** - Modo de testes sem persistência de dados

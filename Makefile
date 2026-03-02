@@ -1,4 +1,4 @@
-.PHONY: help install lint lint-fix format test test-coverage check run-processor run-api clean dev-server prod-server kill-server health-check
+.PHONY: help install lint lint-fix format test test-coverage check run-processor run-api clean dev-server prod-server kill-server health-check taskin
 .DEFAULT_GOAL := help
 
 # Configuração
@@ -285,3 +285,9 @@ test-version: ## Testar versão específica no servidor
 restart-dev: kill-server ## Reiniciar servidor em modo dev (mata processo anterior e inicia novo)
 	@sleep 1
 	@make dev-server
+# ============================================================================
+# 📋 Task Management (pnpx taskin wrapper)
+# ============================================================================
+
+taskin: ## Executar pnpx taskin através do uv (ex: make taskin ARGS="start 5")
+	$(UV) run taskin $(ARGS)

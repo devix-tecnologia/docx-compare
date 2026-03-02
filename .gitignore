@@ -54,3 +54,6 @@ coverage.xml
 
 # macOS
 .DS_Store
+
+# Taskin configuration
+.taskin.json

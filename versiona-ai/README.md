@@ -198,16 +198,29 @@ GET http://localhost:8080/versao/c2b1dfa0-c664-48b8-a5ff-84b70041b428
 
 # Visualizar diff já processado (usando diff_id do cache)
 GET http://localhost:8080/view/8b64cd50-6b47-4286-9c7e-049e74bbb65c
+```
+
+---
+
+## 📚 Documentação Adicional
+
+Para entender o **funcionamento completo do sistema**, incluindo fluxo detalhado de processamento (11 etapas), componentes técnicos, casos de uso práticos e troubleshooting, consulte:
+
+**➡️ [docs/ARQUITETURA_E_FLUXO.md](../docs/ARQUITETURA_E_FLUXO.md)** - Explicação didática completa da arquitetura
 
 # Obter JSON de diff já processado
+
 GET http://localhost:8080/api/data/8b64cd50-6b47-4286-9c7e-049e74bbb65c
 
 # Processar com dados mock
+
 GET http://localhost:8080/api/versoes/algum-id?mock=true
 
 # Verificar saúde do servidor
+
 GET http://localhost:8080/health
-```
+
+````
 
 #### ❌ **URLs Incorretas:**
 
@@ -228,19 +241,17 @@ GET http://localhost:8080/view/id-que-nao-existe
 
 # ❌ ID concatenado ou malformado
 GET http://localhost:8080/view/id1&headless=true&id2
-```
+````
 
 ### 🐛 **Debugging de URLs**
 
 Se você receber erro ao acessar uma URL, verifique:
 
 1. **Porta correta?**
-
    - Container Docker: porta `8080` (mapeada de `80` interno)
    - Desenvolvimento local: porta `8000` ou `8001` (verifique `FLASK_PORT` no `.env`)
 
 2. **ID correto?**
-
    - Use `versao_id` para processar: `/api/versoes/<versao_id>`
    - Use `diff_id` para visualizar: `/view/<diff_id>`
    - O `diff_id` vem na resposta do processamento no campo `diff_data.id`

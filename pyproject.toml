@@ -21,6 +21,7 @@ dependencies = [
 [project.scripts]
 docx-compare = "src.docx_compare.processors.processador_automatico:main"
 docx-diff = "src.docx_compare.core.docx_diff_viewer:main"
+taskin = "scripts.taskin:main"
 
 [dependency-groups]
 dev = ["ruff>=0.6.0", "pytest>=7.0.0", "pytest-cov>=4.0.0"]

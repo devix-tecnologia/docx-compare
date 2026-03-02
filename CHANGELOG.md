@@ -9,8 +9,19 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Adicionado
 
-- 🎯 **Orquestrador de Processadores**: Novo componente central para coordenar execução de múltiplos processadores
+- 📚 **Documentação de Arquitetura Completa**: Novo documento [docs/ARQUITETURA_E_FLUXO.md](docs/ARQUITETURA_E_FLUXO.md)
+  - Explicação didática completa do funcionamento do sistema
+  - Fluxo de processamento detalhado em 11 etapas (criação → conclusão)
+  - Visão geral dos componentes (Directus, Orquestrador, Processadores)
+  - Componentes técnicos principais (Repository Pattern, AST, Flask, Orquestrador)
+  - Diferença entre endpoints de processamento vs visualização
+  - Casos de uso práticos com exemplos reais
+  - Métricas de performance e limites do sistema
+  - Comandos úteis para operação e troubleshooting
+  - Seção de troubleshooting com soluções para problemas comuns
+  - Explicação de conceitos técnicos (AST, Repository Pattern, Protocols, IoD)
 
+- 🎯 **Orquestrador de Processadores**: Novo componente central para coordenar execução de múltiplos processadores
   - Modo sequencial: executa processadores um após o outro
   - Modo paralelo: executa processadores simultaneamente
   - Modo single-run: execução única com encerramento automático
@@ -21,7 +32,6 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - Signal handling para encerramento gracioso
 
 - 📋 **Comandos Make para Orquestrador**:
-
   - `make run-orquestrador-single`: Execução única sequencial (recomendado)
   - `make run-orquestrador-single-verbose`: Execução única com logs detalhados
   - `make run-orquestrador`: Modo contínuo paralelo
@@ -30,7 +40,6 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - E várias outras variações para diferentes necessidades
 
 - 📊 **Endpoints de Monitoramento**:
-
   - `GET /`: Dashboard principal com interface web
   - `GET /health`: Health check do orquestrador
   - `GET /status`: Status detalhado dos processadores
@@ -45,12 +54,10 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Melhorado
 
 - 🔄 **Processador Automático**: Correção do encerramento em modo single-run
-
   - Adicionado `sys.exit(0)` para encerramento completo
   - Evita que o Flask continue rodando após execução única
 
 - 🏷️ **Processador de Modelo de Contrato**: Correção do encerramento em modo single-run
-
   - Adicionado `sys.exit(0)` para encerramento completo
   - Consistência com o processador automático
 
