@@ -263,5 +263,4 @@ Problema crítico de performance **resolvido com sucesso**:
 
 ---
 
-**Autor:** GitHub Copilot
-**Revisado por:** Equipe Devix
+**Autor:** Sidarta Veloso

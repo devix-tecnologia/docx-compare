@@ -76,7 +76,21 @@ pythonpath = ["versiona-ai"]
 addopts = [
     "--verbose",
     "--tb=short",
-    "--cov=.",
+    "--cov=versiona-ai",
     "--cov-report=term-missing",
     "--cov-report=html",
+]
+
+[tool.coverage.run]
+omit = [
+    "tests/*",
+    "versiona-ai/tests/*",
+    "versiona-ai/exemplos/*",
+    "versiona-ai/test_*.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "if __name__ == .__main__.",
+    "pragma: no cover",
 ]

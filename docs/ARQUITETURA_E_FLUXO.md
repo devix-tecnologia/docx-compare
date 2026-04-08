@@ -15,14 +15,14 @@
 
 ## 🎯 Visão Geral dos Componentes
 
-O **Versiona AI** é um sistema distribuído de processamento e comparação de documentos DOCX, construído com arquitetura de microserviços e integração com Directus CMS.
+O **Versiona AI** é o sistema distribuído de processamento e comparação de documentos DOCX, construído com arquitetura de microserviços e integração com Directus CMS.
 
 ### Arquitetura de Alto Nível
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        Directus CMS                              │
-│                   (Backend de Dados)                             │
+│                        Directus CMS                             │
+│                   (Backend de Dados)                            │
 │  - Contratos, Versões, Cláusulas, Modificações                  │
 │  - Armazenamento de arquivos DOCX                               │
 └───────────────────────┬─────────────────────────────────────────┘
@@ -31,15 +31,15 @@ O **Versiona AI** é um sistema distribuído de processamento e comparação de 
                         │ (repositorio.py)
                         │
 ┌───────────────────────▼─────────────────────────────────────────┐
-│                     Orquestrador                                 │
-│                    (Porta 5007)                                  │
+│                     Orquestrador                                │
+│                    (Porta 5007)                                 │
 │  - Coordena múltiplos processadores                             │
 │  - Monitora e distribui cargas de trabalho                      │
 │  - Dashboard centralizado                                       │
 └────────────┬────────────────────────────┬───────────────────────┘
              │                            │
              │                            │
-  ┌──────────▼──────────┐      ┌────────▼──────────┐
+  ┌──────────▼──────────┐      ┌─────────▼──────────┐
   │  Processador Auto   │      │  Processador       │
   │   (Porta 5005)      │      │  Modelo            │
   │                     │      │  (Porta 5006)      │
@@ -1139,4 +1139,4 @@ Este documento fornece uma visão completa da arquitetura e fluxo do sistema Ver
 
 **Última atualização:** 2 de março de 2026
 **Versão:** 1.0.0
-**Autor:** Equipe Versiona AI
+**Autor:** Sidarta Veloso
