@@ -243,10 +243,10 @@ def teste_processar_modelos_pendentes():
     from core.pipeline_funcional import HashDocumento, Metadados
 
     class ProcessadorMock:
-        def extrair_texto(self, caminho: Path) -> ConteudoTexto:
+        def extrair_texto(self, _caminho: Path) -> ConteudoTexto:
             return ConteudoTexto("texto mock")
 
-        def extrair_metadados(self, caminho: Path) -> Metadados:
+        def extrair_metadados(self, _caminho: Path) -> Metadados:
             return Metadados(
                 autor="Teste",
                 data_criacao=datetime.now(),

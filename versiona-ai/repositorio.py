@@ -671,9 +671,8 @@ class DirectusRepository:
 
         # Se não forneceu path, criar arquivo temporário
         if output_path is None:
-            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".docx")
-            output_path = Path(temp_file.name)
-            temp_file.close()
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as temp_file:
+                output_path = Path(temp_file.name)
 
         # Escrever conteúdo
         output_path.write_bytes(response.content)

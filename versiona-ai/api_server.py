@@ -68,11 +68,11 @@ class DocxUtils:
 class ProcessadorTags:
     """Classe simplificada para processamento de tags"""
 
-    def processar(self, text):
+    def processar(self, _text):
         """Simula processamento de tags"""
         return ["tag1", "tag2"]
 
-    def processar_documento(self, conteudo_original, conteudo_modificado):
+    def processar_documento(self, _conteudo_original, _conteudo_modificado):
         """Simula processamento de documento"""
         return {"success": True, "modificacoes": [], "documento_id": "mock_doc"}
 

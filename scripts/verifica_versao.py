@@ -22,9 +22,9 @@ root_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(root_dir))
 sys.path.insert(0, str(root_dir / "versiona-ai"))
 
-from repositorio import DirectusRepository
+from repositorio import DirectusRepository  # noqa: E402
 
-import config
+import config  # noqa: E402
 
 
 def print_resumo(resumo: dict) -> None:

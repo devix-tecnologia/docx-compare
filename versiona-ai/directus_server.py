@@ -2671,10 +2671,7 @@ class DirectusAPI:
 
             # Extrair ID do contrato
             contrato = versao_data.get("contrato")
-            if isinstance(contrato, dict):
-                contrato_id = contrato.get("id")
-            else:
-                contrato_id = contrato
+            contrato_id = contrato.get("id") if isinstance(contrato, dict) else contrato
 
             versao_atual_date = versao_data.get("date_created")
 

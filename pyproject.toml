@@ -82,15 +82,7 @@ addopts = [
 ]
 
 [tool.coverage.run]
-omit = [
-    "tests/*",
-    "versiona-ai/tests/*",
-    "versiona-ai/exemplos/*",
-    "versiona-ai/test_*.py",
-]
+omit = ["*/tests/*", "*/test_*.py", "*/exemplos/*", "**/fixtures/*"]
 
 [tool.coverage.report]
-exclude_lines = [
-    "if __name__ == .__main__.",
-    "pragma: no cover",
-]
+exclude_lines = ["if __name__ == .__main__.", "pragma: no cover"]
