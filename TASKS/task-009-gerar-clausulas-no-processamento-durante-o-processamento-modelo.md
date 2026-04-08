@@ -1,6 +1,6 @@
 # Task 009 — gerar clausulas no processamento durante o processamento modelo
 
-Status: pending
+Status: in-progress
 Type: feat
 Assignee: Sidarta Veloso
 
