@@ -1,0 +1,2701 @@
+{
+  "data": {
+    "versao": "V01out2025",
+    "nome": "Contrato SAP Serviços",
+    "clausulas": [
+      {
+        "id": "01057e65-c7aa-4727-8359-061573b603cf",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T18:24:31.521Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:08.445Z",
+        "conteudo": "O período de medição será aquele informado pela CONTRATANTE e previsto no Escopo/Memorial Descritivo, podendo ser alterado pela CONTRATANTE, a seu exclusivo critério, desde que a CONTRATADA seja previamente notificada.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "6.2",
+        "objetivo": "Garantir flexibilidade na definição do período de medição, com comunicação prévia à contratada.",
+        "nome": "Cláusula 6ª - 6.2",
+        "tag": "c5522668-180e-44a3-a421-a67113a6ea58",
+        "referencias": [
+          {
+            "descricao": "Por uma excepcionalidade, a Samarco acata a sugestão da Contratada de estabelecimento de prazo mínimo para alteração dos períodos de medição.; Por uma excepcionalidade, a Samarco acata a sugestão da Contratada de anuência prévia comum para alterações ao período de medição.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "Solicitamos à área técnica avaliar o impacto operacional da fixação de prazos mínimos de antecedência, pois isso pode reduzir a flexibilidade para ajustes de cronograma e planejamento interno da CONTRATANTE.; Solicitamos a avaliação das áreas técnica e de gestão de Contratos. O pedido da Contratada gera possibilidade de engessamento da correta gestão contratual.",
+            "orientacao_retorno": "area_interna"
+          },
+          {
+            "descricao": "O padrão Samarco já prevê procedimento estruturado: emissão do BM/BMM até o dia 25, devolução com justificativa em caso de falhas e reinício do prazo apenas após reapresentação. Alteração para incluir prazo mínimo de antecedência pode engessar a gestão contratual.; A previsão de anuência da contratada é incompatível com a prática Samarco, que mantém prerrogativa unilateral da CONTRATANTE. O controle sobre os períodos de medição deve permanecer exclusivo da CONTRATANTE.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Inclusão de limite mínimo de antecedência para notificação de alteração do período de medição.; Inclusão de necessidade de anuência da contratada para alterações no período de medição.",
+            "orientacao_retorno": "analise_contratada"
+          }
+        ]
+      },
+      {
+        "id": "0190fa82-9123-448d-9d19-6371f4e501b5",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:21:30.623Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:26.077Z",
+        "conteudo": "O OBJETO executado até a data da extinção do CONTRATO será normalmente medido e pago nos termos do CONTRATO.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "17.7",
+        "objetivo": "Assegurar que o objeto executado até a extinção do contrato seja medido e pago conforme os termos contratuais.",
+        "nome": "Cláusula 17ª - 17.7",
+        "tag": "d82e18d4-c3fe-4124-855e-c52a0e4ed66b",
+        "referencias": [
+          {
+            "descricao": "A cláusula já assegura o pagamento conforme os critérios contratuais, o que pressupõe medição, aceitação e conformidade dos serviços prestados. A redação vigente é suficiente para garantir esse direito sem ampliar obrigações em caso de inadimplemento. Solicitamos manter.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "Solicita inclusão de previsão expressa de que, mesmo na hipótese de rescisão por inadimplemento da contratada, os serviços efetivamente executados e aceitos deverão ser remunerados.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "A cláusula já assegura o pagamento conforme os critérios contratuais, o que pressupõe medição, aceitação e conformidade dos serviços prestados. A redação vigente é suficiente para garantir esse direito sem ampliar obrigações em caso de inadimplemento. Solicitamos manter.",
+            "orientacao_retorno": "primeira_rodada"
+          }
+        ]
+      },
+      {
+        "id": "01b5e76c-063d-4432-9283-9464de378ad1",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T18:24:32.578Z",
+        "user_updated": null,
+        "date_updated": null,
+        "conteudo": "100% (cem por cento) do valor medido, obtido pela soma de todos os valores objeto da MEDIÇÃO, com base nos quantitativos e/ou etapas efetivamente realizadas, efetivamente executados e aprovados, pela FISCALIZAÇÃO, com a aplicação dos respectivos Preços.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "6.15.1",
+        "objetivo": null,
+        "nome": "Cláusula 6ª - 6.15.1",
+        "tag": null,
+        "referencias": []
+      },
+      {
+        "id": "03f0bbdf-a3c2-40aa-8348-ec5ab86917b8",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:21:28.290Z",
+        "user_updated": null,
+        "date_updated": null,
+        "conteudo": "decretação de falência ou pedido de dissolução de qualquer das PARTES; e/ou",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "17.2.i",
+        "objetivo": "Permitir a rescisão do contrato em caso de falência ou pedido de dissolução de qualquer das partes.",
+        "nome": "Cláusula 17ª - 17.2.i",
+        "tag": null,
+        "referencias": [
+          {
+            "descricao": "A falência decretada representa situação de quebra definitiva da capacidade de cumprir obrigações. A contratante entende que a extinção contratual deve ser imediata nesses casos, motivo pelo qual a cláusula será mantida conforme redigida.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Flexibilização para que o encerramento não seja imediato nessa hipótese.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Pode-se ajustar a cláusula para prever que a Samarco poderá avaliar a manutenção do contrato em caso de recuperação judicial em curso, mediante análise de risco prévia.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "Validar com a área jurídica se há interesse em manter margem de continuidade contratual em cenários de recuperação judicial, especialmente para contratos de baixa complexidade ou curta duração.",
+            "orientacao_retorno": "area_interna"
+          }
+        ]
+      },
+      {
+        "id": "041015b1-6bec-4a46-b47c-31713c4cb0b0",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T18:24:31.446Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:29:59.897Z",
+        "conteudo": "Os pagamentos serão efetuados pela CONTRATANTE mediante crédito em conta corrente fornecida pela CONTRATADA, servindo o comprovante bancário de prova de pagamento.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "6.1",
+        "objetivo": "Definir que os pagamentos serão feitos por depósito em conta indicada pela contratada, sendo o comprovante bancário a prova do pagamento.",
+        "nome": "Cláusula 6ª - 6.1",
+        "tag": "6fd89fdb-e097-42f7-b3da-3f5517805345",
+        "referencias": [
+          {
+            "descricao": "A cláusula já cumpre sua função principal de definir a forma de pagamento e estabelecer como critério objetivo a comprovação bancária. A SAMARCO com isso permite da Contratatada a realização de auditorias regulares e controles de conformidade para garantir a exatidão dos valores pagos.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Eventual solicitação de modificação da forma, ou da comprovação de pagamento.",
+            "orientacao_retorno": "analise_contratada"
+          }
+        ]
+      },
+      {
+        "id": "0461883b-01ac-483b-8b22-1088d2c25bf2",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:14:47.390Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:02.937Z",
+        "conteudo": "A CONTRATADA não poderá transferir a terceiros, no todo ou em parte, as obrigações assumidas neste instrumento, e nem subcontratar, no todo ou em parte, o OBJETO deste CONTRATO, sem a prévia e expressa concordância por escrito da CONTRATANTE.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "13.1",
+        "objetivo": "Estabelecer que a contratada não poderá transferir ou subcontratar, total ou parcialmente, as obrigações ou o objeto do contrato sem a prévia autorização expressa e por escrito da contratante, garantindo controle sobre a execução contratual.",
+        "nome": "Cláusula 13ª - 13.1",
+        "tag": "b72078c9-df1f-4143-b14b-5414fc6df383",
+        "referencias": [
+          {
+            "descricao": "Pode-se aceitar a possibilidade de subcontratação desde que haja comunicação prévia detalhada à CONTRATANTE, mantendo-se a prerrogativa de recusa fundamentada e por escrito em prazo razoável. Assim, preserva-se o controle da CONTRATANTE, sem inviabilizar o uso de subcontratados pela CONTRATADA.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "Admite-se que a CONTRATADA subcontrate partes específicas dos serviços mediante simples comunicação prévia, ficando a CONTRATANTE com prazo para manifestação expressa apenas em casos de objeção fundamentada. Ressalta-se que a CONTRATADA continua integralmente responsável pela execução e cumprimento das obrigações contratuais, independentemente do uso de terceiros.",
+            "orientacao_retorno": "terceira_rodada"
+          },
+          {
+            "descricao": "Suprimir ou alterar a redação da cláusula que seja permitido o uso de subcontratação para atividades específicas, desde que comunicada previamente, mas sem necessidade de anuência expressa da Samarco para cada caso. Pode também requerer critérios objetivos para recusa da autorização, evitando arbitrariedades.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "A cláusula protege a CONTRATANTE, garantindo controle sobre terceiros envolvidos na execução do contrato. A exigência de prévia autorização expressa é prática consolidada e imprescindível para assegurar qualidade, segurança e responsabilidade pelos serviços prestados. A cláusula permanece inalterada.",
+            "orientacao_retorno": "primeira_rodada"
+          }
+        ]
+      },
+      {
+        "id": "04c4b40d-f839-45ad-b141-dcef0fb3c5c5",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T18:52:31.480Z",
+        "user_updated": null,
+        "date_updated": null,
+        "conteudo": "atender a todas as convocações do GESTOR DO CONTRATO, relativas ao presente instrumento, de modo que nenhuma reunião, decisão ou providência venha a ser retardada ou suspensa devido à ausência da CONTRATADA;",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "8.1.ix",
+        "objetivo": "Garantir que a contratada atenda prontamente todas as convocações do gestor do contrato, evitando que reuniões, decisões ou providências sejam atrasadas ou prejudicadas por sua ausência.",
+        "nome": "Cláusula 8ª - 8.1.ix",
+        "tag": null,
+        "referencias": [
+          {
+            "descricao": "Solicitação de flexibilização do dever de atender convocações do gestor do contrato, alegando impossibilidade de comparecimento imediato em determinadas situações. Alegação de que a ausência eventual não deve ser caracterizada como descumprimento contratual.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Solicitamos manter a redação original, tendo em vista que o não comparecimento pode comprometer diretamente a gestão do contrato.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Admite-se prever que convocações emergenciais poderão ser atendidas de forma remota, desde que haja justificativa plausível para a ausência presencial.",
+            "orientacao_retorno": "segunda_rodada"
+          }
+        ]
+      },
+      {
+        "id": "053bbbc3-458e-461e-87d2-12cb635ba399",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T18:52:31.759Z",
+        "user_updated": null,
+        "date_updated": null,
+        "conteudo": "fornecer toda a direção, supervisão técnica e administrativa e toda a força de trabalho direta e indireta necessária à execução do OBJETO, sendo, para todos os efeitos, considerada como única e exclusiva empregadora e responsável por todas as obrigações direta e/ou indiretamente decorrentes dos contratos que firmar, em especial os contratos de trabalho de FUNCIONÁRIOS, o que inclui a responsabilidade da CONTRATADA por eventual inadimplemento de obrigações trabalhistas ou previdenciárias e pelo seguro de acidentes de trabalho;",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "8.1.xiv",
+        "objetivo": "Estabelecer que a contratada será a única e exclusiva responsável por fornecer toda a direção, supervisão técnica e administrativa, bem como a força de trabalho necessária para a execução do objeto, assumindo integralmente as obrigações decorrentes de seus contratos, especialmente as trabalhistas, previdenciárias e de seguro contra acidentes de trabalho, isentando a contratante de qualquer responsabilidade por eventual inadimplemento.",
+        "nome": "Cláusula 8ª - 8.1.xiv",
+        "tag": null,
+        "referencias": [
+          {
+            "descricao": "Cláusula representa um padrão Samarco e de mercado. A responsabilidade trabalhista deve ser mantida integralmente com a Contratada.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Pedido de exclusão de responsabilidade integral trabalhista/previdenciária.",
+            "orientacao_retorno": "analise_contratada"
+          }
+        ]
+      },
+      {
+        "id": "064b73df-4e3c-4bb6-9bc5-1784dd750843",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T21:55:21.016Z",
+        "user_updated": null,
+        "date_updated": null,
+        "conteudo": "Recusar execução do OBJETO que tenha sido realizado em desacordo com as condições estabelecidas neste CONTRATO;",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "9.3.i",
+        "objetivo": "Permitir ao gestor do contrato recusar a execução do objeto feita em desacordo com as condições contratuais.",
+        "nome": "Cláusula 9ª - 9.3.i",
+        "tag": null,
+        "referencias": [
+          {
+            "descricao": "Possibilidade de prazo para correção antes da recusa definitiva.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Não cabe concessão de prazo prévio; o poder de recusa imediata é essencial ao equilíbrio contratual.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "A previsão deve ser mantida, pois a possibilidade de recusa imediata protege a contratante contra execução irregular.",
+            "orientacao_retorno": "primeira_rodada"
+          }
+        ]
+      },
+      {
+        "id": "07887fcb-96dc-445c-871b-de23a123612f",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T18:52:31.991Z",
+        "user_updated": null,
+        "date_updated": null,
+        "conteudo": "comunicar, formalmente, ao GESTOR DO CONTRATO, com antecedência mínima de 30 (trinta) DIAS, qualquer desmobilização de seus FUNCIONÁRIOS alocados na execução do CONTRATO, exceto nos casos em que a desmobilização dos FUNCIONÁRIOS deva ser feita imediatamente, a critério da CONTRATANTE;",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "8.1.xix",
+        "objetivo": "Assegurar que a contratada informe formalmente ao gestor do contrato, com pelo menos 30 dias de antecedência, qualquer desmobilização de funcionários envolvidos na execução do contrato, salvo quando a desmobilização imediata for determinada pela contratante, garantindo planejamento e continuidade na execução do objeto.",
+        "nome": "Cláusula 8ª - 8.1.xix",
+        "tag": null,
+        "referencias": [
+          {
+            "descricao": "Solicitação de redução do prazo de 30 dias para 10 dias, alegando que prazo maior engessa sua gestão interna.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Esclarecemos que o prazo de 30 dias é mínimo necessário para planejamento adequado da contratante.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Rejeitamos contraproposta de redução, destacando que compromete a capacidade de remanejamento de equipe.",
+            "orientacao_retorno": "segunda_rodada"
+          }
+        ]
+      },
+      {
+        "id": "08dd99f3-2dd1-4c57-9282-b3d96614b1b4",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:21:29.673Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:17.852Z",
+        "conteudo": "Nas hipóteses na cláusula 16.3, fica facultado à CONTRATANTE promover a rescisão do CONTRATO, ou, a seu exclusivo critério, mantê-lo e promover a execução específica das obrigações inadimplidas, sem prejuízo de aplicar as penalidades previstas no CONTRATO, bem como ser ressarcida pelas perdas e danos sofridos. Ocorrendo uma ou mais das hipóteses de rescisão da cláusula 16.3., e não convindo à CONTRATANTE a rescisão do CONTRATO, poderá ela intervir no CONTRATO, de maneira que melhor satisfaça a seus interesses, correndo, por conta da CONTRATADA, os ônus decorrentes da intervenção.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "17.5",
+        "objetivo": "Permitir à contratante, nas hipóteses da cláusula 16.3, optar entre rescindir o contrato ou mantê-lo, exigindo o cumprimento das obrigações e podendo intervir na execução, com custos suportados pela contratada.",
+        "nome": "Cláusula 17ª - 17.5",
+        "tag": "8ee0652d-3df2-418e-ba20-6408dac9d51d",
+        "referencias": [
+          {
+            "descricao": "Admite-se incluir que a adoção das medidas previstas será proporcional ao descumprimento verificado, assegurando equilíbrio contratual.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "Manifesta preocupação quanto à possibilidade de aplicação cumulativa de diversas medidas (execução específica, penalidades, perdas e danos e intervenção).",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "A redação reflete o direito da contratante de adotar as medidas cabíveis para recompor os efeitos do inadimplemento, incluindo a cumulação de instrumentos legais e contratuais quando houver prejuízos distintos. A cláusula não trata de sanções duplicadas, mas de soluções complementares e proporcionais ao impacto do descumprimento. Solicitamos manter.",
+            "orientacao_retorno": "primeira_rodada"
+          }
+        ]
+      },
+      {
+        "id": "0ad7ec70-640a-4a78-a4d7-40ddcb89d23a",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T18:52:32.084Z",
+        "user_updated": null,
+        "date_updated": null,
+        "conteudo": "quando da demissão de seus FUNCIONÁRIOS, que venham a cumprir aviso prévio trabalhado, não permitir que eles tenham acesso a qualquer local relacionado à execução do CONTRATO, bem como a programas e sistemas internos da CONTRATANTE, salvo exceção prévia e formalmente aprovada pela CONTRATANTE;",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "8.1.xx",
+        "objetivo": "Garantir que, em caso de demissão de funcionários que cumpram aviso prévio trabalhando, a contratada impeça seu acesso a locais, programas e sistemas da contratante relacionados à execução do contrato, salvo autorização prévia e formal da contratante, preservando a segurança e a confidencialidade das operações.",
+        "nome": "Cláusula 8ª - 8.1.xx",
+        "tag": null,
+        "referencias": [
+          {
+            "descricao": "Reforçamos que a restrição é necessária para proteger informações e instalações da contratante.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Contestação da obrigação de impedir acesso durante aviso prévio, alegando risco de passivo trabalhista.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Reiteramos que exceções só poderão ocorrer mediante autorização formal da contratante.",
+            "orientacao_retorno": "segunda_rodada"
+          }
+        ]
+      },
+      {
+        "id": "0f181aff-247b-4043-8e5d-3a14b77bb884",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T14:13:17.785Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:16.551Z",
+        "conteudo": "Este CONTRATO não implica em nenhum dever de exclusividade da CONTRATANTE, que poderá firmar contratos com outras empresas para os mesmos fins, de acordo com seus interesses.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "2.3",
+        "objetivo": "Garantir a liberdade contratual da contratante para firmar acordos com terceiros, prevenindo tentativas da contratada de alegar exclusividade implícita ou pleitear compensações por concorrência contratual.",
+        "nome": "Cláusula 2ª - 2.3",
+        "tag": "9f2da876-2be2-4b7a-9c7e-1c20632977b9",
+        "referencias": [
+          {
+            "descricao": "Solicitamos verificação da solicitação de exclusivdade trazida pela Contratada, em razão do objeto contratual. Destacamos que o aceite ao pedido de exclusividade poderá gerar impossibilidade de contratação de terceiros para escopo semelhante.",
+            "orientacao_retorno": "area_interna"
+          },
+          {
+            "descricao": "A Samarco não aceita adotar um regime de exclusividade com Contratadas, devido a uma política interna preestabelecida.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "A Samarco está de acordo com a flexibilização da cláusula, nos termos indicados no corpo contratual.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "Solicitação de inclusão de exclusividade pela Contratada.",
+            "orientacao_retorno": "analise_contratada"
+          }
+        ]
+      },
+      {
+        "id": "10221416-5986-49df-832b-7670a585c080",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:21:28.854Z",
+        "user_updated": null,
+        "date_updated": null,
+        "conteudo": "descumprir quaisquer obrigações do CONTRATO não sanadas no prazo mencionado na cláusula de penalidades ou descumprir obrigação insanável, como, por exemplo, normas de anticorrupção/compliance;",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "17.3.i",
+        "objetivo": "Permitir a rescisão por descumprimento de obrigação não sanada no prazo ou por descumprimento insanável, como violação de normas de anticorrupção ou compliance.",
+        "nome": "Cláusula 17ª - 17.3.i",
+        "tag": null,
+        "referencias": [
+          {
+            "descricao": "A cláusula já prevê prazo para saneamento, exceto nos casos de obrigações que, por sua natureza, comprometem a integridade da relação contratual. Solicitamos manter.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Propõe que o descumprimento seja previamente notificado e discutido antes da rescisão.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Pode-se incluir que a contratada será previamente notificada nos casos de dúvida quanto à sanabilidade, mantendo a rescisão imediata apenas para situações que a Samarco considerar graves ou de urgência.",
+            "orientacao_retorno": "segunda_rodada"
+          }
+        ]
+      },
+      {
+        "id": "106b7db1-c4cd-413a-9cf8-2648ad95491b",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T14:43:39.183Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:31.086Z",
+        "conteudo": "O ÍNDICE DE REAJUSTE do CONTRATO será aplicado unicamente pelas previsões contidas nesta cláusula, não devendo se vincular a qualquer tipo de previsões contidas em propostas, convenções coletivas, acordos coletivos e afins.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "5.4",
+        "objetivo": "Restringir a aplicação do índice de reajuste apenas às regras previstas no contrato, sem considerar propostas ou acordos externos.",
+        "nome": "Cláusula 5ª - 5.4",
+        "tag": "72c1ce7c-c95e-4f1b-ad12-32d6fd8a4754",
+        "referencias": []
+      },
+      {
+        "id": "113b3569-8cde-403e-8a9a-9a56a8950dd4",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T18:52:31.810Z",
+        "user_updated": null,
+        "date_updated": null,
+        "conteudo": "substituir qualquer COLABORADOR envolvido na execução do OBJETO no prazo indicado pela CONTRATANTE, sem prejuízo do andamento do OBJETO, sempre que justificadamente solicitado pela CONTRATANTE;",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "8.1.xv",
+        "objetivo": "Garantir que a contratada substitua, no prazo determinado pela contratante, qualquer colaborador envolvido na execução do objeto, sempre que houver solicitação justificada, sem que isso cause prejuízo à continuidade ou ao andamento do objeto contratado.",
+        "nome": "Cláusula 8ª - 8.1.xv",
+        "tag": null,
+        "referencias": [
+          {
+            "descricao": "Solicitação de critérios objetivos para substituição.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Admite-se, excepcionalmente, o estabelecimento de critérios adicionais fixados na redação sugerida ao lado.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "Cláusula representa um padrão Samarco e dveverá ser mantida. Observar que haverá necessidade de justificativa pela Samarco.",
+            "orientacao_retorno": "primeira_rodada"
+          }
+        ]
+      },
+      {
+        "id": "114ed6df-a4f4-47e6-bfa5-ee197f545bb1",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T21:55:21.964Z",
+        "user_updated": null,
+        "date_updated": null,
+        "conteudo": "nomear o GESTOR DO CONTRATO, por escrito, com experiência comprovada em atividades inerentes ao OBJETO, para receber demandas, resolver problemas e representá-las, com plenos poderes para tomar as providências que se fizerem necessárias para o bom cumprimento do CONTRATO;",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "9.4.i",
+        "objetivo": "Assegurar que ambas as partes nomeiem, por escrito, um gestor do contrato com experiência comprovada no objeto contratado, conferindo-lhe plenos poderes para receber demandas, solucionar problemas e adotar as medidas necessárias para o correto cumprimento do contrato.",
+        "nome": "Cláusula 9ª - 9.4.i",
+        "tag": null,
+        "referencias": [
+          {
+            "descricao": "Possibilidade de flexibilizar a exigência formal de designação de gestor.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Reforçar que a exigência formal protege ambas as partes, assegurando legitimidade nas comunicações e decisões.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "A redação deve ser preservada, pois a nomeação formal de gestor é condição indispensável para garantir interlocução clara e execução adequada do contrato.",
+            "orientacao_retorno": "primeira_rodada"
+          }
+        ]
+      },
+      {
+        "id": "16923535-ab25-4b8c-9545-a70e8f74cd1f",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:14:48.087Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:06.276Z",
+        "conteudo": "Sem prejuízo da aplicação de penalidades eventualmente previstas nos ANEXOS, caso haja descumprimento sanável de obrigação contratual ou de qualquer norma pela CONTRATADA, a CONTRATANTE poderá notificá-la para que esta sane a obrigação no prazo de até 5 (cinco) dias úteis, ou outro prazo estipulado pela CONTRATANTE, a contar do recebimento da notificação.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "15.1",
+        "objetivo": "Permitir que, em caso de descumprimento sanável de obrigação contratual ou norma pela contratada, a contratante possa notificá-la para corrigir a falha dentro de até 5 dias úteis, ou outro prazo que estipular, contado do recebimento da notificação, garantindo oportunidade de regularização antes da aplicação de penalidades.",
+        "nome": "Cláusula 15ª - 15.1",
+        "tag": "c68a5462-926c-4d1a-8131-e2bed0e8e231",
+        "referencias": [
+          {
+            "descricao": "A cláusula já contempla a notificação nos casos de descumprimento sanável. Tornar essa exigência obrigatória para todas as hipóteses, inclusive eventuais infrações graves ou dolosas, limitaria indevidamente a atuação da contratante, tornando sua gestão no contrato indevidamente morosa. Mantemos a redação atual.; A Samarco atua com base na boa-fé e na colaboração com seus fornecedores, mas entende que a fixação de prazo mínimo contratual engessaria a gestão de situações que exigem respostas rápidas. A redação atual permite tratar cada caso conforme sua gravidade e urgência, preservando a efetividade contratual.; A Samarco entende que a redação atual já pressupõe a atuação responsável e fundamentada de sua fiscalização. A inclusão do termo \"comprovadamente\" pode gerar margem para interpretações restritivas, dificultando a aplicação de penalidades mesmo diante de situações evidentes. Por isso, sugerimos manter a cláusula como está.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Requerimento para que a contratada seja previamente comunicada antes de qualquer penalidade.; Proposta de inclusão de prazo fixo mínimo, de 15 dias ou mais, para regularização de descumprimentos sanáveis, em substituição ao prazo definido unilateralmente pela contratante.; Inclusão do termo \"comprovadamente\" antes de \"descumprimento\" para condicionar a aplicação de penalidades à demonstração prévia e objetiva da infração.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Sugerimos ajuste na redação da cláusula prevendo que, como regra geral, a aplicação de penalidades será precedida de notificação formal à contratada, concedendo-lhe prazo razoável para manifestação ou correção. Essa obrigação poderá ser excepcionada apenas nas hipóteses em que houver justificativa fundamentada, como riscos imediatos à operação, dano grave ou conduta dolosa.; Admite-se incluir prazo mínimo de 15 dias corridos para regularização de obrigações sanáveis, com ressalvas expressas para situações que exijam prazo inferior, como riscos operacionais ou urgência comprovada.; Admite-se a inclusão do termo \"comprovadamente\", desde que acompanhado de redação que reconheça expressamente como válidos os registros da fiscalização da contratante e os documentos emitidos por seu Gestor de Contrato. Isso evita a necessidade de comprovação judicializada e mantém a efetividade das medidas contratuais.",
+            "orientacao_retorno": "terceira_rodada"
+          },
+          {
+            "descricao": "Possível indicar que será adotada notificação prévia sempre que viável, como prática administrativa. Ainda que sem efeito vinculante, pode gerar expectativa recorrente de aviso, afetando prazos e agilidade. Sugerimos avaliação das áreas técnicas quanto à viabilidade dessa conduta.; Solicitamos confirmação do prazo de regularização solicitado pela Contratada, considerando o objeto do contrato e viabilidade interna para execução.; A inclusão de obrigação contratual de notificação prévia limita a aplicação direta de penalidades e pode afetar a resposta a descumprimentos urgentes. Recomendamos análise das áreas técnicas sobre os impactos operacionais dessa mudança e viabilidade de notificação prévia no prazo mínimo de 24 horas.",
+            "orientacao_retorno": "area_interna"
+          },
+          {
+            "descricao": "Com o intuito de reforçar a previsibilidade, sugerimos a alteração da cláusula para estabelecer um prazo mínimoo de 24 horas para envio de notificação pela Contratante antes da aplicação da penalidade.; Com o objetivo de reforçar previsibilidade, é possível inserir menção orientativa de que, sempre que viável, será concedido prazo razoável para saneamento — podendo ser de até 15 dias.; Sugerimos substituição do termo \"comprovadamente\" por \"justificadamente\".",
+            "orientacao_retorno": "segunda_rodada"
+          }
+        ]
+      },
+      {
+        "id": "17cfda40-da38-4851-a284-d734dd3f0e89",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T21:55:22.161Z",
+        "user_updated": null,
+        "date_updated": null,
+        "conteudo": "substituir o GESTOR DO CONTRATO no caso de falta, ausência ou impedimento eventual ou ocasional, por outro com iguais poderes; e",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "9.4.ii",
+        "objetivo": "Garantir que, em caso de ausência, falta ou impedimento do gestor do contrato, seja designado um substituto com os mesmos poderes, assegurando a continuidade da gestão e execução do contrato sem prejuízos.",
+        "nome": "Cláusula 9ª - 9.4.ii",
+        "tag": null,
+        "referencias": [
+          {
+            "descricao": "Pedido de flexibilizar a obrigação de substituição imediata, prevendo prazo para indicação de novo gestor.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Reafirmar a manutenção da previsão, já que eventuais lapsos de representação poderiam comprometer a execução do contrato.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "A cláusula deve ser preservada, pois a substituição imediata é necessária para garantir continuidade na gestão contratual.",
+            "orientacao_retorno": "primeira_rodada"
+          }
+        ]
+      },
+      {
+        "id": "18cd0d4e-4f25-4069-93c7-4eb54375693e",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:21:29.779Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:21.891Z",
+        "conteudo": "Na hipótese de rescisão deste CONTRATO por culpa de uma das PARTES, a PARTE inadimplente pagará à PARTE prejudicada a importância equivalente a 10% (dez por cento) do VALOR ESTIMADO DO CONTRATO, a título de multa rescisória, e pagará as perdas e danos que forem apuradas.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "17.6",
+        "objetivo": "Estabelecer que, em caso de rescisão por culpa de uma das partes, a parte inadimplente pagará multa de 10% do VALOR ESTIMADO DO CONTRATO, além de perdas e danos.",
+        "nome": "Cláusula 17ª - 17.6",
+        "tag": "e2b99fe6-3432-45f5-9d35-57c61ba3d208",
+        "referencias": [
+          {
+            "descricao": "Sugere limitar a responsabilidade ao valor da multa ou estabelecer teto para as indenizações complementares.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Solicitamos apoio do time de suprimentos tendo em vista que se trata de questão negocial.",
+            "orientacao_retorno": "area_interna"
+          },
+          {
+            "descricao": "Admite-se negociar inclusão de limite para a soma entre multa e indenizações, desde que não ultrapasse determinado percentual do valor estimado do contrato, a ser definido conforme a natureza e o risco do objeto contratual.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "A multa tem natureza compensatória e não exclui o direito à reparação integral de danos adicionais efetivamente apurados. O modelo evita enriquecimento sem causa e assegura justa recomposição da parte prejudicada. Solicitamos manter.",
+            "orientacao_retorno": "primeira_rodada"
+          }
+        ]
+      },
+      {
+        "id": "190476a0-ae86-4f2f-97ea-a169146d2136",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T23:26:55.228Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:23.112Z",
+        "conteudo": "Todas as notificações exigidas ou permitidas nos termos deste CONTRATO serão enviadas por escrito, por carta registrada, com aviso de recebimento, aos endereços constantes no cabeçalho ou por e-mail, ao GESTOR DO CONTRATO de ambas as PARTES; ou entregues pessoalmente aos respectivos gestores, no LOCAL DO CONTRATO, e, caso não tenham prazos específicos, deverão ser respondidos no prazo de até 05 (cinco) dias corridos, contados a partir do primeiro dia útil seguinte ao do recebimento da notificação. Caso haja qualquer alteração no endereço, a PARTE se compromete a informar a outra PARTE, sob pena de a notificação ser considerada efetivamente entregue no antigo endereço.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "21.3",
+        "objetivo": "Estabelecer os meios formais para envio e recebimento de notificações contratuais e fixar prazo para resposta",
+        "nome": "Cláusula 21ª - 21.3",
+        "tag": "bd3d4da9-e8d4-4c71-8c05-cbd10f47a3eb",
+        "referencias": [
+          {
+            "descricao": "Admite-se, excepcionalmente, a inclusão de outros meios de comunicação, desde que previamente acordados entre as PARTES e que assegurem comprovação de envio e recebimento.; Admite-se, excepcionalmente, a ampliação do prazo de resposta, desde que previamente acordada entre as PARTES e justificada pela complexidade da demanda.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "O meio de comunicação listado (notificação) assegura rastreabilidade e formalidade. Cláusula mantida integralmente.; O prazo de 5 dias corridos é adequado e garante celeridade contratual. Cláusula mantida integralmente.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Propõe ampliar os meios aceitos de comunicação (ex: plataformas digitais); Solicita aumento do prazo de resposta.",
+            "orientacao_retorno": "analise_contratada"
+          }
+        ]
+      },
+      {
+        "id": "19315864-3b63-4098-aaec-6596114573ba",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T14:43:04.941Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:07.649Z",
+        "conteudo": "O prazo de vigência do CONTRATO tem início e término definidos no cabeçalho do CONTRATO e encerrará; (i) caso seja consumido todo o saldo do valor do CONTRATO; (ii) após o cumprimento de todas as obrigações contratuais e/ou dele decorrentes ou (iii) no caso de atingido o valor estabelecido neste instrumento, o que ocorrer primeiro, independentemente de qualquer notificação judicial ou extrajudicial.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "3.1",
+        "objetivo": "Definir o período de vigência do contrato e os critérios que determinam seu encerramento, mesmo sem aviso prévio.",
+        "nome": "Cláusula 3ª - 3.1",
+        "tag": "6f1b1cb3-7f6d-40b7-bc69-a08a721bf551",
+        "referencias": [
+          {
+            "descricao": "Podemos avaliar a manutenção do contrato até o término da vigência pactuada, mesmo que o valor seja atingido antes, desde que isso ocorra sempre mediante autorização expressa e formal da CONTRATANTE e prévio aditamento. Assim, sugerimos uma redação alternativa incluíndo um item (iii): '...ou (iii) no caso de atingido o valor estabelecido neste instrumento, salvo autorização expressa e formal da CONTRATANTE para continuidade da execução contratual até o término da vigência, sem quaisquer novos pagamentos, e a formalização de aditivo visando ao acréscimo de prazo contratual'.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "Supressão da cláusula, ou ajuste considerando prazo contido no escopo de contratação.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Solicitamos manter a redação original da minuta. Trata-se de cláusula básica de minuta padrão que indica hipóteses de encerramento contratual. Além disso, o prazo de vigência constará expressamente no cabeçalho após emissão do pedido. A manutenção do item é essencial para controle orçamentário e limitação de exposição financeira da Samarco.",
+            "orientacao_retorno": "primeira_rodada"
+          }
+        ]
+      },
+      {
+        "id": "1a8603e8-ca5c-4e37-8d61-f7ecc9e23f7d",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T18:24:32.087Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:31.292Z",
+        "conteudo": "O pleito deverá ser apresentado à CONTRATANTE por escrito, fazendo expressa referência à ocorrência, apresentando os documentos e demais meios de sua comprovação e o seu valor.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "6.10",
+        "objetivo": "Estabelecer que pleitos devem ser apresentados formalmente por escrito, com documentação comprobatória e indicação do valor solicitado.",
+        "nome": "Cláusula 6ª - 6.10",
+        "tag": "c26f9de8-973d-4264-9fd7-41e17061bb42",
+        "referencias": [
+          {
+            "descricao": "A redação atual está alinhada à determinação Samarco, exigindo que os pleitos sejam formalizados de maneira clara, documentada e fundamentada. A exigência de valor e comprovação objetiva assegura à CONTRATANTE a possibilidade de análise técnica e jurídica criteriosa, dentro de seus fluxos internos. Entende-se que a inclusão de prazos ou ressalvas adicionais pode engessar desnecessariamente a gestão contratual. Por isso, recomenda-se a manutenção integral da cláusula.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Sugestão de suprimir a cláusula. Ou exigir prazo de resposta.",
+            "orientacao_retorno": "analise_contratada"
+          }
+        ]
+      },
+      {
+        "id": "1b1acd9a-e361-4ed8-8822-5c09de8bcb8e",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T18:52:32.300Z",
+        "user_updated": null,
+        "date_updated": null,
+        "conteudo": "informar, imediatamente, à CONTRATANTE, a ocorrência de qualquer acidente de trabalho ou incidente envolvendo os FUNCIONÁRIOS que estejam vinculados ao OBJETO, seja em decorrência da execução do CONTRATO ou não;",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "8.1.xxiii",
+        "objetivo": "Garantir que a contratada comunique imediatamente à contratante qualquer acidente de trabalho ou incidente envolvendo funcionários vinculados ao objeto, independentemente de estar diretamente relacionado à execução do contrato, permitindo à contratante tomar as medidas necessárias.",
+        "nome": "Cláusula 8ª - 8.1.xxiii",
+        "tag": null,
+        "referencias": [
+          {
+            "descricao": "Explicamos que a obrigação contratual complementa a legal, visando comunicação imediata para gestão de crise.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Alegação de que obrigação de comunicar acidentes é redundante, pois já há previsão legal.",
+            "orientacao_retorno": "analise_contratada"
+          }
+        ]
+      },
+      {
+        "id": "1d9f1472-0168-430f-ac65-9ebe11c792ed",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:09:41.205Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:31.691Z",
+        "conteudo": "A CONTRATADA é a única e exclusiva responsável por si e por seus FUNCIONÁRIOS, pelo uso, nos Serviços de materiais e equipamentos, incluindo hardware e software, regularmente adquiridos e/ou licenciados e deve dispor de todos os documentos comprobatórios da aquisição e/ou licenciamento dos mesmos. A CONTRATADA responderá, isolada e exclusivamente, perante quaisquer terceiros, por qualquer irregularidade verificada.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "12.6",
+        "objetivo": "Garantir que a contratada seja a única responsável, por si e por seus funcionários, pelo uso de materiais e equipamentos, incluindo hardware e software, devidamente adquiridos ou licenciados, devendo possuir toda a documentação comprobatória, e assumindo responsabilidade exclusiva perante terceiros por qualquer irregularidade constatada.",
+        "nome": "Cláusula 12ª - 12.6",
+        "tag": "384c1cdc-2d95-40b3-a317-cbd4e3c12a28",
+        "referencias": [
+          {
+            "descricao": "A contratada é responsável por garantir a regularidade de todos os insumos utilizados nos serviços. A cláusula assegura que não recaia sobre a Samarco qualquer risco decorrente do uso de software ou hardware irregular, o que se mantém inegociável.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Propõe exclusão da responsabilidade exclusiva",
+            "orientacao_retorno": "analise_contratada"
+          }
+        ]
+      },
+      {
+        "id": "1f28ced7-097e-40d0-bbaa-982f864a4702",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T18:52:32.421Z",
+        "user_updated": null,
+        "date_updated": null,
+        "conteudo": "fornecer as informações necessárias ao desenvolvimento do OBJETO conforme disciplinado no ANEXO denominado \"Escopo Técnico\", se houver, e desde que sejam de sua responsabilidade informar ou que estejam sob o seu exclusivo domínio;",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "8.2.i",
+        "objetivo": "Garantir que a contratante forneça à contratada todas as informações necessárias para o desenvolvimento do objeto, conforme previsto no escopo técnico, desde que essas informações estejam sob sua responsabilidade ou em seu exclusivo domínio, viabilizando a correta execução do contrato.",
+        "nome": "Cláusula 8ª - 8.2.i",
+        "tag": null,
+        "referencias": [
+          {
+            "descricao": "Pedido de detalhamento das informações que a contratante deve fornecer.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Esclarecemos que as informações necessárias já estão previstas no escopo técnico.",
+            "orientacao_retorno": "primeira_rodada"
+          }
+        ]
+      },
+      {
+        "id": "214022c1-fee3-43fc-bff8-22172fecaab4",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T18:52:31.591Z",
+        "user_updated": null,
+        "date_updated": null,
+        "conteudo": "se aplicável, manter, por 5 (cinco) anos após o encerramento do CONTRATO, observada a legislação relacionada aos documentos técnicos e fiscais, à disposição da CONTRATANTE, ou de quem esta designar, durante o horário comercial, nos escritórios da CONTRATADA, o arquivo completo da documentação referente aos CONTRATO, com registros precisos e atualizados de todos os custos, despesas, transações financeiras e obrigações relacionadas com este CONTRATO, para fins de auditoria;",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "8.1.xi",
+        "objetivo": "Assegurar que a contratada mantenha, por 5 anos após o encerramento do contrato, toda a documentação técnica, fiscal e financeira relacionada ao contrato, devidamente organizada e disponível para consulta pela contratante ou por terceiros por ela indicados, durante o horário comercial, possibilitando auditorias e verificações.",
+        "nome": "Cláusula 8ª - 8.1.xi",
+        "tag": null,
+        "referencias": [
+          {
+            "descricao": "Solicita-se manutenção da cláusula. O prazo de 5 anos é compatível com a legislação fiscal e com o período usual de auditorias.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Validar com Compliance se há necessidade de harmonizar com políticas internas de retenção documental.",
+            "orientacao_retorno": "area_interna"
+          },
+          {
+            "descricao": "Pedido de redução do prazo de guarda para 3 anos, alinhado a algumas legislações fiscais, alegando ônus administrativo excessivo.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Mantém-se o prazo de 5 anos. Admitida apenas adequação de redação para compatibilizar com normas específicas de guarda fiscal.",
+            "orientacao_retorno": "segunda_rodada"
+          }
+        ]
+      },
+      {
+        "id": "23833076-f858-4ab0-97b6-13574d9d0eef",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T21:55:20.922Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:17.688Z",
+        "conteudo": "Entre outras atividades de FISCALIZAÇÃO, gestão e orientação, o GESTOR DO CONTRATO da CONTRATANTE poderá, a seu exclusivo critério:",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "9.3",
+        "objetivo": "Estabelecer que o gestor do contrato da contratante possui poderes para exercer atividades de fiscalização, gestão e orientação, conforme seu exclusivo critério.",
+        "nome": "Cláusula 9ª - 9.3",
+        "tag": "8f635973-f980-4d27-bb22-7c84176d2b4c",
+        "referencias": [
+          {
+            "descricao": "Não deve ser aceita a inclusão, pois reduziria a autonomia do gestor da contratante no exercício da fiscalização.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "A cláusula deve permanecer inalterada, assegurando a discricionariedade do gestor.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "Inclusão de obrigação de justificar formalmente as decisões tomadas com base no critério exclusivo.",
+            "orientacao_retorno": "analise_contratada"
+          }
+        ]
+      },
+      {
+        "id": "254c2151-90ab-47ea-8ab5-809002dc79de",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T18:52:29.825Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:18.628Z",
+        "conteudo": "Cada PARTE responderá pelo recolhimento dos tributos pelos quais seja responsável como contribuinte conforme definido pela legislação.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "7.4",
+        "objetivo": "Estabelecer que cada parte será responsável pelo pagamento dos tributos que lhe couberem como contribuinte, conforme a legislação.",
+        "nome": "Cláusula 7ª - 7.4",
+        "tag": "41e43c17-9db9-4f05-b071-b0d8d17b3568",
+        "referencias": [
+          {
+            "descricao": "Solicitamos manter a redação original. A cláusula apenas reproduz o princípio legal de que cada parte responde pelos tributos de que seja contribuinte, conforme legislação aplicável, não havendo ampliação de responsabilidades.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Alegação de que a repartição genérica de responsabilidades tributárias pode transferir riscos indevidos à contratada. Solicitação de detalhamento sobre quais tributos estão incluídos, para evitar interpretações que ampliem obrigações além do previsto em lei.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Recomendamos avaliação pelo time tributário para verificar se a redação atual é suficiente para evitar interpretações extensivas que possam gerar risco fiscal.",
+            "orientacao_retorno": "area_interna"
+          },
+          {
+            "descricao": "Admite-se avaliar a inclusão de referência expressa de que a obrigação tributária se limita àquelas previstas em lei, sem transferir encargos adicionais entre as partes.",
+            "orientacao_retorno": "segunda_rodada"
+          }
+        ]
+      },
+      {
+        "id": "26edb6c6-a86a-4c23-ae44-2f8a5a9545ec",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T23:26:55.123Z",
+        "user_updated": null,
+        "date_updated": null,
+        "conteudo": "A CONTRATANTE reserva-se o direito de auditar qualquer das etapas do OBJETO do CONTRATO, a qualquer tempo, desde que no horário normal de trabalho da CONTRATADA e de seus subcontratados.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "21.1",
+        "objetivo": "Permitir à contratante auditar qualquer etapa do objeto do contrato a qualquer momento, dentro do horário de trabalho da contratada e subcontratados.",
+        "nome": "Cláusula 21ª - 21.1",
+        "tag": null,
+        "referencias": [
+          {
+            "descricao": "A cláusula visa garantir o monitoramento contínuo e eficaz da execução contratual, sendo aplicável de forma razoável e conforme os limites legais. Solicitamos manter.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Verificar se a área solicitante exige visitas sem aviso prévio em algum contexto. Se não, incluir aviso prévio pode ser medida de bom senso sem comprometer controle.",
+            "orientacao_retorno": "area_interna"
+          },
+          {
+            "descricao": "Admite-se incluir exigência de aviso prévio com prazo mínimo (ex.: 2 dias úteis), desde que não comprometa o direito da contratante à fiscalização efetiva. O cumprimento de obrigações de confidencialidade permanece de responsabilidade da contratada.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "Solicita inclusão de aviso prévio para realização das auditorias",
+            "orientacao_retorno": "analise_contratada"
+          }
+        ]
+      },
+      {
+        "id": "299d1c7f-61ac-4204-9c7b-7fb0fc7d580e",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:24:39.876Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:32.922Z",
+        "conteudo": "18.4. Caso, na execução do objeto deste CONTRATO, os funcionários ou representantes da CONTRATADA interajam ou tenham a expectativa de interação com Agente Público ou com a administração pública em nome da CONTRATANTE, suas empresas controladas e coligadas, estes deverão obrigatoriamente e previamente à execução dos serviços, realizar o treinamento disponibilizado para tal fim na plataforma da CONTRATANTE.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "18.4",
+        "objetivo": "Assegurar que, antes de qualquer contato com órgãos públicos em nome da contratante, os funcionários ou representantes da contratada façam um treinamento obrigatório oferecido pela contratante.",
+        "nome": "Cláusula 18ª - 18.4",
+        "tag": "6e6fb302-fb90-4650-b4f4-505148ecac03",
+        "referencias": [
+          {
+            "descricao": "Solicitamos validação da área de compliance quanto à alteração sugerida pela Contratada.",
+            "orientacao_retorno": "area_interna"
+          },
+          {
+            "descricao": "Solicita flexibilização da obrigação ou exclusão do compromisso",
+            "orientacao_retorno": "analise_contratada"
+          }
+        ]
+      },
+      {
+        "id": "2a1af114-1fe8-4e3b-8e6b-5cdbf9f114f6",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:17:28.657Z",
+        "user_updated": null,
+        "date_updated": null,
+        "conteudo": "ii. adotar todas as medidas possíveis para remediar e/ou mitigar as consequências do EVENTO, que viabilize a retomada no cumprimento de suas obrigações o mais rápido possível; e,",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "16.2.ii",
+        "objetivo": "Obrigar a parte afetada a adotar todas as medidas possíveis para mitigar os efeitos do evento e retomar o cumprimento das obrigações rapidamente.",
+        "nome": "Cláusula 16ª - 16.2.ii",
+        "tag": null,
+        "referencias": [
+          {
+            "descricao": "Propõe relativizar a obrigação, limitando-a a medidas razoáveis e proporcionais, de acordo com os recursos disponíveis e a gravidade do evento.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "A cláusula reflete dever de diligência essencial para minimizar prejuízos e assegurar a continuidade do contrato. A redação já contempla a noção de razoabilidade ao exigir apenas medidas possíveis. Cláusula mantida integralmente.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Admite-se, excepcionalmente, incluir referência expressa à proporcionalidade das medidas adotadas, desde que não afaste a obrigação de mitigar danos de forma célere.",
+            "orientacao_retorno": "segunda_rodada"
+          }
+        ]
+      },
+      {
+        "id": "2b08ddb8-2f13-4316-b79a-27588b2f00a6",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T18:52:32.551Z",
+        "user_updated": null,
+        "date_updated": null,
+        "conteudo": "realizar os pagamentos na forma prevista no CONTRATO.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "8.2.ii",
+        "objetivo": "Estabelecer que a contratante deve efetuar os pagamentos devidos à contratada conforme as condições e prazos definidos no contrato, garantindo o cumprimento da obrigação financeira.",
+        "nome": "Cláusula 8ª - 8.2.ii",
+        "tag": null,
+        "referencias": []
+      },
+      {
+        "id": "2c98ca09-8a9e-4cec-8f9b-cf0ec7f1672b",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:09:40.244Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:28.287Z",
+        "conteudo": "A CONTRATADA declara que antes do término deste CONTRATO, por qualquer razão, deverá ser devolvida à CONTRATANTE toda e qualquer documentação, arquivada em qualquer meio, relativa ao CONTRATO, no prazo máximo de 15 (quinze) DIAS.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "11.4",
+        "objetivo": "Garantir que, ao encerrar o contrato por qualquer motivo, a contratada devolva à contratante todos os documentos relacionados ao contrato — em qualquer formato — no prazo de até 15 dias.",
+        "nome": "Cláusula 11ª - 11.4",
+        "tag": "6fa10ba8-7256-43d5-a6d7-3ef6580cb456",
+        "referencias": [
+          {
+            "descricao": "A devolução tempestiva da documentação é essencial para o encerramento contratual e controle institucional. O prazo de 15 dias é razoável. A guarda de cópias pela contratada deve ser previamente autorizada pela Samarco, que será analisada conforme o caso.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Solicita ampliação do prazo de devolução ou possibilidade de retenção de cópias para fins de arquivo e auditoria.",
+            "orientacao_retorno": "analise_contratada"
+          }
+        ]
+      },
+      {
+        "id": "300e1869-909c-4e18-9e09-125dbb1fdfa8",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T14:13:17.765Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:05.519Z",
+        "conteudo": "A CONTRATADA prestará à CONTRATANTE os serviços técnicos especializados detalhados no QUADRO DE ITENS PREENCHÍVEIS, os quais serão prestados conforme disciplinado neste CONTRATO.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "2.2",
+        "objetivo": "Delimitar de forma clara os serviços contratados, prevenindo a prestação de atividades fora do escopo definido e evitando que a contratada alegue execução de serviços não contratados para justificar cobranças adicionais.",
+        "nome": "Cláusula 2ª - 2.2",
+        "tag": "9867d402-785c-4551-b7bb-6848abb0d6a1",
+        "referencias": []
+      },
+      {
+        "id": "300fd5b7-83f4-45d6-9488-12657076660e",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:21:29.588Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:29:59.694Z",
+        "conteudo": "Nas hipóteses previstas na cláusula 16.3, a rescisão operar-se-á de pleno direito na data de envio da notificação pela CONTRATANTE à CONTRATADA.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "17.4",
+        "objetivo": "Estabelecer que, nas hipóteses da cláusula 16.3, a rescisão será automática na data de envio da notificação pela contratante.",
+        "nome": "Cláusula 17ª - 17.4",
+        "tag": "42b55599-12dd-45a4-8df9-123c06b88985",
+        "referencias": [
+          {
+            "descricao": "A imediaticidade da rescisão é necessária para resguardar a contratante contra prejuízos decorrentes de faltas graves da contratada, já previamente delimitadas na cláusula 16.3. Cláusula mantida integralmente.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Admite-se, excepcionalmente, conceder prazo de regularização em situações de menor gravidade ou impacto, desde que previamente comunicadas pela contratada e aceitas pela contratante.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "Solicita que a rescisão somente produza efeitos após prazo razoável para defesa ou regularização, sob alegação de respeito ao contraditório e à boa-fé contratual.",
+            "orientacao_retorno": "analise_contratada"
+          }
+        ]
+      },
+      {
+        "id": "31c71160-b930-475a-a165-3537068143ff",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T18:24:32.365Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:33.216Z",
+        "conteudo": "Obrigatoriamente, as faturas deverão ser entregues ao GESTOR DO CONTRATO até o dia 25 (vinte e cinco) de cada mês. Após esta data, só poderão ser aceitas notas fiscais/faturas datadas a partir do primeiro dia útil do mês subsequente.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "6.14",
+        "objetivo": "Fixar prazo para entrega das faturas até o dia 25 de cada mês, aceitando-as após essa data apenas com emissão no mês seguinte.",
+        "nome": "Cláusula 6ª - 6.14",
+        "tag": "54774846-1dc4-4395-9a51-042f4e2bdc95",
+        "referencias": [
+          {
+            "descricao": "Admite-se a aceitação de faturas entregues após o dia 25 somente em hipóteses excepcionais, devidamente documentadas, condicionadas à aprovação expressa da área responsável.; Pode-se avaliar, de forma excepcional, recebimento de faturas emitidas após o dia 25, desde que seu processamento ocorra no mês subsequente, sem comprometer o cronograma orçamentário.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "Solicitamos manter a redação original. A previsão de prazo objetivo até o dia 25 garante organização financeira e orçamentária, além de evitar sobreposição de datas de competência.; A regra de corte no dia 25 é padrão contratual, adotada para possibilitar fechamento contábil e financeiro dentro do mês de competência. Não se recomenda alteração.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Inclusão de exceções para entrega após o prazo em casos justificados.; Alteração da regra para permitir recebimento de faturas emitidas no mesmo mês, mesmo após o dia 25.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Validar com área envolvida possível avaliar exceções, desde que formalmente justificadas e aprovadas previamente, para não comprometer o fechamento contábil.; Validar com área envolvida possível avaliar exceções, desde que formalmente justificadas e aprovadas previamente, para não comprometer o fechamento contábil.",
+            "orientacao_retorno": "area_interna"
+          }
+        ]
+      },
+      {
+        "id": "33199cde-5bc4-4fe7-8f87-db5d0597e8be",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T18:52:30.090Z",
+        "user_updated": null,
+        "date_updated": null,
+        "conteudo": "executar o OBJETO conforme as diretrizes, procedimentos internos e políticas informados pela CONTRATANTE, e, ainda, de acordo com a melhor técnica, padrões, instruções e medidas de segurança aplicáveis, determinações do Poder Público - tais como previsões de licenças, alvarás, autorizações, observando toda a legislação e normas técnicas, respondendo, diretamente, pela quantidade, qualidade e adequação do OBJETO;",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "8.1.i",
+        "objetivo": "Assegurar que a contratada execute o objeto conforme padrões técnicos, normas legais, políticas da contratante e exigências do poder público, assumindo responsabilidade total por qualidade, quantidade e adequação.",
+        "nome": "Cláusula 8ª - 8.1.i",
+        "tag": null,
+        "referencias": [
+          {
+            "descricao": "Mantém-se a exigência de execução conforme a melhor técnica, com eventual ressalva pontual para afastar responsabilidade em hipóteses de ordens da contratante que afrontem disposições legais ou normativas.",
+            "orientacao_retorno": "terceira_rodada"
+          },
+          {
+            "descricao": "Solicitamos manter a redação original. A responsabilidade da contratada está vinculada à correta execução técnica e legal do objeto. Diretrizes emanadas da contratante não afastam o dever de diligência da contratada quanto à conformidade técnica mínima.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Sugerimos avaliar com área técnica se há necessidade de incluir ressalva limitando a responsabilidade da contratada em casos de determinação formal da contratante que descaracterize boas práticas técnicas.",
+            "orientacao_retorno": "area_interna"
+          },
+          {
+            "descricao": "Proposta de exclusão da responsabilidade integral em casos de falhas decorrentes de diretrizes da própria contratante.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Admite-se esclarecer que a responsabilidade da contratada não abrange falhas diretamente causadas por ordens escritas da contratante que contrariem normas legais ou técnicas aplicáveis.",
+            "orientacao_retorno": "segunda_rodada"
+          }
+        ]
+      },
+      {
+        "id": "33b2944c-a436-40cb-a5b6-74c17d6101a0",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T18:24:32.739Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:33.807Z",
+        "conteudo": "Os pagamentos retidos pelo GESTOR DO CONTRATO não estão sujeitos a qualquer correção durante o prazo necessário ao atendimento das exigências formuladas.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "6.18",
+        "objetivo": "Determinar que valores retidos pelo gestor do contrato não sofrerão correção durante o período de atendimento das exigências.",
+        "nome": "Cláusula 6ª - 6.18",
+        "tag": "582f52ea-b2f4-407a-8ce9-112b73151d57",
+        "referencias": [
+          {
+            "descricao": "Inclusão de limite máximo para o prazo de retenção sem correção.; Previsão de aplicação de correção monetária caso a exigência seja posteriormente considerada improcedente.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Manter cláusula original; prazo decorre da pendência da Contratada.; A Samarco não aceita ajustes à cláusula, tratando-se de padrão aplicável por se referir a hipóteses de descumprimento da Contratada.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "A Samarco aceita a inclusão de prazo máximo para avaliação do cumprimento das exigências da Contratada, sem obrigatoriedade de correção.; A Samarco admite, em caráter de excepcionalidade, a exigência de correção de valores, caso seja verificado que as exigências apresentadas à Contratada foram indevidas.",
+            "orientacao_retorno": "segunda_rodada"
+          }
+        ]
+      },
+      {
+        "id": "33e27970-f134-48a1-93e6-d7f5131bd4c2",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T21:55:21.160Z",
+        "user_updated": null,
+        "date_updated": null,
+        "conteudo": "Determinar as ações, correções ou retificações adequadas à execução do OBJETO, de forma justificada, devendo CONTRATADA assumir todos os ônus daí decorrentes;",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "9.3.iii",
+        "objetivo": "Assegurar que o gestor do contrato da contratante possa determinar, de forma justificada, as ações, correções ou retificações necessárias à execução do objeto, impondo à contratada a obrigação de realizar e arcar com todos os custos decorrentes dessas medidas.",
+        "nome": "Cláusula 9ª - 9.3.iii",
+        "tag": null,
+        "referencias": [
+          {
+            "descricao": "Pedido de limitar responsabilidade a custos previamente aprovados.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "A previsão deve ser mantida, impondo à contratada o ônus integral das correções determinadas pelo gestor.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Não aceitar limitação; todos os custos de correção são inerentes à execução defeituosa.",
+            "orientacao_retorno": "segunda_rodada"
+          }
+        ]
+      },
+      {
+        "id": "3487d6b9-20c5-42c5-bff0-e37f3d2fb321",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:14:47.569Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:18.066Z",
+        "conteudo": "A subcontratação do OBJETO pela CONTRATADA, ou de parte dele, sem a prévia autorização expressa da CONTRATANTE será considerada inadimplemento contratual e permitirá à CONTRATANTE, a seu exclusivo critério: (i) solicitar a imediata paralisação do OBJETO; (ii) exigir a desmobilização imediata da subcontratada; (iii) exigir a substituição da subcontratada, sem prejuízo das penalidades cabíveis.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "13.3",
+        "objetivo": "Estabelecer que a subcontratação total ou parcial do objeto pela contratada, sem autorização expressa e prévia da contratante, será considerada inadimplemento contratual, permitindo à contratante adotar medidas como paralisar imediatamente a execução, exigir a desmobilização ou substituição da subcontratada, além de aplicar as penalidades previstas no contrato.",
+        "nome": "Cláusula 13ª - 13.3",
+        "tag": "9e67b74b-4201-4025-94ee-15d140a3946f",
+        "referencias": [
+          {
+            "descricao": "A CONTRATANTE aceita conceder prazo máximo para que a CONTRATADA regularize a subcontratação irregular antes da adoção das medidas de paralisação e substituição, desde que a situação não configure risco iminente à execução dos serviços ou à segurança.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "Suprimir ou alterar a redação da cláusula para pleitear que a paralisação imediata ou desmobilização não seja automática, prevendo a possibilidade de diálogo e prazo razoável para regularização da situação. Também pode solicitar que haja critérios objetivos e razoáveis para aplicação das penalidades e medidas mencionadas.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "A cláusula é essencial para garantir o controle da CONTRATANTE sobre a subcontratação, assegurando que a autorização prévia seja condição imprescindível. As medidas previstas são proporcionais à gravidade do inadimplemento e visam resguardar os interesses da CONTRATANTE, devendo ser mantidas sem alteração.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Admite-se que, em casos de subcontratação sem autorização, seja facultado à CONTRATANTE notificar formalmente a CONTRATADA para regularização em prazo curto e razoável, antes da imposição das penalidades e medidas restritivas. Essa flexibilização busca preservar a continuidade dos serviços, sem prejuízo do direito da CONTRATANTE de controlar os subcontratados.",
+            "orientacao_retorno": "terceira_rodada"
+          }
+        ]
+      },
+      {
+        "id": "34a43192-1a15-4c58-ad32-cfe46b2f0091",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:17:28.386Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:00.498Z",
+        "conteudo": "Se um EVENTO ocorrer a qualquer tempo durante a vigência deste CONTRATO, a PARTE que ficar impossibilitada de cumprir suas obrigações deverá adotar os seguintes procedimentos:",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "16.2",
+        "objetivo": "Estabelecer os procedimentos que a parte impedida de cumprir obrigações deve seguir em caso de ocorrência de evento de caso fortuito ou força maior.",
+        "nome": "Cláusula 16ª - 16.2",
+        "tag": "94eb1798-b848-4759-83f2-ec6985dac8cc",
+        "referencias": []
+      },
+      {
+        "id": "380ca055-fd1d-4e4e-9267-d8aa3434842c",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T18:24:31.744Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:00.829Z",
+        "conteudo": "A CONTRATADA emitirá Boletim Mensal de Medição (\"BMM\") na hipótese de MEDIÇÃO MENSAL ou o Boletim de Medição (\"BM\") nas outras formas de pagamento previstas na cláusula 7.3 do CONTRATO.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "6.5",
+        "objetivo": "Padronizar a emissão de boletins de medição conforme o modelo de pagamento.",
+        "nome": "Cláusula 6ª - 6.5",
+        "tag": "e583da99-ff60-4004-a493-eaef8e8bb3c7",
+        "referencias": []
+      },
+      {
+        "id": "397b5bfd-cb6a-42fa-9f34-824d86ab9e53",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T18:24:32.291Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:32.762Z",
+        "conteudo": "Após aprovação do BM ou do BMM, a CONTRATANTE autorizará a CONTRATADA a emitir a respectiva Nota Fiscal/Fatura, indicando, obrigatoriamente, o número do CONTRATO e número do respectivo BM ou BMM, cuja via original, será anexada à Nota Fiscal/Fatura.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "6.13",
+        "objetivo": "Estabelecer que, após aprovação do BM ou BMM, a CONTRATANTE autoriza a emissão da nota fiscal/fatura pela CONTRATADA, que deve conter referências ao contrato e ao documento de medição, acompanhada dos comprovantes legais.",
+        "nome": "Cláusula 6ª - 6.13",
+        "tag": "8c5dc2ba-e125-4777-91a8-86b83c6fcb4d",
+        "referencias": [
+          {
+            "descricao": "Supressão ou flexibilização da cláusula",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "A apresentação da via original do BM/BMM, bem como dos comprovantes de quitação legal, é indispensável para assegurar a rastreabilidade documental e a regularidade fiscal da contratação. Além disso, a obrigatoriedade da indicação do número do contrato e do BM/BMM na nota fiscal é essencial para controle interno.",
+            "orientacao_retorno": "primeira_rodada"
+          }
+        ]
+      },
+      {
+        "id": "3a2ece75-245a-4dd4-bd47-0b3d0f52aece",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T18:52:29.437Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:04.936Z",
+        "conteudo": "Todas as obrigações tributárias principais e acessórias que incidam ou venham a incidir, direta ou indiretamente sobre o OBJETO do presente CONTRATO são de responsabilidade da CONTRATADA, que deverá, quando a legislação não exigir da CONTRATANTE a obrigação de retenção, comprovar o cumprimento de tais obrigações à CONTRATANTE.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "7.1",
+        "objetivo": "Atribuir à CONTRATADA a responsabilidade pelo pagamento e cumprimento de todas as obrigações tributárias relacionadas aos serviços prestados.",
+        "nome": "Cláusula 7ª - 7.1",
+        "tag": "83caf765-28d8-41c8-b5c5-c390b44215e0",
+        "referencias": [
+          {
+            "descricao": "As alterações não foram aceitas pelo time tributário da Samarco. Conforme previsão nos documentos da contração todos as obrigações tributárias devem ser cumpridas pela Contratada.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Eventual solicitação de que a cláusula seja excluída.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Solicitamos análise do time tributário para validação do ajuste solicitado pela Contratada.",
+            "orientacao_retorno": "area_interna"
+          }
+        ]
+      },
+      {
+        "id": "3b2a69c9-d586-41cb-b367-41109d7f219d",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:24:39.671Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:24.273Z",
+        "conteudo": "18.3. A CONTRATADA deverá comunicar a CONTRATANTE imediatamente, através de envio de e-mail ao Gestor do Contrato, e em nenhuma hipótese em mais de 15 (quinze) DIAS após tomar conhecimento, dos seguintes eventos:",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "18.3",
+        "objetivo": "Exigir que a contratada informe rapidamente à contratante — em no máximo 15 dias — se tomar conhecimento de certos acontecimentos relevantes, por e-mail ao gestor do contrato.",
+        "nome": "Cláusula 18ª - 18.3",
+        "tag": "f24f7cab-0550-401f-a4dd-346704979fd5",
+        "referencias": [
+          {
+            "descricao": "Solicitamos validação da área de compliance quanto à alteração sugerida pela Contratada.",
+            "orientacao_retorno": "area_interna"
+          },
+          {
+            "descricao": "Solicita flexibilização da obrigação ou exclusão do compromisso",
+            "orientacao_retorno": "analise_contratada"
+          }
+        ]
+      },
+      {
+        "id": "3b8343bc-f351-4193-82a6-60093a9374d1",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:14:47.723Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:01.495Z",
+        "conteudo": "A CONTRATADA se obriga a instituir, às suas expensas, com empresa seguradora de sua conveniência, além do seguro de responsabilidade civil, os seguros que julgar convenientes e os seguros previstos na legislação em vigor.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "14.1",
+        "objetivo": "Garantir que a contratada contrate, às suas próprias custas, seguro de responsabilidade civil e quaisquer outros seguros que considerar necessários, bem como aqueles exigidos pela legislação vigente, assegurando a cobertura de riscos relacionados à execução do contrato.",
+        "nome": "Cláusula 14ª - 14.1",
+        "tag": "edf5f3a1-3259-469e-b0fc-7a24b3a030cd",
+        "referencias": [
+          {
+            "descricao": "Solicitamos validação da área de Seguros quanto à alteração sugerida pela Contratada.",
+            "orientacao_retorno": "area_interna"
+          },
+          {
+            "descricao": "A exigência de seguro de responsabilidade civil, bem como dos legalmente obrigatórios, é indispensável para mitigar riscos e proteger a contratante de eventuais prejuízos decorrentes da execução do contrato. Cláusula mantida integralmente",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Solicita exclusão da obrigatoriedade de contratação de seguros além dos legalmente exigidos, por entender que a decisão de contratar seguros adicionais deve ser facultativa.",
+            "orientacao_retorno": "analise_contratada"
+          }
+        ]
+      },
+      {
+        "id": "3d370bfe-37c7-42be-9f23-bceb8f45e7e3",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:24:39.745Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:29.175Z",
+        "conteudo": "18.3.1. Qualquer violação real ou iminente da legislação anticorrupção aplicável.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "18.3.1",
+        "objetivo": "Obrigar a contratada a informar imediatamente se souber de qualquer violação, ou risco de violação, das leis anticorrupção relacionadas ao contrato.",
+        "nome": "Cláusula 18ª - 18.3.1",
+        "tag": "ab215de9-b4d7-4d6e-ba4a-5c5526f47b30",
+        "referencias": [
+          {
+            "descricao": "Solicitamos validação da área de compliance quanto à alteração sugerida pela Contratada.",
+            "orientacao_retorno": "area_interna"
+          },
+          {
+            "descricao": "Solicita flexibilização da obrigação ou exclusão do compromisso",
+            "orientacao_retorno": "analise_contratada"
+          }
+        ]
+      },
+      {
+        "id": "3ecdb1f0-9b44-49ba-94e2-704e20561595",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:09:40.630Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:32.189Z",
+        "conteudo": "A violação, pela CONTRATADA, do dever de confidencialidade previsto nesta cláusula importará na aplicação de multa não compensatória de 20% (vinte por cento) do VALOR ESTIMADO DO CONTRATO.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "11.6",
+        "objetivo": "Estabelecer penalidade específica de multa de 20% do valor estimado do contrato em caso de quebra de confidencialidade pela CONTRATADA, com natureza não compensatória.",
+        "nome": "Cláusula 11ª - 11.6",
+        "tag": "da0dad54-8523-47e5-8090-834077efc7ba",
+        "referencias": [
+          {
+            "descricao": "Trata-se de previsão de multa em caráter não compensatório que confere o direito de exigir eventual indenização por danos sofridos em caso de descumprimento da confidencialidade, e não de descumprimento contratual puro e simples. Solicitamos manter redação original.; Trata-se de previsão de multa em caráter não compensatório que confere o direito de exigir eventual indenização por danos sofridos em caso de descumprimento da confidencialidade, e não de descumprimento contratual puro e simples. Solicitamos manter redação original.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Flexibiliza-se para tornar a cláusula bilateral, mantendo o percentual da multa.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "A Samarco flexibilizará a cláusula para redução do percentual e bilateralidade, conforme sugestão.",
+            "orientacao_retorno": "terceira_rodada"
+          },
+          {
+            "descricao": "Solicitamos redução do percentual de multa de confidencialidade; Exclusão do caráter não compensatório da multa",
+            "orientacao_retorno": "analise_contratada"
+          }
+        ]
+      },
+      {
+        "id": "411f8afe-ed65-4eb3-be21-9ae3ef898718",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:09:40.376Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:30.876Z",
+        "conteudo": "Em caso de impossibilidade de devolução da documentação tendo em vista o meio em que foi transmitida, incluindo, porém não se limitando a e-mails e/ou chats, a CONTRATADA declara que realizará a destruição completa dos arquivos confidenciais em sua posse, sob pena de ser caracterizado descumprimento contratual.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "11.4.1",
+        "objetivo": "Estabelecer que, se não for possível devolver os documentos confidenciais (por exemplo, por terem sido enviados por e-mail ou chat), a contratada deverá destruí-los totalmente, sob pena de descumprir o contrato, caso não realize.",
+        "nome": "Cláusula 11ª - 11.4.1",
+        "tag": "e9630953-8d4d-44a8-9f54-1efb38792d98",
+        "referencias": [
+          {
+            "descricao": "Aponta dificuldade técnica para garantir a destruição completa de arquivos digitais, especialmente em backups automáticos e sistemas internos",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "A cláusula busca garantir o tratamento adequado de informações sensíveis. A contratada deve adotar medidas razoáveis para eliminar os arquivos, inclusive dos sistemas ativos, e comunicar à contratante eventual impossibilidade técnica residual. Solicitamos a manutenção.",
+            "orientacao_retorno": "primeira_rodada"
+          }
+        ]
+      },
+      {
+        "id": "414a2408-b2ec-4bf5-a9ca-cbedca7a4d38",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:14:47.652Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:19.056Z",
+        "conteudo": "Fica vedado aos subcontratados realizarem novas subcontratações.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "13.4",
+        "objetivo": "Evitar qualquer tipo de terceirização dos serviços sem gestão da Renova",
+        "nome": "Cláusula 13ª - 13.4",
+        "tag": "8e96e366-8e86-44fd-9673-4a0b095f7efe",
+        "referencias": [
+          {
+            "descricao": "Pode-se aceitar a possibilidade de subcontratação em cascata em situações excepcionais, com comunicação prévia e autorização da CONTRATANTE, desde que a CONTRATADA mantenha integral responsabilidade pelo cumprimento das obrigações contratuais e qualidade dos serviços prestados. Essa flexibilização visa viabilizar a execução do contrato, sem comprometer a fiscalização e controle.",
+            "orientacao_retorno": "terceira_rodada"
+          },
+          {
+            "descricao": "Suprimir ou alterar a redação da cláusula para pleitear flexibilização para permitir subcontratações em casos excepcionais,",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "A vedação à subcontratação em cascata visa evitar perda de controle sobre a qualidade e a responsabilidade dos serviços executados. É cláusula padrão para garantir transparência e controle da CONTRATANTE. A redação será mantida sem alterações.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Admite-se que, excepcionalmente, subcontratados possam realizar novas subcontratações para serviços especializados, desde que submetam previamente a solicitação à CONTRATANTE e obtenham autorização expressa por escrito. Essa medida mantém o controle da CONTRATANTE sem prejudicar a execução técnica.",
+            "orientacao_retorno": "segunda_rodada"
+          }
+        ]
+      },
+      {
+        "id": "43a8f40e-be63-4ddf-a92b-ccf875fdb09f",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:17:28.845Z",
+        "user_updated": null,
+        "date_updated": null,
+        "conteudo": "iii. notificar, imediatamente e por escrito, a outra PARTE sobre o término ou suspensão do EVENTO.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "16.2.iii",
+        "objetivo": "Obrigar a parte afetada a notificar imediatamente e por escrito a outra parte sobre o término ou suspensão do evento.",
+        "nome": "Cláusula 16ª - 16.2.iii",
+        "tag": null,
+        "referencias": [
+          {
+            "descricao": "A comunicação imediata é essencial para coordenar a retomada, mitigar impactos e reprogramar atividades de forma segura e rastreável. Cláusula mantida integralmente.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Solicita substituir \"imediatamente\" por prazo mínimo razoável",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Admite-se, excepcionalmente, a previsão de prazo curto e definido para a comunicação, desde que preservada a obrigatoriedade de aviso tempestivo e documentado.",
+            "orientacao_retorno": "segunda_rodada"
+          }
+        ]
+      },
+      {
+        "id": "45db7881-c07d-4540-80f4-c16446077841",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:05:09.521Z",
+        "user_updated": null,
+        "date_updated": null,
+        "conteudo": "isentar e defender a CONTRATANTE contra quaisquer vínculos, liames ou reivindicações, de sejam judiciais ou extrajudiciais, apresentados por FUNCIONÁRIOS ou terceiros relacionados à CONTRATADA com fundamento neste CONTRATO, o que inclui a responsabilidade por qualquer tipo de furto, roubo, extravio ou perda patrimonial da CONTRATADA e de seus FUNCIONÁRIOS, durante o período de vigência deste CONTRATO, bem como por roubo, perda ou extravio de bens da CONTRATANTE que estejam sob a guarda da CONTRATADA; e",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "10.1.ii",
+        "objetivo": "Garantir que a contratada isente e defenda a contratante de quaisquer vínculos, reclamações ou demandas judiciais ou extrajudiciais feitas por funcionários ou terceiros relacionados à contratada com fundamento no contrato, assumindo também a responsabilidade por furtos, roubos, extravios ou perdas patrimoniais próprios ou de seus funcionários, bem como por bens da contratante que estejam sob sua guarda.",
+        "nome": "Cláusula 10ª - 10.1.ii",
+        "tag": null,
+        "referencias": [
+          {
+            "descricao": "Solicitamos validação da gerência da área solicitante, considerando os riscos apresentados a partir da limitação de responsabilidade contratual.",
+            "orientacao_retorno": "area_interna"
+          },
+          {
+            "descricao": "Sugerimos que seja ajustado para que a obrigação de isentar e defender a CONTRATANTE permaneça válida, exceto nos casos em que a origem do vínculo ou da reivindicação decorra exclusivamente de ato ou omissão comprovadamente imputável à Samarco.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "Sugerimos que seja mantida a redação original da cláusula, uma vez que a responsabilização da CONTRATADA por subcontratados e terceiros vinculados à execução contratual é condição essencial para resguardar a Samarco de passivos indevidos e garantir segurança jurídica nas relações comerciais.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Sugerimos aceitar que a responsabilidade da CONTRATADA se limite aos atos ou omissões de seus próprios subcontratados e terceiros sob sua gestão direta, desde que comprovado o nexo com a execução contratual, sem prejuízo da responsabilidade solidária prevista em lei.",
+            "orientacao_retorno": "terceira_rodada"
+          },
+          {
+            "descricao": "Excluir a obrigação de \"defender\" a contratante em reivindicações de terceiros, mantendo apenas a obrigação de isentar.",
+            "orientacao_retorno": "analise_contratada"
+          }
+        ]
+      },
+      {
+        "id": "48d86c24-dddc-4c41-86d7-8e90d2302014",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T21:55:21.938Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:29:59.430Z",
+        "conteudo": "Sem prejuízo do cumprimento das demais obrigações previstas neste CONTRATO, as PARTES se obrigam a:",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "9.4",
+        "objetivo": "Reforçar que, além das obrigações já previstas no contrato, as partes assumem os seguintes compromissos adicionais:",
+        "nome": "Cláusula 9ª - 9.4",
+        "tag": "71810ecf-cf7b-4428-abcd-9318562349d1",
+        "referencias": []
+      },
+      {
+        "id": "4ae660b2-9596-4846-ab8b-838df70bb2d0",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:21:28.390Z",
+        "user_updated": null,
+        "date_updated": null,
+        "conteudo": "caso fortuito ou força maior, que perdure para além de 180 (cento e oitenta) DIAS.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "17.2.ii",
+        "objetivo": "Permitir a rescisão do contrato se caso fortuito ou força maior perdurar por mais de 180 dias.",
+        "nome": "Cláusula 17ª - 17.2.ii",
+        "tag": null,
+        "referencias": [
+          {
+            "descricao": "Solicita que, antes da rescisão, as partes tentem renegociar prazos ou condições para continuidade do contrato",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Confirmar com a área técnica se, em caso de força maior, há interesse em manter margem para readequação contratual antes da rescisão. Se não, manter redação objetiva para garantir segurança jurídica.",
+            "orientacao_retorno": "area_interna"
+          },
+          {
+            "descricao": "A cláusula visa preservar a contratante em situações de paralisação prolongada dos serviços. A possibilidade de rescisão após o prazo previsto garante previsibilidade e continuidade operacional. Solicitamos manutenção.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Admite-se incluir previsão de que, antes da rescisão, as partes poderão avaliar alternativas viáveis de readequação contratual, desde que formalizadas dentro do prazo do QUADRO RESUMO.",
+            "orientacao_retorno": "segunda_rodada"
+          }
+        ]
+      },
+      {
+        "id": "4bb64fda-9ab2-4a09-9f6f-599f87ef34b6",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T14:13:17.729Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:29:59.759Z",
+        "conteudo": "Este CONTRATO está de acordo com o disposto na legislação brasileira, especialmente no que diz respeito ao disposto nos artigos 423 e 424 do Código Civil.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "2.1",
+        "objetivo": "Afirmar a conformidade do contrato com a legislação brasileira, para prevenir alegações de abusividade contratual por parte da contratada.",
+        "nome": "Cláusula 2ª - 2.1",
+        "tag": "a8ee6c4f-adf2-42a8-93a6-58a3b7a94407",
+        "referencias": []
+      },
+      {
+        "id": "4c2fa58b-e8b3-4694-8378-4e5f67f3a128",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T18:52:30.244Z",
+        "user_updated": null,
+        "date_updated": null,
+        "conteudo": "utilizar adequadamente materiais eventualmente recebidos para execução dos OBJETO, se aplicável, sob pena de ressarcimento da CONTRATANTE dos materiais perdidos ou inutilizados;",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "8.1.ii",
+        "objetivo": "Garantir que a contratada utilize de forma correta os materiais fornecidos pela contratante para a execução do objeto, responsabilizando-se por perdas ou danos e obrigando-se a ressarcir a contratante caso haja desperdício, extravio ou inutilização indevida.",
+        "nome": "Cláusula 8ª - 8.1.ii",
+        "tag": null,
+        "referencias": [
+          {
+            "descricao": "Solicitamos manter a redação original. A responsabilidade da contratada é inerente ao dever de guarda e boa utilização dos materiais disponibilizados pela contratante.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Mantém-se a obrigação de ressarcimento, admitindo exceção apenas para eventos comprovadamente externos e imprevisíveis.",
+            "orientacao_retorno": "terceira_rodada"
+          },
+          {
+            "descricao": "Admite-se avaliar inclusão de ressalva para afastar responsabilidade em hipóteses de caso fortuito ou força maior, devidamente comprovados.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "Recomendamos avaliar junto ao time de suprimentos e patrimônio se há necessidade de prever exceções em casos de perecimento natural ou fatores externos imprevisíveis.",
+            "orientacao_retorno": "area_interna"
+          },
+          {
+            "descricao": "Alegação de que a responsabilidade integral por perdas ou inutilização dos materiais é excessiva. Solicitação de limitação da responsabilidade apenas em casos de dolo ou culpa comprovada da contratada.",
+            "orientacao_retorno": "analise_contratada"
+          }
+        ]
+      },
+      {
+        "id": "4d00ce7a-73a3-40da-909a-167e82a95034",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T23:26:55.425Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:32.090Z",
+        "conteudo": "As PARTES de comum acordo estabelecem que o quanto negociado neste CONTRATO não representará um precedente para as próximas negociações futuras.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "21.7",
+        "objetivo": "Deixar claro que os termos acordados neste contrato não servirão como referência ou obrigação para negociações futuras entre as partes.",
+        "nome": "Cláusula 21ª - 21.7",
+        "tag": "92210224-8533-49f9-94bc-6c4b933c444f",
+        "referencias": []
+      },
+      {
+        "id": "4d27dc36-1fdd-46c2-ab16-17432f5d4006",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T18:24:32.592Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:33.436Z",
+        "conteudo": "Para estabelecimento do valor final a ser efetivamente pago pela CONTRATANTE relativo a cada Nota Fiscal/Fatura deverão ser computados descontos aplicados com base nas disposições deste CONTRATO, inclusive decorrentes de penalidades, caso aplicadas, descontos estes constantes das Notas de Débito ou de Crédito que venham, conforme o caso, a ser emitidas, respectivamente, pela CONTRATANTE ou pela CONTRATADA.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "6.16",
+        "objetivo": "Definir que o valor final de cada fatura será calculado considerando os descontos previstos no contrato, incluindo penalidades.",
+        "nome": "Cláusula 6ª - 6.16",
+        "tag": "f92e9e68-b769-4c1c-a6df-4cee77fc2c42",
+        "referencias": [
+          {
+            "descricao": "Admite-se incluir o reforço de clareza no processo de emissão das Notas de Débito/Crédito, com detalhamento prévio de todas as deduções, desde que não se crie condicionantes adicionais à aplicação dos descontos.; Admite-se incluir previsão de detalhamento e notificação prévias de todas as deduções, desde que não se crie condicionantes adicionais à aplicação dos descontos.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "Solicitamos manter a redação original. O contrato já prevê que os descontos são aplicados com base em disposições claras, incluindo penalidades. O detalhamento prévio é feito por meio das Notas de Débito/Crédito, documento hábil que confere segurança e rastreabilidade.; Não aceitar suspensão da dedução. A contestação pode ser apresentada após a emissão da ND/NC.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Inclusão de obrigação de detalhamento e justificativa prévia para aplicação dos descontos.; Possibilidade de contestação formal antes da dedução dos valores na fatura.",
+            "orientacao_retorno": "analise_contratada"
+          }
+        ]
+      },
+      {
+        "id": "4d7170ff-a7f1-4f9d-8ad4-876df7ea96d8",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:14:48.338Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:26.845Z",
+        "conteudo": "A cobrança das multas previstas nesta cláusula ocorrerá cumulativamente, na medida em que cada obrigação deixar de ser cumprida, até o limite de 10% (dez por cento) do valor total estimado do CONTRATO. Caso este percentual seja atingido, será permitido à CONTRATANTE rescindir o CONTRATO.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "15.4",
+        "objetivo": "Determina a cobrança cumulativa de multas até o limite de 10% do valor do contrato, permitindo a rescisão contratual ao atingir esse limite.",
+        "nome": "Cláusula 15ª - 15.4",
+        "tag": "57443709-6064-44ef-957c-fca597b81565",
+        "referencias": [
+          {
+            "descricao": "Considerando o objeto de contratação, a Samarco entende que pode flexibilizar os percentuais indicados conforme os novos parâmetros apresentados.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "Solicitamos validação da área solicitante para indicar se o novo percentual sugerido pela Contratada é capaz de satisfazer o cumprimento das obrigações para manutenção da possibilidade de rescisão contratual.",
+            "orientacao_retorno": "area_interna"
+          },
+          {
+            "descricao": "Alteração do limite percentual para configurar prerrogativa de rescisão contratual pela Samarco.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "A previsão de cumulação dos valores das penalidades até o limite de 10% do valor total do contrato tem como objetivo garantir o cumprimento das obrigações contratuais e, em caso de exagerado descumprimento, conferir prerrogativa de rescisão contratual à Samarco. Solicitamos manter.",
+            "orientacao_retorno": "primeira_rodada"
+          }
+        ]
+      },
+      {
+        "id": "4e85bc84-3315-4d5e-8959-40f01fa90429",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T18:52:31.540Z",
+        "user_updated": null,
+        "date_updated": null,
+        "conteudo": "se aplicável, após o término da execução do OBJETO, retirar às suas custas quaisquer materiais e instalações provisórias realizados por seus FUNCIONÁRIOS que estejam nas instalações da CONTRATANTE, removendo-os dentro do prazo a ser acordado entre as PARTES, que não será superior a 60 (sessenta) DIAS, a contar do envio da solicitação escrita pela CONTRATANTE. Caso este prazo não seja cumprido, a CONTRATANTE poderá, à sua conveniência, proceder à retirada, debitando as respectivas despesas, adicionadas dos custos eventualmente necessários para acautelar a ocorrência de danos, perdas, furtos ou extravios, inclusive os das coberturas de seguros aplicáveis;",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "8.1.x",
+        "objetivo": "Estabelecer que, ao término da execução do objeto, a contratada deverá, às suas próprias custas, remover materiais e instalações provisórias de suas equipes das dependências da contratante dentro do prazo acordado (máximo de 60 dias), permitindo que, em caso de descumprimento, a contratante realize a retirada e desconte os custos e despesas correspondentes, incluindo medidas para evitar danos, perdas ou extravios.",
+        "nome": "Cláusula 8ª - 8.1.x",
+        "tag": null,
+        "referencias": [
+          {
+            "descricao": "Admite-se reduzir o prazo de 60 para 45 dias, caso a área técnica entenda que o prazo atual pode comprometer o cronograma de novas mobilizações.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "Solicitamos manter a redação original, pois assegura a liberação das áreas utilizadas pela contratada sem ônus adicional à contratante.",
+            "orientacao_retorno": "primeira_rodada"
+          }
+        ]
+      },
+      {
+        "id": "4ffbeb60-db29-4731-bbf9-331aa92b70e1",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:14:47.849Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:17.742Z",
+        "conteudo": "Independentemente do valor segurado, a CONTRATADA responde por perdas, danos, inclusive franquias e ações de ressarcimento por parte das seguradoras contratadas pela CONTRATANTE quando houver a responsabilidade pelos prejuízos causados e indenizados diretamente à CONTRATANTE.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "14.3",
+        "objetivo": "Estabelecer que, independentemente do valor segurado, a contratada será responsável por perdas, danos, franquias e por ações de ressarcimento de seguradoras contratadas pela contratante, sempre que houver sua responsabilidade pelos prejuízos causados e indenizados diretamente à contratante.",
+        "nome": "Cláusula 14ª - 14.3",
+        "tag": "2f18a617-129b-48a3-bf8a-9abf4a0a9ec1",
+        "referencias": [
+          {
+            "descricao": "A cláusula é necessária para evitar que a contratante suporte prejuízos não cobertos pelo seguro, como franquias ou valores acima da apólice. A responsabilidade deve permanecer integral, pois decorre da culpa da contratada. Cláusula mantida integralmente.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Solicitamos validação da área de Seguros quanto à alteração sugerida pela Contratada.",
+            "orientacao_retorno": "area_interna"
+          },
+          {
+            "descricao": "Solicita limitar a responsabilidade ao valor máximo do seguro contratado ou excluir a obrigação de arcar com franquias e ressarcimentos de seguradoras, alegando caráter excessivamente oneroso.",
+            "orientacao_retorno": "analise_contratada"
+          }
+        ]
+      },
+      {
+        "id": "53509dfb-c53b-4d16-afeb-7dc1e509efeb",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T18:52:29.896Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:29:59.052Z",
+        "conteudo": "Eventuais alterações na legislação que impactem na tributação relativa a este CONTRATO, para mais ou para menos, serão objeto de análise e negociação entre as PARTES, de modo a se determinar a sua influência final sobre os preços contratuais.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "7.5",
+        "objetivo": "Prever que mudanças na legislação tributária que afetem o contrato serão analisadas e negociadas entre as partes para ajustar os preços, se necessário.",
+        "nome": "Cláusula 7ª - 7.5",
+        "tag": "1079609c-c92c-4f2d-a570-59e11fb87480",
+        "referencias": [
+          {
+            "descricao": "Eventual solicitação de supressão, solicitação de reequilibrio econômico-financeiro.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Solicitamos análise do time tributário para validação do ajuste solicitado pela Contratada.",
+            "orientacao_retorno": "area_interna"
+          },
+          {
+            "descricao": "As alterações não devem ser aceitas pela Samarco. Qualquer mudança na legislação tributária que pode impactar o presente contrato deve ser analisada caso a caso pelo time tributário.",
+            "orientacao_retorno": "primeira_rodada"
+          }
+        ]
+      },
+      {
+        "id": "561a9903-c87f-4c4f-8419-ef6c674629d3",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T18:24:31.913Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:26.709Z",
+        "conteudo": "A ausência de qualquer contestação por parte da CONTRATADA, no prazo de 60 (sessenta) DIAS, contados da data do depósito, deverá caracterizar a quitação plena, rasa, geral e irrevogável, conferida pela CONTRATADA à CONTRATANTE, relativamente ao pagamento dos materiais ou Serviços lançados na nota fiscal/fatura respectiva, não cabendo, nessa hipótese, à CONTRATADA, qualquer reivindicação, a qualquer título.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "6.8",
+        "objetivo": "Estabelecer que a falta de contestação pela contratada em até 60 dias após o depósito implica quitação total e irrevogável do pagamento.",
+        "nome": "Cláusula 6ª - 6.8",
+        "tag": "220654a1-d5be-4b60-9b32-61fa001ffbeb",
+        "referencias": [
+          {
+            "descricao": "Recomenda-se validar com a área financeira o risco de reabertura de passivos se a redação for flexibilizada.; A extensão do prazo pode impactar a gestão financeira, gerando incerteza sobre encerramento de passivos. Recomendamos manter 60 dias como regra, admitindo exceção apenas em contratos de maior complexidade.",
+            "orientacao_retorno": "area_interna"
+          },
+          {
+            "descricao": "Redução do alcance da quitação apenas aos valores efetivamente pagos e não a eventuais direitos futuros.; Ampliação do prazo para contestação antes da quitação automática.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Podemos avaliar admitir ressalva de que a quitação se restringe aos valores efetivamente pagos, desde que não se abra espaço para pleitos futuros que já poderiam ter sido contestados no prazo de 60 dias.; Admite-se, caso necessário, ampliar para até 90 dias, desde que devidamente justificado e formalizado, sem alterar o caráter irrevogável da quitação após o decurso do prazo.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "Reforçar que a redação atual deve ser preservada como padrão contratual, salvo ajuste mínimo que não comprometa a segurança da quitação.; Confirmar que eventual alteração no prazo não comprometa a previsibilidade financeira da contratante.",
+            "orientacao_retorno": "terceira_rodada"
+          },
+          {
+            "descricao": "Solicitamos manter a redação original, pois a previsão de quitação plena e irrevogável após o prazo garante segurança jurídica e evita reabertura de discussões sobre pagamentos já processados.; Solicitamos manter o prazo original de 60 dias, considerado suficiente e alinhado com práticas de mercado, garantindo previsibilidade e encerramento célere das pendências financeiras.",
+            "orientacao_retorno": "primeira_rodada"
+          }
+        ]
+      },
+      {
+        "id": "5a030829-b117-4738-b6e6-cdffe602a3f4",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:14:48.251Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:19.440Z",
+        "conteudo": "Caso o inadimplemento das obrigações não seja sanado pela CONTRATADA no prazo indicado na cláusula 15.1 acima ou o inadimplemento seja insanável, a CONTRATANTE poderá aplicar as multas no valor correspondente a 2% (dois por cento) do VALOR ESTIMADO DO CONTRATO indicado no cabeçalho, sem prejuízo da apuração de perdas e danos sofridos pela CONTRATANTE, mediante envio de nova notificação:",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "15.2",
+        "objetivo": "Prever que, caso a contratada não corrija o inadimplemento no prazo concedido ou este seja insanável, a contratante poderá aplicar multa de 2% do valor estimado do contrato, além de apurar perdas e danos, mediante envio de nova notificação à contratada.",
+        "nome": "Cláusula 15ª - 15.2",
+        "tag": "c9a37c06-3d98-4308-8b44-1ebcb79d0fa8",
+        "referencias": [
+          {
+            "descricao": "A multa de 2% é proporcional e visa desestimular o inadimplemento, sem afastar a apuração de perdas e danos, pois a multa por si só não cobre necessariamente todos os prejuízos. A base de cálculo no valor estimado do contrato assegura a efetividade da penalidade. Cláusula mantida integralmente.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Solicita redução do percentual ou aplicação apenas sobre a parcela inadimplida.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Admite-se, excepcionalmente, avaliar a possibilidade de limitar a base de cálculo a parcelas específicas do objeto em situações de execução parcial comprovada, desde que não reduza a efetividade da penalidade.",
+            "orientacao_retorno": "segunda_rodada"
+          }
+        ]
+      },
+      {
+        "id": "5bdd51fa-e192-4549-9279-eb0d2ff6aedd",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:17:28.164Z",
+        "user_updated": null,
+        "date_updated": null,
+        "conteudo": "i. que esteja fora do controle razoável dessa PARTE e afetem substancialmente o cumprimento de suas obrigações contratuais;",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "16.1.i",
+        "objetivo": "Caracterizar como caso fortuito ou força maior o evento fora do controle razoável da parte que afete substancialmente o cumprimento de suas obrigações.",
+        "nome": "Cláusula 16ª - 16.1.i",
+        "tag": null,
+        "referencias": []
+      },
+      {
+        "id": "5c735463-fd97-418f-9309-9f5b02bb3984",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:09:41.018Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:26.584Z",
+        "conteudo": "Todos os documentos, incluindo, mas não se limitando a relatórios, gráficos, planilhas, gerados pela CONTRATANTE em razão deste CONTRATO poderão ser utilizados livremente pela CONTRATANTE, que poderá repassá-los para terceiros que agem em seu interesse, como os seus fornecedores, independente de anuência prévia da CONTRATADA e sem quaisquer limitações e ônus/valores adicionais sejam devidos pela CONTRATANTE.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "12.4",
+        "objetivo": "Assegurar que todos os documentos produzidos pela contratante em razão do contrato possam ser utilizados livremente por ela, inclusive repassados a terceiros que atuem em seu interesse, como fornecedores, sem necessidade de autorização prévia da contratada e sem gerar quaisquer limitações, ônus ou custos adicionais para a contratante.",
+        "nome": "Cláusula 12ª - 12.4",
+        "tag": "171d727e-ca15-414b-a4d9-943e551440ae",
+        "referencias": [
+          {
+            "descricao": "Confirmar com a área solicitante se os documentos a serem entregues incluem informações sensíveis ou estratégicas. Se não houver risco, sugerimos manter redação que assegure liberdade de uso e compartilhamento conforme os interesses institucionais da contratante.",
+            "orientacao_retorno": "area_interna"
+          },
+          {
+            "descricao": "Solicita que o uso dos documentos se limite à execução contratual e que o repasse a terceiros dependa de autorização prévia.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Os documentos são produzidos no contexto da prestação dos serviços contratados, portanto, é essencial que a contratante possa utilizá-los livremente, inclusive com terceiros que atuem em seu interesse, sem necessidade de anuência ou custos adicionais. Solicitamos manter",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Estamos abertos a incluir referência de que o uso pela contratante estará vinculado a finalidades institucionais ou à execução contratual. No entanto, mantemos a necessidade de permitir o repasse a terceiros ligados à cadeia de execução.",
+            "orientacao_retorno": "segunda_rodada"
+          }
+        ]
+      },
+      {
+        "id": "5c961820-c1eb-41b9-beb8-701f87c1a07a",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:14:48.184Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:15.753Z",
+        "conteudo": "Se o descumprimento for insanável, a CONTRATANTE poderá aplicar penalidades independente de prazo, apenas mediante envio de notificação para a CONTRATADA.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "15.1.1",
+        "objetivo": "Autoriza a aplicação imediata de penalidades para falhas consideradas insanáveis, sem necessidade de prazo para correção.",
+        "nome": "Cláusula 15ª - 15.1.1",
+        "tag": "4890bdc8-b2a3-4298-af6b-594bfb528856",
+        "referencias": [
+          {
+            "descricao": "A Samarco flexibiliza para indicar prazo de [incluir número de dias para cumprimento da obrigação insanável]. Gentileza validar.; A Samarco flexibiliza para indicar prazo de notificação prévia equivalente a [incluir prazo]. Gentileza validar.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "Solicitação de prazo para cumprimento ou retificação da norma descumprida; Indicação de prazo para envio de notificação prévia",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Trata-se de cláusula cujo objetivo é penalizar a Contratada em caso de descumprimentos insanáveis que, por si só, já demonstram descumprimento dos termos contratuais. A Samarco entende que a redação original deve ser mantida, uma vez que há uma progressão de procedimentos contratuais nos casos de descumprimento para possibilitar execução das prerrogativas pela Samarco.; Trata-se de cláusula cujo objetivo é penalizar a Contratada em caso de descumprimentos insanáveis que, por si só, já demonstram descumprimento dos termos contratuais. A Samarco entende que a redação original deve ser mantida, uma vez que há uma progressão de procedimentos contratuais nos casos de descumprimento para possibilitar execução das prerrogativas pela Samarco.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Solicitamos à área técnica indicação de prazo considerado razoável para tentativa de cumprimento total ou parcial de obrigação contratual, de acordo com o objeto de contratação e aquilo que for considerado \"insanável\".; Solicita-se à área técnica indicação de prazo considerado razoável para notificação prévia em caso de obrigação considerada \"insanável\". Sugerimos prazo mínimo de 24 horas.",
+            "orientacao_retorno": "area_interna"
+          }
+        ]
+      },
+      {
+        "id": "60980ffb-8b51-455a-9e35-65d628551762",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:09:39.800Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:14.919Z",
+        "conteudo": "O acesso às informações confidenciais será restrito aos FUNCIONÁRIOS das PARTES que tiverem comprovada necessidade de conhecê-la, apenas na extensão necessária, e deverão assinar o modelo contido no ANEXO denominado \"Termo de Confidencialidade\", que deve ser entregue aos cuidados do GESTOR DO CONTRATO da CONTRATANTE.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "11.2",
+        "objetivo": "Limitar o acesso às informações confidenciais apenas aos funcionários que realmente precisarem delas para executar o contrato, exigindo que assinem um termo de confidencialidade específico e o entreguem ao gestor do contrato da contratante.",
+        "nome": "Cláusula 11ª - 11.2",
+        "tag": "afd7758a-f4c9-46f0-80b9-c768fddb4e24",
+        "referencias": [
+          {
+            "descricao": "Propõe suprimir a exigência de assinatura individual do termo por seus funcionários",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Admite-se avaliar alternativa que permita declaração formal da contratada responsabilizando-se pelo cumprimento da confidencialidade por seus funcionários, desde que justificado o impedimento prático de colher assinaturas individuais.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "A exigência de assinatura individual visa garantir o controle e rastreabilidade do acesso a informações sensíveis. Trata-se de medida de governança e segurança da informação, que deve ser mantida conforme redigida.",
+            "orientacao_retorno": "primeira_rodada"
+          }
+        ]
+      },
+      {
+        "id": "61025587-f128-4f9d-b328-5d3f7b4f4861",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:05:09.103Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:00.042Z",
+        "conteudo": "Sem prejuízos das demais responsabilidades e obrigações legais e contratuais e sem quaisquer ônus adicionais para a CONTRATANTE, a CONTRATADA assume responsabilidade de:",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "10.1",
+        "objetivo": "Definir que a contratada, sem gerar quaisquer custos adicionais para a contratante, assume integralmente as responsabilidades previstas nesta cláusula, além das demais obrigações legais e contratuais já estabelecidas.",
+        "nome": "Cláusula 10ª - 10.1",
+        "tag": "bd712dad-2b41-4363-81e6-f47037d29226",
+        "referencias": [
+          {
+            "descricao": "Admitir eventual ajuste redacional apenas para explicitar que a responsabilidade não abrange eventos de caso fortuito ou força maior, sem afastar a assunção integral das demais obrigações.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "Mantém-se a cláusula, com eventual inclusão da ressalva acima, reforçando que a Contratada não poderá transferir custos à Contratante.",
+            "orientacao_retorno": "terceira_rodada"
+          },
+          {
+            "descricao": "Pedido de exclusão ou mitigação da obrigação ampla, alegando que a assunção integral de responsabilidades sem ônus para a Contratante é desproporcional. Solicitação de limitar a responsabilidade apenas a custos decorrentes de dolo ou culpa comprovada.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Rejeitar exclusão. A redação está alinhada à matriz de risco contratual: a responsabilidade deve permanecer integral e sem transferência de ônus à Contratante.",
+            "orientacao_retorno": "primeira_rodada"
+          }
+        ]
+      },
+      {
+        "id": "629f4d75-2a7e-43b4-a653-83011f9e0e6f",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T14:43:26.487Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:17.443Z",
+        "conteudo": "Caso o dia do pagamento devido pela CONTRATANTE se dê em feriados bancários ou em finais de semana, será considerado como data de vencimento o primeiro dia útil subsequente.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "4.2",
+        "objetivo": "Estabelecer que, se o pagamento cair em feriado ou fim de semana, o vencimento será no próximo dia útil.",
+        "nome": "Cláusula 4ª - 4.2",
+        "tag": "8ebf9054-a503-4642-9178-92810e7a08b2",
+        "referencias": [
+          {
+            "descricao": "Eventual solicitação de supressão.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Solicitamos manter a redação original. A prorrogação do pagamento para o primeiro dia útil subsequente em caso de feriados ou finais de semana segue a praxe bancária e está em conformidade com a legislação vigente.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Nos casos em que o pagamento esteja programado para data coincidente com feriado bancário ou fim de semana, a CONTRATADA poderá, previamente e com justificativa, solicitar que o vencimento ocorra no dia útil anterior, desde que haja viabilidade orçamentária e operacional da CONTRATANTE.",
+            "orientacao_retorno": "segunda_rodada"
+          }
+        ]
+      },
+      {
+        "id": "63f8e908-4e3e-40a4-93b2-924fa02994c8",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:31:31.482Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:30.276Z",
+        "conteudo": "20.3. Caso a CONTRATANTE venha a ser responsabilizada, judicial ou extrajudicialmente, por danos causados pela CONTRATADA, esta se obriga a assumir a responsabilidade processual, assumindo o polo passivo da ação própria, se for o caso, e a ressarcir integralmente todos os custos e danos arcados pela CONTRATANTE, inclusive honorários advocatícios contratuais e sucumbenciais, além de qualquer quantia que seja obrigada a pagar em decorrência dos referidos danos, autorizando, desde logo, que a desconte da remuneração ora ajustada.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "20.3",
+        "objetivo": "Garantir que a CONTRATADA assuma responsabilidade e ressarça a CONTRATANTE por quaisquer danos, custos e despesas judiciais decorrentes de ações causadas por falhas da CONTRATADA, inclusive descontando valores da remuneração contratual.",
+        "nome": "Cláusula 20ª - 20.3",
+        "tag": "42db0dee-b795-47aa-81c5-d17acc50eb6b",
+        "referencias": [
+          {
+            "descricao": "Solicitamos à área de Compliance que verifique a possibilidade de alteração solicitada pela contratada.",
+            "orientacao_retorno": "area_interna"
+          },
+          {
+            "descricao": "A Samarco tem como política padrão a inclusão do Termo LGPD para assinatura, uma vez que a sua assinatura reforça o compromisso legal e específico de proteção de dados pessoais, conferindo maior segurança jurídica a ambas as Partes.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Propõe limitar a obrigação de ressarcimento a valores comprovadamente decorrentes de culpa ou dolo da contratada, e questiona a autorização de desconto automático em caso de disputa.",
+            "orientacao_retorno": "analise_contratada"
+          }
+        ]
+      },
+      {
+        "id": "65801434-0b61-4490-8c39-9e5ceeb3c268",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T14:43:38.509Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:09.007Z",
+        "conteudo": "Se aplicável, a partir do 12º mês contado da data-base, a CONTRATADA poderá solicitar, anualmente, o reajuste dos preços praticados no CONTRATO mediante a aplicação do ÍNDICE DE REAJUSTE indicado no QUADRO DE ITENS PREENCHÍVEIS. O ÍNDICE DE REAJUSTE somente será aplicado sobre os preços unitários do CONTRATO e após aprovação por escrito e autorização de faturamento pela CONTRATANTE.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "5.1",
+        "objetivo": "Permitir à contratada solicitar reajuste anual dos preços após 12 meses, mediante índice de reajuste definido e aprovação da contratante.",
+        "nome": "Cláusula 5ª - 5.1",
+        "tag": "5b32cf68-ca29-4fd3-87df-73e1a7bfa8db",
+        "referencias": [
+          {
+            "descricao": "(I) Reajuste automático após 12 meses O reajuste não é automático. A política da Samarco prevê que qualquer atualização de preços está condicionada à solicitação da contratada, análise técnica e formalização por meio de aditivo contratual. O texto atual já contempla essa sistemática, portanto, solicitamos que seja mantido.  (II) Substituição ou preenchimento do índice de reajuste Trata-se de previsão padrão da Samarco, não sujeita a ajustes pela política interna.  (III) Indicação de índice \"a ser acordado entre as partes\" no futuro A indicação de índice em aberto compromete a segurança jurídica do contrato e cria incerteza sobre os efeitos econômicos do reajuste. A cláusula deve prever índice definido desde a assinatura, conforme acordado no processo de contratação.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "(I) Reajuste automático após 12 meses  (II) Substituição ou preenchimento do índice de reajuste  (III) Indicação de índice \"a ser acordado entre as partes\" no futuro",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "(I) Reajuste automático após 12 meses N/A  (II) Substituição ou preenchimento do índice de reajuste Os ajustes solicitados podem ser acolhidos e foram incorporados.  (III) Indicação de índice \"a ser acordado entre as partes\" no futuro Admite-se, em caráter excepcional e com validação expressa da área de suprimentos, prever que o índice será acordado até a data do 12º mês de vigência.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "(I) Reajuste automático após 12 meses Solicitamos valirdar a possibilidade de aplicação de reajuste automático no presente caso, por se tratar de questão negocial.  (II) Substituição ou preenchimento do índice de reajuste O índice de reajuste informado deve ser confirmado com a área de suprimentos. Trata-se de elemento negocial do contrato, e o aceite de índice diferente do usual pode representar exceção de política. Sugerimos validação prévia.  (III) Indicação de índice \"a ser acordado entre as partes\" no futuro A ausência de definição do índice no momento da contratação gera insegurança jurídica e pode fragilizar a contratante em eventual disputa sobre o reajuste. A definição posterior também compromete a previsibilidade orçamentária. Recomendamos manter índice fixado desde o início e validar com a área de suprimentos qualquer exceção.",
+            "orientacao_retorno": "area_interna"
+          }
+        ]
+      },
+      {
+        "id": "6708b9b6-6175-4dd5-af10-3a40d2a1e253",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:24:39.800Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:30.398Z",
+        "conteudo": "18.3.2. Existência ou possibilidade, seja no Brasil ou no exterior, de qualquer investigação, processo administrativo ou judicial que esteja relacionado, direta ou indiretamente, às atividades da CONTRATADA (ou de qualquer um de seus sócios, administradores, diretores, gerentes ou empregados envolvidos nas atividades deste Contrato) que apure ou que inclua quaisquer alegações de fraude, corrupção, lavagem de dinheiro ou violações da legislação anticorrupção aplicável.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "18.3.2",
+        "objetivo": "Garantir que a contratada avise a contratante caso exista — ou possa vir a existir — qualquer investigação ou processo, no Brasil ou fora, envolvendo a empresa ou seus funcionários, relacionado a fraude, corrupção, lavagem de dinheiro ou violação de leis anticorrupção.",
+        "nome": "Cláusula 18ª - 18.3.2",
+        "tag": "f8fc5a1e-258b-4422-afbe-c9a6b4673029",
+        "referencias": [
+          {
+            "descricao": "Solicitamos validação da área de compliance quanto à alteração sugerida pela Contratada.",
+            "orientacao_retorno": "area_interna"
+          },
+          {
+            "descricao": "Solicita flexibilização da obrigação ou exclusão do compromisso",
+            "orientacao_retorno": "analise_contratada"
+          }
+        ]
+      },
+      {
+        "id": "689b6b85-1fe6-4113-b42e-ff70fb3a0100",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T18:52:29.972Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:29:58.960Z",
+        "conteudo": "As despesas decorrentes de ações administrativas/judiciais visando discutir atos do Poder Público que alterem os encargos acima indicados serão de exclusiva responsabilidade da CONTRATADA.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "7.6",
+        "objetivo": "Estabelecer que quaisquer custos com ações contra o Poder Público relacionadas a encargos tributários são de responsabilidade exclusiva da CONTRATADA.",
+        "nome": "Cláusula 7ª - 7.6",
+        "tag": "5853d290-041d-4123-96dc-53aca43b761c",
+        "referencias": [
+          {
+            "descricao": "As alterações não foram aceitas pelo time tributário da Samarco.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Solicitamos análise do time tributário para validação do ajuste solicitado pela Contratada.",
+            "orientacao_retorno": "area_interna"
+          },
+          {
+            "descricao": "Eventual solicitação de supressão, ou de ajuste para responsabilizar a parte que decidir propor adesão à medida.",
+            "orientacao_retorno": "analise_contratada"
+          }
+        ]
+      },
+      {
+        "id": "69b58189-36c6-460d-9224-a52738b9600e",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T14:43:26.111Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:14.136Z",
+        "conteudo": "Para fins legais e contratuais, inclusive para aplicação de multas e penalidades, deve ser considerado o VALOR ESTIMADO DO CONTRATO previsto no cabeçalho desse instrumento. Sendo o valor estimado, a CONTRATADA não poderá (i) receber todo o VALOR ESTIMADO DO CONTRATO sem que tenha efetivamente prestado os Serviços correspondentes ou (ii) pretender atingir todo o VALOR ESTIMADO DO CONTRATO, sem que a CONTRATANTE tenha, a seu exclusivo critério, autorizado a prestação de Serviços.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "4.1",
+        "objetivo": "Estabelecer que o valor estimado do contrato é referência para pagamento e penalidades, condicionando o pagamento ao efetivo serviço prestado.",
+        "nome": "Cláusula 4ª - 4.1",
+        "tag": "a2f71ffb-b264-4a3d-846e-1db71b68f98f",
+        "referencias": [
+          {
+            "descricao": "Solicitamos manter a redação original. A utilização do VALOR ESTIMADO tem como finalidade apenas dimensionar os limites máximos da contratação, não implicando obrigação da CONTRATANTE em contratar o montante total. A prerrogativa de autorização prévia da execução dos serviços é essencial à gestão orçamentária e operacional da CONTRATANTE, razão pela qual o termo 'a seu exclusivo critério' deve ser preservado",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Eventual solicitação de que a cláusula seja revista ou flexibilizada, para não constar \"a seu exclusivo critério\".",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Para preservar o equilíbrio contratual, a Samarco sugere ajustar a redação para esclarecer que a autorização da prestação de serviços se dará conforme planejamento da CONTRATANTE, mantendo-se, porém, o controle total sobre a execução.",
+            "orientacao_retorno": "segunda_rodada"
+          }
+        ]
+      },
+      {
+        "id": "6c236ed0-f71c-4e0a-89b1-e5d7e63299c1",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T18:52:31.703Z",
+        "user_updated": null,
+        "date_updated": null,
+        "conteudo": "facilitar o trabalho da FISCALIZAÇÃO e/ou do GESTOR DO CONTRATO, inclusive franqueando o seu acesso a documentos referentes ao OBJETO, onde quer que se realizem, e às suas instalações e de seus subcontratados, nos limites do CONTRATO;",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "8.1.xii",
+        "objetivo": "Garantir que a contratada colabore com a fiscalização e/ou o gestor do contrato, permitindo acesso a documentos, locais de execução do objeto e instalações próprias ou de subcontratados, dentro dos limites estabelecidos no contrato, para viabilizar o acompanhamento e controle da execução contratual.",
+        "nome": "Cláusula 8ª - 8.1.xii",
+        "tag": null,
+        "referencias": []
+      },
+      {
+        "id": "6c6845f5-051e-4770-8ac1-94328b5e0a30",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T14:43:38.736Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:17.799Z",
+        "conteudo": "Caso o reajuste seja solicitado em prazo superior a 90 (noventa) dias após a data-base, os preços reajustados somente serão aplicados aos serviços/fornecimentos realizados após a data de solicitação do reajuste, não retroagindo aos serviços/fornecimentos realizados anteriormente.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "5.1.1",
+        "objetivo": "Estabelecer que, caso o pedido de reajuste seja feito pela CONTRATADA mais de 90 dias após a data-base, o reajuste só incidirá sobre os serviços ou fornecimentos executados após o pedido, vedando efeitos retroativos.",
+        "nome": "Cláusula 5ª - 5.1.1",
+        "tag": "0259cf7f-b2f6-4582-93ac-c2743fb54d3f",
+        "referencias": [
+          {
+            "descricao": "Excepcionalmente, poderá ser admitida a retroatividade do reajuste por até 30 (trinta) dias além do prazo originalmente previsto, mediante justificativa formal e aprovação expressa da Contratante. Essa alternativa permite equilíbrio econômico-financeiro sem comprometer o controle orçamentário do contrato.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "Eventual solicitação de supressão ou pedido de que seja feito após 90 dias",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "A limitação de 90 dias é um critério objetivo e amplamente utilizado pela SAMARCO em contratos de prestação contínua, assegurando previsibilidade e controle financeiro por parte da Contratante. Permitir retroatividade sem limite temporal comprometeria o planejamento orçamentário e o controle da despesa, além de criar risco de passivos ocultos. Portanto, não será possível alterar a cláusula.",
+            "orientacao_retorno": "primeira_rodada"
+          }
+        ]
+      },
+      {
+        "id": "6d4fd31e-2177-4842-ac1c-d16f230ceb3f",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T21:55:22.281Z",
+        "user_updated": null,
+        "date_updated": null,
+        "conteudo": "havendo alteração dos GESTOR DO CONTRATO pelas PARTES, comunicar previamente a alteração à outra PARTE por escrito, sob pena de serem consideradas válidas todas as comunicações dirigidas aos representantes inicialmente indicados.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "9.4.iii",
+        "objetivo": "Garantir que a parte contrária seja formalmente comunicada, por escrito e com antecedência, sobre qualquer alteração no gestor do contrato, sob pena de se considerarem válidas as comunicações feitas ao gestor originalmente indicado.",
+        "nome": "Cláusula 9ª - 9.4.iii",
+        "tag": null,
+        "referencias": [
+          {
+            "descricao": "Ratificar integralidade da cláusula, essencial para preservar validade das comunicações contratuais.",
+            "orientacao_retorno": "terceira_rodada"
+          },
+          {
+            "descricao": "Reafirmar a manutenção da previsão, uma vez que a exigência de comunicação prévia por escrito em caso de alteração do gestor do contrato é medida indispensável para assegurar a clareza na interlocução entre as partes.; Reiterar a necessidade da previsão, pois a ausência de aviso formal transfere o risco de falha de comunicação à parte que não notificou.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "A cláusula deve ser preservada, pois garante segurança jurídica e evita equívocos na interlocução entre as partes. Essa formalidade é essencial para assegurar que as comunicações contratuais sejam dirigidas à pessoa correta, preservando a continuidade e a efetividade da gestão contratual.; A cláusula deve ser mantida, pois garante segurança jurídica às comunicações já expedidas, evitando alegações de nulidade por parte da contratada.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Possibilidade de flexibilizar a obrigação de comunicação prévia por escrito.; Solicitação de retirar a penalidade de considerar válidas comunicações feitas ao gestor substituído, mesmo sem aviso prévio formal.",
+            "orientacao_retorno": "analise_contratada"
+          }
+        ]
+      },
+      {
+        "id": "6ec1d7c0-5dc8-4017-a6c3-596c687fa01a",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:17:28.200Z",
+        "user_updated": null,
+        "date_updated": null,
+        "conteudo": "ii. que a PARTE não poderia, de forma razoável, ter se preparado, prevenido, evitado ou superado ocorrido antes de celebrar o CONTRATO; e",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "16.1.ii",
+        "objetivo": "Caracterizar como caso fortuito ou força maior o evento que a parte não poderia razoavelmente ter previsto, evitado ou superado antes da celebração do contrato.",
+        "nome": "Cláusula 16ª - 16.1.ii",
+        "tag": null,
+        "referencias": []
+      },
+      {
+        "id": "6eecb4ab-a337-49dd-ac59-9cff8dbdd386",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T13:04:54.499Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:29:57.458Z",
+        "conteudo": "1.1. Independente de remissão expressa, todos os termos referidos em letras maiúsculas e sem negrito neste CONTRATO têm os significados atribuídos no QUADRO DE ITENS PREENCHÍVEIS, e/ou do cabeçalho do CONTRATO ou, ainda, caso não estejam previstos nesses dois campos, corresponderão às definições abaixo:\n(a) FUNCIONÁRIOS - empregados, representantes, diretores, administradores, sócios, prepostos, subcontratados e/ou terceiros relacionados e/ou que atuem em nome de qualquer das PARTES.\n(b) DIAS – dias corridos, excluindo-se o primeiro dia e contando-se o último.\n(c) MEDIÇÃO - documento que conterá todos os eventos geradores de pagamento realizados no PERÍODO DE MEDIÇÃO, com o detalhamento das atividades realizadas que foram solicitadas e aceitas pela CONTRATANTE no respectivo intervalo temporal.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "1.1",
+        "objetivo": "A cláusula tem como objetivo padronizar os significados de termos essenciais utilizados no contrato, a fim de evitar interpretações ambíguas que possam ser utilizadas pela contratada para limitar suas responsabilidades, alterar prazos ou justificar cobranças indevidas.",
+        "nome": "Cláusula 1ª - 1.1",
+        "tag": "d1601505-696e-435d-b393-2e4f2301b59b",
+        "referencias": [
+          {
+            "descricao": "Os conceitos adicionais ou ajustes propostos pela Contratada foram verificados e podem ser incorporados pela Samarco.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "Solicitação de alteração dos conceitos propostos ou inclusão de conceitos adicionais",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "A Cláusula reflete um padrão da Samarco para termos conceituados, não estando sujeita a ajustes.",
+            "orientacao_retorno": "primeira_rodada"
+          }
+        ]
+      },
+      {
+        "id": "7b3cc656-e9fe-41bb-ab6c-aab7fd271f60",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:14:48.022Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:28.697Z",
+        "conteudo": "A CONTRATADA deverá, sempre que solicitado, em até 10 (dez) DIAS corridos, apresentar a cópia da(s) apólice(s) correspondente(s) e/ou comprovante de pagamento destas, a pedido da CONTRATANTE.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "14.6",
+        "objetivo": "Garantir que a contratada apresente, em até 10 dias corridos e sempre que a contratante solicitar, cópia das apólices de seguro e/ou comprovantes de pagamento.",
+        "nome": "Cláusula 14ª - 14.6",
+        "tag": "3d13c7cd-1d84-46f7-aa39-46c2f134e98f",
+        "referencias": [
+          {
+            "descricao": "Solicitamos validação da área de Seguros quanto à alteração sugerida pela Contratada.",
+            "orientacao_retorno": "area_interna"
+          },
+          {
+            "descricao": "O prazo de 10 dias corridos é suficiente e necessário para garantir à CONTRATANTE a rastreabilidade e a fiscalização dos seguros obrigatórios, sem comprometer a dinâmica contratual. A exigência é padrão e reflete o dever de transparência da CONTRATADA. Cláusula mantida integralmente.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Suprimir ou alterar a redação da cláusula.",
+            "orientacao_retorno": "analise_contratada"
+          }
+        ]
+      },
+      {
+        "id": "7b4ad446-fafe-4300-a567-732726a41696",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T18:24:33.103Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:16.800Z",
+        "conteudo": "A CONTRATANTE não aceitará travamento bancário ou qualquer instrumento financeiro similar.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "6.20",
+        "objetivo": "Impedir bloqueios financeiros pela contratada.",
+        "nome": "Cláusula 6ª - 6.20",
+        "tag": "877c9e68-0a20-4edd-a447-6f5c3e1ad81c",
+        "referencias": [
+          {
+            "descricao": "Manter a redação original. O conceito de \"instrumento financeiro similar\" deve ser interpretado de forma ampla para evitar qualquer bloqueio que comprometa o fluxo de caixa da CONTRATANTE.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Solicitação de definição clara do que será considerado \"instrumento financeiro similar\".",
+            "orientacao_retorno": "analise_contratada"
+          }
+        ]
+      },
+      {
+        "id": "7e0fb7a1-69c9-45ec-809f-5c276f8b5724",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T18:24:31.675Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:29:57.855Z",
+        "conteudo": "Se a FORMA DE PAGAMENTO for: i. Parcela Única, a CONTRATADA procederá, no prazo indicado no cabeçalho, e respeitado o PERÍODO DE MEDIÇÃO, a MEDIÇÃO desta parcela;\nii. Parcela Fixa Mensal, a CONTRATADA procederá, mensalmente, a MEDIÇÃO da parcela efetivamente executada no PERÍODO DE MEDIÇÃO;\niii. Medição Mensal dos Preços Unitários, a CONTRATADA procederá à MEDIÇÃO dos SERVIÇOS conforme efetivamente executados no PERÍODO DE MEDIÇÃO;\niv. Conforme o cumprimento dos MARCOS CONTRATUAIS, a CONTRATADA deverá emitir o boletim de medição: (i) após o cumprimento do MARCO CONTRATUAL; e, (ii) observado o PERÍODO DE MEDIÇÃO.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "6.4",
+        "objetivo": "Definir critérios claros para medições conforme a forma de pagamento contratada, assegurando conformidade entre execução, medição e faturamento, e prevenindo distorções nos valores cobrados.",
+        "nome": "Cláusula 6ª - 6.4",
+        "tag": "9238b267-acd9-4bca-b243-85359a57acc2",
+        "referencias": [
+          {
+            "descricao": "A redação deve ser mantida. A fixação de prazos objetivos garante previsibilidade e controle contratual.; Manutenção da regra de medição mensal, pois garante alinhamento com o fluxo contratual e com os registros contábeis da contratante.; Cláusula deve ser mantida. A medição mensal dos preços unitários assegura transparência, evita acúmulo de pendências e reduz risco de litígios.; Manutenção da vinculação aos marcos contratuais, pois é mecanismo de gestão e garantia de execução contratual.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Solicitação de maior prazo para medição da parcela única, alegando inviabilidade operacional de cumprir o prazo estabelecido no contrato.; Alegação de que a medição mensal pode não refletir corretamente a execução dos serviços. Solicitação de ajustes para considerar etapas parciais ou custos indiretos.; Rejeição da obrigação de medição mensal dos preços unitários, com alegação de excesso de burocracia administrativa. Solicitação de periodicidade mais flexível.; Alegação de que a vinculação do pagamento ao cumprimento dos marcos contratuais pode gerar risco de desequilíbrio financeiro. Solicitação de previsão de adiantamentos ou pagamentos proporcionais em caso de atrasos justificados.",
+            "orientacao_retorno": "analise_contratada"
+          }
+        ]
+      },
+      {
+        "id": "7ee0e81d-5caf-40bf-9f20-a0a1e157348c",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:21:30.875Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:32.036Z",
+        "conteudo": "Na hipótese de extinção do CONTRATO, por qualquer motivo, as PARTES se comprometem a assinar um Termo de Encerramento do CONTRATO. As PARTES desde já ajustam que o CONTRATO será considerado plenamente encerrado e quitado se a CONTRATADA se mantiver silente e/ou inerte sobre o Termo de Encerramento após o transcurso de 30 (trinta) DIAS do envio do Termo de Encerramento pela CONTRATANTE.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "17.9",
+        "objetivo": "Determinar que as partes assinem termo de encerramento e considerar o contrato encerrado e quitado se a contratada não se manifestar em até 30 dias após o envio do termo pela contratante.",
+        "nome": "Cláusula 17ª - 17.9",
+        "tag": "c6243cf7-4019-4a0c-94ad-5040afc04f7d",
+        "referencias": [
+          {
+            "descricao": "Admite-se reformular a cláusula para prever que o silêncio da contratada poderá ser interpretado como aceite, desde que não haja pendência registrada ou manifestação formal contrária, resguardando eventuais disputas ainda em curso.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "Manifesta preocupação quanto à quitação automática por decurso de prazo, sugerindo que o silêncio não seja interpretado como aceitação tácita, especialmente em caso de pendências ainda em discussão.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "A alteração sugerida pela Contratada sensibiliza significativamente a posição jurídica da Samarco na hipótese de inércia da contratada. Não recomendamos a alteração sem validação da área solicitante com reconhecimento do risco.",
+            "orientacao_retorno": "area_interna"
+          },
+          {
+            "descricao": "A cláusula visa conferir segurança jurídica e evitar a perpetuação de pendências formais após a extinção do contrato. O prazo de 30 dias é razoável e aplica-se apenas quando não houver manifestação da contratada, permitindo a conclusão formal do vínculo. Solicitamos manter.",
+            "orientacao_retorno": "primeira_rodada"
+          }
+        ]
+      },
+      {
+        "id": "7f1e1358-a8a7-46fc-8a5c-45c836c1d851",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T14:43:38.882Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:18.966Z",
+        "conteudo": "Uma vez reajustados, os valores permanecerão fixos por novo período de 12 (doze) meses, quando então os valores remanescentes poderão ser reajustados se houver índice acordado entre as PARTES.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "5.2",
+        "objetivo": "Assegurar a estabilidade dos preços reajustados por um período mínimo de 12 meses.",
+        "nome": "Cláusula 5ª - 5.2",
+        "tag": "cfc789b8-f96f-49e7-89ab-e98b4d61a894",
+        "referencias": [
+          {
+            "descricao": "A cláusula que fixa os preços por 12 meses após o reajuste é padrão nos contratos da Contratante, garantindo previsibilidade orçamentária e estabilidade na execução contratual.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Considerando os riscos de variações econômicas excepcionais. Por isso, admite prever uma cláusula adicional específica para revisão extraordinária de preços, aplicável somente em caso de eventos imprevisíveis e com impacto financeiro relevante, devidamente comprovado pela Contratada.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "Eventual solicitação de supressão, ou situações excepcionais devidamente justificadas — como oscilações abruptas de mercado, inflação fora do padrão ou alterações legislativas com impacto relevante nos custos",
+            "orientacao_retorno": "analise_contratada"
+          }
+        ]
+      },
+      {
+        "id": "80e5b61c-606b-4c4b-901e-6232d4a7abb0",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T21:55:20.882Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:16.663Z",
+        "conteudo": "Pela CONTRATADA o GESTOR DO CONTRATO será o representante da CONTRATADA.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "9.2",
+        "objetivo": "Definir que o gestor do contrato será o representante da contratada.",
+        "nome": "Cláusula 9ª - 9.2",
+        "tag": "613fe452-e2cc-4e74-ac42-cd52e0cd7b34",
+        "referencias": []
+      },
+      {
+        "id": "82ad79c6-5a42-4d3b-b6a2-4303e2d29e65",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T18:52:32.375Z",
+        "user_updated": null,
+        "date_updated": null,
+        "conteudo": "quando aplicável, e nos casos em que houver necessidade dos FUNCIONÁRIOS da CONTRATADA adentrarem nas unidades da CONTRATANTE, o pessoal sob sua responsabilidade deverá obedecer às Normas de Coordenação de Campo, Manual de Saúde e Segurança do Trabalho, bem como as Diretrizes para Meio Ambiente e Comunidade da CONTRATANTE – (ANEXO), além de utilizar todo o Equipamento de Proteção Individual (EPI), sendo obrigatório uniforme, botas com biqueira, capacete (identificado com a logomarca da CONTRATADA) e óculos de segurança é obrigatório para todos os empregados.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "8.1.xxiv",
+        "objetivo": "Estabelecer que, quando houver necessidade de acesso dos funcionários da contratada às unidades da contratante, estes deverão cumprir integralmente as normas internas, manuais e diretrizes da contratante relacionadas à segurança, meio ambiente e comunidade, além de utilizar obrigatoriamente uniforme, EPIs e demais equipamentos de proteção exigidos, garantindo segurança e conformidade com os padrões estabelecidos.",
+        "nome": "Cláusula 8ª - 8.1.xxiv",
+        "tag": null,
+        "referencias": []
+      },
+      {
+        "id": "8347693b-08bc-4ac2-95a4-72fe012b5aa5",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T18:24:31.818Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:21.109Z",
+        "conteudo": "Em caso de não aceitação do BM ou BMM por parte da CONTRATANTE, as MEDIÇÕES serão recusadas e o pagamento correspondente ficará suspenso até que as obrigações pendentes, registradas em documento específico, sejam integralmente executados pela CONTRATADA e devidamente aceitos pela CONTRATANTE. As PARTES poderão acordar a realização do faturamento da parte incontroversa do OBJETO executado. A não aceitação por parte da CONTRATANTE deverá ser informada à CONTRATADA por escrito.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "6.7",
+        "objetivo": "Permitir à contratante recusar o boletim de medição e suspender o pagamento até que as pendências sejam corrigidas, podendo faturar a parte incontroversa do objeto.",
+        "nome": "Cláusula 6ª - 6.7",
+        "tag": "1341561e-23d7-4570-8164-1342007141f7",
+        "referencias": [
+          {
+            "descricao": "Admite-se incluir prazo contratual de até 5 dias úteis, contados do recebimento do BM/BMM, para que a contratante informe, por escrito, os itens controvertidos e os fundamentos da recusa, desde que tecnicamente viável.",
+            "orientacao_retorno": "terceira_rodada"
+          },
+          {
+            "descricao": "A definição de prazo deve ser avaliada com a área técnica, considerando medições complexas.",
+            "orientacao_retorno": "area_interna"
+          },
+          {
+            "descricao": "Acata-se a inclusão de obrigação de manifestação formal, desde que mantida a prerrogativa da contratante de suspender pagamentos até a regularização das pendências.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Inclusão de obrigação de manifestação formal com justificativa detalhada para a não aceitação.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Sugere-se prever prazo contratual de até 15 dias úteis para manifestação da recusa, com margem para exceções em casos de maior complexidade técnica.",
+            "orientacao_retorno": "segunda_rodada"
+          }
+        ]
+      },
+      {
+        "id": "851e8289-8cd8-45f9-b1b0-5e3a8435ec8b",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:21:28.176Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:16.414Z",
+        "conteudo": "Sem prejuízo das demais hipóteses previstas neste instrumento, o CONTRATO poderá ser rescindido, sem que sejam devidas penalidades, multas ou indenizações de uma PARTE a outra, em qualquer uma das seguintes hipóteses:",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "17.2",
+        "objetivo": "Prever hipóteses de rescisão contratual sem aplicação de penalidades, multas ou indenizações entre as partes.",
+        "nome": "Cláusula 17ª - 17.2",
+        "tag": "a1cf7942-b2ac-4440-9e58-ac1e9edd31af",
+        "referencias": [
+          {
+            "descricao": "Solicita inclusão de prazo mínimo de antecedência para o aviso de rescisão e formalização por meio de notificação específica, visando maior segurança e previsibilidade.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Admite-se incluir que o aviso de rescisão deverá respeitar prazo mínimo de 5 dias úteis, salvo nas hipóteses mais graves previstas nos incisos. A forma escrita continuará sendo suficiente, sem exigência de instrumento específico.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "A redação já prevê aviso por escrito, o que garante a formalidade necessária. Nos casos indicados nos incisos seguintes, a rescisão pode ocorrer de forma imediata a depender do caso. Solicitamos manutenção.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Solicitamos validação da área quanto a possibilidade de cumprir o prazo de aviso prévio proposto.",
+            "orientacao_retorno": "area_interna"
+          },
+          {
+            "descricao": "Pode-se aceitar a inclusão de prazo de 10 dias corridos para aviso de rescisão, com possibilidade de envio por notificação formal salvo em caso de descumprimento grave que justifique urgência.",
+            "orientacao_retorno": "terceira_rodada"
+          }
+        ]
+      },
+      {
+        "id": "871946e5-d9c7-4995-ad9f-6b9dc08456c8",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T18:52:31.122Z",
+        "user_updated": null,
+        "date_updated": null,
+        "conteudo": "comunicar, imediatamente, à CONTRATANTE, por escrito, caso encontre erros ou omissões em especificações contratuais, especialmente aquelas de natureza técnica, antes do início de qualquer atividade a seu cargo que possa ser afetada pelo erro ou omissão, o que inclui a suspensão de qualquer atividade que ponha em risco a segurança dos FUNCIONÁRIOS das PARTES ou de terceiros, independentemente de solicitação da CONTRATANTE;",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "8.1.vi",
+        "objetivo": "Assegurar que a contratada informe imediatamente à contratante, por escrito, qualquer erro ou omissão nas especificações contratuais, especialmente de natureza técnica, antes de iniciar atividades que possam ser afetadas, incluindo a obrigação de suspender atividades que coloquem em risco a segurança de funcionários ou terceiros, mesmo sem solicitação da contratante.",
+        "nome": "Cláusula 8ª - 8.1.vi",
+        "tag": null,
+        "referencias": [
+          {
+            "descricao": "Admite-se avaliar redação alternativa prevendo que a comunicação seja \"imediata e, no máximo, em até X dias úteis\", desde que não haja risco à segurança ou paralisação indevida do contrato.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "Alinhar com a área técnica se a exigência de comunicação imediata deve prever tolerância de prazo em casos administrativos que não comprometam diretamente a execução.",
+            "orientacao_retorno": "area_interna"
+          },
+          {
+            "descricao": "Alegação de que a obrigação de informar imediatamente qualquer erro ou omissão é demasiadamente onerosa. Solicitação de prazo razoável para comunicação e de limitação da responsabilidade apenas a situações que afetem diretamente a execução ou a segurança.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Manter a obrigação de comunicação imediata em casos que envolvam segurança e execução crítica, permitindo prazo diferenciado apenas para omissões de natureza administrativa.",
+            "orientacao_retorno": "terceira_rodada"
+          },
+          {
+            "descricao": "Solicitamos manter a redação original, uma vez que a imediata comunicação de erros e omissões é essencial para mitigar riscos de execução e de segurança.",
+            "orientacao_retorno": "primeira_rodada"
+          }
+        ]
+      },
+      {
+        "id": "899ef86a-0ed2-41df-928c-f2640afbbe1c",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:14:47.776Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:08.949Z",
+        "conteudo": "As apólices contratadas pela CONTRATADA deverão permanecer suficientes para a cobertura dos riscos assumidos neste CONTRATO durante toda a vigência contratual.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "14.2",
+        "objetivo": "Garantir que os seguros contratados pela contratada cubram adequadamente os riscos do contrato durante todo o período de sua vigência.",
+        "nome": "Cláusula 14ª - 14.2",
+        "tag": "1df36e28-38a2-4df3-8ed3-ba04bea594fc",
+        "referencias": [
+          {
+            "descricao": "Suprimir ou alterar a redação da cláusula para solicitar que seja previsto o direito de revisão das coberturas seguradas em função de eventuais alterações no escopo do contrato ou variações no risco",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Solicitamos validação da área de Seguros quanto à alteração sugerida pela Contratada.",
+            "orientacao_retorno": "area_interna"
+          },
+          {
+            "descricao": "A cláusula é fundamental para garantir que a proteção contratual esteja sempre vigente e adequada aos riscos, assegurando a segurança da Samarco e terceiros durante toda a execução dos serviços. Não se recomenda alteração.",
+            "orientacao_retorno": "primeira_rodada"
+          }
+        ]
+      },
+      {
+        "id": "8aa978c4-4bd4-4b8a-84d2-df29edcd2e22",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T14:13:17.914Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:18.683Z",
+        "conteudo": "Os ANEXOS \"Documentos Contratuais Gerais\" ficam dispensados de rubrica ou validação digital posterior. A CONTRATADA declara que já recebeu estes ANEXOS previamente em mídia eletrônica ou outra forma de acesso, que tem ciência do seu conteúdo e que concorda com os termos neles contidos, comprometendo-se a cumpri-los na sua integralidade.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "2.4",
+        "objetivo": "Confirmar que a CONTRATADA já recebeu, leu e concorda com os anexos contratuais, mesmo sem assinatura ou validação posterior.",
+        "nome": "Cláusula 2ª - 2.4",
+        "tag": "d71aaceb-6fa9-4be6-9d33-022985cc87fd",
+        "referencias": [
+          {
+            "descricao": "Rejeição dos Documentos Contratuais Gerais por imposição unilateral pela Samarco; Alegação de não recebimento ou de acesso incompleto aos anexos \"Documentos Contratuais Gerais\"; Solicitação de aplicação dos seus próprios documentos padrão",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Tendo em vista a devolutiva da área técnica, podemos acatar a exclusão ou alteração da ordem dos anexos indicados, desde que acatadas as demais previsões do atual Pedido.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "Gentileza verificar se todos os anexos inclusos na listagem ao lado são de fato aplicáveis ao presente contrato, conforme pedido da Contratada de exclusão ou alteração de anexos. Caso haja anexos não aplicáveis, pedimos indicar ao time jurídico.",
+            "orientacao_retorno": "area_interna"
+          },
+          {
+            "descricao": "A Samarco adota os Documentos Contratuais Gerais como parte integrante e indispensável de sua política de contratação, os quais se aplicam de forma uniforme a todos os fornecedores. Esses documentos já são disponibilizados previamente em plataforma digital institucional, ou foram encaminhados previamente. Assim, não vislumbramos justificativa para alteração da cláusula, considerando que a contratada tem plena ciência da vinculação dos documentos e compromete-se formalmente a cumpri-los.",
+            "orientacao_retorno": "primeira_rodada"
+          }
+        ]
+      },
+      {
+        "id": "8b09bcdb-4007-4643-aef5-3d079242b858",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T23:26:55.187Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:11.035Z",
+        "conteudo": "Qualquer omissão ou tolerância das PARTES em exigir o cumprimento do CONTRATO não constituirá renúncia ou alteração contratual, sendo que qualquer modificação no CONTRATO apenas vinculará as PARTES se for registrada em termo aditivo.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "21.2",
+        "objetivo": "Estabelecer que a omissão ou tolerância no cumprimento do contrato não implica renúncia de direitos, e que alterações só terão validade por meio de termo aditivo.",
+        "nome": "Cláusula 21ª - 21.2",
+        "tag": "6fd8e810-5a7a-417d-983a-82e3bd0a3c9f",
+        "referencias": [
+          {
+            "descricao": "A formalização por termo aditivo é requisito indispensável para garantir segurança jurídica e rastreabilidade das obrigações. Cláusula mantida integralmente.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Propõe relativizar a obrigatoriedade de termo aditivo para alterações de menor relevância operacional.; Solicita que a tolerância reiterada possa ser considerada ajuste tácito entre as partes.",
+            "orientacao_retorno": "analise_contratada"
+          }
+        ]
+      },
+      {
+        "id": "8b6defc9-392b-4f93-85f7-a8468d54b1f3",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:05:09.357Z",
+        "user_updated": null,
+        "date_updated": null,
+        "conteudo": "responder por todos seus atos, omissões e consequências de sua responsabilidade e de seus FUNCIONÁRIOS, o que inclui o ressarcimento por quaisquer danos causados à CONTRATANTE, a terceiros e ao meio ambiente, e ainda, as obrigações decorrentes dos contratos de trabalho de seus FUNCIONÁRIOS, visto que não há qualquer vínculo empregatício entre os FUNCIONÁRIOS da CONTRATADA e da CONTRATANTE;",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "10.1.i",
+        "objetivo": "Estabelecer que a contratada é integralmente responsável por seus atos e omissões, bem como pelos de seus funcionários, incluindo o dever de ressarcir danos causados à contratante, a terceiros ou ao meio ambiente, além de assumir todas as obrigações trabalhistas relativas a seus funcionários, deixando claro que não existe vínculo empregatício entre eles e a contratante.",
+        "nome": "Cláusula 10ª - 10.1.i",
+        "tag": null,
+        "referencias": [
+          {
+            "descricao": "A Samarco pode flexibilizar os parâmetros de limitação da responsabilidade, com as seguintes ressalvas: (i) não aplicação a danos pessoais ou ambientais; (ii) não aplicação a dolo ou culpa grave; (iii) o valor mínimo da responsabilidade corresponda, ao menos, a 100% do valor do contrato.",
+            "orientacao_retorno": "segunda_rodada"
+          },
+          {
+            "descricao": "A limitação de responsabilidade reduz significativamente a proteção jurídica da contratante e pode gerar risco relevante em contratos com impacto operacional ou com terceiros. Caso a flexibilização seja considerada, é indispensável validação da gerência, especialmente se o valor limite for inferior a 100% do contrato. Solicitamos validação da gerência por se tratar de tema sensível.; Veja-se que a Contratada espera que sua responsabilidade não se estenda a lucros cessantes e danos indiretos - isto é, danos que a Samarco tenha e não decorram diretamente de eventual descumprimento ou obrigação, mas dele se tornem um reflexo futuro e indireto. Considerando-se que o tipo de serviço prestado tem nível alto de relevância para a continuidade do processo produtivo da Samarco, eventuais inconsistências poderão gerar danos relevantes. Neste contexto, gentileza validar limitação de responsabilidade, a partir da ciência dos riscos envolvidos para aprovação da contratação. Pelo jurídico, recomendamos manter a responsabilidade ampla.; A limitação de responsabilidade reduz significativamente a proteção jurídica da contratante e pode gerar risco relevante em contratos com impacto operacional ou com terceiros. Caso a flexibilização seja considerada, é indispensável validação da gerência geral, especialmente se o valor limite for inferior a 100% do contrato.",
+            "orientacao_retorno": "area_interna"
+          },
+          {
+            "descricao": "A cláusula atual reflete o princípio da integral reparação (art. 944 do Código Civil), sendo fundamental para resguardar a Samarco diante de danos materiais, físicos ou morais causados por falha na execução contratual. Solicitamos a manutenção.; Trata-se de cláusula padrão Samarco para a contratação de serviços envolvendo o atual escopo. Solicitamos manter redação original.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Admite-se a limitação da responsabilidade da contratada ao valor total do contrato ou da garantia contratual, desde que validada pela gerência e desde que mantidas exceções para hipóteses de dolo, fraude, danos ambientais, pessoais e/ou descumprimentos legais.",
+            "orientacao_retorno": "terceira_rodada"
+          },
+          {
+            "descricao": "Limitação do valor da responsabilidade ao valor do contrato ou da garantia contratual; Restringir a responsabilidade por danos diretos",
+            "orientacao_retorno": "analise_contratada"
+          }
+        ]
+      },
+      {
+        "id": "8c519391-c7db-494e-8cbb-67767080d0aa",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:09:40.014Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:24.602Z",
+        "conteudo": "As estipulações e obrigações constantes da presente cláusula não serão aplicadas a qualquer informação que: (i) seja de domínio público; (ii) já esteja em poder da CONTRATADA como resultado de sua própria pesquisa ou desenvolvimento; (iii) tenha sido legitimamente recebida pela CONTRATADA de terceiros, sem que tenha havido violação de qualquer dever de confidencialidade; (iv) seja revelada em razão de uma ordem válida, administrativa ou judicial, somente até a extensão de tais ordens, contanto que a CONTRATADA tenha notificado a existência de tal ordem, previamente e por escrito, à CONTRATANTE, dando a esta, na medida do possível, tempo hábil para pleitear medidas de proteção que julgar cabíveis.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "11.3",
+        "objetivo": "Especificar que a obrigação de sigilo não se aplica a informações que já sejam públicas, que a contratada já conhecia legitimamente, que foram recebidas de terceiros de forma lícita, ou que precisem ser reveladas por ordem legal — desde que a contratante seja previamente avisada e tenha chance de tomar medidas de proteção.",
+        "nome": "Cláusula 11ª - 11.3",
+        "tag": "23f2d07e-f611-49e7-8666-a59684a3d80b",
+        "referencias": [
+          {
+            "descricao": "A obrigação de notificação prévia visa proteger adequadamente os interesses da contratante. Mesmo diante de ordem legal, a comunicação prévia — sempre que viável — é essencial para permitir adoção de medidas de proteção. Solicitamos manutenção.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Propõe exclusão da exigência de notificação prévia em caso de ordem judicial ou administrativa, alegando inviabilidade prática.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Pode-se ajustar a redação para prever que a notificação seja \"sempre que possível\", sem eximir a contratada do dever de informar a contratante com a maior brevidade.",
+            "orientacao_retorno": "segunda_rodada"
+          }
+        ]
+      },
+      {
+        "id": "8ddd3dd2-c0bc-4bb2-ae2b-f8d6e0173cef",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:31:30.949Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:13.396Z",
+        "conteudo": "19.1. A CONTRATADA concorda em documentar de forma precisa e detalhada em seus livros e registros, bem como nos documentos fornecidos à CONTRATANTE, todas as transações relacionadas, direta ou indiretamente, ao presente CONTRATO e a qualquer outro CONTRATO entre a CONTRATANTE e a CONTRATADA. Tais registros deverão ser mantidos de maneira organizada pela CONTRATADA durante a vigência do CONTRATO, e por um período adicional de 5 (cinco) anos após o seu término.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "19.1",
+        "objetivo": "Exigir que a CONTRATADA registre detalhadamente todas as transações relacionadas ao contrato e mantenha esses registros organizados por 5 anos após o fim do contrato.",
+        "nome": "Cláusula 19ª - 19.1",
+        "tag": "0ffa180e-a6f0-4d09-aadc-b5f44d33e2f9",
+        "referencias": [
+          {
+            "descricao": "Solicita flexibilização da obrigação ou exclusão do compromisso",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Solicitamos à área solicitante que verifique a possibilidade de aceitação da sugestão indicada pela Contratada, a depender do objeto de contratação envolvido.",
+            "orientacao_retorno": "area_interna"
+          },
+          {
+            "descricao": "Cláusula padrão da Samarco, que deve ser mantida sem ajustes. A previsão tem por objetivo assegurar registros adequados do Contrato.",
+            "orientacao_retorno": "primeira_rodada"
+          }
+        ]
+      },
+      {
+        "id": "9221ebea-687e-47b2-99ed-deac2edb1bbf",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:17:28.978Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:20.419Z",
+        "conteudo": "Constatada a ocorrência do(s) EVENTO(s), ficarão suspensas, enquanto essa perdurar, as obrigações que as PARTES ficarem impedidas de cumprir.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "16.3",
+        "objetivo": "Suspender as obrigações impossíveis de cumprir enquanto durar o evento de caso fortuito ou força maior.",
+        "nome": "Cláusula 16ª - 16.3",
+        "tag": "bbd27a2b-93de-47e3-884b-29173a455c88",
+        "referencias": []
+      },
+      {
+        "id": "93ce7d0f-1755-4bab-acb7-6211d249a113",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:14:48.290Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:22.426Z",
+        "conteudo": "As penalidades previstas no CONTRATO e nos ANEXOS, caso aplicável, não possuem natureza compensatória, isto é, podem cumuladas com as perdas e danos relacionadas.",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "15.3",
+        "objetivo": "Esclarece que as penalidades não têm caráter compensatório e podem ser cumuladas com indenizações por perdas e danos.",
+        "nome": "Cláusula 15ª - 15.3",
+        "tag": "1ba1a9b0-ebec-484b-b947-4a33766b9cdf",
+        "referencias": [
+          {
+            "descricao": "Alteração da natureza não compensatória das multas",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "Trata-se de previsão de multa em caráter não compensatório que garante a exequibilidade das obrigações contratuais respectivas a cada tipo de penalidade. Sua exclusão altera a função contratual da multa/penalidade aplicável. Solicitamos manter.",
+            "orientacao_retorno": "primeira_rodada"
+          }
+        ]
+      },
+      {
+        "id": "94bfc554-82b0-4ad8-b5c8-dbad7a361892",
+        "status": "draft",
+        "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+        "date_created": "2025-10-08T22:14:47.486Z",
+        "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+        "date_updated": "2025-10-20T14:30:09.174Z",
+        "conteudo": "A existência de subcontratadas, autorizadas e/ou fiscalizadas, ou não, pela CONTRATANTE, não eximirá a CONTRATADA de sua exclusiva responsabilidade pelo cumprimento do CONTRATO",
+        "modelo_contrato": "cd389b5c-d3b5-4bb5-b0ef-c249c2c6a9fb",
+        "numero": "13.2",
+        "objetivo": "Assegurar que, mesmo havendo subcontratadas autorizadas ou fiscalizadas pela contratante, a contratada continuará sendo a única e exclusiva responsável pelo cumprimento integral do contrato.",
+        "nome": "Cláusula 13ª - 13.2",
+        "tag": "8bf2785e-e033-437f-92d7-26b253613457",
+        "referencias": [
+          {
+            "descricao": "Suprimir ou alterar a redação da cláusula que seja esclarecido que, caso a Samarco autorize formalmente cessionárias ou subcontratadas, a responsabilidade possa ser compartilhada ou limitada em situações específicas, especialmente quando o desempenho deficiente seja comprovadamente decorrente de atuação dessas terceirizadas.",
+            "orientacao_retorno": "analise_contratada"
+          },
+          {
+            "descricao": "A cláusula é essencial para assegurar que a CONTRATADA mantenha a responsabilidade plena pela execução contratual, independentemente da eventual participação de terceiros. Tal regra é prática padrão para evitar fragilização da responsabilidade e será mantida integralmente.",
+            "orientacao_retorno": "primeira_rodada"
+          },
+          {
+            "descricao": "Aceita-se que, em situações específicas, onde terceiros autorizados tenham responsabilidade comprovada sobre falhas, a CONTRATADA possa solicitar reavaliação da imputação exclusiva de responsabilidade, desde que mantida sua obrigação geral pelo cumprimento do contrato. Reforça-se que tal flexibilização não exime a CONTRATADA de garantir a qualidade e conformidade dos serviços.",
+            "orientacao_retorno": "terceira_rodada"
+          },
+          {
+            "descricao": "Reconhece-se que, em casos excepcionais e devidamente formalizados, a CONTRATADA poderá apontar situações em que a responsabilidade sobre falhas específicas atribuíveis a terceiros autorizados possa ser objeto de análise conjunta. Contudo, isso não altera a responsabilidade primária da CONTRATADA perante a Samarco.",
+            "orientacao_retorno": "segunda_rodada"
+          }
+        ]
+      }
+    ]
+  }
+}
