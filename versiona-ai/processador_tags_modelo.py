@@ -6,9 +6,16 @@ Adaptado do processador histórico para o ambiente versiona-ai
 
 import os
 import re
+
+# Importar repositório para acesso ao Directus
+import sys
 import tempfile
+from pathlib import Path
 
 import requests
+
+sys.path.insert(0, str(Path(__file__).parent))
+from repositorio import DirectusRepository  # noqa: E402
 
 
 class ProcessadorTagsModelo:
@@ -22,6 +29,8 @@ class ProcessadorTagsModelo:
             "Authorization": f"Bearer {directus_token}",
             "Content-Type": "application/json",
         }
+        # Criar instância do repositório para operações CRUD
+        self.repo = DirectusRepository(base_url=directus_base_url, token=directus_token)
 
     def processar_modelo(self, modelo_id: str, dry_run: bool = False) -> dict:
         """
@@ -101,6 +110,23 @@ class ProcessadorTagsModelo:
                     f"⚠️  {len(tags_orfas)} tags órfãs descartadas: {', '.join(sorted(tags_orfas))}"
                 )
 
+            # 6.5. Criar cláusulas em lote para tags numéricas
+            clausulas_criadas, clausulas_existentes = self._criar_clausulas_em_lote(
+                modelo_id=modelo_id,
+                tags_validas=tags_validas,
+                _clausulas_map=clausulas_map,
+                dry_run=dry_run,
+            )
+
+            # Recarregar mapa de cláusulas após criação em lote
+            if clausulas_criadas > 0 and not dry_run:
+                print("🔄 Recarregando mapa de cláusulas...")
+                modelo_data_atualizado = self._buscar_modelo(modelo_id)
+                clausulas_map = self._criar_mapa_clausulas(
+                    modelo_data_atualizado.get("clausulas", [])
+                )
+                print(f"📋 {len(clausulas_map)} cláusulas disponíveis após criação")
+
             # 7. Atualizar modelo com tags válidas (Directus cria os registros atomicamente)
             if not dry_run:
                 self._atualizar_modelo_com_tags(modelo_id, tags_validas, clausulas_map)
@@ -114,6 +140,8 @@ class ProcessadorTagsModelo:
                 "tags_criadas": len(tags_validas),
                 "tags_orfas": len(tags_orfas),
                 "modificacoes_analisadas": len(modificacoes),
+                "clausulas_criadas": clausulas_criadas,
+                "clausulas_existentes": clausulas_existentes,
                 "status": "sucesso",
                 "dry_run": dry_run,
             }
@@ -391,6 +419,283 @@ class ProcessadorTagsModelo:
             print(f"⚠️ Tags numéricas encontradas: {numeric_tags[:10]}")
 
         return conteudo_map
+
+    def _extrair_numero_nome_clausula(
+        self, tag_nome: str, conteudo: str
+    ) -> tuple[str, str]:
+        """
+        Extrai número e nome da cláusula a partir do tag_nome e conteúdo.
+
+        Args:
+            tag_nome: Nome da tag (ex: "12.6.1", "vigencia", etc)
+            conteudo: Conteúdo da tag
+
+        Returns:
+            tuple (numero, nome) onde:
+                - numero: número da cláusula (ex: "12.6.1")
+                - nome: nome/título extraído do conteúdo ou tag_nome
+
+        Lógica:
+            1. Se tag_nome é numérico (ex: "12.6.1"), usar como número
+            2. Tentar extrair título do início do conteúdo (primeira linha não vazia)
+            3. Se não conseguir, usar tag_nome como nome
+        """
+        # Verificar se tag é numérica
+        is_numeric = bool(re.match(r"^\d+(?:\.\d+)*$", tag_nome))
+
+        if is_numeric:
+            numero = tag_nome
+            # Tentar extrair nome do conteúdo (primeira linha significativa)
+            nome = self._extrair_titulo_conteudo(conteudo) or f"Cláusula {tag_nome}"
+        else:
+            # Tag textual - usar como nome, sem número específico
+            numero = ""  # Será preenchido manualmente depois
+            nome = tag_nome.replace("_", " ").title()
+
+        return numero, nome
+
+    def _extrair_titulo_conteudo(self, conteudo: str) -> str:
+        """
+        Extrai um título do conteúdo (primeira linha significativa).
+
+        Args:
+            conteudo: Texto do conteúdo
+
+        Returns:
+            Título extraído ou string vazia
+        """
+        if not conteudo:
+            return ""
+
+        # Pegar primeiras linhas
+        linhas = conteudo.strip().split("\n")
+
+        for linha in linhas[:3]:  # Verificar até 3 primeiras linhas
+            linha_limpa = linha.strip()
+            # Pular linhas vazias e muito curtas
+            if len(linha_limpa) < 3:
+                continue
+            # Limitar tamanho do título
+            if len(linha_limpa) > 100:
+                linha_limpa = linha_limpa[:97] + "..."
+            return linha_limpa
+
+        return ""
+
+    def _reconciliar_clausulas(
+        self,
+        modelo_id: str,
+        clausulas_existentes: list[dict],
+        tags_validas: list[dict],
+    ) -> dict[str, list[dict]]:
+        """
+        Reconcilia cláusulas existentes com tags do documento reprocessado.
+
+        Estratégia (nenhuma cláusula é deletada):
+          - Cláusula existe E conteúdo mudou      → update (só conteudo_original)
+          - Cláusula existe E era inativa          → update (reativar + conteúdo novo)
+          - Cláusula existe E conteúdo igual       → nada (skip)
+          - Cláusula existe mas NÃO no documento   → update (status="inativo")
+          - Cláusula NÃO existe E tag numérica     → create
+
+        Retorna dict com sintaxe "Detailed" do Directus:
+            {"create": [...], "update": [...]}
+
+        Args:
+            modelo_id: ID do modelo de contrato
+            clausulas_existentes: Cláusulas já cadastradas (do GET)
+            tags_validas: Tags extraídas do documento
+
+        Returns:
+            dict com "create" e "update" prontos para PATCH no Directus
+        """
+        create_list: list[dict] = []
+        update_list: list[dict] = []
+
+        # Indexar cláusulas existentes por numero (lowercase)
+        existentes_por_numero: dict[str, dict] = {}
+        for c in clausulas_existentes:
+            numero = (c.get("numero") or "").strip().lower()
+            if numero:
+                existentes_por_numero[numero] = c
+
+        # Extrair números das tags do documento (apenas numéricas, sem duplicatas)
+        numeros_no_documento: dict[str, str] = {}  # numero_lower -> conteudo
+        numeros_vistos: set[str] = set()
+
+        for tag in tags_validas:
+            numero, nome = self._extrair_numero_nome_clausula(
+                tag["nome"], tag.get("conteudo", "")
+            )
+            if not numero:
+                continue
+
+            numero_lower = numero.lower()
+            if numero_lower in numeros_vistos:
+                continue
+            numeros_vistos.add(numero_lower)
+            numeros_no_documento[numero_lower] = tag.get("conteudo", "")
+
+        # 1. Processar cláusulas existentes
+        for numero_lower, clausula in existentes_por_numero.items():
+            status_atual = (clausula.get("status") or "").strip()
+
+            if numero_lower in numeros_no_documento:
+                # Cláusula ainda existe no documento
+                conteudo_novo = numeros_no_documento[numero_lower][:5000]
+                conteudo_antigo = (clausula.get("conteudo_original") or "").strip()
+
+                if status_atual == "inativo":
+                    # Reativar cláusula que voltou ao documento
+                    update_list.append(
+                        {
+                            "id": clausula["id"],
+                            "conteudo_original": conteudo_novo,
+                            "status": "published",
+                        }
+                    )
+                elif conteudo_novo != conteudo_antigo:
+                    # Conteúdo mudou — atualizar só conteudo_original
+                    update_list.append(
+                        {
+                            "id": clausula["id"],
+                            "conteudo_original": conteudo_novo,
+                        }
+                    )
+                # else: conteúdo igual, status ok → skip
+            else:
+                # Cláusula sumiu do documento → inativar (só id + status)
+                # Evita update redundante se já estiver inativa
+                if status_atual != "inativo":
+                    update_list.append(
+                        {
+                            "id": clausula["id"],
+                            "status": "inativo",
+                        }
+                    )
+
+        # 2. Criar cláusulas novas (existem no documento mas não no modelo)
+        for numero_lower, conteudo in numeros_no_documento.items():
+            if numero_lower in existentes_por_numero:
+                continue
+
+            # Extrair nome a partir do conteúdo
+            nome = self._extrair_titulo_conteudo(conteudo) or f"Cláusula {numero_lower}"
+
+            create_list.append(
+                {
+                    "modelo_contrato": modelo_id,
+                    "numero": numero_lower,
+                    "nome": nome,
+                    "conteudo_original": conteudo[:5000],
+                    "status": "published",
+                }
+            )
+
+        return {"create": create_list, "update": update_list}
+
+    def _criar_clausulas_em_lote(
+        self,
+        modelo_id: str,
+        tags_validas: list[dict],
+        _clausulas_map: dict[str, list[str]],
+        dry_run: bool = False,
+    ) -> tuple[int, int]:
+        """
+        Reconcilia cláusulas existentes com tags do documento e aplica em lote.
+
+        Fluxo:
+          1. Busca todas as cláusulas existentes do modelo (1 GET)
+          2. Reconcilia: determina creates, updates e inativações
+          3. Aplica tudo em 1 único PATCH (sintaxe Detailed do Directus)
+
+        Args:
+            modelo_id: ID do modelo de contrato
+            tags_validas: Lista de tags com conteúdo extraído
+            _clausulas_map: Mapa atual de cláusulas (mantido por compatibilidade)
+            dry_run: Se True, não persiste no banco
+
+        Returns:
+            tuple (clausulas_criadas, clausulas_atualizadas)
+        """
+        print("\n🔧 Reconciliando cláusulas (batch)...")
+
+        # 1. Buscar todas as cláusulas existentes em 1 única requisição
+        try:
+            clausulas_existentes = self.repo.get_clausulas_modelo(
+                modelo_id,
+                fields=["id", "numero", "nome", "conteudo_original", "status"],
+            )
+        except Exception as e:
+            print(f"⚠️  Erro ao buscar cláusulas existentes: {e}")
+            clausulas_existentes = []
+
+        print(f"📋 {len(clausulas_existentes)} cláusulas existentes no modelo")
+
+        # 2. Reconciliar
+        reconciliacao = self._reconciliar_clausulas(
+            modelo_id=modelo_id,
+            clausulas_existentes=clausulas_existentes,
+            tags_validas=tags_validas,
+        )
+
+        criadas = reconciliacao["create"]
+        atualizadas = reconciliacao["update"]
+
+        if not criadas and not atualizadas:
+            print("✓ Nenhuma alteração necessária nas cláusulas")
+            return 0, 0
+
+        # 3. Dry run — apenas logar
+        if dry_run:
+            for c in criadas:
+                print(
+                    f"  🏃‍♂️ DRY-RUN: Cláusula {c['numero']} '{c['nome'][:50]}' seria criada"
+                )
+            for u in atualizadas:
+                status = u.get("status", "updated")
+                print(f"  🏃‍♂️ DRY-RUN: Cláusula {u['id']} seria atualizada ({status})")
+            print(f"✨ Total: {len(criadas)} a criar, {len(atualizadas)} a atualizar")
+            return len(criadas), len(atualizadas)
+
+        # 4. Aplicar via PATCH no modelo — 1 única requisição (sintaxe Detailed)
+        try:
+            update_url = f"{self.base_url}/items/modelo_contrato/{modelo_id}"
+            payload: dict = {}
+
+            if criadas or atualizadas:
+                clausulas_payload: dict[str, list] = {}
+                if criadas:
+                    clausulas_payload["create"] = criadas
+                if atualizadas:
+                    clausulas_payload["update"] = atualizadas
+                payload["clausulas"] = clausulas_payload
+
+            response = requests.patch(
+                update_url, headers=self.headers, json=payload, timeout=60
+            )
+
+            if response.status_code == 200:
+                print(
+                    f"✨ {len(criadas)} cláusulas criadas, {len(atualizadas)} atualizadas"
+                )
+                for c in criadas:
+                    print(f"  🆕 {c['numero']} - '{c['nome'][:50]}'")
+                for u in atualizadas:
+                    status = u.get("status", "")
+                    label = "⏸️  inativada" if status == "inativo" else "✏️  atualizada"
+                    print(f"  {label} (ID: {u['id']})")
+            else:
+                error_msg = response.text[:500]
+                print(f"❌ Erro ao reconciliar cláusulas: HTTP {response.status_code}")
+                print(f"❌ {error_msg}")
+                return 0, 0
+        except Exception as e:
+            print(f"❌ Erro ao reconciliar cláusulas: {e}")
+            return 0, 0
+
+        print(f"📊 Total: {len(criadas)} criadas, {len(atualizadas)} atualizadas")
+        return len(criadas), len(atualizadas)
 
     def _criar_mapa_clausulas(self, clausulas: list[dict]) -> dict[str, list[str]]:
         """
