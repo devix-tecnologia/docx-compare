@@ -1,6 +1,6 @@
 # Task 010 — processamento de versões não está relacionando cláusula à modificação
 
-Status: pending
+Status: in-progress
 Type: fix
 Assignee: Sidarta Veloso
 
