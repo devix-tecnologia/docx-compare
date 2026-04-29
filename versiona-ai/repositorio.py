@@ -716,6 +716,44 @@ class DirectusRepository:
             response.raise_for_status()
             return []
 
+    def create_clausulas_batch(
+        self, clausulas: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
+        """
+        Cria múltiplas cláusulas em uma única requisição (batch).
+
+        O Directus aceita um array no POST para criar múltiplos itens de uma vez.
+
+        Args:
+            clausulas: Lista de dicts com campos de cada cláusula.
+                Cada dict deve conter: modelo_contrato, numero, nome, conteudo_original, status.
+
+        Returns:
+            Lista de cláusulas criadas com seus IDs.
+
+        Raises:
+            requests.RequestException: Em caso de erro de comunicação
+        """
+        if not clausulas:
+            return []
+
+        response = requests.post(
+            f"{self.base_url}/items/clausula",
+            headers=self.headers,
+            json=clausulas,
+            timeout=60,
+        )
+
+        if response.status_code in (200, 201):
+            data = response.json().get("data", [])
+            # Directus retorna objeto único se só 1 item, ou lista se múltiplos
+            if isinstance(data, dict):
+                return [data]
+            return data
+        else:
+            response.raise_for_status()
+            return []
+
     # ============================================================================
     # MÉTODOS DE CONTRATO
     # ============================================================================
