@@ -114,7 +114,7 @@ class ProcessadorTagsModelo:
             clausulas_criadas, clausulas_existentes = self._criar_clausulas_em_lote(
                 modelo_id=modelo_id,
                 tags_validas=tags_validas,
-                _clausulas_map=clausulas_map,
+                clausulas_map=clausulas_map,
                 dry_run=dry_run,
             )
 

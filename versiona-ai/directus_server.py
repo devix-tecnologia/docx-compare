@@ -1510,10 +1510,32 @@ class DirectusAPI:
 
             if getattr(tag, "clausulas", None):
                 primeira = tag.clausulas[0] if tag.clausulas else None
+                clausula_id = None
+
                 if isinstance(primeira, dict):
-                    mod.setdefault("clausula_id", primeira.get("id"))
-                    mod.setdefault("clausula_numero", primeira.get("numero"))
-                    mod.setdefault("clausula_nome", primeira.get("nome"))
+                    # Pode vir direto ({id, numero, nome}) ou aninhado via tabela de junção.
+                    clausula_obj = primeira
+                    if isinstance(primeira.get("clausula"), dict):
+                        clausula_obj = primeira.get("clausula")
+                    elif isinstance(primeira.get("clausula_id"), dict):
+                        clausula_obj = primeira.get("clausula_id")
+
+                    if not isinstance(clausula_obj, dict):
+                        clausula_obj = {}
+
+                    clausula_id = clausula_obj.get("id") or primeira.get("clausula")
+
+                    if clausula_obj.get("numero") and not mod.get("clausula_numero"):
+                        mod["clausula_numero"] = clausula_obj.get("numero")
+                    if clausula_obj.get("nome") and not mod.get("clausula_nome"):
+                        mod["clausula_nome"] = clausula_obj.get("nome")
+                elif isinstance(primeira, str):
+                    # Alguns ambientes podem retornar a relação como lista de IDs.
+                    clausula_id = primeira
+
+                # setdefault não sobrescreve None; aqui precisamos preencher quando ausente ou vazio.
+                if clausula_id and not mod.get("clausula_id"):
+                    mod["clausula_id"] = clausula_id
 
         for item in resultado.vinculadas:
             modificacao, meta = extrair_modificacao(item)
@@ -1557,6 +1579,16 @@ class DirectusAPI:
                 modificacao["motivo_vinculacao"] = meta["motivo"]
             modificacao["status_vinculacao"] = "nao_vinculada"
             modificacoes_enriquecidas.append(modificacao)
+
+        total = len(modificacoes_enriquecidas)
+        com_clausula = sum(
+            1 for mod in modificacoes_enriquecidas if mod.get("clausula_id")
+        )
+        sem_clausula = total - com_clausula
+        print(
+            "📎 Consolidação de vinculação: "
+            f"total={total}, com_clausula={com_clausula}, sem_clausula={sem_clausula}"
+        )
 
         return modificacoes_enriquecidas
 

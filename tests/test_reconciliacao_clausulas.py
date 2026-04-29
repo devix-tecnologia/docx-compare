@@ -13,7 +13,7 @@ Tudo via sintaxe "Detailed" do Directus (create/update em 1 PATCH).
 
 import os
 import sys
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 

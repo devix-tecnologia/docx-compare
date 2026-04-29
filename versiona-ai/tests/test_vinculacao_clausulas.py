@@ -22,7 +22,7 @@ import pytest
 
 # Adicionar o diretório pai ao path para importar directus_server
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from directus_server import DirectusAPI
+from directus_server import DirectusAPI, ResultadoVinculacao, TagMapeada
 
 
 @pytest.fixture
@@ -353,6 +353,139 @@ def test_integracao_completa_vinculacao(api, sample_data):
 
     print(f"\n📊 Resumo: {mods_vinculadas}/{total_mods} modificações vinculadas")
     print("✅ Integração completa validada usando método real da API")
+
+
+def test_consolidacao_preenche_clausula_id_quando_valor_previo_none(api):
+    """Garante regressão: setdefault não deve impedir preenchimento de clausula_id."""
+    resultado = ResultadoVinculacao(
+        vinculadas=[
+            {
+                "modificacao": {
+                    "id": "mod-1",
+                    "tipo": "ALTERACAO",
+                    "conteudo": {"original": "A", "novo": "B"},
+                    "clausula_id": None,
+                },
+                "tag": TagMapeada(
+                    tag_id="tag-1",
+                    tag_nome="1.1",
+                    posicao_inicio_original=10,
+                    posicao_fim_original=20,
+                    clausulas=[
+                        {
+                            "id": "cl-uuid-1",
+                            "numero": "1.1",
+                            "nome": "Do Objeto",
+                        }
+                    ],
+                    score_inferencia=0.9,
+                    metodo="conteudo",
+                ),
+                "score": 0.92,
+            }
+        ],
+        nao_vinculadas=[],
+        revisao_manual=[],
+    )
+
+    modificacoes = api._consolidar_modificacoes_vinculacao(resultado)
+
+    assert len(modificacoes) == 1
+    assert modificacoes[0].get("clausula_id") == "cl-uuid-1"
+    assert modificacoes[0].get("clausula_numero") == "1.1"
+    assert modificacoes[0].get("clausula_nome") == "Do Objeto"
+
+
+def test_consolidacao_aceita_clausula_como_id_string(api):
+    """Aceita resposta de relação no formato dict com id direto."""
+    resultado = ResultadoVinculacao(
+        vinculadas=[
+            {
+                "modificacao": {
+                    "id": "mod-2",
+                    "tipo": "ALTERACAO",
+                    "conteudo": {"original": "A", "novo": "B"},
+                },
+                "tag": TagMapeada(
+                    tag_id="tag-2",
+                    tag_nome="2.1",
+                    posicao_inicio_original=21,
+                    posicao_fim_original=40,
+                    clausulas=[{"id": "cl-uuid-2"}],
+                    score_inferencia=0.88,
+                    metodo="conteudo",
+                ),
+                "score": 0.88,
+            }
+        ],
+        nao_vinculadas=[],
+        revisao_manual=[],
+    )
+
+    modificacoes = api._consolidar_modificacoes_vinculacao(resultado)
+
+    assert len(modificacoes) == 1
+    assert modificacoes[0].get("clausula_id") == "cl-uuid-2"
+
+
+def test_converter_modificacao_envia_fk_clausula_quando_id_disponivel(api):
+    """Valida payload final para Directus com FK de cláusula preenchida."""
+    mod = {
+        "tipo": "ALTERACAO",
+        "conteudo": {"original": "Texto antigo", "novo": "Texto novo"},
+        "posicao_inicio": 100,
+        "posicao_fim": 150,
+        "clausula_id": "cl-uuid-final",
+        "clausula_numero": "3.2",
+        "clausula_nome": "Da Vigência",
+    }
+
+    payload = api._converter_modificacao_para_directus("versao-1", mod)
+
+    assert payload.get("versao") == "versao-1"
+    assert payload.get("clausula") == "cl-uuid-final"
+
+
+def test_consolidacao_extrai_clausula_de_relacao_aninhada_directus(api):
+    """TDD: relação de cláusula pode vir aninhada (ex.: tabela de junção no Directus)."""
+    resultado = ResultadoVinculacao(
+        vinculadas=[
+            {
+                "modificacao": {
+                    "id": "mod-3",
+                    "tipo": "ALTERACAO",
+                    "conteudo": {"original": "A", "novo": "B"},
+                },
+                "tag": TagMapeada(
+                    tag_id="tag-3",
+                    tag_nome="4.1",
+                    posicao_inicio_original=50,
+                    posicao_fim_original=70,
+                    clausulas=[
+                        {
+                            "clausula": {
+                                "id": "cl-uuid-nested",
+                                "numero": "4.1",
+                                "nome": "Da Modificação",
+                            }
+                        }
+                    ],
+                    score_inferencia=0.91,
+                    metodo="conteudo",
+                ),
+                "score": 0.91,
+            }
+        ],
+        nao_vinculadas=[],
+        revisao_manual=[],
+    )
+
+    modificacoes = api._consolidar_modificacoes_vinculacao(resultado)
+
+    assert len(modificacoes) == 1
+    assert modificacoes[0].get("clausula_id") == "cl-uuid-nested"
+    assert modificacoes[0].get("clausula_numero") == "4.1"
+    assert modificacoes[0].get("clausula_nome") == "Da Modificação"
 
 
 if __name__ == "__main__":
