@@ -56,7 +56,7 @@ results/
 *.sh
 !start*.sh
 exemplos/
-tests/
+# tests/ - REMOVIDO para permitir cópia no Dockerfile.ui-test
 *.md
 
 # Git

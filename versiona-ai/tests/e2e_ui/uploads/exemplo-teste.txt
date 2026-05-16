@@ -1,0 +1,5 @@
+Este é um arquivo de exemplo para testes E2E UI do Directus.
+
+Todos os arquivos devem ficar na RAIZ da pasta uploads/, não em subpastas.
+
+O Directus gerencia os uploads internamente sem estrutura de pastas personalizada.

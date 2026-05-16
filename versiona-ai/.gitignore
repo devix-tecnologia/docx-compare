@@ -1,0 +1,48 @@
+# Versiona AI - GitIgnore
+# Arquivos e diretórios específicos do Versiona AI
+
+# Uploads do Directus E2E - ignorar todos os arquivos, manter a pasta
+tests/e2e_ui/uploads/*
+!tests/e2e_ui/uploads/README.md
+!tests/e2e_ui/uploads/exemplo-*.txt
+!tests/e2e_ui/uploads/.gitkeep
+
+# Backups PostgreSQL - ignorar arquivos .tar, manter documentação
+docker/postgres/backup/*.tar
+!docker/postgres/backup/.gitkeep
+!docker/postgres/backup/README.md
+docker/postgres/init/*.tar
+
+# Ambientes virtuais Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Cache de testes
+.pytest_cache/
+.coverage
+htmlcov/
+test-results/
+
+# Logs
+*.log
+
+# Arquivos temporários
+*.tmp
+*.swp
+*.swo
+*~
+.DS_Store
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-*
+
+# Build artifacts
+dist/
+build/
+*.egg-info/

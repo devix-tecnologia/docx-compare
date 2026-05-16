@@ -809,10 +809,15 @@ class DirectusAPI:
         posicao_inicio_real = mod.get("posicao_inicio")
         posicao_fim_real = mod.get("posicao_fim")
 
+        print(
+            f"   DEBUG: mod posicao_inicio={posicao_inicio_real}, posicao_fim={posicao_fim_real}"
+        )
+
         if posicao_inicio_real is not None and posicao_fim_real is not None:
             # Posições reais disponíveis (do diff ou vinculação)
             posicao_inicio = posicao_inicio_real
             posicao_fim = posicao_fim_real
+            print(f"   ✅ Usando posições reais: [{posicao_inicio}-{posicao_fim}]")
         else:
             # Fallback: calcular aproximado por linha/coluna
             posicao = mod.get("posicao", {})
@@ -820,6 +825,9 @@ class DirectusAPI:
             coluna = posicao.get("coluna", 0)
             posicao_inicio = linha * 1000 + coluna
             posicao_fim = linha * 1000 + coluna + len(conteudo_original)
+            print(
+                f"   ⚠️ Usando fallback linha/coluna: [{posicao_inicio}-{posicao_fim}]"
+            )
 
         # Construir caminho baseado nas posições reais
         # Converter posição linear de volta para linha:coluna aproximado
@@ -2131,56 +2139,125 @@ class DirectusAPI:
                 "texto_modificado": "\n".join(p["text"] for p in modified_paras),
             }
 
-            # 3. Extrair tags já carregadas na requisição inicial do process_versao
+            # 3. Extrair tags e arquivo_com_tags do modelo
             # OTIMIZAÇÃO: versao_data já vem com nested fields (contrato.modelo_contrato.tags)
             tags_modelo = []
+            arquivo_com_tags_id = None
 
             try:
-                # Tentar extrair tags dos dados nested
+                # Tentar extrair tags e arquivo_com_tags dos dados nested
                 contrato_data = versao_data.get("contrato")
                 if isinstance(contrato_data, dict):
                     modelo_data = contrato_data.get("modelo_contrato")
                     if isinstance(modelo_data, dict):
                         tags_modelo = modelo_data.get("tags", [])
+                        arquivo_com_tags_id = modelo_data.get("arquivo_com_tags")
+
                         if tags_modelo:
-                            print(
-                                f"✅ Usando {len(tags_modelo)} tags já carregadas (0 requisições extras)"
-                            )
+                            print(f"✅ Usando {len(tags_modelo)} tags já carregadas")
                         else:
                             print("⚠️ Modelo não tem tags")
+
+                        if arquivo_com_tags_id:
+                            print(f"✅ ID do arquivo_com_tags: {arquivo_com_tags_id}")
+                        else:
+                            print("⚠️ Modelo não tem arquivo_com_tags")
                     else:
                         print("⚠️ Modelo não encontrado nos dados nested")
                 else:
                     print("⚠️ Contrato não encontrado nos dados nested")
             except Exception as e:
-                print(f"⚠️ Erro ao extrair tags nested: {e}")
+                print(f"⚠️ Erro ao extrair dados nested: {e}")
                 tags_modelo = []
+                arquivo_com_tags_id = None
 
-            # 4. Vincular modificações AST às cláusulas
-            modificacoes = resultado_ast["modificacoes"]
-            if tags_modelo:
-                print("🔗 Vinculando modificações AST às cláusulas...")
-                # Extrair texto do arquivo modificado para vinculação
-                modified_text = self._download_and_extract_text(arquivo_novo_id)
+            # 4. Baixar textos necessários para vinculação
+            # Estratégia (mesma do process_versao):
+            # - arquivo_com_tags_text: Modelo COM tags (para mapear tags)
+            # - modified_text: Arquivo novo da versão (base para mapeamento)
+            # Tags serão mapeadas de arquivo_com_tags → modified_text
+            # Modificações terão posições em modified_text
+            # Overlap será calculado em modified_text
 
-                if modified_text:
-                    resultado_vinculacao = self._vincular_modificacoes_clausulas_novo(
-                        modificacoes=modificacoes,
-                        tags_modelo=tags_modelo,
-                        texto_com_tags=modified_text,
-                        texto_original=modified_text,
+            arquivo_com_tags_text = None
+            if arquivo_com_tags_id:
+                print("\n📥 Baixando arquivo_com_tags do modelo...")
+                arquivo_com_tags_text = self._download_and_extract_text(
+                    arquivo_com_tags_id
+                )
+                if arquivo_com_tags_text:
+                    print(
+                        f"✅ Arquivo com tags carregado: {len(arquivo_com_tags_text)} caracteres"
                     )
+                else:
+                    print("⚠️ Não foi possível extrair texto do arquivo_com_tags")
 
-                    if resultado_vinculacao and resultado_vinculacao.get(
-                        "modificacoes"
-                    ):
-                        modificacoes = resultado_vinculacao["modificacoes"]
+            # Usar texto extraído do AST (já temos em resultado_ast) para os trechos
+            texto_modificado_ast = resultado_ast.get("texto_modificado", "")
+            print(
+                f"\n📝 Texto modificado do AST (trechos): {len(texto_modificado_ast)} caracteres"
+            )
 
-            # 5. Calcular blocos (usar HTML do AST)
+            # Mas TAMBÉM baixar o arquivo COMPLETO do Directus (mesma estratégia que process_versao)
+            print("\n📥 Baixando arquivo MODIFICADO completo da versão...")
+            modified_text_completo = self._download_and_extract_text(arquivo_novo_id)
+            if modified_text_completo:
+                print(
+                    f"✅ Arquivo modificado completo: {len(modified_text_completo)} caracteres"
+                )
+            else:
+                print("⚠️ Não foi possível baixar arquivo modificado")
+                modified_text_completo = texto_modificado_ast  # Fallback para AST
+
+            # 5. Calcular posições das modificações no texto COMPLETO (não AST)
+            modificacoes = resultado_ast["modificacoes"]
+
+            if modified_text_completo:
+                print("\n📍 Calculando posições das modificações no texto COMPLETO...")
+                print(f"   Texto completo: {len(modified_text_completo)} caracteres")
+                modificacoes = self._calcular_posicoes_modificacoes(
+                    modificacoes, modified_text_completo
+                )
+            else:
+                print("⚠️ Texto completo não disponível, pulando cálculo de posições")
+
+            # 6. Vincular modificações AST às cláusulas
+            # IMPORTANTE: Passar modified_text_completo como texto_original
+            # - texto_com_tags = modelo COM tags (163401 chars)
+            # - texto_original = arquivo completo da versão (164943 chars)
+            # Ambos extraídos do Directus - coordenadas compatíveis!
+            if tags_modelo and arquivo_com_tags_text and modified_text_completo:
+                print("\n🔗 Vinculando modificações AST às cláusulas...")
+                print(f"   - Tags disponíveis: {len(tags_modelo)}")
+                print(f"   - Arquivo com tags: {len(arquivo_com_tags_text)} chars")
+                print(
+                    f"   - Texto base (completo): {len(modified_text_completo)} chars"
+                )
+
+                resultado_vinculacao = self._vincular_modificacoes_clausulas_novo(
+                    modificacoes=modificacoes,
+                    tags_modelo=tags_modelo,
+                    texto_com_tags=arquivo_com_tags_text,  # Modelo COM tags
+                    texto_original=modified_text_completo,  # Texto completo
+                )
+
+                if resultado_vinculacao and resultado_vinculacao.get("modificacoes"):
+                    modificacoes = resultado_vinculacao["modificacoes"]
+            else:
+                print("\n⚠️ Pulando vinculação de cláusulas:")
+                if not tags_modelo:
+                    print("   - Sem tags do modelo")
+                if not arquivo_com_tags_text:
+                    print("   - Sem arquivo_com_tags")
+                if not modified_text_completo:
+                    print("   - Sem texto completo")
+                    print("   - Sem texto original")
+
+            # 6. Calcular blocos (usar HTML do AST)
             diff_html = resultado_ast.get("diff_html", "")
             resultado_blocos = self._calcular_blocos_avancado(versao_id, diff_html)
 
-            # 6. Criar registro no cache
+            # 7. Criar registro no cache
             diff_id = str(uuid.uuid4())
             diff_data = {
                 "id": diff_id,
@@ -2257,7 +2334,26 @@ class DirectusAPI:
                     # conteudo = texto original
                     # alteracao = texto novo/modificado
                     # clausula = ID da cláusula vinculada (se houver)
-                    # SEM campo "versao" - será vinculado automaticamente pelo Directus
+                    # posicao_inicio/posicao_fim = posições no texto (calculadas)
+
+                    # Usar posicões_inicio/posicao_fim calculadas se disponíveis
+                    posicao_inicio = mod.get("posicao_inicio")
+                    posicao_fim = mod.get("posicao_fim")
+
+                    # Fallback: usar posições baseadas em linha/coluna
+                    if posicao_inicio is None or posicao_fim is None:
+                        posicao = mod.get("posicao", {})
+                        linha = posicao.get("linha", 0)
+                        coluna = posicao.get("coluna", 0)
+                        posicao_inicio = linha * 1000 + coluna
+                        posicao_fim = linha * 1000 + coluna + 100  # aproximação
+
+                    # Construir caminho para compatibilidade
+                    linha_inicio = posicao_inicio // 1000
+                    coluna_inicio = posicao_inicio % 1000
+                    linha_fim = posicao_fim // 1000
+                    coluna_fim = posicao_fim % 1000
+
                     mod_data = {
                         "categoria": mod.get("tipo", "ALTERACAO"),  # tipo → categoria
                         "conteudo": mod.get("conteudo", {}).get(
@@ -2267,12 +2363,10 @@ class DirectusAPI:
                             "novo"
                         ),  # conteudo_novo → alteracao
                         "clausula": mod.get("clausula_id"),  # ID da cláusula vinculada
-                        "caminho_inicio": mod.get("posicao", {}).get(
-                            "linha"
-                        ),  # posicao_linha → caminho_inicio
-                        "caminho_fim": mod.get("posicao", {}).get(
-                            "coluna"
-                        ),  # posicao_coluna → caminho_fim
+                        "caminho_inicio": f"L{linha_inicio}:C{coluna_inicio}",
+                        "caminho_fim": f"L{linha_fim}:C{coluna_fim}",
+                        "posicao_inicio": posicao_inicio,  # ✅ USAR POSIÇÕES CALCULADAS
+                        "posicao_fim": posicao_fim,  # ✅ USAR POSIÇÕES CALCULADAS
                     }
 
                     # Limpar campos None
@@ -2434,6 +2528,121 @@ class DirectusAPI:
 
         html.append("</div>")
         return "\n".join(html)
+
+    def _calcular_posicoes_modificacoes(
+        self, modificacoes: list[dict], texto_modificado: str
+    ) -> list[dict]:
+        """Calcula posicao_inicio e posicao_fim para cada modificação no texto.
+
+        Args:
+            modificacoes: Lista de modificações sem posições no texto
+            texto_modificado: Texto completo do documento modificado
+
+        Returns:
+            Lista de modificações com posicao_inicio e posicao_fim preenchidos
+        """
+        print(
+            f"\n📍 Calculando posições de {len(modificacoes)} modificações no texto..."
+        )
+        print(f"   Texto modificado: {len(texto_modificado)} caracteres")
+
+        modificacoes_com_posicoes = []
+
+        for idx, mod in enumerate(modificacoes):
+            tipo = mod.get("tipo", "")
+            conteudo = mod.get("conteudo", {})
+
+            print(f"\n   🔍 Mod {idx + 1}: tipo={tipo}, conteudo type={type(conteudo)}")
+            if isinstance(conteudo, dict):
+                print(f"      conteudo keys: {list(conteudo.keys())}")
+            print(f"      conteudo value: {str(conteudo)[:100]}...")
+
+            # Extrair texto da modificação baseado no tipo
+            texto_busca = None
+
+            if tipo == "INSERCAO":
+                # Para inserção, buscar o texto NOVO
+                texto_busca = conteudo.get("novo", "")
+                print(
+                    f"      → Buscando INSERCAO (texto novo): {len(str(texto_busca))} chars"
+                )
+            elif tipo == "REMOCAO":
+                # Para remoção, não tem posição no texto modificado (foi removido)
+                # Manter posições em 0 ou None
+                mod_atualizado = mod.copy()
+                mod_atualizado["posicao_inicio"] = None
+                mod_atualizado["posicao_fim"] = None
+                modificacoes_com_posicoes.append(mod_atualizado)
+                print("      → REMOCAO: posição não aplicável (texto removido)")
+                continue
+            elif tipo == "ALTERACAO":
+                # Para alteração, buscar o texto NOVO (versão modificada)
+                texto_busca = conteudo.get("novo", "")
+                print(
+                    f"      → Buscando ALTERACAO (texto novo): {len(str(texto_busca))} chars"
+                )
+            else:
+                print(f"   ⚠️ Mod {idx + 1}: tipo desconhecido '{tipo}'")
+                modificacoes_com_posicoes.append(mod)
+                continue
+
+            # Buscar texto no documento
+            if not texto_busca or not isinstance(texto_busca, str):
+                print(
+                    f"   ⚠️ Mod {idx + 1} ({tipo}): sem texto válido para buscar (tipo={type(texto_busca)})"
+                )
+                mod_atualizado = mod.copy()
+                mod_atualizado["posicao_inicio"] = None
+                mod_atualizado["posicao_fim"] = None
+                modificacoes_com_posicoes.append(mod_atualizado)
+                continue
+
+            # Limpar texto (remover espaços extras, normalizar)
+            texto_busca_limpo = " ".join(texto_busca.split())
+            print(f"      Texto limpo para busca: '{texto_busca_limpo[:80]}...'")
+
+            # Buscar no texto modificado
+            pos_inicio = texto_modificado.find(texto_busca_limpo)
+
+            if pos_inicio == -1:
+                print(
+                    "      ⚠️ Não encontrou texto completo, tentando trecho (50 chars)..."
+                )
+                # Tentar busca mais flexível (primeiros 50 chars)
+                if len(texto_busca_limpo) > 50:
+                    texto_busca_trecho = texto_busca_limpo[:50]
+                    pos_inicio = texto_modificado.find(texto_busca_trecho)
+                    print(f"      Buscando trecho: '{texto_busca_trecho}'")
+
+            if pos_inicio >= 0:
+                pos_fim = pos_inicio + len(texto_busca_limpo)
+                mod_atualizado = mod.copy()
+                mod_atualizado["posicao_inicio"] = pos_inicio
+                mod_atualizado["posicao_fim"] = pos_fim
+                modificacoes_com_posicoes.append(mod_atualizado)
+                print(
+                    f"      ✅ Encontrado em [{pos_inicio}-{pos_fim}] ({pos_fim - pos_inicio} chars)"
+                )
+            else:
+                # Não encontrou - manter None mas registrar tentativa
+                print("      ❌ Texto não encontrado no documento")
+                print(f"      Texto procurado: '{texto_busca_limpo[:100]}...'")
+                print(
+                    f"      Primeiros 200 chars do documento: '{texto_modificado[:200]}...'"
+                )
+                mod_atualizado = mod.copy()
+                mod_atualizado["posicao_inicio"] = None
+                mod_atualizado["posicao_fim"] = None
+                modificacoes_com_posicoes.append(mod_atualizado)
+
+        total_com_posicao = sum(
+            1 for m in modificacoes_com_posicoes if m.get("posicao_inicio") is not None
+        )
+        print(
+            f"\n📊 Resultado: {total_com_posicao}/{len(modificacoes)} modificações com posição calculada"
+        )
+
+        return modificacoes_com_posicoes
 
     def _extrair_modificacoes_do_diff_ast(
         self, diff_html: str, _original_paras: list[dict], _modified_paras: list[dict]

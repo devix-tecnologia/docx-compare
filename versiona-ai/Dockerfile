@@ -18,6 +18,7 @@ ENV PYTHONUNBUFFERED=1 \
 RUN apt-get update && apt-get install -y \
     curl \
     git \
+    pandoc \
     && rm -rf /var/lib/apt/lists/* \
     && pip install uv
 
@@ -28,13 +29,13 @@ RUN useradd --create-home --shell /bin/bash app
 WORKDIR /app
 
 # Copiar arquivos de configuração do projeto
-COPY ../pyproject.toml ../uv.lock ./
+COPY pyproject.toml uv.lock ./
 
 # Instalar dependências Python com UV
 RUN uv sync --frozen
 
 # Copiar código da aplicação
-COPY --chown=app:app . .
+COPY --chown=app:app versiona-ai/ .
 
 # Definir permissões adequadas
 RUN chown -R app:app /app

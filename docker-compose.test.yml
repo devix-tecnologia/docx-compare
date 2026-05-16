@@ -1,0 +1,62 @@
+version: "3.8"
+
+services:
+  # =================================================================
+  # API do Versiona AI (serviço principal a testar)
+  # =================================================================
+  api-server:
+    build:
+      context: .
+      dockerfile: versiona-ai/Dockerfile
+    container_name: versiona-ai-test
+    ports:
+      - "8001:8001"
+    environment:
+      FLASK_PORT: 8001
+      FLASK_ENV: testing
+      DIRECTUS_BASE_URL: ${DIRECTUS_BASE_URL:-https://contract.devix.co}
+      DIRECTUS_TOKEN: ${DIRECTUS_TOKEN:-test-token}
+      PYTHONUNBUFFERED: 1
+    volumes:
+      - ./versiona-ai:/app/versiona-ai:ro
+      - ./tests:/app/tests:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 15s
+    networks:
+      - test-network
+
+  # =================================================================
+  # Test Runner (executa os testes E2E)
+  # =================================================================
+  test-runner:
+    build:
+      context: .
+      dockerfile: tests/e2e/Dockerfile.test
+    container_name: e2e-test-runner
+    depends_on:
+      api-server:
+        condition: service_healthy
+    environment:
+      E2E_BASE_URL: http://api-server:8001
+      DIRECTUS_BASE_URL: ${DIRECTUS_BASE_URL:-https://contract.devix.co}
+      DIRECTUS_TOKEN: ${DIRECTUS_TOKEN:-test-token}
+      E2E_TIMEOUT: 30
+      PYTHONUNBUFFERED: 1
+    volumes:
+      - ./tests:/app/tests:ro
+      - ./test-results:/app/test-results
+    command: >
+      uv run pytest tests/e2e/ -v -s
+      --junitxml=/app/test-results/junit.xml
+      --html=/app/test-results/report.html
+      --self-contained-html
+    networks:
+      - test-network
+
+networks:
+  test-network:
+    driver: bridge

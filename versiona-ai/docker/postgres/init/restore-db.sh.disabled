@@ -1,0 +1,45 @@
+#!/bin/bash
+set -e
+
+PROJECT_NAME=versiona-ai
+
+# Aguarda PostgreSQL estar pronto
+until pg_isready -U postgres; do
+  echo "Aguardando PostgreSQL iniciar..."
+  sleep 1
+done
+
+BACKUP_FILE="/docker-entrypoint-initdb.d/backup-anonimizado.tar"
+FLAG_FILE="/var/lib/postgresql/data/.restored-anonimizado"
+DB_NAME="${POSTGRES_DB:-versiona-ai}"
+
+# Verifica se o arquivo de backup existe
+if [ ! -f "$BACKUP_FILE" ]; then
+  echo "⚠️  Arquivo de backup '$BACKUP_FILE' não encontrado. Pulando restore."
+  exit 0
+fi
+
+# Verifica se já foi restaurado
+if [ ! -f "$FLAG_FILE" ]; then
+  echo "🔄 Iniciando restore do backup para banco '$DB_NAME'..."
+
+  # Restaura com --no-owner e --no-privileges
+  # A role 'versiona-ai' já foi criada pelo script 00-create-owner-role.sh
+  pg_restore \
+    --if-exists \
+    --no-owner \
+    --no-privileges \
+    -U postgres \
+    -d "$DB_NAME" \
+    "$BACKUP_FILE"
+
+  touch "$FLAG_FILE"
+  echo "✅ Backup restaurado com sucesso! ($DB_NAME)"
+
+  # Mensagem final de validação
+  TABLE_COUNT=$(psql -U postgres -d "$DB_NAME" -t -c "SELECT count(*) FROM information_schema.tables WHERE table_schema='public';")
+  echo "✅ Banco contém $TABLE_COUNT tabelas."
+else
+  echo "ℹ️  Backup do $PROJECT_NAME já foi restaurado anteriormente (flag encontrada)."
+  exit 0
+fi

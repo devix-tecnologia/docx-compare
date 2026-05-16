@@ -1,0 +1,66 @@
+#!/bin/bash
+# ./docker/postgres/init/03-setup-replication-primary.sh
+# =============================================================================
+# Script de inicialização do PostgreSQL PRIMARY
+# Configura usuário de replicação e permissões
+# Executado automaticamente pelo docker-entrypoint-initdb.d
+# =============================================================================
+set -e
+
+# Cores para output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+echo -e "${GREEN}[PRIMARY] Configurando PostgreSQL para replicação...${NC}"
+
+# Ler senha do usuário de replicação do secret (usar variável de ambiente se definida)
+REPLICATION_PASSWORD_FILE="${REPLICATION_PASSWORD_FILE:-/run/secrets/replication_password}"
+
+if [ -f "$REPLICATION_PASSWORD_FILE" ]; then
+    REPLICATION_PASSWORD=$(cat "$REPLICATION_PASSWORD_FILE")
+else
+    echo -e "${RED}[PRIMARY] ERRO: Secret $REPLICATION_PASSWORD_FILE não encontrado!${NC}"
+    exit 1
+fi
+
+# Criar usuário de replicação
+echo -e "${YELLOW}[PRIMARY] Criando usuário 'replicator'...${NC}"
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+    -- Criar usuário de replicação se não existir
+    DO \$\$
+    BEGIN
+        IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'replicator') THEN
+            CREATE ROLE replicator WITH REPLICATION LOGIN PASSWORD '${REPLICATION_PASSWORD}';
+            RAISE NOTICE 'Usuário replicator criado com sucesso';
+        ELSE
+            RAISE NOTICE 'Usuário replicator já existe';
+        END IF;
+    END
+    \$\$;
+
+    -- Garantir privilégios
+    GRANT CONNECT ON DATABASE ${POSTGRES_DB} TO replicator;
+EOSQL
+
+echo -e "${GREEN}[PRIMARY] Usuário de replicação configurado!${NC}"
+
+# Configurar pg_hba.conf para permitir conexões de replicação
+echo -e "${YELLOW}[PRIMARY] Configurando pg_hba.conf...${NC}"
+
+# Adicionar regra para replicação (permite da rede Docker interna)
+cat >> "$PGDATA/pg_hba.conf" <<-EOF
+
+# ===========================================================================
+# Replicação - Configurado automaticamente por 03-setup-replication-primary.sh
+# ===========================================================================
+# Permite conexões de replicação de qualquer host na rede Docker
+# TYPE  DATABASE        USER            ADDRESS                 METHOD
+host    replication     replicator      172.16.0.0/12          md5
+host    replication     replicator      10.0.0.0/8             md5
+host    replication     replicator      all                     md5
+EOF
+
+echo -e "${GREEN}[PRIMARY] Configuração de replicação concluída!${NC}"
+echo -e "${YELLOW}[PRIMARY] Nota: O PostgreSQL será reiniciado para aplicar as configurações de replicação.${NC}"

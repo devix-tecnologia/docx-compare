@@ -24,12 +24,17 @@ docx-diff = "src.docx_compare.core.docx_diff_viewer:main"
 taskin = "scripts.taskin:main"
 
 [dependency-groups]
-dev = ["ruff>=0.6.0", "pytest>=7.0.0", "pytest-cov>=4.0.0"]
+dev = [
+    "ruff>=0.6.0",
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-html>=4.1.0",
+    "pytest-timeout>=2.2.0",
+]
 
 [tool.ruff]
 target-version = "py311"
 line-length = 88
-indent-width = 4
 
 [tool.ruff.lint]
 select = [
@@ -79,6 +84,12 @@ addopts = [
     "--cov=versiona-ai",
     "--cov-report=term-missing",
     "--cov-report=html",
+]
+markers = [
+    "e2e: End-to-end tests (remote server)",
+    "integration: Integration tests with external services",
+    "slow: Tests that take more than 5 seconds",
+    "unit: Fast unit tests (default)",
 ]
 
 [tool.coverage.run]

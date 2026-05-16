@@ -1,0 +1,57 @@
+{
+  "id": "caso_02_alteracao_simples",
+  "descricao": "Alteração de valor numérico dentro de uma cláusula",
+  "nivel_complexidade": "simples",
+  "documento": {
+    "texto_completo": "CONTRATO\n\n1. VALOR\nO valor é de R$ 10.000,00.\n\n2. PRAZO\nVigência de 6 meses.",
+    "tags": [
+      {
+        "id": "tag_1",
+        "nome": "1",
+        "posicao_inicio": 10,
+        "posicao_fim": 45,
+        "texto": "1. VALOR\nO valor é de R$ 10.000,00."
+      },
+      {
+        "id": "tag_2",
+        "nome": "2",
+        "posicao_inicio": 47,
+        "posicao_fim": 73,
+        "texto": "2. PRAZO\nVigência de 6 meses."
+      }
+    ]
+  },
+  "modificacoes": [
+    {
+      "tipo": "ALTERACAO",
+      "conteudo": {
+        "original": "R$ 10.000,00",
+        "novo": "R$ 15.000,00"
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null
+    }
+  ],
+  "vinculacoes_esperadas": [
+    {
+      "modificacao_index": 0,
+      "tag_id": "tag_1",
+      "tag_nome": "1",
+      "confianca_minima": 0.8,
+      "posicao_inicio_esperada": 32,
+      "posicao_fim_esperada": 44,
+      "justificativa": "Alteração do valor dentro da cláusula VALOR"
+    }
+  ],
+  "metricas_objetivo": {
+    "taxa_vinculacao_minima": 100.0,
+    "precisao_minima": 100.0,
+    "recall_minimo": 100.0,
+    "erro_posicao_max_chars": 5
+  },
+  "metadados": {
+    "criado_em": "2026-05-16",
+    "autor": "Equipe Versiona",
+    "validado": true
+  }
+}

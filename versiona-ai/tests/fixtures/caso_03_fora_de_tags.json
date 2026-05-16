@@ -1,0 +1,45 @@
+{
+  "id": "caso_03_fora_de_tags",
+  "descricao": "Modificação em região sem tags - deve retornar None",
+  "nivel_complexidade": "simples",
+  "documento": {
+    "texto_completo": "CONTRATO DE PRESTAÇÃO\n\nIntrodução sem tags aqui.\n\n1. OBJETO\nServiços de consultoria.\n\nRodapé sem tags.",
+    "tags": [
+      {
+        "id": "tag_1",
+        "nome": "1",
+        "posicao_inicio": 45,
+        "posicao_fim": 74,
+        "texto": "1. OBJETO\nServiços de consultoria."
+      }
+    ]
+  },
+  "modificacoes": [
+    {
+      "tipo": "INSERCAO",
+      "conteudo": {
+        "novo": "Texto adicional no rodapé."
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null
+    }
+  ],
+  "vinculacoes_esperadas": [],
+  "metricas_objetivo": {
+    "taxa_vinculacao_minima": 0.0,
+    "precisao_minima": 100.0,
+    "recall_minimo": 100.0,
+    "erro_posicao_max_chars": 0
+  },
+  "notas_implementacao": [
+    "Modificação está fora de qualquer tag",
+    "Algoritmo deve retornar tag_vinculada = None",
+    "Não é erro - é comportamento esperado"
+  ],
+  "metadados": {
+    "criado_em": "2026-05-16",
+    "autor": "Equipe Versiona",
+    "validado": true,
+    "caso_negativo": true
+  }
+}

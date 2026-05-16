@@ -1,0 +1,29 @@
+[project]
+name = "e2e-ui-tests"
+version = "1.0.0"
+requires-python = ">=3.11"
+dependencies = [
+  "pytest>=8.0.0",
+  "pytest-playwright>=0.4.0",
+  "pytest-html>=4.0.0",
+  "pytest-metadata>=3.0.0",
+  "playwright>=1.40.0",
+  "requests>=2.31.0",
+  "python-dotenv>=1.0.0",
+]
+
+[tool.pytest.ini_options]
+# Configuração para rodar APENAS com Chromium (sem Firefox/WebKit)
+# A fixture browser() em conftest.py já usa playwright.chromium.launch()
+testpaths = ["."]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "critical: Testes críticos (Task 010 - vinculação cláusulas)",
+    "ui: Testes de interface via Playwright",
+    "sdk: Testes de validação via SDK",
+]
+# Apenas Chromium - sem outros navegadores
+addopts = "--browser chromium"
+

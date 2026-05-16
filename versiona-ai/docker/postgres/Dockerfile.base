@@ -1,0 +1,111 @@
+# ./docker/postgres/Dockerfile.base
+# =============================================================================
+# Imagem base: PostgreSQL 16 + PostGIS 3.5 + locale pt_BR + config via ENV
+# Usada por dev, staging e production. Rebuild apenas quando mudar versão PG.
+#
+# Toda configuração é feita via variáveis de ambiente (compatível com CapRover).
+# O entrypoint gera postgresql.conf a partir de ENV vars antes de iniciar.
+# =============================================================================
+FROM postgis/postgis:16-3.5
+
+LABEL maintainer="Geocontrol <dev@geocontrol.com.br>" \
+    description="PostgreSQL 16 + PostGIS 3.5 - Versiona.ai Base Image" \
+    project="versiona-ai"
+
+# Configurar timezone e locale pt_BR (Debian-based)
+ENV TZ=America/Sao_Paulo
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends locales gettext-base && \
+    echo "pt_BR.UTF-8 UTF-8" > /etc/locale.gen && \
+    echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && \
+    locale-gen && \
+    update-locale LANG=pt_BR.UTF-8 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+ENV LANG=pt_BR.UTF-8 \
+    LANGUAGE=pt_BR:pt \
+    LC_ALL=pt_BR.UTF-8 \
+    PGDATA=/var/lib/postgresql/data/pgdata \
+    POSTGRES_INITDB_ARGS="--locale=pt_BR.UTF-8 --encoding=UTF8"
+
+# ---------------------------------------------------------------------------
+# Defaults configuráveis via ENV (sobrescrever em docker-compose ou CapRover)
+# ---------------------------------------------------------------------------
+# Conexões
+ENV PG_MAX_CONNECTIONS=100 \
+    PG_SUPERUSER_RESERVED=3
+# Memória (ajustar conforme RAM do host)
+ENV PG_SHARED_BUFFERS=256MB \
+    PG_WORK_MEM=16MB \
+    PG_MAINTENANCE_WORK_MEM=128MB \
+    PG_EFFECTIVE_CACHE_SIZE=768MB \
+    PG_HUGE_PAGES=off
+# WAL
+ENV PG_WAL_LEVEL=replica \
+    PG_MAX_WAL_SIZE=1GB \
+    PG_MIN_WAL_SIZE=80MB \
+    PG_CHECKPOINT_COMPLETION=0.9 \
+    PG_WAL_BUFFERS=16MB \
+    PG_WAL_COMPRESSION=off
+# Replicação (para primary e replica)
+ENV PG_MAX_WAL_SENDERS=10 \
+    PG_WAL_KEEP_SIZE=128MB \
+    PG_MAX_REPLICATION_SLOTS=10 \
+    PG_HOT_STANDBY=on \
+    PG_HOT_STANDBY_FEEDBACK=on
+# Planejador
+ENV PG_RANDOM_PAGE_COST=1.1 \
+    PG_EFFECTIVE_IO_CONCURRENCY=200 \
+    PG_SEQ_PAGE_COST=1.0
+# Paralelismo
+ENV PG_MAX_PARALLEL_WORKERS_GATHER=2 \
+    PG_MAX_PARALLEL_WORKERS=4 \
+    PG_MAX_PARALLEL_MAINTENANCE=2
+# Otimizações
+ENV PG_DEFAULT_STATISTICS_TARGET=100 \
+    PG_JIT=off
+# pg_stat_statements
+ENV PG_STAT_STATEMENTS_MAX=5000 \
+    PG_STAT_STATEMENTS_TRACK=all
+# Logs
+ENV PG_LOG_MIN_DURATION_STATEMENT=1000 \
+    PG_LOG_CHECKPOINTS=on \
+    PG_LOG_CONNECTIONS=on \
+    PG_LOG_DISCONNECTIONS=on \
+    PG_LOG_LOCK_WAITS=on
+# Autovacuum
+ENV PG_AUTOVACUUM=on \
+    PG_AUTOVACUUM_MAX_WORKERS=3 \
+    PG_AUTOVACUUM_NAPTIME=1min \
+    PG_AUTOVACUUM_VACUUM_THRESHOLD=50 \
+    PG_AUTOVACUUM_ANALYZE_THRESHOLD=50 \
+    PG_AUTOVACUUM_VACUUM_SCALE_FACTOR=0.1 \
+    PG_AUTOVACUUM_ANALYZE_SCALE_FACTOR=0.05 \
+    PG_AUTOVACUUM_VACUUM_COST_DELAY=2ms \
+    PG_AUTOVACUUM_VACUUM_COST_LIMIT=200
+# Rede
+ENV PG_LISTEN_ADDRESSES=* \
+    PG_SSL=off
+
+# Diretórios para init scripts e backup
+RUN mkdir -p /docker-entrypoint-initdb.d /backup && \
+    chown -R postgres:postgres /backup /docker-entrypoint-initdb.d
+
+# Template de configuração e entrypoint
+COPY postgresql.conf.template /etc/postgresql/postgresql.conf.template
+COPY entrypoint-pg.sh /usr/local/bin/entrypoint-pg.sh
+
+# Init script para extensões PostGIS + pg_stat_statements + pg_trgm
+COPY init/00-extensions.sh /docker-entrypoint-initdb.d/00-extensions.sh
+
+RUN chmod +x /usr/local/bin/entrypoint-pg.sh \
+    /docker-entrypoint-initdb.d/00-extensions.sh && \
+    chown postgres:postgres /etc/postgresql/postgresql.conf.template
+
+EXPOSE 5432
+VOLUME ["/var/lib/postgresql/data"]
+
+ENTRYPOINT ["/usr/local/bin/entrypoint-pg.sh"]
+CMD ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]

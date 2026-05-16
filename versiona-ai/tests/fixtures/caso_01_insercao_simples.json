@@ -1,0 +1,63 @@
+{
+  "id": "caso_01_insercao_simples",
+  "descricao": "Inserção única de 50 caracteres dentro de uma cláusula de 200 caracteres",
+  "nivel_complexidade": "simples",
+  "documento": {
+    "texto_completo": "CONTRATO DE PRESTAÇÃO DE SERVIÇOS\n\n1. OBJETO\nEste contrato tem por objeto a prestação de serviços de consultoria.\n\n2. PRAZO\nO prazo de vigência será de 12 meses.\n\n3. VALOR\nO valor total é de R$ 100.000,00.",
+    "tags": [
+      {
+        "id": "tag_1",
+        "nome": "1",
+        "posicao_inicio": 36,
+        "posicao_fim": 121,
+        "texto": "1. OBJETO\nEste contrato tem por objeto a prestação de serviços de consultoria."
+      },
+      {
+        "id": "tag_2",
+        "nome": "2",
+        "posicao_inicio": 123,
+        "posicao_fim": 178,
+        "texto": "2. PRAZO\nO prazo de vigência será de 12 meses."
+      },
+      {
+        "id": "tag_3",
+        "nome": "3",
+        "posicao_inicio": 180,
+        "posicao_fim": 230,
+        "texto": "3. VALOR\nO valor total é de R$ 100.000,00."
+      }
+    ]
+  },
+  "modificacoes": [
+    {
+      "tipo": "INSERCAO",
+      "conteudo": {
+        "novo": "A consultoria abrangerá análise de processos. "
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null
+    }
+  ],
+  "vinculacoes_esperadas": [
+    {
+      "modificacao_index": 0,
+      "tag_id": "tag_1",
+      "tag_nome": "1",
+      "confianca_minima": 0.8,
+      "posicao_inicio_esperada": 121,
+      "posicao_fim_esperada": 169,
+      "justificativa": "Inserção aparece no final da cláusula 1 (OBJETO)"
+    }
+  ],
+  "metricas_objetivo": {
+    "taxa_vinculacao_minima": 100.0,
+    "precisao_minima": 100.0,
+    "recall_minimo": 100.0,
+    "erro_posicao_max_chars": 10
+  },
+  "metadados": {
+    "criado_em": "2026-05-16",
+    "autor": "Equipe Versiona",
+    "validado": true
+  }
+}

@@ -1,0 +1,200 @@
+version: "3.8"
+
+services:
+  # =================================================================
+  # PostgreSQL - Banco de dados para Directus
+  # =================================================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: e2e-ui-postgres
+    environment:
+      POSTGRES_USER: directus
+      POSTGRES_PASSWORD: directus
+      POSTGRES_DB: directus
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U directus"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    networks:
+      - ui-test-network
+
+  # =================================================================
+  # Directus CMS - Interface de usuário e API
+  # =================================================================
+  directus:
+    image: directus/directus:11
+    container_name: e2e-ui-directus
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8065:8055"
+    environment:
+      # Básico
+      KEY: "directus-test-key-12345678901234567890"
+      SECRET: "directus-test-secret-12345678901234567890"
+
+      # Admin inicial
+      ADMIN_EMAIL: "admin@example.com"
+      ADMIN_PASSWORD: "TestPassword123!"
+      ADMIN_TOKEN: "test-static-token-12345"
+
+      # Banco de dados
+      DB_CLIENT: "pg"
+      DB_HOST: "postgres"
+      DB_PORT: "5432"
+      DB_DATABASE: "directus"
+      DB_USER: "directus"
+      DB_PASSWORD: "directus"
+
+      # Public URL (porta externa 8065)
+      PUBLIC_URL: "http://localhost:8065"
+
+      # Acesso público para testes E2E
+      PUBLIC_REGISTRATION: "false"
+      PUBLIC_REGISTRATION_VERIFY_EMAIL: "false"
+      PUBLIC_ROLE: "00000000-0000-0000-0000-000000000000"
+
+      # CORS
+      CORS_ENABLED: "true"
+      CORS_ORIGIN: "true"
+
+      # Sessões e Cookies
+      SESSION_COOKIE_SECURE: "false"
+      SESSION_COOKIE_SAME_SITE: "lax"
+      REFRESH_TOKEN_COOKIE_SECURE: "false"
+      REFRESH_TOKEN_COOKIE_SAME_SITE: "lax"
+      ACCESS_TOKEN_TTL: "15m"
+      REFRESH_TOKEN_TTL: "7d"
+      REFRESH_TOKEN_COOKIE_NAME: "directus_refresh_token"
+
+      # Rate limiting (desabilitar para testes)
+      RATE_LIMITER_ENABLED: "false"
+
+      # Telemetry (desabilitar)
+      TELEMETRY: "false"
+
+      # Cache
+      CACHE_ENABLED: "false"
+
+      # Logging
+      LOG_LEVEL: "info"
+
+      # Segurança - permitir acesso aos endpoints necessários para testes
+      SECURITY_RATE_LIMITER_ENABLED: "false"
+      SECURITY_RATE_LIMITER_DURATION: "1"
+      SECURITY_RATE_LIMITER_POINTS: "999999"
+
+      # Permitir acesso aos assets e endpoints públicos
+      ASSETS_CACHE_TTL: "30d"
+      ASSETS_TRANSFORM_MAX_CONCURRENT: "25"
+
+      # Extensions
+      EXTENSIONS_AUTO_RELOAD: "true"
+    healthcheck:
+      test:
+        ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8055/server/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 1800s # 30 minutos - Directus bootstrap leva ~27min na primeira execução
+    volumes:
+      - ./tests/e2e_ui/uploads:/directus/uploads # Mapeado para pasta local
+      - directus-extensions:/directus/extensions
+    networks:
+      - ui-test-network
+
+  # =================================================================
+  # API Versiona AI - Serviço de processamento
+  # =================================================================
+  api-server:
+    build:
+      context: ..
+      dockerfile: versiona-ai/Dockerfile
+    container_name: e2e-ui-api
+    depends_on:
+      directus:
+        condition: service_healthy
+    ports:
+      - "8011:8001"
+    environment:
+      FLASK_PORT: 8001
+      FLASK_ENV: testing
+      DIRECTUS_BASE_URL: http://directus:8055
+      DIRECTUS_TOKEN: ${DIRECTUS_TOKEN:-test-token-will-be-created}
+      PYTHONUNBUFFERED: 1
+    volumes:
+      - .:/app/versiona-ai:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 20s
+    networks:
+      - ui-test-network
+
+  # =================================================================
+  # Test Runner - Executa testes Playwright + SDK
+  # =================================================================
+  test-runner:
+    build:
+      context: ..
+      dockerfile: versiona-ai/tests/e2e_ui/Dockerfile.ui-test
+    container_name: e2e-ui-test-runner
+    depends_on:
+      postgres:
+        condition: service_healthy
+      directus:
+        condition: service_healthy
+      api-server:
+        condition: service_healthy
+    environment:
+      # URLs dos serviços
+      DIRECTUS_URL: http://directus:8055
+      API_URL: http://api-server:8001
+
+      # Credenciais Directus
+      DIRECTUS_ADMIN_EMAIL: admin@example.com
+      DIRECTUS_ADMIN_PASSWORD: TestPassword123!
+      DIRECTUS_TOKEN: ${DIRECTUS_TOKEN:-test-token-will-be-created}
+
+      # Configuração Playwright
+      PLAYWRIGHT_HEADLESS: "true"
+      PLAYWRIGHT_SLOW_MO: "0"
+      PLAYWRIGHT_TIMEOUT: "30000"
+
+      # Configuração geral
+      PYTHONUNBUFFERED: 1
+      E2E_UI_TIMEOUT: 60
+    volumes:
+      - ./tests/e2e_ui:/app/tests/e2e_ui:ro
+      - ./test-results:/app/test-results
+    command: >
+      sh -c "
+      echo '⏳ Aguardando serviços ficarem prontos...' &&
+      sleep 10 &&
+      echo '🧪 Executando testes E2E UI...' &&
+      uv run pytest tests/e2e_ui/ -v -s
+      --junitxml=/app/test-results/junit-ui.xml
+      --html=/app/test-results/report-ui.html
+      --self-contained-html
+      --screenshot=only-on-failure
+      --tracing=retain-on-failure
+      "
+    networks:
+      - ui-test-network
+    shm_size: "2gb" # Necessário para Playwright/Chromium
+
+volumes:
+  postgres-data:
+  directus-extensions:
+
+networks:
+  ui-test-network:
+    driver: bridge

@@ -1,0 +1,55 @@
+# =================================================================
+# Dockerfile para Test Runner E2E UI (Playwright + Directus SDK)
+# =================================================================
+FROM python:3.13-slim
+
+# Instalar dependências do sistema necessárias para Playwright
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    ca-certificates \
+    # Dependências para Chromium/Playwright
+    libnss3 \
+    libnspr4 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libdrm2 \
+    libxkbcommon0 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxrandr2 \
+    libgbm1 \
+    libasound2 \
+    libpango-1.0-0 \
+    libcairo2 \
+    # Limpeza
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Instalar UV (gerenciador de pacotes Python)
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.local/bin:${PATH}"
+
+# Copiar configuração do projeto de testes E2E UI
+COPY versiona-ai/tests/e2e_ui/pyproject.toml ./
+
+# Instalar dependências Python (incluindo Playwright)
+RUN uv sync
+
+# Instalar Playwright browsers
+RUN uv run python -m playwright install chromium
+
+# Copiar código de testes
+COPY versiona-ai/tests/e2e_ui /app/tests/e2e_ui
+# COPY tests/fixtures /app/tests/fixtures  # Removido - não necessário para E2E UI
+
+# Criar diretórios para resultados
+RUN mkdir -p /app/test-results/screenshots /app/test-results/traces
+
+# Instalar browsers do Playwright será feito no comando de execução
+# para garantir compatibilidade com a arquitetura do host
+
+CMD ["uv", "run", "pytest", "tests/e2e_ui/", "-v"]

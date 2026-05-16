@@ -1,0 +1,13 @@
+# Documentação e metadados
+README.md
+*.md
+
+# Controle de versão
+.git
+.gitignore
+
+# Backups e temporários
+*.sql
+*.dump
+*.backup
+*.tmp

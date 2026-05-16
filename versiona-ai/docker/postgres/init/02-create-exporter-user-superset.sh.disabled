@@ -1,0 +1,37 @@
+#!/bin/bash
+# Script de inicialização do PostgreSQL do Superset
+# Cria usuário postgres_exporter para monitoramento
+set -e
+
+echo "🚀 Iniciando configuração de usuário postgres_exporter no banco Superset..."
+
+# NOTA: pg_isready não é necessário aqui. Este script roda durante docker-entrypoint-initdb.d,
+# quando o PostgreSQL já está rodando em modo temporário para executar scripts de inicialização.
+
+# Ler senha do secret
+SENHA_USUARIO_POSTGRES_EXPORTER=$(cat /run/secrets/senha_usuario_postgres_exporter)
+
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+    -- ============================================================================
+    -- CRIAR USUÁRIO PARA O POSTGRES EXPORTER (Monitoramento - Somente Leitura)
+    -- ============================================================================
+    
+    DO \$\$
+    BEGIN
+        IF NOT EXISTS (SELECT FROM pg_catalog.pg_user WHERE usename = 'postgres_exporter') THEN
+            CREATE USER postgres_exporter WITH PASSWORD '${SENHA_USUARIO_POSTGRES_EXPORTER}';
+            RAISE NOTICE '✅ Usuário postgres_exporter criado no banco Superset';
+        ELSE
+            RAISE NOTICE 'ℹ️  Usuário postgres_exporter já existe no banco Superset';
+        END IF;
+    END
+    \$\$;
+    
+    -- Minimal permissions para métricas (seguindo best practices do postgres_exporter)
+    GRANT CONNECT ON DATABASE ${POSTGRES_DB} TO postgres_exporter;
+    GRANT pg_monitor TO postgres_exporter;  -- PostgreSQL 10+ built-in role para monitoramento
+    
+    COMMENT ON ROLE postgres_exporter IS 'Usuário do Prometheus PostgreSQL Exporter (somente leitura para métricas)';
+EOSQL
+
+echo "✅ Configuração do usuário postgres_exporter concluída no banco Superset!"

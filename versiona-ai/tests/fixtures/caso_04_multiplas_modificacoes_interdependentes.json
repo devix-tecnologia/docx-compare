@@ -1,0 +1,110 @@
+{
+  "id": "caso_04_multiplas_modificacoes_interdependentes",
+  "descricao": "3 modificações em sequência - inserção afeta posição das próximas",
+  "nivel_complexidade": "medio",
+  "documento": {
+    "texto_completo": "CONTRATO\n\n1. PRAZO\nVigência de 6 meses.\n\n2. VALOR\nR$ 50.000,00.\n\n3. MULTA\n2% sobre o valor.",
+    "tags": [
+      {
+        "id": "tag_1",
+        "nome": "1",
+        "posicao_inicio": 10,
+        "posicao_fim": 39,
+        "texto": "1. PRAZO\nVigência de 6 meses."
+      },
+      {
+        "id": "tag_2",
+        "nome": "2",
+        "posicao_inicio": 41,
+        "posicao_fim": 67,
+        "texto": "2. VALOR\nR$ 50.000,00."
+      },
+      {
+        "id": "tag_3",
+        "nome": "3",
+        "posicao_inicio": 69,
+        "posicao_fim": 98,
+        "texto": "3. MULTA\n2% sobre o valor."
+      }
+    ]
+  },
+  "modificacoes": [
+    {
+      "tipo": "INSERCAO",
+      "conteudo": {
+        "novo": "prorrogáveis por igual período"
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "ordem_aplicacao": 1
+    },
+    {
+      "tipo": "ALTERACAO",
+      "conteudo": {
+        "original": "R$ 50.000,00",
+        "novo": "R$ 75.000,00"
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "ordem_aplicacao": 2
+    },
+    {
+      "tipo": "INSERCAO",
+      "conteudo": {
+        "novo": "aplicada em caso de atraso"
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "ordem_aplicacao": 3
+    }
+  ],
+  "vinculacoes_esperadas": [
+    {
+      "modificacao_index": 0,
+      "tag_id": "tag_1",
+      "tag_nome": "1",
+      "confianca_minima": 0.8,
+      "posicao_inicio_esperada": 38,
+      "posicao_fim_esperada": 69,
+      "justificativa": "Inserção no final da cláusula PRAZO"
+    },
+    {
+      "modificacao_index": 1,
+      "tag_id": "tag_2",
+      "tag_nome": "2",
+      "confianca_minima": 0.8,
+      "posicao_inicio_esperada": 80,
+      "posicao_fim_esperada": 92,
+      "justificativa": "Alteração do valor (posição ajustada pela inserção anterior)"
+    },
+    {
+      "modificacao_index": 2,
+      "tag_id": "tag_3",
+      "tag_nome": "3",
+      "confianca_minima": 0.8,
+      "posicao_inicio_esperada": 127,
+      "posicao_fim_esperada": 153,
+      "justificativa": "Inserção no final da cláusula MULTA (posição ajustada por 2 modificações anteriores)"
+    }
+  ],
+  "metricas_objetivo": {
+    "taxa_vinculacao_minima": 100.0,
+    "precisao_minima": 100.0,
+    "recall_minimo": 100.0,
+    "erro_posicao_max_chars": 15
+  },
+  "notas_implementacao": [
+    "Algoritmo DEVE processar modificações em ordem sequencial",
+    "Cada modificação afeta as posições das próximas",
+    "Inserção 1 desloca +31 chars as posições seguintes",
+    "Alteração 2 desloca +12 chars (diferença entre novo e original)",
+    "Inserção 3 já considera os 2 deslocamentos anteriores"
+  ],
+  "metadados": {
+    "criado_em": "2026-05-16",
+    "autor": "Equipe Versiona",
+    "validado": true,
+    "caso_critico": true,
+    "motivacao": "Demonstra necessidade de processamento sequencial com ajuste de offset"
+  }
+}

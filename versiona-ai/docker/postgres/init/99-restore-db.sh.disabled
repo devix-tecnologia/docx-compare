@@ -1,0 +1,75 @@
+#!/bin/bash
+set -e
+
+PROJECT_NAME=versiona-ai
+
+# Aguarda PostgreSQL estar pronto
+until pg_isready -U postgres; do
+  echo "Aguardando PostgreSQL iniciar..."
+  sleep 1
+done
+
+# Backup do Directus (nomenclatura: backup-<servico>-anonimizado.tar)
+BACKUP_FILE="/docker-entrypoint-initdb.d/backup-directus-anonimizado.tar"
+FLAG_FILE="/var/lib/postgresql/data/.restored-directus-anonimizado"
+DB_NAME="${POSTGRES_DB:-versiona-ai}"
+
+# Verifica se o arquivo de backup existe
+if [ ! -f "$BACKUP_FILE" ]; then
+  echo "⚠️  Arquivo de backup '$BACKUP_FILE' não encontrado. Pulando restore."
+  exit 0
+fi
+
+# Verifica se já foi restaurado
+if [ ! -f "$FLAG_FILE" ]; then
+  echo "🔄 Iniciando restore do backup para banco '$DB_NAME'..."
+
+  # Restaura com --clean para remover objetos existentes
+  # --no-owner e --no-privileges para evitar conflitos de permissões
+  # A role 'versiona-ai' já foi criada pelo script 00-create-owner-role.sh
+  pg_restore \
+    --clean \
+    --no-owner \
+    --no-privileges \
+    -U postgres \
+    -d "$DB_NAME" \
+    "$BACKUP_FILE"
+
+  echo "🔐 Transferindo ownership de todas as tabelas para 'usuario_directus'..."
+
+  # Transferir ownership de todas as tabelas e sequences para o usuário usuario_directus
+  # Este é o usuário que o Directus utiliza para conectar ao PostgreSQL
+  psql -U postgres -d "$DB_NAME" <<-EOSQL
+    DO \$\$
+    DECLARE
+        r RECORD;
+    BEGIN
+        -- Transferir ownership de tabelas
+        FOR r IN SELECT tablename FROM pg_tables WHERE schemaname = 'public' LOOP
+            EXECUTE 'ALTER TABLE public.' || quote_ident(r.tablename) || ' OWNER TO usuario_directus';
+        END LOOP;
+
+        -- Transferir ownership de sequences
+        FOR r IN SELECT sequence_name FROM information_schema.sequences WHERE sequence_schema = 'public' LOOP
+            EXECUTE 'ALTER SEQUENCE public.' || quote_ident(r.sequence_name) || ' OWNER TO usuario_directus';
+        END LOOP;
+
+        -- Transferir ownership de views
+        FOR r IN SELECT table_name FROM information_schema.views WHERE table_schema = 'public' LOOP
+            EXECUTE 'ALTER VIEW public.' || quote_ident(r.table_name) || ' OWNER TO usuario_directus';
+        END LOOP;
+    END \$\$;
+EOSQL
+
+  echo "✅ Ownership transferido para 'usuario_directus'."
+
+  touch "$FLAG_FILE"
+  echo "✅ Backup restaurado com sucesso! ($DB_NAME)"
+
+  # Mensagem final de validação
+  TABLE_COUNT=$(psql -U postgres -d "$DB_NAME" -t -c "SELECT count(*) FROM information_schema.tables WHERE table_schema='public';")
+  echo "✅ Banco contém $TABLE_COUNT tabelas."
+else
+  echo "ℹ️  Backup do $PROJECT_NAME já foi restaurado anteriormente (flag encontrada)."
+  exit 0
+fi

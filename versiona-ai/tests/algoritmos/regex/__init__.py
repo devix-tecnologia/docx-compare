@@ -1,0 +1,1 @@
+# Algoritmo: Regex & Padrões Estruturados

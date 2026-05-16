@@ -1,0 +1,193 @@
+#!/bin/bash
+# Script de inicialização do PostgreSQL do Directus
+# Cria usuários com permissões específicas seguindo o princípio do menor privilégio
+
+set -e
+
+echo "🚀 Iniciando configuração de usuários do PostgreSQL..."
+
+# NOTA: pg_isready não é necessário aqui. Este script roda durante docker-entrypoint-initdb.d,
+# quando o PostgreSQL já está rodando em modo temporário para executar scripts de inicialização.
+
+# Ler senhas dos secrets
+SENHA_USUARIO_DIRECTUS=$(cat /run/secrets/senha_usuario_directus)
+SENHA_USUARIO_SUPERSET_LEITURA=$(cat /run/secrets/senha_usuario_superset_leitura)
+SENHA_USUARIO_PGADMIN=$(cat /run/secrets/senha_usuario_pgadmin)
+SENHA_USUARIO_POSTGRES_EXPORTER=$(cat /run/secrets/senha_usuario_postgres_exporter)
+
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+    -- ============================================================================
+    -- 0. HABILITAR EXTENSÕES DE MONITORAMENTO
+    -- ============================================================================
+    
+    CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+    
+    -- ============================================================================
+    -- 1. CRIAR USUÁRIO PARA O DIRECTUS (Leitura e Escrita, sem criar usuários)
+    -- ============================================================================
+    
+    DO \$\$
+    BEGIN
+        IF NOT EXISTS (SELECT FROM pg_catalog.pg_user WHERE usename = 'usuario_directus') THEN
+            CREATE USER usuario_directus WITH PASSWORD '${SENHA_USUARIO_DIRECTUS}';
+            RAISE NOTICE '✅ Usuário usuario_directus criado';
+        ELSE
+            RAISE NOTICE 'ℹ️  Usuário usuario_directus já existe';
+        END IF;
+    END
+    \$\$;
+    
+    -- Conceder permissões de conexão
+    GRANT CONNECT ON DATABASE ${POSTGRES_DB} TO usuario_directus;
+    
+    -- Conceder permissões no schema public
+    GRANT USAGE, CREATE ON SCHEMA public TO usuario_directus;
+    
+    -- Conceder permissões em todas as tabelas existentes
+    GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO usuario_directus;
+    
+    -- Conceder permissões em todas as sequences (para auto-increment)
+    GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO usuario_directus;
+    
+    -- Conceder permissões em tabelas futuras
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public 
+        GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO usuario_directus;
+    
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public 
+        GRANT USAGE, SELECT ON SEQUENCES TO usuario_directus;
+    
+    COMMENT ON ROLE usuario_directus IS 'Usuário do Directus com permissões de leitura/escrita';
+    
+    
+    -- ============================================================================
+    -- 2. CRIAR USUÁRIO PARA O SUPERSET (Somente Leitura)
+    -- ============================================================================
+    
+    DO \$\$
+    BEGIN
+        IF NOT EXISTS (SELECT FROM pg_catalog.pg_user WHERE usename = 'usuario_superset_leitura') THEN
+            CREATE USER usuario_superset_leitura WITH PASSWORD '${SENHA_USUARIO_SUPERSET_LEITURA}';
+            RAISE NOTICE '✅ Usuário usuario_superset_leitura criado';
+        ELSE
+            RAISE NOTICE 'ℹ️  Usuário usuario_superset_leitura já existe';
+        END IF;
+    END
+    \$\$;
+    
+    -- Conceder apenas permissões de leitura
+    GRANT CONNECT ON DATABASE ${POSTGRES_DB} TO usuario_superset_leitura;
+    GRANT USAGE ON SCHEMA public TO usuario_superset_leitura;
+    
+    -- Somente SELECT em todas as tabelas EXISTENTES
+    GRANT SELECT ON ALL TABLES IN SCHEMA public TO usuario_superset_leitura;
+    
+    -- SELECT em tabelas FUTURAS criadas por qualquer usuário (postgres, usuario_directus, etc)
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public 
+        GRANT SELECT ON TABLES TO usuario_superset_leitura;
+    
+    -- IMPORTANTE: Como o Directus cria tabelas com o usuario_directus, precisamos garantir
+    -- que tabelas futuras criadas por ele também sejam acessíveis pelo Superset
+    ALTER DEFAULT PRIVILEGES FOR USER usuario_directus IN SCHEMA public 
+        GRANT SELECT ON TABLES TO usuario_superset_leitura;
+    
+    -- SELECT em sequences (para visualizar valores) - EXISTENTES
+    GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO usuario_superset_leitura;
+    
+    -- SELECT em sequences - FUTURAS (qualquer usuário)
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public 
+        GRANT SELECT ON SEQUENCES TO usuario_superset_leitura;
+    
+    -- SELECT em sequences - FUTURAS criadas pelo usuario_directus
+    ALTER DEFAULT PRIVILEGES FOR USER usuario_directus IN SCHEMA public 
+        GRANT SELECT ON SEQUENCES TO usuario_superset_leitura;
+    
+    
+    -- ============================================================================
+    -- 3. CRIAR USUÁRIO PARA O POSTGRES EXPORTER (Monitoramento - Somente Leitura)
+    -- ============================================================================
+    
+    DO \$\$
+    BEGIN
+        IF NOT EXISTS (SELECT FROM pg_catalog.pg_user WHERE usename = 'postgres_exporter') THEN
+            CREATE USER postgres_exporter WITH PASSWORD '${SENHA_USUARIO_POSTGRES_EXPORTER}';
+            RAISE NOTICE '✅ Usuário postgres_exporter criado';
+        ELSE
+            RAISE NOTICE 'ℹ️  Usuário postgres_exporter já existe';
+        END IF;
+    END
+    \$\$;
+    
+    -- Minimal permissions para métricas (seguindo best practices do postgres_exporter)
+    GRANT CONNECT ON DATABASE ${POSTGRES_DB} TO postgres_exporter;
+    GRANT pg_monitor TO postgres_exporter;  -- PostgreSQL 10+ built-in role para monitoramento
+    
+    COMMENT ON ROLE postgres_exporter IS 'Usuário do Prometheus PostgreSQL Exporter (somente leitura para métricas)';
+    
+    -- NOTA: Restrições de segurança em tabelas do Directus (directus_users, directus_sessions)
+    -- devem ser aplicadas APÓS o Directus criar as tabelas na primeira execução.
+    -- Ver documentação em docs/ para aplicação manual dessas restrições.
+    
+    COMMENT ON ROLE usuario_superset_leitura IS 'Usuário do Superset com permissões somente de leitura';
+    
+    
+    -- ============================================================================
+    -- 3. CRIAR USUÁRIO PARA O PGADMIN (Leitura, Backup e Restore)
+    -- ============================================================================
+    
+    DO \$\$
+    BEGIN
+        IF NOT EXISTS (SELECT FROM pg_catalog.pg_user WHERE usename = 'usuario_pgadmin') THEN
+            CREATE USER usuario_pgadmin WITH PASSWORD '${SENHA_USUARIO_PGADMIN}';
+            RAISE NOTICE '✅ Usuário usuario_pgadmin criado';
+        ELSE
+            RAISE NOTICE 'ℹ️  Usuário usuario_pgadmin já existe';
+        END IF;
+    END
+    \$\$;
+    
+    -- Conceder permissões de leitura completa
+    GRANT CONNECT ON DATABASE ${POSTGRES_DB} TO usuario_pgadmin;
+    GRANT USAGE ON SCHEMA public TO usuario_pgadmin;
+    GRANT SELECT ON ALL TABLES IN SCHEMA public TO usuario_pgadmin;
+    GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO usuario_pgadmin;
+    
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public 
+        GRANT SELECT ON TABLES TO usuario_pgadmin;
+    
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public 
+        GRANT SELECT ON SEQUENCES TO usuario_pgadmin;
+    
+    -- Permissões adicionais para backup/restore
+    -- (pg_dump e pg_restore usam o usuário para conectar, mas não precisam de permissões especiais além de SELECT)
+    
+    COMMENT ON ROLE usuario_pgadmin IS 'Usuário do pgAdmin com permissões de leitura e backup';
+    
+    
+    -- ============================================================================
+    -- 4. CONFIGURAÇÕES DE SEGURANÇA ADICIONAIS
+    -- ============================================================================
+    
+    -- Remover permissões públicas do schema public (boa prática)
+    REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+    
+    
+    -- ============================================================================
+    -- 5. RESUMO DAS PERMISSÕES CRIADAS
+    -- ============================================================================
+    
+    SELECT 
+        '✅ Configuração de usuários concluída!' as status,
+        COUNT(*) FILTER (WHERE usename IN ('usuario_directus', 'usuario_superset_leitura', 'usuario_pgadmin')) as usuarios_criados
+    FROM pg_catalog.pg_user
+    WHERE usename IN ('usuario_directus', 'usuario_superset_leitura', 'usuario_pgadmin');
+    
+    \echo '==========================================';
+    \echo '✅ Usuários criados com sucesso:';
+    \echo '   - usuario_directus: Leitura/Escrita';
+    \echo '   - usuario_superset_leitura: Somente Leitura';
+    \echo '   - usuario_pgadmin: Leitura e Backup';
+    \echo '==========================================';
+
+EOSQL
+
+echo "✅ Configuração de usuários do PostgreSQL concluída!"

@@ -43,9 +43,19 @@ coverage.xml
 .coverage.*
 *.cover
 *.coverage*
+test-results/  # E2E test reports
+
+# E2E UI - Uploads do Directus (movido para versiona-ai/tests/e2e_ui/uploads)
+versiona-ai/tests/e2e_ui/uploads/*
+!versiona-ai/tests/e2e_ui/uploads/README.md
+!versiona-ai/tests/e2e_ui/uploads/exemplo-*.txt
+!versiona-ai/tests/e2e_ui/uploads/test-*.docx
 
 # Configuração local
 .env
+.env.e2e  # E2E test environment (pode conter tokens sensíveis)
+.env.local
+.env.*.local
 
 # IDEs - permitir configurações do workspace
 .idea/
