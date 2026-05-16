@@ -245,15 +245,14 @@ class ComparadorAlgoritmos:
                     # ✅ Vinculou corretamente
                     true_positives += 1
 
-                    # Calcular erro de posição
-                    erro_inicio = abs(
-                        mod.get("posicao_inicio", 0)
-                        - esperada["posicao_inicio_esperada"]
-                    )
-                    erro_fim = abs(
-                        mod.get("posicao_fim", 0) - esperada["posicao_fim_esperada"]
-                    )
-                    erros_posicao.append((erro_inicio + erro_fim) / 2)
+                    # Calcular erro de posição (se disponível)
+                    pos_inicio = mod.get("posicao_inicio")
+                    pos_fim = mod.get("posicao_fim")
+                    
+                    if pos_inicio is not None and pos_fim is not None:
+                        erro_inicio = abs(pos_inicio - esperada["posicao_inicio_esperada"])
+                        erro_fim = abs(pos_fim - esperada["posicao_fim_esperada"])
+                        erros_posicao.append((erro_inicio + erro_fim) / 2)
                 elif vinculada:
                     # ❌ Vinculou mas para tag errada
                     false_positives += 1

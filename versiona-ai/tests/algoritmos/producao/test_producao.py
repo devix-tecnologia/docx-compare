@@ -127,6 +127,65 @@ def test_vincular_sem_tag_correspondente(algoritmo):
     assert resultado[0]["tag_vinculada"] is None
 
 
+def test_vincular_template_vs_valores_reais(algoritmo):
+    """
+    TDD: Testa vinculação de template com placeholders vs. valores reais.
+    
+    Problema identificado no caso real c2b1dfa0:
+    - Template: "LOCADOR: ________ , ________ , portador..."
+    - Valor:    "LOCADOR: Joris Veloso, portador..."
+    - ratio():       ~54% (baseline atual)
+    - token_set_ratio(): ~93% (deveria usar)
+    
+    Este teste DEVE PASSAR com threshold ajustado ou métrica melhor.
+    """
+    # Template com placeholders
+    tag_texto = (
+        "LOCADOR: ________ , ________ , ________ , ________ , "
+        "portador da cédula de identidade R.G. nº ________ e CPF nº ________ , "
+        "residente e domiciliado à ________ , ________ ."
+    )
+    
+    # Valor real preenchido
+    mod_texto = (
+        "LOCADOR: Joris Veloso, portador da cédula de identidade "
+        "R.G. nº 123654789 e CPF nº 58755666 , residente e domiciliado à "
+        "Rua Cyro Lopes, 234."
+    )
+    
+    tags = [
+        {
+            "id": "tag_locador",
+            "titulo": "locador",
+            "texto": tag_texto,
+            "posicao_inicio": 30,
+            "posicao_fim": 244,
+        }
+    ]
+    
+    # Modificação sem posição calculada (baseline precisa calcular)
+    modificacoes = [
+        {
+            "id": "mod_1",
+            "tipo": "INSERCAO",
+            "conteudo": {"novo": mod_texto},
+        }
+    ]
+    
+    # Texto completo é o template (como no caso real)
+    texto_completo = f"CONTRATO DE LOCAÇÃO\n{tag_texto}\nCláusulas seguem..."
+    
+    resultado = algoritmo.vincular_clausulas(modificacoes, tags, texto_completo)
+    
+    # DEVE vincular a tag correta
+    assert len(resultado) == 1
+    assert resultado[0]["tag_vinculada"] is not None, (
+        "Baseline DEVE vincular template com placeholders vs. valores reais! "
+        "Precisa usar token_set_ratio ou métrica similar."
+    )
+    assert resultado[0]["tag_vinculada"]["id"] == "tag_locador"
+
+
 def test_avaliacao_caso_simples(algoritmo, comparador):
     """
     Testa avaliação em fixture simples.

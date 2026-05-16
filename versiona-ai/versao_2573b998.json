@@ -1,0 +1,80 @@
+{
+  "api_url": "http://localhost:8001/api/versoes/2573b998-63d0-4471-ad85-db6f860c3721",
+  "diff_data": {
+    "diff_id": "397c9e1b-405e-4db3-90a5-41e937838d6a",
+    "metodo": "AST_PANDOC",
+    "metricas": {
+      "alteracoes": 0,
+      "insercoes": 2,
+      "remocoes": 0,
+      "total_modificacoes": 2
+    },
+    "modificacoes": [
+      {
+        "clausula_modificada": null,
+        "confianca": 0.9,
+        "conteudo": {
+          "novo": "a) Multa de 2% (dois por cento) sobre o valor da parcela em atraso;"
+        },
+        "css_class": "diff-insercao",
+        "motivo_vinculacao": "sem_sobreposicao",
+        "posicao": {
+          "coluna": 1,
+          "linha": 1
+        },
+        "posicao_fim": 69637,
+        "posicao_inicio": 69570,
+        "score_vinculacao": 0.0,
+        "status_vinculacao": "nao_vinculada",
+        "tipo": "INSERCAO"
+      },
+      {
+        "clausula_modificada": null,
+        "confianca": 0.9,
+        "conteudo": {
+          "novo": "b) Juros de mora, pro rata die, até a data efetiva de pagamento, considerando a taxa SELIC vigente, divulgada pelo Banco Central do Brasil (variações negativas serão consideradas nulas)."
+        },
+        "css_class": "diff-insercao",
+        "motivo_vinculacao": "sem_sobreposicao",
+        "posicao": {
+          "coluna": 1,
+          "linha": 2
+        },
+        "posicao_fim": 69825,
+        "posicao_inicio": 69639,
+        "score_vinculacao": 0.0,
+        "status_vinculacao": "nao_vinculada",
+        "tipo": "INSERCAO"
+      }
+    ],
+    "success": true,
+    "total_blocos": 100,
+    "url": "http://localhost:8001/view/397c9e1b-405e-4db3-90a5-41e937838d6a"
+  },
+  "status": "success",
+  "versao": {
+    "arquivo": "92f80aec-275c-4917-9d7c-4ba31a065561",
+    "contrato": "f7435867-8e6e-4798-a00f-f6edc23ae0f2",
+    "date_created": "2026-03-27T18:57:18.344Z",
+    "date_updated": "2026-05-16T17:14:27.104Z",
+    "id": "2573b998-63d0-4471-ad85-db6f860c3721",
+    "modifica_arquivo": null,
+    "modificacoes": [
+      "2e09da2b-e611-475a-89e2-8b8bfe48e56a",
+      "a6f4a14e-8d74-47ed-89fd-8fcb61e04226"
+    ],
+    "observacao": "teste",
+    "origem": "fornecedor",
+    "relatorio_diff": null,
+    "status": "concluido",
+    "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+    "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+    "versao": null,
+    "versiona_ai_metadata_json": null,
+    "versiona_ai_request_erro": null,
+    "versiona_ai_request_json": null,
+    "versiona_ai_response_processed_json": null,
+    "versiona_ai_response_raw_json": null
+  },
+  "view_url": "http://localhost:8001/versao/2573b998-63d0-4471-ad85-db6f860c3721"
+}

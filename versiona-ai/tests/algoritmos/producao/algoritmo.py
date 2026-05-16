@@ -15,19 +15,23 @@ if str(tests_dir) not in sys.path:
 if str(versiona_dir) not in sys.path:
     sys.path.insert(0, str(versiona_dir))
 
-from difflib import SequenceMatcher
+from rapidfuzz import fuzz
 
 from algoritmos.base import AlgoritmoVinculacao, UtilitariosVinculacao
 
 
 class AlgoritmoProducao(AlgoritmoVinculacao):
     """
-    Algoritmo atualmente em produção (directus_server.py).
+    Algoritmo atualmente em produção (directus_server.py) - ATUALIZADO.
 
     Estratégia:
     - Busca simples de texto com str.find()
-    - Fuzzy matching com difflib (threshold 85%)
+    - Fuzzy matching com RapidFuzz (threshold dinâmico 80-90%)
+    - Múltiplas métricas: ratio, partial_ratio, token_sort_ratio, token_set_ratio
     - Método baseado em conteúdo (não offset)
+    
+    Nota: Atualizado para usar RapidFuzz ao invés de difflib para melhor
+    comparação de templates com placeholders vs. valores reais.
     """
 
     @property
@@ -36,7 +40,7 @@ class AlgoritmoProducao(AlgoritmoVinculacao):
 
     @property
     def descricao(self) -> str:
-        return "Algoritmo atual de produção (baseline) - busca simples + fuzzy matching"
+        return "Algoritmo de produção atualizado (baseline) - busca simples + RapidFuzz com múltiplas métricas"
 
     def calcular_posicoes(self, modificacoes: list[dict], texto: str) -> list[dict]:
         """
@@ -68,14 +72,16 @@ class AlgoritmoProducao(AlgoritmoVinculacao):
         Implementação baseada em _vincular_modificacoes_clausulas_novo() do directus_server.py
 
         Usa método de conteúdo com fuzzy matching.
+        
+        Atualizado para fazer fuzzy matching mesmo sem posição calculada
+        (útil para comparar templates com valores reais).
         """
-        for mod in modificacoes:
+        # Primeiro calcular posições
+        mods_com_posicao = self.calcular_posicoes(modificacoes, texto)
+        
+        for mod in mods_com_posicao:
             pos_inicio = mod.get("posicao_inicio")
             pos_fim = mod.get("posicao_fim")
-
-            if pos_inicio is None or pos_fim is None:
-                mod["tag_vinculada"] = None
-                continue
 
             # Extrair texto da modificação
             texto_modificacao = UtilitariosVinculacao.extrair_texto_busca(mod)
@@ -83,14 +89,113 @@ class AlgoritmoProducao(AlgoritmoVinculacao):
                 mod["tag_vinculada"] = None
                 continue
 
-            # Buscar melhor tag por conteúdo (fuzzy) ou posição
-            melhor_tag = self._buscar_melhor_tag_fuzzy(
-                texto_modificacao, pos_inicio, pos_fim, tags
-            )
+            # Se TEM posição: buscar por overlap + fuzzy
+            if pos_inicio is not None and pos_fim is not None:
+                melhor_tag = self._buscar_melhor_tag_fuzzy(
+                    texto_modificacao, pos_inicio, pos_fim, tags
+                )
+                mod["tag_vinculada"] = melhor_tag
+            else:
+                # Se NÃO TEM posição: usar APENAS fuzzy matching
+                # (útil para templates vs valores reais)
+                melhor_tag = self._buscar_melhor_tag_apenas_fuzzy(
+                    texto_modificacao, tags
+                )
+                mod["tag_vinculada"] = melhor_tag
 
-            mod["tag_vinculada"] = melhor_tag
+        return mods_com_posicao
 
-        return modificacoes
+    def _calcular_threshold_dinamico(self, texto: str) -> float:
+        """
+        Calcula threshold dinâmico baseado no tamanho do texto.
+        
+        Textos curtos precisam de threshold mais alto para evitar falsos positivos.
+        
+        Args:
+            texto: Texto para análise
+            
+        Returns:
+            Threshold entre 0 e 100
+        """
+        tamanho = len(texto)
+        
+        if tamanho < 20:
+            return 90.0  # Muito curto: alta precisão
+        elif tamanho < 100:
+            return 85.0  # Médio: balanceado
+        else:
+            return 80.0  # Longo: mais flexível
+
+    def _calcular_score_composto(self, texto1: str, texto2: str) -> float:
+        """
+        Calcula score usando múltiplas métricas do RapidFuzz e retorna o máximo.
+        
+        Usa 4 métricas:
+        - ratio: Similaridade caractere por caractere
+        - partial_ratio: Melhor substring
+        - token_sort_ratio: Tokens ordenados
+        - token_set_ratio: Conjunto de tokens (ignora duplicatas e ordem)
+        
+        Args:
+            texto1: Primeiro texto
+            texto2: Segundo texto
+            
+        Returns:
+            Score entre 0 e 100
+        """
+        if not texto1 or not texto2:
+            return 0.0
+        
+        # Calcular múltiplas métricas
+        scores = [
+            fuzz.ratio(texto1, texto2),
+            fuzz.partial_ratio(texto1, texto2),
+            fuzz.token_sort_ratio(texto1, texto2),
+            fuzz.token_set_ratio(texto1, texto2)  # Melhor para templates vs valores
+        ]
+        
+        # Retornar o melhor score
+        return max(scores)
+
+    def _buscar_melhor_tag_apenas_fuzzy(
+        self,
+        texto_modificacao: str,
+        tags: list[dict],
+    ) -> dict | None:
+        """
+        Busca melhor tag usando APENAS fuzzy matching (sem overlap de posição).
+        
+        Útil quando a modificação não foi encontrada no texto (ex: template vs valores).
+        
+        Args:
+            texto_modificacao: Texto da modificação
+            tags: Lista de tags disponíveis
+            
+        Returns:
+            Tag com melhor score acima do threshold, ou None
+        """
+        melhor_tag = None
+        melhor_score = 0.0
+        threshold = self._calcular_threshold_dinamico(texto_modificacao)
+
+        for tag in tags:
+            tag_texto = tag.get("texto", "")
+            
+            if not tag_texto:
+                continue
+
+            # Checar substring primeiro
+            if texto_modificacao in tag_texto:
+                return tag  # Match perfeito
+            
+            # Calcular score composto
+            score = self._calcular_score_composto(texto_modificacao, tag_texto)
+
+            if score > melhor_score and score >= threshold:
+                melhor_score = score
+                melhor_tag = tag
+
+        return melhor_tag
 
     def _buscar_melhor_tag_fuzzy(
         self,
@@ -100,28 +205,30 @@ class AlgoritmoProducao(AlgoritmoVinculacao):
         tags: list[dict],
     ) -> dict | None:
         """
-        Busca melhor tag usando fuzzy matching (threshold 85%) ou overlap de posição.
+        Busca melhor tag usando fuzzy matching (threshold dinâmico) ou overlap de posição.
 
         Baseado em _vincular_modificacoes_clausulas_novo() do directus_server.py
+        Atualizado para usar RapidFuzz com múltiplas métricas.
         """
         melhor_tag = None
         melhor_score = 0.0
-        threshold = 0.85
+        threshold = self._calcular_threshold_dinamico(texto_modificacao)
 
         for tag in tags:
             tag_texto = tag.get("texto", "")
             tag_inicio = tag.get("posicao_inicio")
             tag_fim = tag.get("posicao_fim")
 
-            # Método 1: Fuzzy matching de conteúdo
+            # Método 1: Fuzzy matching de conteúdo com múltiplas métricas
             # Checar se a modificação está DENTRO do texto da tag
             if tag_texto and texto_modificacao in tag_texto:
                 # Se texto modificação é substring, é match perfeito
                 melhor_tag = tag
-                melhor_score = 1.0
+                melhor_score = 100.0
                 break
             elif tag_texto:
-                similarity = SequenceMatcher(None, texto_modificacao, tag_texto).ratio()
+                # Usar score composto com múltiplas métricas
+                similarity = self._calcular_score_composto(texto_modificacao, tag_texto)
 
                 if similarity > melhor_score:
                     melhor_score = similarity
@@ -137,7 +244,7 @@ class AlgoritmoProducao(AlgoritmoVinculacao):
                 # Se tem overlap significativo e não achou por fuzzy
                 if overlap > 0.5 and melhor_score < threshold:
                     melhor_tag = tag
-                    melhor_score = overlap
+                    melhor_score = overlap * 100  # Normalizar para 0-100
 
         return melhor_tag
 

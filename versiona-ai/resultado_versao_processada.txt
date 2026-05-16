@@ -1,0 +1,61 @@
+📡 Buscando versão c2b1dfa0... no Directus...
+✅ Versão encontrada!
+   💾 Dados brutos salvos: versao_c2b1dfa0_raw.json
+   - Modificações: 6
+   - Tags do modelo: 2
+   📄 Baixando arquivo original: dda6842a-4082-45b5-b27e-1354a81bc1fb...
+   ✅ Texto extraído do .docx: 1289 caracteres
+
+================================================================================
+📊 COMPARAÇÃO DE ALGORITMOS - CASO REAL
+================================================================================
+
+🔬 Processando com producao...
+   - 6 modificações
+   - 2 cláusulas
+   - 1289 caracteres de texto
+
+📊 Resultados:
+   - Vinculadas: 0/6 (0.0%)
+   - Não vinculadas: 6
+
+🔬 Processando com fuzzy...
+   - 6 modificações
+   - 2 cláusulas
+   - 1289 caracteres de texto
+
+📊 Resultados:
+   - Vinculadas: 0/6 (0.0%)
+   - Não vinculadas: 6
+
+🔬 Processando com regex...
+   - 6 modificações
+   - 2 cláusulas
+   - 1289 caracteres de texto
+
+📊 Resultados:
+   - Vinculadas: 0/6 (0.0%)
+   - Não vinculadas: 6
+
+🔬 Processando com hibrido...
+   - 6 modificações
+   - 2 cláusulas
+   - 1289 caracteres de texto
+
+📊 Resultados:
+   - Vinculadas: 0/6 (0.0%)
+   - Não vinculadas: 6
+
+🎯 Estratégias usadas:
+   - nao_vinculada: 6 (100.0%)
+
+================================================================================
+🏆 RANKING FINAL:
+================================================================================
+🥇 1. producao: 0.0% (0/6 vinculadas)
+🥈 2. fuzzy: 0.0% (0/6 vinculadas)
+🥉 3. regex: 0.0% (0/6 vinculadas)
+   4. hibrido: 0.0% (0/6 vinculadas)
+================================================================================
+
+✅ Processamento concluído!

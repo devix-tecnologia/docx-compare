@@ -1,0 +1,61 @@
+📡 Buscando versão 2573b998... no Directus...
+✅ Versão encontrada!
+   - Modificações: 2
+   - Tags do modelo: 100
+   📄 Baixando arquivo original: d0d3b4bb-339d-4ac4-b22b-57be235d679f...
+   ⚠️  Erro ao baixar/extrair arquivo: No module named 'docx'
+   ⚠️  Usando concatenação de 100 tags como texto
+
+================================================================================
+📊 COMPARAÇÃO DE ALGORITMOS - CASO REAL
+================================================================================
+
+🔬 Processando com producao...
+   - 2 modificações
+   - 100 cláusulas
+   - 99 caracteres de texto
+
+📊 Resultados:
+   - Vinculadas: 0/2 (0.0%)
+   - Não vinculadas: 2
+
+🔬 Processando com fuzzy...
+   - 2 modificações
+   - 100 cláusulas
+   - 99 caracteres de texto
+
+📊 Resultados:
+   - Vinculadas: 0/2 (0.0%)
+   - Não vinculadas: 2
+
+🔬 Processando com regex...
+   - 2 modificações
+   - 100 cláusulas
+   - 99 caracteres de texto
+
+📊 Resultados:
+   - Vinculadas: 0/2 (0.0%)
+   - Não vinculadas: 2
+
+🔬 Processando com hibrido...
+   - 2 modificações
+   - 100 cláusulas
+   - 99 caracteres de texto
+
+📊 Resultados:
+   - Vinculadas: 0/2 (0.0%)
+   - Não vinculadas: 2
+
+🎯 Estratégias usadas:
+   - nao_vinculada: 2 (100.0%)
+
+================================================================================
+🏆 RANKING FINAL:
+================================================================================
+🥇 1. producao: 0.0% (0/2 vinculadas)
+🥈 2. fuzzy: 0.0% (0/2 vinculadas)
+🥉 3. regex: 0.0% (0/2 vinculadas)
+   4. hibrido: 0.0% (0/2 vinculadas)
+================================================================================
+
+✅ Processamento concluído!

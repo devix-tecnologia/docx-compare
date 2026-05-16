@@ -1,0 +1,352 @@
+{
+  "id": "c2b1dfa0-c664-48b8-a5ff-84b70041b428",
+  "status": "concluido",
+  "user_created": "8e0b1f2e-34cf-4aec-9558-408f7d965834",
+  "date_created": "2025-09-10T07:50:07.810Z",
+  "user_updated": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+  "date_updated": "2026-05-16T12:34:26.344Z",
+  "versao": "v01",
+  "observacao": "Agrupamento em_processamento em 10/09/2025 19:06: Iniciando processo de agrupamento posicional - threshold: 0.6",
+  "versiona_ai_request_json": null,
+  "versiona_ai_response_raw_json": {
+    "diff_html": "<div class='diff-container'>\n<div class='clause-header'>📋 Seção: CONTRATO DE LOCAÇÃO DE IMÓVEL</div>\n<div class='diff-unchanged'>CONTRATO DE LOCAÇÃO DE IMÓVEL</div>\n<div class='diff-field-replacement'>\n  <div class='field-name'>📝 CPF</div>\n  <div class='diff-removed'>- LOCADOR: ________ , ________ , ________ , ________ , portador da cédula\nde identidade R.G nº ________ e CPF nº ________ , residente e\ndomiciliado à ________ , ________ , ________ , ________ , ________ ,\n________ . LOCATÁRIO: ________ , ________ , ________ , ________ , portador da\ncédula de identidade R.G nº ________ e CPF nº ________ , residente e\ndomiciliado à ________ , ________ , ________ , ________ , ________ ,\n________ .</div>\n  <div class='diff-added'>+ LOCADOR: Joris Veloso, portador da cédula de identidade R.G. nº\n123654789 e CPF nº 58755666 , residente e domiciliado à Rua Cyro Lopes,\n234. LOCATÁRIO: Sidarta Veloso , portador da cédula de identidade R.G. nº\n58745668855 e CPF nº 548445464, residente e domiciliado à Av. Nossa\nSenhora da Penha, 887 .</div>\n</div>\n<div class='clause-header'>📋 Seção: CLÁUSULA PRIMEIRA - DO OBJETO DA LOCAÇÃO</div>\n<div class='diff-unchanged'>CLÁUSULA PRIMEIRA - DO OBJETO DA LOCAÇÃO</div>\n<div class='diff-field-replacement'>\n  <div class='field-name'>📝 Campo</div>\n  <div class='diff-removed'>- 1.1 O objeto deste contrato de locação é o imóvel situado na ________ ,\n________ , ________ , ________ , ________ , ________ , no exato estado\ndo termo de vistoria e fotos em anexo.</div>\n  <div class='diff-added'>+ 1.1 O objeto deste contrato de locação é o imóvel situado na Rua da\nLama, 234 , no exato estado do termo de vistoria e fotos em anexo.</div>\n</div>\n<div class='diff-unchanged'>1.2 Compõe o objeto da locação, uma vaga de garagem de ________ ,\nlocalizada na ________ .</div>\n<div class='clause-header'>📋 Seção: CLÁUSULA SEGUNDA - DO PRAZO DE VIGÊNCIA</div>\n<div class='diff-unchanged'>CLÁUSULA SEGUNDA - DO PRAZO DE VIGÊNCIA</div>\n<div class='diff-field-replacement'>\n  <div class='field-name'>📝 Campo</div>\n  <div class='diff-removed'>- 2.1 O prazo da locação é de ________ meses, iniciando-se em ________ com\ntérmino em ________ , independentemente de aviso, notificação ou\ninterpelação judicial ou extrajudicial.</div>\n  <div class='diff-added'>+ 2.1 O prazo da locação é de 36 meses, iniciando-se em 29/08/2025 com\ntérmino em 29/08/2028 , independentemente de aviso, notificação ou\ninterpelação judicial ou extrajudicial.</div>\n</div>\n<div class='diff-unchanged'>2.2 Findo o prazo ajustado, se o locatário continuar na posse do imóvel\nalugado por mais de trinta dias sem oposição do locador, presumir - se -\ná prorrogada a locação por prazo indeterminado, mantidas as demais\ncláusulas e condições do contrato.</div>\n<div class='diff-unchanged'>1.  Regimento/Regulamento do Condomínio - se houver</div>\n</div>"
+  },
+  "versiona_ai_response_processed_json": {
+    "modificacoes": [
+      {
+        "id": 1,
+        "tipo": "ALTERACAO",
+        "css_class": "diff-alteracao",
+        "confianca": 0.95,
+        "posicao": {
+          "linha": 1,
+          "coluna": 1
+        },
+        "conteudo": {
+          "original": "LOCADOR: ________ , ________ , ________ , ________ , portador da cédula\nde identidade R.G nº ________ e CPF nº ________ , residente e\ndomiciliado à ________ , ________ , ________ , ________ , ________ ,\n________ . LOCATÁRIO: ________ , ________ , ________ , ________ , portador da\ncédula de identidade R.G nº ________ e CPF nº ________ , residente e\ndomiciliado à ________ , ________ , ________ , ________ , ________ ,\n________ .",
+          "novo": "LOCADOR: Joris Veloso, portador da cédula de identidade R.G. nº\n123654789 e CPF nº 58755666 , residente e domiciliado à Rua Cyro Lopes,\n234. LOCATÁRIO: Sidarta Veloso , portador da cédula de identidade R.G. nº\n58745668855 e CPF nº 548445464, residente e domiciliado à Av. Nossa\nSenhora da Penha, 887 ."
+        },
+        "tags_relacionadas": [
+          "penha",
+          "veloso",
+          "locador",
+          "joris",
+          "portador"
+        ]
+      },
+      {
+        "id": 2,
+        "tipo": "ALTERACAO",
+        "css_class": "diff-alteracao",
+        "confianca": 0.95,
+        "posicao": {
+          "linha": 2,
+          "coluna": 1
+        },
+        "conteudo": {
+          "original": "1.1 O objeto deste contrato de locação é o imóvel situado na ________ ,\n________ , ________ , ________ , ________ , ________ , no exato estado\ndo termo de vistoria e fotos em anexo.",
+          "novo": "1.1 O objeto deste contrato de locação é o imóvel situado na Rua da\nLama, 234 , no exato estado do termo de vistoria e fotos em anexo."
+        },
+        "tags_relacionadas": [
+          "lama",
+          "objeto",
+          "situado",
+          "deste",
+          "anexo"
+        ]
+      },
+      {
+        "id": 3,
+        "tipo": "ALTERACAO",
+        "css_class": "diff-alteracao",
+        "confianca": 0.95,
+        "posicao": {
+          "linha": 3,
+          "coluna": 1
+        },
+        "conteudo": {
+          "original": "2.1 O prazo da locação é de ________ meses, iniciando-se em ________ com\ntérmino em ________ , independentemente de aviso, notificação ou\ninterpelação judicial ou extrajudicial.",
+          "novo": "2.1 O prazo da locação é de 36 meses, iniciando-se em 29/08/2025 com\ntérmino em 29/08/2028 , independentemente de aviso, notificação ou\ninterpelação judicial ou extrajudicial."
+        },
+        "tags_relacionadas": [
+          "independentemente",
+          "interpelação",
+          "iniciando",
+          "prazo",
+          "notificação"
+        ]
+      }
+    ],
+    "blocos_detalhados": [
+      {
+        "nome": "locador",
+        "posicao_inicio": 30,
+        "posicao_fim": 244,
+        "tipo": "existente",
+        "conteudo_estimado": "LOCADOR: Joris Veloso, portador da cédula de\nidentidade R.G. nº 123654789 e CPF nº 58755666 , reside..."
+      },
+      {
+        "nome": "locatario",
+        "posicao_inicio": 245,
+        "posicao_fim": 461,
+        "tipo": "existente",
+        "conteudo_estimado": "668855 e CPF nº 548445464, residente e\ndomiciliado à Av. Nossa Senhora da Penha, 887 .\nCLÁUSULA PRIM..."
+      }
+    ]
+  },
+  "versiona_ai_metadata_json": {
+    "total_modificacoes": 3,
+    "total_blocos": 2,
+    "metodo_blocos": "agrupamento_posicional",
+    "diff_id": "404f7a20-5418-4c35-b56a-bdf0ace03f57",
+    "gerado_em": "2025-09-30T18:54:26.024094",
+    "visualizacao_url": "http://localhost:8000/view/404f7a20-5418-4c35-b56a-bdf0ace03f57"
+  },
+  "origem": "samarco",
+  "versiona_ai_request_erro": null,
+  "relatorio_diff": "7c99ea9d-6fed-4ae4-b7be-54aa821ebdaf",
+  "arquivo": "9b843b00-b9d4-4f1d-9676-e5f43c454ec4",
+  "modifica_arquivo": "dda6842a-4082-45b5-b27e-1354a81bc1fb",
+  "modificacoes": [
+    {
+      "id": "6afaa30c-72ac-465b-a227-f379b0d68519",
+      "status": "draft",
+      "user_created": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+      "date_created": "2026-05-16T12:34:26.421Z",
+      "user_updated": null,
+      "date_updated": null,
+      "sort": null,
+      "categoria": "INSERCAO",
+      "conteudo": null,
+      "alteracao": "LOCADOR: Joris Veloso, portador da cédula de identidade R.G. nº 123654789 e CPF nº 58755666 , residente e domiciliado à Rua Cyro Lopes, 234.",
+      "versao": "c2b1dfa0-c664-48b8-a5ff-84b70041b428",
+      "nota_analista": null,
+      "caminho_inicio": "1",
+      "caminho_fim": "1",
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "metodo_vinculacao": null,
+      "score_vinculacao": null,
+      "status_vinculacao": "automatico",
+      "clausula": null
+    },
+    {
+      "id": "7fb1ac2a-c731-4aaf-a9c6-7ffa95e07ee6",
+      "status": "draft",
+      "user_created": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+      "date_created": "2026-05-16T12:34:26.469Z",
+      "user_updated": null,
+      "date_updated": null,
+      "sort": null,
+      "categoria": "REMOCAO",
+      "conteudo": "LOCATÁRIO: ________ , ________ , ________ , ________ , portador da cédula de identidade R.G. nº ________ e CPF nº ________ , residente e domiciliado à ________ , ________ , ________ , ________ , ________ , ________ .",
+      "alteracao": "--",
+      "versao": "c2b1dfa0-c664-48b8-a5ff-84b70041b428",
+      "nota_analista": null,
+      "caminho_inicio": "2",
+      "caminho_fim": "1",
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "metodo_vinculacao": null,
+      "score_vinculacao": null,
+      "status_vinculacao": "automatico",
+      "clausula": null
+    },
+    {
+      "id": "9d0a40be-96b6-4023-bae3-044e3cbaf771",
+      "status": "draft",
+      "user_created": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+      "date_created": "2026-05-16T12:34:26.537Z",
+      "user_updated": null,
+      "date_updated": null,
+      "sort": null,
+      "categoria": "INSERCAO",
+      "conteudo": null,
+      "alteracao": "LOCATÁRIO: Sidarta Veloso , portador da cédula de identidade R.G. nº 58745668855 e CPF nº 548445464, residente e domiciliado à Av. Nossa Senhora da Penha, 887 .",
+      "versao": "c2b1dfa0-c664-48b8-a5ff-84b70041b428",
+      "nota_analista": null,
+      "caminho_inicio": "2",
+      "caminho_fim": "1",
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "metodo_vinculacao": null,
+      "score_vinculacao": null,
+      "status_vinculacao": "automatico",
+      "clausula": null
+    },
+    {
+      "id": "aa9adfbd-cb5a-4d83-8f1c-a61dd618dc9e",
+      "status": "draft",
+      "user_created": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+      "date_created": "2026-05-16T12:34:26.367Z",
+      "user_updated": null,
+      "date_updated": null,
+      "sort": null,
+      "categoria": "REMOCAO",
+      "conteudo": "LOCADOR: ________ , ________ , ________ , ________ , portador da cédula de identidade R.G. nº ________ e CPF nº ________ , residente e domiciliado à ________ , ________ , ________ , ________ , ________ , ________ .",
+      "alteracao": "--",
+      "versao": "c2b1dfa0-c664-48b8-a5ff-84b70041b428",
+      "nota_analista": null,
+      "caminho_inicio": "1",
+      "caminho_fim": "1",
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "metodo_vinculacao": null,
+      "score_vinculacao": null,
+      "status_vinculacao": "automatico",
+      "clausula": null
+    },
+    {
+      "id": "bb323893-b8bf-4084-b1f8-359e1ca3225c",
+      "status": "draft",
+      "user_created": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+      "date_created": "2026-05-16T12:34:26.611Z",
+      "user_updated": null,
+      "date_updated": null,
+      "sort": null,
+      "categoria": "ALTERACAO",
+      "conteudo": "1.1 O objeto deste contrato de locação é o imóvel situado na ________ , ________ , ________ , ________ , ________ , ________ , no exato estado do termo de vistoria e fotos em anexo.",
+      "alteracao": "1.1 O objeto deste contrato de locação é o imóvel situado na Rua da Lama, 234 , no exato estado do termo de vistoria e fotos em anexo.",
+      "versao": "c2b1dfa0-c664-48b8-a5ff-84b70041b428",
+      "nota_analista": null,
+      "caminho_inicio": "3",
+      "caminho_fim": "1",
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "metodo_vinculacao": null,
+      "score_vinculacao": null,
+      "status_vinculacao": "automatico",
+      "clausula": null
+    },
+    {
+      "id": "d0fd66c3-7f9e-47dd-87c4-a0eb72f22cee",
+      "status": "draft",
+      "user_created": "ef873c96-e456-44fa-b3b4-b87a10fb7bf4",
+      "date_created": "2026-05-16T12:34:26.705Z",
+      "user_updated": null,
+      "date_updated": null,
+      "sort": null,
+      "categoria": "ALTERACAO",
+      "conteudo": "2.1 O prazo da locação é de ________ meses, iniciando-se em ________ com término em ________ , independentemente de aviso, notificação ou interpelação judicial ou extrajudicial.",
+      "alteracao": "2.1 O prazo da locação é de 36 meses, iniciando-se em 29/08/2025 com término em 29/08/2028 , independentemente de aviso, notificação ou interpelação judicial ou extrajudicial.",
+      "versao": "c2b1dfa0-c664-48b8-a5ff-84b70041b428",
+      "nota_analista": null,
+      "caminho_inicio": "4",
+      "caminho_fim": "1",
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "metodo_vinculacao": null,
+      "score_vinculacao": null,
+      "status_vinculacao": "automatico",
+      "clausula": null
+    }
+  ],
+  "contrato": {
+    "id": "bd3c4b41-3af2-4158-9e17-447feac5d115",
+    "status": "archived",
+    "user_created": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+    "date_created": "2025-09-10T05:11:47.683Z",
+    "user_updated": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+    "date_updated": "2025-10-10T18:38:55.003Z",
+    "numero": "B5560",
+    "titulo": "Contrato de Locação",
+    "numero_ssj": [
+      "abc"
+    ],
+    "descricao": null,
+    "analista": "a15348a5-f9b6-4503-a486-999a5fef3cc5",
+    "validade": null,
+    "partes_envolvidas": [],
+    "versoes": [
+      "c2b1dfa0-c664-48b8-a5ff-84b70041b428"
+    ],
+    "modelo_contrato": {
+      "id": "3c52bd80-3426-4950-a28b-4cbcd43b1953",
+      "status": "archived",
+      "user_created": "8e0b1f2e-34cf-4aec-9558-408f7d965834",
+      "date_created": "2025-09-09T22:39:46.252Z",
+      "user_updated": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+      "date_updated": "2025-10-10T18:38:45.160Z",
+      "versao": "contrato-locacao",
+      "nome": "contrato locação",
+      "arquivo_com_tags": "56141b4d-07c5-4423-a9e2-2a7fda7ca39f",
+      "arquivo_original": "dda6842a-4082-45b5-b27e-1354a81bc1fb",
+      "clausulas": [
+        "3014961b-2f24-4135-a9cd-ffffaca74cb7",
+        "75f10866-e8f4-44c2-9cad-f990ced7f848"
+      ],
+      "tags": [
+        {
+          "id": "4806d53e-85f5-4df9-ac13-897b9bc26e02",
+          "status": "published",
+          "sort": null,
+          "user_created": "a6f83211-3a1a-4f06-b3e9-7e5825e8faf9",
+          "date_created": "2025-09-10T16:43:04.059Z",
+          "user_updated": "a6f83211-3a1a-4f06-b3e9-7e5825e8faf9",
+          "date_updated": "2025-09-10T16:43:06.813Z",
+          "tag_nome": "locador",
+          "modelo_contrato": "3c52bd80-3426-4950-a28b-4cbcd43b1953",
+          "caminho_tag_inicio": "modificacao_9_linha_1_pos_0",
+          "caminho_tag_fim": "modificacao_9_linha_1_pos_11",
+          "conteudo": "LOCADOR: ________ , ________ , ________ , ________ , portador da cédula de identidade R.G. nº ________ e CPF nº ________ , residente e domiciliado à ________ , ________ , ________ , ________ , ________ , ________ .",
+          "posicao_inicio_texto": 30,
+          "posicao_fim_texto": 244,
+          "clausulas": [
+            {
+              "id": "3014961b-2f24-4135-a9cd-ffffaca74cb7",
+              "status": "draft",
+              "user_created": "8e0b1f2e-34cf-4aec-9558-408f7d965834",
+              "date_created": "2025-09-10T07:30:27.735Z",
+              "user_updated": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+              "date_updated": "2025-09-10T18:56:31.725Z",
+              "conteudo": "locador",
+              "modelo_contrato": "3c52bd80-3426-4950-a28b-4cbcd43b1953",
+              "numero": "1",
+              "objetivo": "Identificar o locador",
+              "nome": "Dados locador",
+              "tag": "4806d53e-85f5-4df9-ac13-897b9bc26e02",
+              "referencias": [
+                "30a10357-0f37-45bc-b102-db9ef399736c"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "afa51353-b104-4cf4-84ff-a13fd99311c4",
+          "status": "published",
+          "sort": null,
+          "user_created": "a6f83211-3a1a-4f06-b3e9-7e5825e8faf9",
+          "date_created": "2025-09-10T16:43:04.942Z",
+          "user_updated": "a6f83211-3a1a-4f06-b3e9-7e5825e8faf9",
+          "date_updated": "2025-09-10T16:43:08.642Z",
+          "tag_nome": "locatario",
+          "modelo_contrato": "3c52bd80-3426-4950-a28b-4cbcd43b1953",
+          "caminho_tag_inicio": "modificacao_16_linha_1_pos_43",
+          "caminho_tag_fim": "modificacao_16_linha_1_pos_56",
+          "conteudo": "LOCATÁRIO: ________ , ________ , ________ , ________ , portador da cédula de identidade R.G. nº ________ e CPF nº ________ , residente e domiciliado à ________ , ________ , ________ , ________ , ________ , ________ .",
+          "posicao_inicio_texto": 245,
+          "posicao_fim_texto": 461,
+          "clausulas": [
+            {
+              "id": "75f10866-e8f4-44c2-9cad-f990ced7f848",
+              "status": "draft",
+              "user_created": "8e0b1f2e-34cf-4aec-9558-408f7d965834",
+              "date_created": "2025-09-10T07:30:27.745Z",
+              "user_updated": "14d73452-5bb8-43a0-a33e-3325c2a17c1a",
+              "date_updated": "2025-09-10T18:56:31.791Z",
+              "conteudo": "locatario",
+              "modelo_contrato": "3c52bd80-3426-4950-a28b-4cbcd43b1953",
+              "numero": "2",
+              "objetivo": "Identificar o Locatário",
+              "nome": "Dados locatário",
+              "tag": "afa51353-b104-4cf4-84ff-a13fd99311c4",
+              "referencias": [
+                "471d60cb-7936-4e81-a7fb-d27822834fce"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
