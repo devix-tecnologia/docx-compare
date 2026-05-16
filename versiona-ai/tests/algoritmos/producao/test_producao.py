@@ -186,6 +186,66 @@ def test_vincular_template_vs_valores_reais(algoritmo):
     assert resultado[0]["tag_vinculada"]["id"] == "tag_locador"
 
 
+def test_bug_overlap_falso_por_posicoes_diferentes(algoritmo):
+    """
+    TDD: Bug crítico - overlap falso quando posições são de referências diferentes.
+    
+    PROBLEMA:
+    - Tags têm posições no TEXTO ORIGINAL
+    - Modificações calculadas no TEXTO MODIFICADO
+    - Resultado: overlap falso 100%!
+    
+    CASO:
+    - Original: "Cláusula 1. Cláusula 2."
+    - Modificado: "Preâmbulo. Cláusula 1. Cláusula 2."
+    - "Preâmbulo." pos 0-11 (modificado) vs tag_1 pos 0-11 (original)
+    - Overlap 100% mas são textos DIFERENTES!
+    
+    SOLUÇÃO:
+    - Priorizar fuzzy matching sobre overlap
+    - "Preâmbulo." vs "Cláusula 1." = 19% < 90% threshold
+    - NÃO deve vincular
+    """
+    texto_modificado = "Preâmbulo. Cláusula 1. Cláusula 2."
+    
+    tags = [
+        {
+            "id": "tag_1",
+            "titulo": "Cláusula 1",
+            "texto": "Cláusula 1.",
+            # Posições do TEXTO ORIGINAL (sem "Preâmbulo.")
+            "posicao_inicio": 0,
+            "posicao_fim": 11,
+        },
+        {
+            "id": "tag_2",
+            "titulo": "Cláusula 2",
+            "texto": "Cláusula 2.",
+            # Posições do TEXTO ORIGINAL
+            "posicao_inicio": 12,
+            "posicao_fim": 23,
+        },
+    ]
+    
+    modificacoes = [
+        {
+            "id": "mod_1",
+            "tipo": "INSERCAO",
+            "conteudo": {"novo": "Preâmbulo. "},
+        },
+    ]
+    
+    resultado = algoritmo.vincular_clausulas(modificacoes, tags, texto_modificado)
+    
+    # NÃO deve vincular "Preâmbulo." a "Cláusula 1"
+    # Similaridade é apenas 19% (muito abaixo do threshold 90%)
+    assert resultado[0].get("tag_vinculada") is None, (
+        "BUG: 'Preâmbulo.' vinculou a 'Cláusula 1' por overlap falso! "
+        "Fuzzy matching deve ter prioridade: 19% < 90% threshold. "
+        "Posições são de referências diferentes (original vs modificado)."
+    )
+
+
 def test_avaliacao_caso_simples(algoritmo, comparador):
     """
     Testa avaliação em fixture simples.

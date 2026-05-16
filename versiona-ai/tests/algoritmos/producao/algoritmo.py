@@ -205,10 +205,15 @@ class AlgoritmoProducao(AlgoritmoVinculacao):
         tags: list[dict],
     ) -> dict | None:
         """
-        Busca melhor tag usando fuzzy matching (threshold dinâmico) ou overlap de posição.
+        Busca melhor tag usando fuzzy matching (threshold dinâmico) E validação de overlap.
 
         Baseado em _vincular_modificacoes_clausulas_novo() do directus_server.py
         Atualizado para usar RapidFuzz com múltiplas métricas.
+        
+        CORREÇÃO CRÍTICA:
+        - Fuzzy matching tem PRIORIDADE sobre overlap
+        - Overlap só é usado se passar em validação fuzzy também
+        - Evita falsos positivos quando posições são de referências diferentes
         """
         melhor_tag = None
         melhor_score = 0.0
@@ -235,16 +240,30 @@ class AlgoritmoProducao(AlgoritmoVinculacao):
                     if similarity >= threshold:
                         melhor_tag = tag
 
-            # Método 2: Overlap de posição (fallback)
+            # Método 2: Overlap de posição (fallback COM VALIDAÇÃO)
+            # CRÍTICO: Só usa overlap se fuzzy também validar!
             if tag_inicio is not None and tag_fim is not None:
                 overlap = UtilitariosVinculacao.calcular_overlap(
                     pos_inicio, pos_fim, tag_inicio, tag_fim
                 )
 
-                # Se tem overlap significativo e não achou por fuzzy
+                # Overlap significativo (>50%) E fuzzy não encontrou melhor
                 if overlap > 0.5 and melhor_score < threshold:
-                    melhor_tag = tag
-                    melhor_score = overlap * 100  # Normalizar para 0-100
+                    # VALIDAÇÃO: Calcular fuzzy do overlap também
+                    # Evita vincular quando posições são de referências diferentes
+                    if tag_texto:
+                        overlap_score = self._calcular_score_composto(texto_modificacao, tag_texto)
+                        
+                        # Só aceita overlap se fuzzy também for razoável (>= threshold)
+                        # Se fuzzy é muito baixo, overlap é falso positivo
+                        if overlap_score >= threshold:
+                            melhor_tag = tag
+                            melhor_score = overlap_score
+                        # else: overlap falso - ignora
+                    else:
+                        # Tag sem texto: usa overlap sem validação (fallback)
+                        melhor_tag = tag
+                        melhor_score = overlap * 100
 
         return melhor_tag
 
