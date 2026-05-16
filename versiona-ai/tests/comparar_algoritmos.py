@@ -33,6 +33,9 @@ if str(tests_dir) not in sys.path:
 
 # Importar algoritmos e framework
 from algoritmos.producao.algoritmo import AlgoritmoProducao
+from algoritmos.fuzzy.algoritmo import AlgoritmoFuzzyAvancado
+from algoritmos.regex.algoritmo import AlgoritmoRegex
+from algoritmos.hibrido.algoritmo import AlgoritmoHibrido
 from framework_comparacao import ComparadorAlgoritmos
 from test_comparacao_algoritmos import (
     AlgoritmoComOffsetAcumulado,
@@ -44,6 +47,9 @@ ALGORITMOS_DISPONIVEIS = {
     "naive_sequencial": AlgoritmoNaiveSequencial,
     "offset_acumulado": AlgoritmoComOffsetAcumulado,
     "producao": AlgoritmoProducao,  # BASELINE
+    "fuzzy": AlgoritmoFuzzyAvancado,  # Fuzzy matching avançado
+    "regex": AlgoritmoRegex,  # Padrões estruturados
+    "hibrido": AlgoritmoHibrido,  # Cascata de estratégias (melhor)
     # Adicione novos algoritmos aqui
 }
 
