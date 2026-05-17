@@ -214,6 +214,12 @@ class AlgoritmoProducao(AlgoritmoVinculacao):
         - Fuzzy matching tem PRIORIDADE sobre overlap
         - Overlap só é usado se passar em validação fuzzy também
         - Evita falsos positivos quando posições são de referências diferentes
+        
+        MELHORIAS NA VINCULAÇÃO POR OVERLAP:
+        - Overlap calculado como % da modificação dentro da tag (não Jaccard)
+        - Overlap ≥90% + fuzzy ≥40%: aceita (confia na posição)
+        - Overlap ≥70% + fuzzy ≥60%: aceita (threshold reduzido)
+        - Overlap >50% + fuzzy ≥threshold: aceita (validação completa)
         """
         melhor_tag = None
         melhor_score = 0.0
@@ -254,9 +260,22 @@ class AlgoritmoProducao(AlgoritmoVinculacao):
                     if tag_texto:
                         overlap_score = self._calcular_score_composto(texto_modificacao, tag_texto)
                         
-                        # Só aceita overlap se fuzzy também for razoável (>= threshold)
-                        # Se fuzzy é muito baixo, overlap é falso positivo
-                        if overlap_score >= threshold:
+                        # LÓGICA AJUSTADA:
+                        # 1. Overlap excelente (>=90%) + fuzzy razoável (>=40%): confia na posição
+                        #    - Fuzzy mínimo 40% evita falsos positivos graves (ex: 19%)
+                        #    - Aceita overlap parcial quando modificação transcende tag
+                        # 2. Overlap bom (>=70%) + fuzzy >= 60%: aceita com threshold reduzido
+                        # 3. Overlap médio (>50%) + fuzzy >= threshold: aceita normalmente
+                        if overlap >= 0.90 and overlap_score >= 40.0:
+                            # Overlap excelente + fuzzy razoável: confia na posição
+                            melhor_tag = tag
+                            melhor_score = max(overlap_score, 90.0)  # Score mínimo 90% para overlap excelente
+                        elif overlap >= 0.70 and overlap_score >= 60.0:
+                            # Overlap bom: threshold reduzido
+                            melhor_tag = tag
+                            melhor_score = overlap_score
+                        elif overlap_score >= threshold:
+                            # Overlap médio: exige threshold normal
                             melhor_tag = tag
                             melhor_score = overlap_score
                         # else: overlap falso - ignora

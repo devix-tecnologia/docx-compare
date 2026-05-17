@@ -66,14 +66,23 @@ class UtilitariosVinculacao:
         pos_fim_b: int,
     ) -> float:
         """
-        Calcula porcentagem de sobreposição entre dois intervalos.
+        Calcula porcentagem de sobreposição do intervalo A em relação ao intervalo B.
+        
+        IMPORTANTE: Retorna quanto do intervalo A (modificação) está contido no intervalo B (tag).
+        Isso é diferente do Jaccard Index (interseção/união).
 
         Args:
-            pos_inicio_a, pos_fim_a: Intervalo A
-            pos_inicio_b, pos_fim_b: Intervalo B
+            pos_inicio_a, pos_fim_a: Intervalo A (tipicamente a modificação)
+            pos_inicio_b, pos_fim_b: Intervalo B (tipicamente a tag)
 
         Returns:
-            Porcentagem de sobreposição (0.0 a 1.0)
+            Porcentagem de sobreposição de A em B (0.0 a 1.0)
+            
+        Exemplo:
+            - A: 100→120 (20 chars)
+            - B: 90→150 (60 chars)
+            - Intersecção: 100→120 = 20 chars
+            - Overlap = 20/20 = 1.0 (100% de A está em B)
         """
         if pos_fim_a < pos_inicio_b or pos_fim_b < pos_inicio_a:
             return 0.0  # Sem sobreposição
@@ -83,15 +92,14 @@ class UtilitariosVinculacao:
         fim_intersecao = min(pos_fim_a, pos_fim_b)
         tamanho_intersecao = fim_intersecao - inicio_intersecao
 
-        # Calcular união
+        # Calcular quanto de A está em B
         tamanho_a = pos_fim_a - pos_inicio_a
-        tamanho_b = pos_fim_b - pos_inicio_b
-        tamanho_uniao = tamanho_a + tamanho_b - tamanho_intersecao
-
-        if tamanho_uniao == 0:
+        
+        if tamanho_a == 0:
             return 0.0
 
-        return tamanho_intersecao / tamanho_uniao
+        # Retorna porcentagem de A que está dentro de B
+        return tamanho_intersecao / tamanho_a
 
     @staticmethod
     def buscar_tag_por_posicao(

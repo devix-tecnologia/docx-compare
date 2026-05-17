@@ -64,8 +64,9 @@ class DirectusRepository:
         Args:
             versao_id: ID da versão
             fields: Lista de campos a buscar (suporta nested: "contrato.modelo_contrato.arquivo_original")
-            deep: Parâmetros deep para limitar relacionamentos nested
-                  Ex: {"contrato.modelo_contrato.tags": {"_limit": 100}}
+            deep: Parâmetros deep para limitar relacionamentos nested (suporta aninhamento)
+                  Ex: {"contrato": {"modelo_contrato": {"tags": {"_limit": -1}}}}
+                  Ou: {"modificacoes": {"_limit": -1}}
 
         Returns:
             dict com dados da versão ou None se não encontrada
@@ -78,9 +79,8 @@ class DirectusRepository:
             params["fields"] = ",".join(fields)
 
         if deep:
-            for key, value in deep.items():
-                for param_name, param_value in value.items():
-                    params[f"deep[{key}][{param_name}]"] = param_value
+            # Converter dicionário aninhado em parâmetros URL com colchetes
+            self._flatten_deep_params(deep, params, prefix="deep")
 
         response = requests.get(
             f"{self.base_url}/items/versao/{versao_id}",
@@ -96,6 +96,34 @@ class DirectusRepository:
         else:
             response.raise_for_status()
             return None
+
+    def _flatten_deep_params(
+        self, deep_dict: dict[str, Any], params: dict[str, Any], prefix: str = "deep"
+    ) -> None:
+        """
+        Converte dicionário aninhado de deep em parâmetros URL.
+        
+        Ex: {"contrato": {"modelo_contrato": {"_limit": -1, "tags": {"_limit": -1}}}}
+        Vira: deep[contrato][modelo_contrato][_limit] = -1
+              deep[contrato][modelo_contrato][tags][_limit] = -1
+        """
+        for key, value in deep_dict.items():
+            current_prefix = f"{prefix}[{key}]"
+            
+            if isinstance(value, dict):
+                # Separar parâmetros diretos (começam com _) de sub-relações
+                for sub_key, sub_value in value.items():
+                    if sub_key.startswith("_"):
+                        # Parâmetro direto (ex: _limit, _filter, _sort)
+                        params[f"{current_prefix}[{sub_key}]"] = sub_value
+                    else:
+                        # Sub-relação aninhada - recursão
+                        self._flatten_deep_params(
+                            {sub_key: sub_value}, params, prefix=current_prefix
+                        )
+            else:
+                # Valor direto
+                params[current_prefix] = value
 
     def get_versao_para_processar(self, versao_id: str) -> dict[str, Any] | None:
         """

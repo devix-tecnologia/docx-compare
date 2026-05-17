@@ -70,11 +70,16 @@ def baixar_versao_directus(versao_id: str) -> Dict[str, Any]:
             "contrato.modelo_contrato.tags.clausulas.*",  # Cláusulas das tags
         ]
         
-        # IMPORTANTE: _limit: -1 em TODOS os relacionamentos para não truncar em 100
+        # IMPORTANTE: _limit: -1 em TODOS os relacionamentos para não truncar
+        # Sintaxe Directus: deep usa path completo com colchetes aninhados
         deep = {
             "modificacoes": {"_limit": -1},
-            "contrato.modelo_contrato.tags": {"_limit": -1},
-            "contrato.modelo_contrato.tags.clausulas": {"_limit": -1},
+            "contrato": {
+                "modelo_contrato": {
+                    "_limit": -1,
+                    "tags": {"_limit": -1},
+                }
+            },
         }
         
         versao = repo.get_versao(versao_id, fields=fields, deep=deep)
