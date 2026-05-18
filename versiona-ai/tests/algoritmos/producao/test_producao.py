@@ -130,13 +130,13 @@ def test_vincular_sem_tag_correspondente(algoritmo):
 def test_vincular_template_vs_valores_reais(algoritmo):
     """
     TDD: Testa vinculação de template com placeholders vs. valores reais.
-    
+
     Problema identificado no caso real c2b1dfa0:
     - Template: "LOCADOR: ________ , ________ , portador..."
     - Valor:    "LOCADOR: Joris Veloso, portador..."
     - ratio():       ~54% (baseline atual)
     - token_set_ratio(): ~93% (deveria usar)
-    
+
     Este teste DEVE PASSAR com threshold ajustado ou métrica melhor.
     """
     # Template com placeholders
@@ -145,14 +145,14 @@ def test_vincular_template_vs_valores_reais(algoritmo):
         "portador da cédula de identidade R.G. nº ________ e CPF nº ________ , "
         "residente e domiciliado à ________ , ________ ."
     )
-    
+
     # Valor real preenchido
     mod_texto = (
         "LOCADOR: Joris Veloso, portador da cédula de identidade "
         "R.G. nº 123654789 e CPF nº 58755666 , residente e domiciliado à "
         "Rua Cyro Lopes, 234."
     )
-    
+
     tags = [
         {
             "id": "tag_locador",
@@ -162,7 +162,7 @@ def test_vincular_template_vs_valores_reais(algoritmo):
             "posicao_fim": 244,
         }
     ]
-    
+
     # Modificação sem posição calculada (baseline precisa calcular)
     modificacoes = [
         {
@@ -171,12 +171,12 @@ def test_vincular_template_vs_valores_reais(algoritmo):
             "conteudo": {"novo": mod_texto},
         }
     ]
-    
+
     # Texto completo é o template (como no caso real)
     texto_completo = f"CONTRATO DE LOCAÇÃO\n{tag_texto}\nCláusulas seguem..."
-    
+
     resultado = algoritmo.vincular_clausulas(modificacoes, tags, texto_completo)
-    
+
     # DEVE vincular a tag correta
     assert len(resultado) == 1
     assert resultado[0]["tag_vinculada"] is not None, (
@@ -189,25 +189,25 @@ def test_vincular_template_vs_valores_reais(algoritmo):
 def test_bug_overlap_falso_por_posicoes_diferentes(algoritmo):
     """
     TDD: Bug crítico - overlap falso quando posições são de referências diferentes.
-    
+
     PROBLEMA:
     - Tags têm posições no TEXTO ORIGINAL
     - Modificações calculadas no TEXTO MODIFICADO
     - Resultado: overlap falso 100%!
-    
+
     CASO:
     - Original: "Cláusula 1. Cláusula 2."
     - Modificado: "Preâmbulo. Cláusula 1. Cláusula 2."
     - "Preâmbulo." pos 0-11 (modificado) vs tag_1 pos 0-11 (original)
     - Overlap 100% mas são textos DIFERENTES!
-    
+
     SOLUÇÃO:
     - Priorizar fuzzy matching sobre overlap
     - "Preâmbulo." vs "Cláusula 1." = 19% < 90% threshold
     - NÃO deve vincular
     """
     texto_modificado = "Preâmbulo. Cláusula 1. Cláusula 2."
-    
+
     tags = [
         {
             "id": "tag_1",
@@ -226,7 +226,7 @@ def test_bug_overlap_falso_por_posicoes_diferentes(algoritmo):
             "posicao_fim": 23,
         },
     ]
-    
+
     modificacoes = [
         {
             "id": "mod_1",
@@ -234,9 +234,9 @@ def test_bug_overlap_falso_por_posicoes_diferentes(algoritmo):
             "conteudo": {"novo": "Preâmbulo. "},
         },
     ]
-    
+
     resultado = algoritmo.vincular_clausulas(modificacoes, tags, texto_modificado)
-    
+
     # NÃO deve vincular "Preâmbulo." a "Cláusula 1"
     # Similaridade é apenas 19% (muito abaixo do threshold 90%)
     assert resultado[0].get("tag_vinculada") is None, (

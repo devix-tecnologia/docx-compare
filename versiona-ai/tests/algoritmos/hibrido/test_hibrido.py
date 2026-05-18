@@ -16,7 +16,6 @@ tests_dir = Path(__file__).parent.parent.parent
 if str(tests_dir) not in sys.path:
     sys.path.insert(0, str(tests_dir))
 
-import pytest
 from algoritmos.hibrido.algoritmo import AlgoritmoHibrido
 
 
@@ -57,13 +56,13 @@ class TestAlgoritmoHibridoEstatisticas:
         """Estatísticas devem iniciar em zero."""
         alg = AlgoritmoHibrido()
         stats = alg.obter_estatisticas()
-        
+
         assert "overlap" in stats
         assert "regex" in stats
         assert "fuzzy" in stats
         assert "ml" in stats
         assert "nao_vinculada" in stats
-        
+
         for estrategia, dados in stats.items():
             assert dados["count"] == 0
             assert dados["percentage"] >= 0
@@ -71,14 +70,14 @@ class TestAlgoritmoHibridoEstatisticas:
     def test_resetar_estatisticas(self):
         """Resetar deve zerar todas as estatísticas."""
         alg = AlgoritmoHibrido()
-        
+
         # Simular algum uso
         alg._stats["regex"] = 10
         alg._stats["fuzzy"] = 5
-        
+
         # Resetar
         alg.resetar_estatisticas()
-        
+
         # Verificar
         stats = alg.obter_estatisticas()
         for dados in stats.values():
@@ -91,21 +90,18 @@ class TestAlgoritmoHibridoCalculoPosicoes:
     def test_calcula_posicao_com_regex(self):
         """Regex deve calcular posição para padrões estruturados."""
         alg = AlgoritmoHibrido()
-        
+
         modificacoes = [
             {
                 "tipo": "ALTERACAO",
-                "conteudo": {
-                    "antigo": "01/01/2024",
-                    "novo": "31/12/2024"
-                }
+                "conteudo": {"antigo": "01/01/2024", "novo": "31/12/2024"},
             }
         ]
-        
+
         texto = "A data de início é 01/01/2024 e término em 31/12/2024."
-        
+
         resultado = alg.calcular_posicoes(modificacoes, texto)
-        
+
         assert len(resultado) > 0
         assert resultado[0].get("posicao_inicio") is not None
         assert resultado[0].get("posicao_fim") is not None
@@ -114,21 +110,21 @@ class TestAlgoritmoHibridoCalculoPosicoes:
     def test_calcula_posicao_com_fuzzy_quando_regex_falha(self):
         """Fuzzy deve ser usado quando regex não encontra padrão."""
         alg = AlgoritmoHibrido()
-        
+
         modificacoes = [
             {
                 "tipo": "ALTERACAO",
                 "conteudo": {
                     "antigo": "empresa contratante",
-                    "novo": "empresa contratada"
-                }
+                    "novo": "empresa contratada",
+                },
             }
         ]
-        
+
         texto = "A empresa contratante deve fornecer os recursos necessários."
-        
+
         resultado = alg.calcular_posicoes(modificacoes, texto)
-        
+
         assert len(resultado) > 0
         assert resultado[0].get("posicao_inicio") is not None
         assert resultado[0].get("_estrategia_posicao") in ["fuzzy", "exact", "regex"]
@@ -136,20 +132,20 @@ class TestAlgoritmoHibridoCalculoPosicoes:
     def test_retorna_none_quando_nao_encontra_posicao(self):
         """Deve retornar None quando não consegue calcular posição."""
         alg = AlgoritmoHibrido()
-        
+
         modificacoes = [
             {
                 "tipo": "INSERCAO",
                 "conteudo": {
                     "novo": "Texto que definitivamente não existe no documento xyz123"
-                }
+                },
             }
         ]
-        
+
         texto = "Documento curto sem o texto buscado."
-        
+
         resultado = alg.calcular_posicoes(modificacoes, texto)
-        
+
         assert len(resultado) > 0
         # Pode não encontrar
         if resultado[0].get("posicao_inicio") is None:
@@ -163,9 +159,9 @@ class TestAlgoritmoHibridoConfiguracao:
     def test_configurar_thresholds(self):
         """Deve permitir configurar thresholds."""
         alg = AlgoritmoHibrido()
-        
+
         alg.configurar_thresholds(overlap=0.6, fuzzy=0.9, ml=0.75)
-        
+
         assert alg._thresholds["overlap"] == 0.6
         assert alg._thresholds["fuzzy"] == 0.9
         assert alg._thresholds["ml"] == 0.75
@@ -173,17 +169,17 @@ class TestAlgoritmoHibridoConfiguracao:
     def test_thresholds_limitados_entre_0_e_1(self):
         """Thresholds devem ser limitados entre 0 e 1."""
         alg = AlgoritmoHibrido()
-        
+
         alg.configurar_thresholds(overlap=1.5, fuzzy=-0.5)
-        
+
         assert 0.0 <= alg._thresholds["overlap"] <= 1.0
         assert 0.0 <= alg._thresholds["fuzzy"] <= 1.0
 
     def test_threshold_none_nao_altera_valor(self):
         """Passar None não deve alterar threshold existente."""
         alg = AlgoritmoHibrido()
-        
+
         valor_original = alg._thresholds["overlap"]
         alg.configurar_thresholds(overlap=None)
-        
+
         assert alg._thresholds["overlap"] == valor_original

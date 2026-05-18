@@ -84,13 +84,13 @@ class ProcessadorTagsModelo:
             print("🔄 Removendo marcações para alinhar sistema de coordenadas...")
             texto_limpo, mapa_posicoes = self._remover_marcacoes_e_mapear(texto_tagged)
             print(f"📊 Texto limpo: {len(texto_limpo)} caracteres")
-            print(f"🗺️  Mapeamento de posições criado")
+            print("🗺️  Mapeamento de posições criado")
 
             # 6. Extrair conteúdo entre tags usando texto COM tags, mas calculando posições no texto limpo
             conteudo_tags = self._extrair_conteudo_entre_tags(
                 texto_com_tags=texto_tagged,
                 texto_limpo=texto_limpo,
-                mapa_posicoes=mapa_posicoes
+                mapa_posicoes=mapa_posicoes,
             )
             print(f"📝 Conteúdo extraído para {len(conteudo_tags)} tags")
 
@@ -267,56 +267,56 @@ class ProcessadorTagsModelo:
     def _remover_marcacoes_e_mapear(self, texto_com_tags: str) -> tuple[str, dict]:
         """
         Remove marcações {{TAG-X}} do texto e cria mapa de conversão de posições.
-        
+
         Args:
             texto_com_tags: Texto com marcações {{TAG-X}}
-            
+
         Returns:
             tuple (texto_limpo, mapa_posicoes) onde:
             - texto_limpo: texto sem marcações
             - mapa_posicoes: dict {posicao_com_tags: posicao_limpa}
         """
         import re
-        
+
         # Padrão para encontrar TODAS as marcações (abertura e fechamento)
         pattern = r"\{\{/?TAG-[^}]+\}\}|\{\{/?[a-zA-Z_][a-zA-Z0-9_]*\}\}|\{\{/?\d+(?:\.\d+)*\}\}"
-        
+
         texto_limpo = ""
         mapa_posicoes = {}  # {pos_original: pos_limpa}
         offset = 0  # Deslocamento acumulado devido a remoções
         ultima_pos = 0
-        
+
         for match in re.finditer(pattern, texto_com_tags):
             start = match.start()
             end = match.end()
             tag_len = end - start
-            
+
             # Copiar texto entre última tag e esta tag
             texto_limpo += texto_com_tags[ultima_pos:start]
-            
+
             # Registrar mapeamento para cada posição afetada
             # Posições ANTES da tag mantêm offset atual
             for pos in range(ultima_pos, start):
                 if pos not in mapa_posicoes:
                     mapa_posicoes[pos] = pos - offset
-            
+
             # Atualizar offset (tag será removida)
             offset += tag_len
-            
+
             # Próxima iteração começa após a tag
             ultima_pos = end
-        
+
         # Copiar resto do texto
         texto_limpo += texto_com_tags[ultima_pos:]
-        
+
         # Mapear posições restantes
         for pos in range(ultima_pos, len(texto_com_tags)):
             if pos not in mapa_posicoes:
                 mapa_posicoes[pos] = pos - offset
-        
+
         # Adicionar mapeamento para posição final
         mapa_posicoes[len(texto_com_tags)] = len(texto_limpo)
-        
+
         return texto_limpo, mapa_posicoes
 
     def _extrair_tags(self, modificacoes: list[dict]) -> list[dict]:
@@ -399,15 +399,12 @@ class ProcessadorTagsModelo:
         return list(tags_encontradas.values())
 
     def _extrair_conteudo_entre_tags(
-        self, 
-        texto_com_tags: str,
-        texto_limpo: str,
-        mapa_posicoes: dict
+        self, texto_com_tags: str, texto_limpo: str, mapa_posicoes: dict
     ) -> dict[str, dict]:
         """
         Extrai conteúdo entre tags de abertura e fechamento.
         Calcula posições no texto LIMPO (sem marcações) para compatibilidade com diff.
-        
+
         Ex: {{TAG-nome}}...conteúdo...{{/TAG-nome}} ou {{6}}...conteúdo...{{/6}}
 
         Args:
@@ -455,26 +452,30 @@ class ProcessadorTagsModelo:
                 )
 
                 # Buscar tag de fechamento correspondente
-                close_match = re.search(close_pattern, texto_com_tags[open_pos:], re.IGNORECASE)
+                close_match = re.search(
+                    close_pattern, texto_com_tags[open_pos:], re.IGNORECASE
+                )
 
                 if close_match:
                     total_pares += 1
                     # Posições no texto COM tags
                     conteudo_inicio_com_tags = open_pos
                     conteudo_fim_com_tags = open_pos + close_match.start()
-                    
+
                     # Converter para posições no texto LIMPO
                     conteudo_inicio_limpo = mapa_posicoes.get(
                         conteudo_inicio_com_tags,
-                        conteudo_inicio_com_tags  # Fallback
+                        conteudo_inicio_com_tags,  # Fallback
                     )
                     conteudo_fim_limpo = mapa_posicoes.get(
                         conteudo_fim_com_tags,
-                        conteudo_fim_com_tags  # Fallback
+                        conteudo_fim_com_tags,  # Fallback
                     )
-                    
+
                     # Extrair conteúdo do texto LIMPO usando posições convertidas
-                    conteudo_bruto = texto_limpo[conteudo_inicio_limpo:conteudo_fim_limpo]
+                    conteudo_bruto = texto_limpo[
+                        conteudo_inicio_limpo:conteudo_fim_limpo
+                    ]
 
                     # Remover espaços, quebras de linha e numeração do início
                     conteudo = conteudo_bruto.strip()
@@ -492,7 +493,9 @@ class ProcessadorTagsModelo:
                 else:
                     # Log quando não encontra par
                     if total_aberturas <= 5:  # Log apenas primeiras 5 falhas
-                        contexto = texto_com_tags[open_pos : open_pos + 100].replace("\n", " ")
+                        contexto = texto_com_tags[open_pos : open_pos + 100].replace(
+                            "\n", " "
+                        )
                         print(
                             f"❌ Sem par para tag {open_match.group(1)}: {contexto[:50]}..."
                         )
@@ -500,7 +503,7 @@ class ProcessadorTagsModelo:
         print(f"🔍 Tags de abertura encontradas: {total_aberturas}")
         print(f"✓ Pares completos encontrados: {total_pares}")
         print(f"📝 Tags com conteúdo extraído: {len(conteudo_map)}")
-        print(f"🗺️  Posições calculadas no texto LIMPO (sem marcações)")
+        print("🗺️  Posições calculadas no texto LIMPO (sem marcações)")
 
         # Log amostra do texto para debug
         if total_aberturas == 0:
@@ -910,28 +913,24 @@ class ProcessadorTagsModelo:
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="Processar tags de modelo de contrato"
-    )
+    parser = argparse.ArgumentParser(description="Processar tags de modelo de contrato")
     parser.add_argument(
-        "--modelo-id",
-        required=True,
-        help="ID do modelo de contrato a processar"
+        "--modelo-id", required=True, help="ID do modelo de contrato a processar"
     )
     parser.add_argument(
         "--directus-url",
         default="http://localhost:8065",
-        help="URL base do Directus (default: http://localhost:8065)"
+        help="URL base do Directus (default: http://localhost:8065)",
     )
     parser.add_argument(
         "--directus-token",
         default="pmUzcQ6EgMm9uqYcHIM-MYiZHz11rVfP",
-        help="Token de autenticação do Directus"
+        help="Token de autenticação do Directus",
     )
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Executar sem salvar no Directus (modo teste)"
+        help="Executar sem salvar no Directus (modo teste)",
     )
 
     args = parser.parse_args()
@@ -946,13 +945,11 @@ if __name__ == "__main__":
 
     try:
         processador = ProcessadorTagsModelo(
-            directus_base_url=args.directus_url,
-            directus_token=args.directus_token
+            directus_base_url=args.directus_url, directus_token=args.directus_token
         )
 
         resultado = processador.processar_modelo(
-            modelo_id=args.modelo_id,
-            dry_run=args.dry_run
+            modelo_id=args.modelo_id, dry_run=args.dry_run
         )
 
         print("\n" + "=" * 80)
@@ -971,5 +968,6 @@ if __name__ == "__main__":
         print("=" * 80)
         print(f"Erro: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)

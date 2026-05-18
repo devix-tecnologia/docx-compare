@@ -129,7 +129,7 @@ services:
       DIRECTUS_TOKEN: ${DIRECTUS_TOKEN:-test-token-will-be-created}
       PYTHONUNBUFFERED: 1
     volumes:
-      - .:/app/versiona-ai:ro
+      - .:/app/versiona-ai
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
       interval: 5s

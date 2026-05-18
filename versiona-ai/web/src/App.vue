@@ -20,15 +20,13 @@
               <label class="mode-toggle">
                 <input type="checkbox" v-model="useMockData" />
                 <span class="toggle-slider"></span>
-                <span class="toggle-label">{{ useMockData ? '🔧 Dados Mock' : '📊 Dados Reais' }}</span>
+                <span class="toggle-label">{{
+                  useMockData ? '🔧 Dados Mock' : '📊 Dados Reais'
+                }}</span>
               </label>
             </div>
 
-            <button
-              v-if="isConnectedToAPI && !loading"
-              @click="listarVersoes"
-              class="versions-btn"
-            >
+            <button v-if="isConnectedToAPI && !loading" @click="listarVersoes" class="versions-btn">
               📋 {{ showVersionsList ? 'Ocultar Versões' : 'Listar Versões' }}
             </button>
             <button
@@ -51,9 +49,7 @@
           <!-- Lista de Versões Disponíveis -->
           <div v-if="showVersionsList" class="versions-section">
             <h3>📋 Versões Disponíveis</h3>
-            <div v-if="loadingVersions" class="loading-versions">
-              ⏳ Carregando versões...
-            </div>
+            <div v-if="loadingVersions" class="loading-versions">⏳ Carregando versões...</div>
             <div v-else-if="availableVersions.length > 0" class="versions-list">
               <div
                 v-for="version in availableVersions"
@@ -62,13 +58,20 @@
                 @click="processarVersaoEspecifica(version.id)"
               >
                 <div class="version-header">
-                  <span class="version-id">🆔 {{ version.versao || version.id.substring(0, 8) }}</span>
+                  <span class="version-id"
+                    >🆔 {{ version.versao || version.id.substring(0, 8) }}</span
+                  >
                   <span class="version-status" :class="version.status">{{ version.status }}</span>
                 </div>
                 <div class="version-details">
                   <p><strong>Origem:</strong> {{ version.origem }}</p>
-                  <p><strong>Data:</strong> {{ new Date(version.date_created).toLocaleDateString('pt-BR') }}</p>
-                  <p v-if="version.observacao"><strong>Observação:</strong> {{ version.observacao.substring(0, 100) }}...</p>
+                  <p>
+                    <strong>Data:</strong>
+                    {{ new Date(version.date_created).toLocaleDateString('pt-BR') }}
+                  </p>
+                  <p v-if="version.observacao">
+                    <strong>Observação:</strong> {{ version.observacao.substring(0, 100) }}...
+                  </p>
                 </div>
                 <button class="version-process-btn">🔄 Processar Esta Versão</button>
               </div>
@@ -109,7 +112,8 @@
               ⚡ Vue-Diff Avançado
             </button>
           </div>
-        </div> <!-- fim diff-header -->
+        </div>
+        <!-- fim diff-header -->
 
         <!-- Estado Inicial - Nenhuma Versão Processada -->
         <div v-if="!hasProcessedVersion" class="initial-state">
@@ -172,37 +176,58 @@
 
           <!-- Vista Blocos Agrupados -->
           <div v-else-if="activeTab === 'blocos'" class="blocks-view">
-            <div v-if="blocosComModificacoes && blocosComModificacoes.length > 0" class="blocks-container">
+            <div
+              v-if="blocosComModificacoes && blocosComModificacoes.length > 0"
+              class="blocks-container"
+            >
               <div class="blocks-header">
                 <h3>🎯 Agrupamento Posicional</h3>
-                <p>Modificações organizadas por blocos baseado na análise de tags e proximidade posicional</p>
+                <p>
+                  Modificações organizadas por blocos baseado na análise de tags e proximidade
+                  posicional
+                </p>
               </div>
 
               <div
                 v-for="(bloco, index) in blocosComModificacoes"
-                :key="bloco.nome || index"
+                :key="bloco.id || index"
                 class="block-item"
               >
                 <div class="block-header">
                   <div class="block-title">
-                    <h4>📋 Bloco {{ index + 1 }}: {{ bloco.nome || 'Sem nome' }}</h4>
-                    <span class="block-type" :class="bloco.tipo">{{ bloco.tipo || 'indefinido' }}</span>
+                    <h4>
+                      📋 Bloco {{ index + 1 }}:
+                      {{
+                        bloco.clausula
+                          ? `${bloco.clausula.numero || ''} ${bloco.clausula.nome || ''}`.trim()
+                          : 'Sem cláusula vinculada'
+                      }}
+                    </h4>
+                    <span class="block-type" :class="bloco.tipo">{{
+                      bloco.tipo || 'indefinido'
+                    }}</span>
                   </div>
                   <div class="block-position">
-                    📍 Posição: {{ bloco.posicao_inicio || 'N/A' }} - {{ bloco.posicao_fim || 'N/A' }}
-                    <span class="modifications-count">{{ bloco.total_modificacoes || 0 }} modificações</span>
+                    📍 Posição: {{ bloco.posicao_inicio || 'N/A' }} -
+                    {{ bloco.posicao_fim || 'N/A' }}
+                    <span class="modifications-count"
+                      >{{ bloco.total_modificacoes || 0 }} modificações</span
+                    >
                   </div>
                 </div>
 
                 <div class="block-content">
-                  <div class="block-preview">
+                  <div class="block-preview" v-if="bloco.conteudo_estimado">
                     <strong>Conteúdo:</strong>
-                    <span class="content-preview">{{ bloco.conteudo_estimado || 'Conteúdo não disponível' }}</span>
+                    <span class="content-preview">{{ bloco.conteudo_estimado }}</span>
                   </div>
 
                   <!-- Modificações relacionadas a este bloco -->
                   <div class="block-modifications">
-                    <div v-if="bloco.modificacoes && bloco.modificacoes.length > 0" class="modifications-list">
+                    <div
+                      v-if="bloco.modificacoes && bloco.modificacoes.length > 0"
+                      class="modifications-list"
+                    >
                       <h5>🔧 Modificações neste bloco ({{ bloco.modificacoes.length }}):</h5>
                       <div
                         v-for="modificacao in bloco.modificacoes"
@@ -212,7 +237,9 @@
                       >
                         <div class="mod-summary-header">
                           <span class="mod-type-small">{{ modificacao.tipo.toUpperCase() }}</span>
-                          <span class="mod-confidence-small">{{ (modificacao.confianca * 100).toFixed(1) }}%</span>
+                          <span class="mod-confidence-small"
+                            >{{ (modificacao.confianca * 100).toFixed(1) }}%</span
+                          >
                         </div>
                         <div class="mod-summary-content">
                           <div class="mod-content-comparison">
@@ -221,18 +248,24 @@
                               <span class="mod-text">"{{ modificacao.conteudo.original }}"</span>
                             </div>
                             <div v-if="modificacao.conteudo.novo" class="mod-new">
-                              <label class="mod-label">Modificado:</label>
+                              <label class="mod-label">Novo:</label>
                               <span class="mod-text">"{{ modificacao.conteudo.novo }}"</span>
                             </div>
                           </div>
                         </div>
-                        <div class="mod-summary-position">
-                          📍 Linha {{ modificacao.posicao.linha }}, Coluna {{ modificacao.posicao.coluna }}
+                        <div
+                          class="mod-summary-position"
+                          v-if="modificacao.caminho && modificacao.caminho.inicio"
+                        >
+                          📍 {{ modificacao.caminho.inicio }}
                         </div>
                       </div>
                     </div>
                     <div v-else class="no-modifications">
-                      <small>ℹ️ Nenhuma modificação identificada neste bloco baseado na análise atual</small>
+                      <small
+                        >ℹ️ Nenhuma modificação identificada neste bloco baseado na análise
+                        atual</small
+                      >
                     </div>
                   </div>
                 </div>
@@ -242,7 +275,10 @@
             <div v-else class="no-blocks">
               <div class="no-blocks-message">
                 <h3>🔍 Nenhum Bloco Detalhado Encontrado</h3>
-                <p>Esta versão foi processada usando método fallback. Os blocos detalhados serão disponibilizados quando:</p>
+                <p>
+                  Esta versão foi processada usando método fallback. Os blocos detalhados serão
+                  disponibilizados quando:
+                </p>
                 <ul>
                   <li>📍 As tags tiverem informações de posição no banco de dados</li>
                   <li>🏷️ O sistema conseguir extrair tags das diferenças entre documentos</li>
@@ -289,8 +325,8 @@
 </template>
 
 <script>
-  import DiffVisualizerSideBySide from './DiffVisualizerSideBySide.vue'
-import VueDiffViewer from './VueDiffViewer.vue'
+  import DiffVisualizerSideBySide from './DiffVisualizerSideBySide.vue';
+import VueDiffViewer from './VueDiffViewer.vue';
 
   export default {
     name: 'App',
@@ -442,9 +478,21 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
       },
       blocosComModificacoes() {
         const blocos = this.blocosDetalhados
+
+        if (!blocos.length) {
+          return blocos
+        }
+
+        // Se os blocos já vêm com modificações do backend, usar direto
+        // Isso acontece quando os dados vêm do Directus
+        if (blocos.some(b => b.modificacoes && b.modificacoes.length > 0)) {
+          return blocos
+        }
+
+        // Caso contrário, tentar mapear modificações (modo legacy/mock)
         const modificacoes = this.modificacoes
 
-        if (!blocos.length || !modificacoes.length) {
+        if (!modificacoes.length) {
           return blocos
         }
 
@@ -455,15 +503,17 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
             if (mod.posicao && bloco.posicao_inicio && bloco.posicao_fim) {
               // Converter posição de linha/coluna para posição aproximada no texto
               const posicaoAprox = (mod.posicao.linha - 1) * 50 + mod.posicao.coluna
-              const dentroDoBloco = posicaoAprox >= bloco.posicao_inicio && posicaoAprox <= bloco.posicao_fim
+              const dentroDoBloco =
+                posicaoAprox >= bloco.posicao_inicio && posicaoAprox <= bloco.posicao_fim
               return dentroDoBloco
             }
 
             // Se não há posição exata, usar tags relacionadas
             if (mod.tags_relacionadas && mod.tags_relacionadas.length > 0) {
-              const temTagRelacionada = mod.tags_relacionadas.some(tag =>
-                tag.toLowerCase().includes(bloco.nome.toLowerCase()) ||
-                bloco.nome.toLowerCase().includes(tag.toLowerCase())
+              const temTagRelacionada = mod.tags_relacionadas.some(
+                tag =>
+                  tag.toLowerCase().includes(bloco.nome.toLowerCase()) ||
+                  bloco.nome.toLowerCase().includes(tag.toLowerCase())
               )
               return temTagRelacionada
             }
@@ -474,7 +524,7 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
           return {
             ...bloco,
             modificacoes: modificacoesDoBloco,
-            total_modificacoes: modificacoesDoBloco.length
+            total_modificacoes: modificacoesDoBloco.length,
           }
         })
       },
@@ -557,7 +607,8 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
         // Preservar outros parâmetros existentes
         window.history.pushState({}, '', url)
         console.log(`🌐 Query string atualizada: mode=${this.activeTab}`)
-      },      loadTabFromQueryString() {
+      },
+      loadTabFromQueryString() {
         const urlParams = new URLSearchParams(window.location.search)
         const mode = urlParams.get('mode')
 
@@ -610,7 +661,9 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
 
           // Se ainda há tentativas disponíveis, tentar novamente
           if (retryCount < 2) {
-            console.log(`⏳ Erro na tentativa ${retryCount + 1}, tentando novamente em 1 segundo...`)
+            console.log(
+              `⏳ Erro na tentativa ${retryCount + 1}, tentando novamente em 1 segundo...`
+            )
             await new Promise(resolve => setTimeout(resolve, 1000))
             return this.buscarVersoes(retryCount + 1)
           } else {
@@ -681,7 +734,7 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
               this.stats = {
                 total_modificacoes: resultadoExtracao.total_modificacoes,
                 tempo_processamento: 0.015,
-                total_blocos: resultadoExtracao.total_blocos
+                total_blocos: resultadoExtracao.total_blocos,
               }
 
               // Extrair modificações para exibição na lista
@@ -761,7 +814,9 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
 
               // Verificar se encontrou versões
               if (versoesData.versoes && versoesData.versoes.length > 0) {
-                console.log(`✅ Versões encontradas na tentativa ${attempt}: ${versoesData.versoes.length} registros`)
+                console.log(
+                  `✅ Versões encontradas na tentativa ${attempt}: ${versoesData.versoes.length} registros`
+                )
                 break
               } else {
                 console.warn(`⚠️ Tentativa ${attempt}: Nenhuma versão encontrada`)
@@ -785,14 +840,18 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
           if (!versoesData || !versoesData.versoes || versoesData.versoes.length === 0) {
             const modoTexto = this.useMockData ? 'mock' : 'Directus'
             const errorMsg = lastError ? `: ${lastError.message}` : ''
-            alert(`Nenhuma versão encontrada para processar no modo ${modoTexto} após ${maxRetries} tentativas${errorMsg}`)
+            alert(
+              `Nenhuma versão encontrada para processar no modo ${modoTexto} após ${maxRetries} tentativas${errorMsg}`
+            )
             this.loading = false
             return
           }
 
           // Usar a primeira versão disponível
           const versaoId = versoesData.versoes[0].id
-          console.log(`🔄 Processando versão ID: ${versaoId} (modo: ${this.useMockData ? 'mock' : 'real'})`)
+          console.log(
+            `🔄 Processando versão ID: ${versaoId} (modo: ${this.useMockData ? 'mock' : 'real'})`
+          )
 
           const response = await fetch('/api/process', {
             method: 'POST',
@@ -807,11 +866,36 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
 
           if (response.ok) {
             const resultado = await response.json()
-            if (resultado.id) {
-              // A API retorna dados completos, vamos converter para o formato esperado
+            if (resultado.diff_id || resultado.id) {
+              // A API retorna dados completos (diff_id é o campo correto, id é legacy)
+              const diffId = resultado.diff_id || resultado.id
               console.log('📋 Dados completos da API:', resultado)
 
-              // Extrair modificações reais do diff HTML
+              // Se a API retorna modificações já formatadas, usar direto
+              if (resultado.modificacoes && resultado.modificacoes.length > 0) {
+                console.log('✅ Usando modificações da API')
+                this.sampleData = {
+                  modificacoes: resultado.modificacoes,
+                  total_blocos: resultado.total_blocos || 0,
+                  blocos_detalhados: resultado.blocos_detalhados || [],
+                  metodo: resultado.metodo || 'AST_PANDOC',
+                  metricas: resultado.metricas || {},
+                }
+                this.hasProcessedVersion = true
+                this.modificacoes = resultado.modificacoes
+
+                // Atualizar URL com diff_id
+                const newUrl = new URL(window.location)
+                newUrl.searchParams.set('diff_id', diffId)
+                window.history.pushState({}, '', newUrl)
+
+                const modoTexto = this.useMockData ? 'Mock' : 'Directus'
+                this.titulo = `Diff ${diffId} - Processado via ${modoTexto}`
+                console.log('✅ Documento processado:', resultado)
+                return
+              }
+
+              // Fallback: extrair modificações do diff HTML (modo legacy)
               const resultadoExtracao = this.extrairModificacoesDoDiff(resultado.diff_html)
 
               const diffData = {
@@ -845,7 +929,7 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
               this.stats = {
                 total_modificacoes: resultadoExtracao.total_modificacoes,
                 tempo_processamento: 0.015,
-                total_blocos: resultadoExtracao.total_blocos
+                total_blocos: resultadoExtracao.total_blocos,
               }
 
               // Extrair modificações para exibição na lista
@@ -853,7 +937,7 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
 
               // Atualizar URL com diff_id
               const newUrl = new URL(window.location)
-              newUrl.searchParams.set('diff_id', resultado.id)
+              newUrl.searchParams.set('diff_id', diffId)
               window.history.pushState({}, '', newUrl)
             } else {
               console.error('❌ Resposta da API sem ID:', resultado)
@@ -952,7 +1036,7 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
         return {
           modificacoes,
           total_blocos: clauseHeaders.length || 1, // Mínimo 1 bloco
-          total_modificacoes: modificacoes.length
+          total_modificacoes: modificacoes.length,
         }
       },
 
@@ -1333,7 +1417,7 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
     user-select: none;
   }
 
-  .mode-toggle input[type="checkbox"] {
+  .mode-toggle input[type='checkbox'] {
     display: none;
   }
 
@@ -1360,12 +1444,12 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   }
 
-  .mode-toggle input[type="checkbox"]:checked + .toggle-slider {
+  .mode-toggle input[type='checkbox']:checked + .toggle-slider {
     background: #fbbf24;
     border-color: #f59e0b;
   }
 
-  .mode-toggle input[type="checkbox"]:checked + .toggle-slider::before {
+  .mode-toggle input[type='checkbox']:checked + .toggle-slider::before {
     transform: translateX(20px);
   }
 

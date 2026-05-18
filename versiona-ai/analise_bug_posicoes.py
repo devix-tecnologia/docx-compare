@@ -30,6 +30,7 @@ Opção C: Usar APENAS fuzzy matching sem posições (mais robusto)
 
 import sys
 from pathlib import Path
+
 tests_dir = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(tests_dir))
 
@@ -43,31 +44,31 @@ def test_bug_incompatibilidade_posicoes():
     - Posições das modificações (texto modificado)
     """
     alg = AlgoritmoProducao()
-    
+
     # Texto ORIGINAL (usado para posições das tags)
     texto_original = "Cláusula 1. Cláusula 2."
-    
+
     # Texto MODIFICADO (usado pelo baseline para str.find)
     texto_modificado = "Preâmbulo. Cláusula 1. Cláusula 2."
-    
+
     # Tags com posições do TEXTO ORIGINAL
     tags = [
         {
             "id": "tag_1",
             "titulo": "Cláusula 1",
             "texto": "Cláusula 1.",
-            "posicao_inicio": 0,   # No texto ORIGINAL
-            "posicao_fim": 11,     # No texto ORIGINAL
+            "posicao_inicio": 0,  # No texto ORIGINAL
+            "posicao_fim": 11,  # No texto ORIGINAL
         },
         {
             "id": "tag_2",
             "titulo": "Cláusula 2",
             "texto": "Cláusula 2.",
             "posicao_inicio": 12,  # No texto ORIGINAL
-            "posicao_fim": 23,     # No texto ORIGINAL
+            "posicao_fim": 23,  # No texto ORIGINAL
         },
     ]
-    
+
     # Modificações
     modificacoes = [
         {
@@ -76,46 +77,52 @@ def test_bug_incompatibilidade_posicoes():
             "conteudo": {"novo": "Preâmbulo. "},
         },
     ]
-    
+
     # Baseline usa texto_modificado para str.find()
     resultado = alg.vincular_clausulas(modificacoes, tags, texto_modificado)
-    
+
     print("\n" + "=" * 80)
     print("ANÁLISE DO BUG")
     print("=" * 80)
-    
+
     print(f"\nTexto original:   '{texto_original}'")
     print(f"Texto modificado: '{texto_modificado}'")
-    
-    print(f"\nTag 1 posições (texto original): {tags[0]['posicao_inicio']}-{tags[0]['posicao_fim']}")
+
+    print(
+        f"\nTag 1 posições (texto original): {tags[0]['posicao_inicio']}-{tags[0]['posicao_fim']}"
+    )
     print(f"Tag 1 no original:   '{texto_original[0:11]}'")
     print(f"Tag 1 no modificado: '{texto_modificado[0:11]}'  ← DIFERENTE!")
-    
-    print(f"\nModificação calculada em: {resultado[0].get('posicao_inicio')}-{resultado[0].get('posicao_fim')}")
+
+    print(
+        f"\nModificação calculada em: {resultado[0].get('posicao_inicio')}-{resultado[0].get('posicao_fim')}"
+    )
     print(f"Modificação no modificado: '{texto_modificado[0:11]}'")
-    
-    print(f"\nTag vinculada: {resultado[0].get('tag_vinculada', {}).get('titulo', 'None')}")
-    
-    if resultado[0].get('tag_vinculada'):
+
+    print(
+        f"\nTag vinculada: {resultado[0].get('tag_vinculada', {}).get('titulo', 'None')}"
+    )
+
+    if resultado[0].get("tag_vinculada"):
         print("\n❌ BUG CONFIRMADO!")
         print("   'Preâmbulo.' vinculou a 'Cláusula 1' por overlap falso!")
         print("   Posições são de referências diferentes (original vs modificado)")
     else:
         print("\n✅ Bug corrigido! Não vinculou por overlap falso.")
-    
+
     print("=" * 80)
 
 
 def test_solucao_apenas_fuzzy():
     """
     Solução: Usar APENAS fuzzy matching, ignorar posições.
-    
+
     Mais robusto pois não depende de posições de referências diferentes.
     """
     alg = AlgoritmoProducao()
-    
+
     texto_modificado = "Preâmbulo. Cláusula 1. Cláusula 2."
-    
+
     tags = [
         {
             "id": "tag_1",
@@ -125,7 +132,7 @@ def test_solucao_apenas_fuzzy():
             "posicao_fim": 11,
         },
     ]
-    
+
     modificacoes = [
         {
             "id": "mod_1",
@@ -133,28 +140,29 @@ def test_solucao_apenas_fuzzy():
             "conteudo": {"novo": "Preâmbulo. "},
         },
     ]
-    
+
     resultado = alg.vincular_clausulas(modificacoes, tags, texto_modificado)
-    
+
     # Com fuzzy matching puro:
     # "Preâmbulo." vs "Cláusula 1." = ~30% similarity ← Abaixo do threshold
     # Não deve vincular
-    
+
     print("\n" + "=" * 80)
     print("TESTE: Fuzzy matching puro (sem posições)")
     print("=" * 80)
-    
+
     from rapidfuzz import fuzz
+
     score = fuzz.token_set_ratio("Preâmbulo. ", "Cláusula 1.")
     print(f"\nSimilaridade 'Preâmbulo.' vs 'Cláusula 1.': {score:.1f}%")
-    print(f"Threshold: 90% (texto curto)")
+    print("Threshold: 90% (texto curto)")
     print(f"Vincularia? {score >= 90}")
-    
-    if not resultado[0].get('tag_vinculada'):
+
+    if not resultado[0].get("tag_vinculada"):
         print("\n✅ Correto! Não vinculou por fuzzy baixo.")
     else:
         print(f"\n❌ Vinculou errado a: {resultado[0]['tag_vinculada']['titulo']}")
-    
+
     print("=" * 80)
 
 

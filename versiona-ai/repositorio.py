@@ -102,14 +102,14 @@ class DirectusRepository:
     ) -> None:
         """
         Converte dicionário aninhado de deep em parâmetros URL.
-        
+
         Ex: {"contrato": {"modelo_contrato": {"_limit": -1, "tags": {"_limit": -1}}}}
         Vira: deep[contrato][modelo_contrato][_limit] = -1
               deep[contrato][modelo_contrato][tags][_limit] = -1
         """
         for key, value in deep_dict.items():
             current_prefix = f"{prefix}[{key}]"
-            
+
             if isinstance(value, dict):
                 # Separar parâmetros diretos (começam com _) de sub-relações
                 for sub_key, sub_value in value.items():

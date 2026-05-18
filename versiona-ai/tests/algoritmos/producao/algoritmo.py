@@ -15,9 +15,8 @@ if str(tests_dir) not in sys.path:
 if str(versiona_dir) not in sys.path:
     sys.path.insert(0, str(versiona_dir))
 
-from rapidfuzz import fuzz
-
 from algoritmos.base import AlgoritmoVinculacao, UtilitariosVinculacao
+from rapidfuzz import fuzz
 
 
 class AlgoritmoProducao(AlgoritmoVinculacao):
@@ -29,7 +28,7 @@ class AlgoritmoProducao(AlgoritmoVinculacao):
     - Fuzzy matching com RapidFuzz (threshold dinâmico 80-90%)
     - Múltiplas métricas: ratio, partial_ratio, token_sort_ratio, token_set_ratio
     - Método baseado em conteúdo (não offset)
-    
+
     Nota: Atualizado para usar RapidFuzz ao invés de difflib para melhor
     comparação de templates com placeholders vs. valores reais.
     """
@@ -72,13 +71,13 @@ class AlgoritmoProducao(AlgoritmoVinculacao):
         Implementação baseada em _vincular_modificacoes_clausulas_novo() do directus_server.py
 
         Usa método de conteúdo com fuzzy matching.
-        
+
         Atualizado para fazer fuzzy matching mesmo sem posição calculada
         (útil para comparar templates com valores reais).
         """
         # Primeiro calcular posições
         mods_com_posicao = self.calcular_posicoes(modificacoes, texto)
-        
+
         for mod in mods_com_posicao:
             pos_inicio = mod.get("posicao_inicio")
             pos_fim = mod.get("posicao_fim")
@@ -108,17 +107,17 @@ class AlgoritmoProducao(AlgoritmoVinculacao):
     def _calcular_threshold_dinamico(self, texto: str) -> float:
         """
         Calcula threshold dinâmico baseado no tamanho do texto.
-        
+
         Textos curtos precisam de threshold mais alto para evitar falsos positivos.
-        
+
         Args:
             texto: Texto para análise
-            
+
         Returns:
             Threshold entre 0 e 100
         """
         tamanho = len(texto)
-        
+
         if tamanho < 20:
             return 90.0  # Muito curto: alta precisão
         elif tamanho < 100:
@@ -129,31 +128,31 @@ class AlgoritmoProducao(AlgoritmoVinculacao):
     def _calcular_score_composto(self, texto1: str, texto2: str) -> float:
         """
         Calcula score usando múltiplas métricas do RapidFuzz e retorna o máximo.
-        
+
         Usa 4 métricas:
         - ratio: Similaridade caractere por caractere
         - partial_ratio: Melhor substring
         - token_sort_ratio: Tokens ordenados
         - token_set_ratio: Conjunto de tokens (ignora duplicatas e ordem)
-        
+
         Args:
             texto1: Primeiro texto
             texto2: Segundo texto
-            
+
         Returns:
             Score entre 0 e 100
         """
         if not texto1 or not texto2:
             return 0.0
-        
+
         # Calcular múltiplas métricas
         scores = [
             fuzz.ratio(texto1, texto2),
             fuzz.partial_ratio(texto1, texto2),
             fuzz.token_sort_ratio(texto1, texto2),
-            fuzz.token_set_ratio(texto1, texto2)  # Melhor para templates vs valores
+            fuzz.token_set_ratio(texto1, texto2),  # Melhor para templates vs valores
         ]
-        
+
         # Retornar o melhor score
         return max(scores)
 
@@ -164,13 +163,13 @@ class AlgoritmoProducao(AlgoritmoVinculacao):
     ) -> dict | None:
         """
         Busca melhor tag usando APENAS fuzzy matching (sem overlap de posição).
-        
+
         Útil quando a modificação não foi encontrada no texto (ex: template vs valores).
-        
+
         Args:
             texto_modificacao: Texto da modificação
             tags: Lista de tags disponíveis
-            
+
         Returns:
             Tag com melhor score acima do threshold, ou None
         """
@@ -180,14 +179,14 @@ class AlgoritmoProducao(AlgoritmoVinculacao):
 
         for tag in tags:
             tag_texto = tag.get("texto", "")
-            
+
             if not tag_texto:
                 continue
 
             # Checar substring primeiro
             if texto_modificacao in tag_texto:
                 return tag  # Match perfeito
-            
+
             # Calcular score composto
             score = self._calcular_score_composto(texto_modificacao, tag_texto)
 
@@ -209,12 +208,12 @@ class AlgoritmoProducao(AlgoritmoVinculacao):
 
         Baseado em _vincular_modificacoes_clausulas_novo() do directus_server.py
         Atualizado para usar RapidFuzz com múltiplas métricas.
-        
+
         CORREÇÃO CRÍTICA:
         - Fuzzy matching tem PRIORIDADE sobre overlap
         - Overlap só é usado se passar em validação fuzzy também
         - Evita falsos positivos quando posições são de referências diferentes
-        
+
         MELHORIAS NA VINCULAÇÃO POR OVERLAP:
         - Overlap calculado como % da modificação dentro da tag (não Jaccard)
         - Overlap ≥90% + fuzzy ≥40%: aceita (confia na posição)
@@ -258,8 +257,10 @@ class AlgoritmoProducao(AlgoritmoVinculacao):
                     # VALIDAÇÃO: Calcular fuzzy do overlap também
                     # Evita vincular quando posições são de referências diferentes
                     if tag_texto:
-                        overlap_score = self._calcular_score_composto(texto_modificacao, tag_texto)
-                        
+                        overlap_score = self._calcular_score_composto(
+                            texto_modificacao, tag_texto
+                        )
+
                         # LÓGICA AJUSTADA:
                         # 1. Overlap excelente (>=90%) + fuzzy razoável (>=40%): confia na posição
                         #    - Fuzzy mínimo 40% evita falsos positivos graves (ex: 19%)
@@ -269,7 +270,9 @@ class AlgoritmoProducao(AlgoritmoVinculacao):
                         if overlap >= 0.90 and overlap_score >= 40.0:
                             # Overlap excelente + fuzzy razoável: confia na posição
                             melhor_tag = tag
-                            melhor_score = max(overlap_score, 90.0)  # Score mínimo 90% para overlap excelente
+                            melhor_score = max(
+                                overlap_score, 90.0
+                            )  # Score mínimo 90% para overlap excelente
                         elif overlap >= 0.70 and overlap_score >= 60.0:
                             # Overlap bom: threshold reduzido
                             melhor_tag = tag

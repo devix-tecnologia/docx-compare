@@ -13,16 +13,18 @@ Crie um **diagrama blueprint técnico tradicional** (estilo engenharia/arquitetu
 **Representar como**: Documento blueprint com duas camadas
 
 **Elementos**:
+
 - **Arquivo Original** (sem tags)
   - Documento DOCX puro
   - Conteúdo: texto corrido do contrato template
-  
+
 - **Arquivo com Tags** (taggeado)
   - Mesmo documento com delimitadores especiais
   - Tags no formato: `{{TAG-nome_unico}}...{{/TAG-nome_unico}}`
   - Exemplo visual de tags: `{{TAG-responsavel}}`, `{{TAG-prazo}}`, `{{TAG-valor}}`
 
 **Estados do Modelo**:
+
 - draft → processar → em_processamento → concluido → publicado
 
 ---
@@ -32,12 +34,14 @@ Crie um **diagrama blueprint técnico tradicional** (estilo engenharia/arquitetu
 **Representar como**: Marcadores/âncoras estruturais no documento
 
 **Propriedades**:
+
 - `tag_nome`: identificador único (ex: "responsavel", "prazo")
 - `caminho_tag_inicio`: coordenada estrutural inicial no documento
-- `caminho_tag_fim`: coordenada estrutural final no documento  
+- `caminho_tag_fim`: coordenada estrutural final no documento
 - `conteudo`: texto extraído entre as tags
 
-**Visual sugerido**: 
+**Visual sugerido**:
+
 - Tags como "clips" ou "marcadores" coloridos delimitando blocos de texto
 - Mostrar coordenadas/posições numéricas (ex: posição 1234 a 1567)
 
@@ -48,6 +52,7 @@ Crie um **diagrama blueprint técnico tradicional** (estilo engenharia/arquitetu
 **Representar como**: Blocos lógicos vinculados às tags
 
 **Propriedades**:
+
 - `numero`: identificação hierárquica (ex: "1.1", "2.3", "4.5.2")
 - `nome`: título da cláusula (ex: "Identificação das Partes")
 - `conteudo`: texto completo da cláusula
@@ -55,6 +60,7 @@ Crie um **diagrama blueprint técnico tradicional** (estilo engenharia/arquitetu
 - `tag`: referência à tag que delimita este bloco
 
 **Visual sugerido**:
+
 - Caixas organizadas hierarquicamente
 - Linha conectando cada cláusula à sua tag correspondente
 - Numeração visível
@@ -66,10 +72,12 @@ Crie um **diagrama blueprint técnico tradicional** (estilo engenharia/arquitetu
 **Representar como**: Anotações/notas técnicas vinculadas às cláusulas
 
 **Propriedades**:
+
 - `orientacao_retorno`: tipo de ação necessária
 - `descricao`: instruções detalhadas para o analista
 
 **Visual sugerido**:
+
 - Pequenos ícones ou símbolos (⚠️, ℹ️, ✓) ao lado das cláusulas
 - Balões de texto com instruções
 - Diferentes cores por tipo de orientação
@@ -81,15 +89,18 @@ Crie um **diagrama blueprint técnico tradicional** (estilo engenharia/arquitetu
 **Representar como**: Linha do tempo de versões do contrato
 
 **Elementos**:
+
 - **Versão Base** (primeira): comparada com Template
 - **Versões Subsequentes**: comparadas com versão anterior
 
 **Propriedades**:
+
 - `status`: a_processar → processando → concluido
 - `arquivo_preenchido`: arquivo DOCX da versão
 - `versao_anterior`: referência à versão prévia
 
 **Visual sugerido**:
+
 - Timeline horizontal com marcos/milestones
 - Setas indicando progressão temporal
 - Template → V1.0 → V1.1 → V2.0
@@ -101,11 +112,13 @@ Crie um **diagrama blueprint técnico tradicional** (estilo engenharia/arquitetu
 **Representar como**: Marcações/anotações sobre diferenças
 
 **Tipos** (usar cores distintas):
+
 - 🟢 **INSERCAO**: texto adicionado (verde)
 - 🔴 **REMOCAO**: texto removido (vermelho)
 - 🟡 **ALTERACAO**: texto modificado (amarelo/laranja)
 
 **Propriedades**:
+
 - `conteudo_original`: texto antes da mudança
 - `conteudo_modificado`: texto após a mudança
 - `posicao`: coordenada no documento
@@ -113,6 +126,7 @@ Crie um **diagrama blueprint técnico tradicional** (estilo engenharia/arquitetu
 - `clausula_vinculada`: referência à cláusula afetada
 
 **Visual sugerido**:
+
 - Setas ou destacamentos no texto
 - Código de cores por tipo
 - Linhas conectando modificação → cláusula → referências
@@ -160,6 +174,7 @@ Crie um **diagrama blueprint técnico tradicional** (estilo engenharia/arquitetu
    - Links para cláusulas e referências
 
 **Visual sugerido**:
+
 - Diagrama de fluxo com caixas retangulares numeradas (1 a 8)
 - Setas indicando sequência
 - Ícones representando cada tipo de operação
@@ -170,6 +185,7 @@ Crie um **diagrama blueprint técnico tradicional** (estilo engenharia/arquitetu
 ## Relacionamentos Importantes a Destacar
 
 ### Hierarquia Principal:
+
 ```
 MODELO_CONTRATO
   ↓ possui
@@ -183,6 +199,7 @@ REFERÊNCIAS (orientações)
 ```
 
 ### Fluxo de Versionamento:
+
 ```
 VERSÃO_NOVA.docx + VERSÃO_ANTERIOR.docx
   ↓ processamento
@@ -196,6 +213,7 @@ ANALISTA/USUÁRIO
 ```
 
 ### Vinculação por Posição:
+
 ```
 MODIFICAÇÃO (pos: 1234-1567)
   ↓ overlap detectado
@@ -225,7 +243,7 @@ REFERÊNCIA "Verificar identidade das partes"
 - **Parser utilizado**: Pandoc (conversão para AST JSON)
 - **Algoritmo de matching**: Fuzzy matching (RapidFuzz) com threshold 80%
 - **Normalização**: Case-insensitive, remoção de espaços extras
-- **Métricas**: 
+- **Métricas**:
   - Similaridade: 0-100%
   - Posições: coordenadas numéricas (caracteres)
   - Taxa de vinculação: X/Y modificações vinculadas
@@ -261,21 +279,25 @@ REFERÊNCIA "Verificar identidade das partes"
 ✅ **Título Principal**: "Versiona AI - Sistema de Versionamento Inteligente de Contratos"
 
 ✅ **Legenda**:
+
 - Cores das modificações (verde, vermelho, amarelo)
 - Símbolos de status (processando, concluído, erro)
 - Tipos de conexões (vinculação, herança, fluxo)
 
 ✅ **Escala/Métricas**:
+
 - Exemplo: "Template com 294 tags"
 - Exemplo: "55 modificações detectadas"
 - Exemplo: "Taxa de vinculação: 48/55 (87%)"
 
 ✅ **Anotações Técnicas**:
+
 - "AST = Abstract Syntax Tree (JSON)"
 - "Threshold fuzzy matching: 80%"
 - "Vinculação por overlap de posições: mod.pos ∈ [tag.inicio, tag.fim]"
 
 ✅ **Problemas Comuns** (destacar em vermelho):
+
 - "❌ Tags sem posições definidas → vinculação falha"
 - "⚠️ Modificações curtas vs cláusulas longas → baixa similaridade"
 

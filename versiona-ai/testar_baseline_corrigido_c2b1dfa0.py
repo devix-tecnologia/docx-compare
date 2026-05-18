@@ -1,18 +1,19 @@
 """
 Processar caso real c2b1dfa0 usando dados salvos (sem precisar Directus rodando).
 """
-import sys
+
 import json
+import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent / "tests"))
 
-from processar_caso_real import extrair_dados_para_algoritmo, processar_com_algoritmo
 from algoritmos.producao.algoritmo import AlgoritmoProducao
+from processar_caso_real import extrair_dados_para_algoritmo, processar_com_algoritmo
 
 # Carregar dados do JSON salvo
 print("\n📂 Carregando versao_c2b1dfa0_raw.json...")
-with open("versao_c2b1dfa0_raw.json", "r", encoding="utf-8") as f:
+with open("versao_c2b1dfa0_raw.json", encoding="utf-8") as f:
     versao_data = json.load(f)
 
 print("\n📝 Extraindo dados...")
@@ -36,7 +37,7 @@ print("\n" + "=" * 80)
 print("📊 RESULTADO FINAL")
 print("=" * 80)
 print(f"Taxa de vinculação: {vinculadas}/{len(modificacoes)} ({taxa:.1f}%)")
-print(f"Taxa anterior (debug_baseline_caso_real.py): 50.0%")
+print("Taxa anterior (debug_baseline_caso_real.py): 50.0%")
 
 if taxa > 50:
     print(f"\n✅ MELHOROU! {taxa:.1f}% > 50%")

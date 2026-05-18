@@ -4,7 +4,7 @@
 
 - **Observado**: 93/310 modificações vinculadas (30%)
 - **Esperado**: ~100% baseado em testes unitários
-- **Breakdown**: 
+- **Breakdown**:
   - Modificações: 24/29 vinculadas (82.8%) ✅
   - Remoções: 69/281 vinculadas (24.6%) ❌
 
@@ -19,6 +19,7 @@ Conteúdo: "4.  CORREÇÃO MONETÁRIA"
 ```
 
 **Análise SQL:**
+
 - Tag 1.5 (66226-66928): **overlap 100%** ✅
 - Tag tem cláusula vinculada ✅
 - Mas **NÃO foi vinculada** à modificação ❌
@@ -75,12 +76,13 @@ Modificação: 66655-66679
 ### Código Problemático
 
 **`processador_tags_modelo.py` linha ~384:**
+
 ```python
 def _extrair_conteudo_entre_tags(self, texto: str) -> dict[str, dict]:
     # texto = arquivo_com_tags COM marcações
     conteudo_inicio = open_pos  # Após {{TAG-X}}
     conteudo_fim = open_pos + close_match.start()
-    
+
     conteudo_map[tag_nome] = {
         "posicao_inicial_texto": conteudo_inicio,  # ← Baseado no texto COM tags
         "posicao_final_texto": conteudo_fim,
@@ -88,13 +90,14 @@ def _extrair_conteudo_entre_tags(self, texto: str) -> dict[str, dict]:
 ```
 
 **`directus_server.py` linha ~568:**
+
 ```python
 if arquivo_com_tags_text:
     # Remove tags ANTES do diff
     original_text_para_diff = re.sub(
         r"\{\{/?TAG-[^}]+\}\}", "", arquivo_com_tags_text
     )  # ← Posições das modificações baseadas NESTE texto
-    
+
     diferenca = self._perform_diff(original_text_para_diff, modified_text)
 ```
 
@@ -103,6 +106,7 @@ if arquivo_com_tags_text:
 ### Opção 1: Processar Tags no Texto Limpo (Recomendado)
 
 Modificar `processador_tags_modelo.py` para:
+
 1. Baixar `arquivo_com_tags.docx`
 2. **Remover as marcações** antes de calcular posições
 3. Usar o texto limpo como referência
@@ -113,6 +117,7 @@ Modificar `processador_tags_modelo.py` para:
 ### Opção 2: Processar Modificações no Texto COM Tags
 
 Modificar `directus_server.py` para:
+
 1. NÃO remover tags antes do diff
 2. Fazer diff entre:
    - Original: `arquivo_com_tags_text` (COM tags)
@@ -123,6 +128,7 @@ Modificar `directus_server.py` para:
 ### Opção 3: Mapear Coordenadas (Complexo)
 
 Criar mapeamento entre sistemas de coordenadas:
+
 1. Para cada posição no texto COM tags → posição no texto SEM tags
 2. Converter posições das tags ao vincular
 
@@ -133,6 +139,7 @@ Criar mapeamento entre sistemas de coordenadas:
 ### Modificações Afetadas
 
 Todas as modificações com:
+
 - Overlap alto (>50%) baseado em posições
 - Fuzzy baixo (<40%) devido a textos diferentes
 - **Estimativa**: ~200 das 217 não vinculadas (92%)
@@ -160,6 +167,7 @@ uv run python debug_vinculacao_falhada.py
 ```
 
 Confirma:
+
 - ✅ Overlap calculado: 100%
 - ❌ Fuzzy score: 35.7% (< threshold 40%)
 - ❌ Textos nas mesmas posições são DIFERENTES

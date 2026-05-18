@@ -32,10 +32,10 @@ if str(tests_dir) not in sys.path:
     sys.path.insert(0, str(tests_dir))
 
 # Importar algoritmos e framework
-from algoritmos.producao.algoritmo import AlgoritmoProducao
 from algoritmos.fuzzy.algoritmo import AlgoritmoFuzzyAvancado
-from algoritmos.regex.algoritmo import AlgoritmoRegex
 from algoritmos.hibrido.algoritmo import AlgoritmoHibrido
+from algoritmos.producao.algoritmo import AlgoritmoProducao
+from algoritmos.regex.algoritmo import AlgoritmoRegex
 from framework_comparacao import ComparadorAlgoritmos
 from test_comparacao_algoritmos import (
     AlgoritmoComOffsetAcumulado,

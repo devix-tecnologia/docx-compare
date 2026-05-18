@@ -6,6 +6,16 @@ export default defineConfig({
   server: {
     port: 3000,
     open: true,
+    proxy: {
+      '/health': {
+        target: 'http://localhost:8011',
+        changeOrigin: true,
+      },
+      '/api': {
+        target: 'http://localhost:8011',
+        changeOrigin: true,
+      },
+    },
   },
   build: {
     outDir: 'dist',

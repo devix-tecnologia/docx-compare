@@ -182,16 +182,16 @@ class PandocASTProcessor:
 app = Flask(__name__, template_folder="templates")
 CORS(app)
 
-# Registrar documentação Swagger
-try:
-    from swagger_docs import docs_blueprint
-
-    app.register_blueprint(docs_blueprint)
-    print("✅ Documentação Swagger disponível em /docs/")
-except ImportError as e:
-    print(f"⚠️  Não foi possível carregar documentação Swagger: {e}")
-except Exception as e:
-    print(f"❌ Erro ao registrar Swagger: {e}")
+# Registrar documentação Swagger - TEMPORARIAMENTE DESABILITADO
+# O Swagger estava interceptando /api/process com um método vazio (pass)
+# try:
+#     from swagger_docs import docs_blueprint
+#     app.register_blueprint(docs_blueprint)
+#     print("✅ Documentação Swagger disponível em /docs/")
+# except ImportError as e:
+#     print(f"⚠️  Não foi possível carregar documentação Swagger: {e}")
+# except Exception as e:
+#     print(f"❌ Erro ao registrar Swagger: {e}")
 
 # Cache de diffs para persistência
 diff_cache = {}
@@ -4116,6 +4116,7 @@ def _formatar_para_view(versao_completa: dict, modificacoes: list[dict]) -> dict
         mod_formatada = {
             "id": mod["id"],
             "tipo": _categoria_para_tipo(mod.get("categoria", "modificacao")),
+            "confianca": mod.get("confianca", 0.9),  # Valor padrão 0.9 se não existir
             "conteudo": {
                 "original": mod.get("conteudo", ""),
                 "novo": mod.get("alteracao", ""),
@@ -4158,6 +4159,9 @@ def _formatar_para_view(versao_completa: dict, modificacoes: list[dict]) -> dict
     contrato = versao_completa["contrato"]  # Não usa .get() - deve existir
     modelo = contrato["modelo_contrato"]  # Não usa .get() - deve existir
 
+    # Agrupar modificações por cláusula para criar blocos
+    blocos_detalhados = _agrupar_modificacoes_em_blocos(modificacoes_formatadas)
+
     return {
         "versao_id": versao_completa["id"],
         "status": versao_completa["status"],
@@ -4174,7 +4178,69 @@ def _formatar_para_view(versao_completa: dict, modificacoes: list[dict]) -> dict
         },
         "modificacoes": modificacoes_formatadas,
         "metricas": _calcular_metricas(modificacoes),
+        "total_blocos": len(blocos_detalhados),
+        "blocos_detalhados": blocos_detalhados,
+        "metodo_calculo": "agrupamento_clausulas",
     }
+
+
+def _agrupar_modificacoes_em_blocos(modificacoes: list[dict]) -> list[dict]:
+    """
+    Agrupa modificações em blocos baseado em cláusulas.
+    Modificações da mesma cláusula ficam no mesmo bloco.
+    Modificações sem cláusula formam blocos individuais.
+
+    Args:
+        modificacoes: Lista de modificações formatadas
+
+    Returns:
+        Lista de blocos com modificações agrupadas
+    """
+    if not modificacoes:
+        return []
+
+    # Agrupar por cláusula
+    blocos_por_clausula = {}
+    modificacoes_sem_clausula = []
+
+    for mod in modificacoes:
+        if mod.get("clausula"):
+            clausula_id = mod["clausula"]["id"]
+            if clausula_id not in blocos_por_clausula:
+                blocos_por_clausula[clausula_id] = {
+                    "clausula": mod["clausula"],
+                    "modificacoes": [],
+                }
+            blocos_por_clausula[clausula_id]["modificacoes"].append(mod)
+        else:
+            modificacoes_sem_clausula.append(mod)
+
+    # Converter para lista de blocos
+    blocos = []
+
+    # Blocos com cláusula
+    for clausula_id, bloco_data in blocos_por_clausula.items():
+        blocos.append(
+            {
+                "id": len(blocos) + 1,
+                "clausula": bloco_data["clausula"],
+                "modificacoes": bloco_data["modificacoes"],
+                "total_modificacoes": len(bloco_data["modificacoes"]),
+            }
+        )
+
+    # Blocos sem cláusula (cada modificação vira um bloco)
+    for mod in modificacoes_sem_clausula:
+        blocos.append(
+            {
+                "id": len(blocos) + 1,
+                "clausula": None,
+                "modificacoes": [mod],
+                "total_modificacoes": 1,
+            }
+        )
+
+    return blocos
 
 
 def _categoria_para_tipo(categoria: str) -> str:
@@ -4247,6 +4313,48 @@ def test_diff(versao_id):
     )
 
 
+@app.route("/api/test-simple", methods=["POST"])
+def test_simple():
+    """Endpoint de teste simples"""
+    import sys
+
+    sys.stdout.write("⚡ test_simple CHAMADO VIA STDOUT\n")
+    sys.stdout.flush()
+    print("⚡ test_simple CHAMADO VIA PRINT")
+    return jsonify({"status": "ok", "message": "Test endpoint works!"})
+
+
+@app.route("/api/debug", methods=["GET"])
+def debug_api():
+    """Endpoint de debug para verificar estado da API"""
+    return jsonify(
+        {
+            "directus_api_exists": directus_api is not None,
+            "directus_api_type": str(type(directus_api)),
+            "has_process_versao": hasattr(directus_api, "process_versao")
+            if directus_api
+            else False,
+            "directus_url": DIRECTUS_BASE_URL,
+            "directus_token_set": bool(DIRECTUS_TOKEN),
+        }
+    )
+
+
+@app.route("/api/routes", methods=["GET"])
+def list_routes():
+    """Lista todas as rotas registradas no Flask app"""
+    routes = []
+    for rule in app.url_map.iter_rules():
+        routes.append(
+            {
+                "endpoint": rule.endpoint,
+                "methods": list(rule.methods),
+                "path": str(rule),
+            }
+        )
+    return jsonify({"routes": routes, "total": len(routes)})
+
+
 @app.route("/api/process", methods=["POST"])
 def process_document():
     """Processa uma versão específica
@@ -4258,39 +4366,76 @@ def process_document():
         "use_ast": true/false (opcional, default: TRUE - AST 59.3% vs Texto 51.9%)
     }
     """
-    data = request.json
-    if not data:
-        return jsonify({"error": "Nenhum dado JSON fornecido"}), 400
+    try:
+        print("=" * 80, flush=True)
+        print("🎯 ENDPOINT /api/process CHAMADO!", flush=True)
+        print("=" * 80, flush=True)
+        import sys
 
-    versao_id = data.get("versao_id") or data.get("doc_id")
-    mock = data.get("mock", False)  # Default: usar dados reais
-    use_ast = data.get("use_ast", True)  # Default: USAR AST (melhor precisão)
+        sys.stderr.write("🔴 STDERR: /api/process CHAMADO!\n")
+        sys.stderr.flush()
 
-    if not versao_id:
-        return jsonify({"error": "versao_id é obrigatório"}), 400
+        data = request.json
+        print(f"📥 data recebido: {data}", flush=True)
+        if not data:
+            return jsonify({"error": "Nenhum dado JSON fornecido"}), 400
 
-    metodo = "AST (59.3%)" if use_ast else "Texto (51.9%)"
-    print(
-        f"🔍 Processando versão {versao_id} (modo: {'mock' if mock else 'real'}, método: {metodo})"
-    )
-    result = directus_api.process_versao(versao_id, mock=mock, use_ast=use_ast)
+        versao_id = data.get("versao_id") or data.get("doc_id")
+        mock = data.get("mock", False)  # Default: usar dados reais
+        use_ast = data.get("use_ast", True)  # Default: USAR AST (melhor precisão)
 
-    if "error" in result:
-        return jsonify(result), 500
+        if not versao_id:
+            return jsonify({"error": "versao_id é obrigatório"}), 400
 
-    # Debug: verificar o resultado
-    print(
-        f"🔍 Resultado do processamento: {type(result)}, chaves: {list(result.keys()) if isinstance(result, dict) else 'não é dict'}"
-    )
+        metodo = "AST (59.3%)" if use_ast else "Texto (51.9%)"
+        print(
+            f"🔍 Processando versão {versao_id} (modo: {'mock' if mock else 'real'}, método: {metodo})",
+            flush=True,
+        )
+        print(f"🔍 DEBUG: directus_api = {directus_api}", flush=True)
+        print(f"🔍 DEBUG: type(directus_api) = {type(directus_api)}", flush=True)
 
-    # Garantir que o resultado seja armazenado no cache global
-    if "id" in result:
-        diff_cache[result["id"]] = result
-        print(f"💾 Diff {result['id']} salvo no cache (total: {len(diff_cache)} items)")
-    else:
-        print("⚠️  Resultado não tem campo 'id', não salvando no cache")
+        result = directus_api.process_versao(versao_id, mock=mock, use_ast=use_ast)
 
-    return jsonify(result)
+        print(f"🔍 DEBUG: result após process_versao = {result}", flush=True)
+        print(f"🔍 DEBUG: type(result) = {type(result)}", flush=True)
+
+        if not result:
+            print("❌ ERRO: process_versao retornou None ou False!", flush=True)
+            return jsonify({"error": "Processamento retornou resultado vazio"}), 500
+
+        if "error" in result:
+            return jsonify(result), 500
+
+        # Debug: verificar o resultado
+        print(
+            f"🔍 Resultado do processamento: {type(result)}, chaves: {list(result.keys()) if isinstance(result, dict) else 'não é dict'}",
+            flush=True,
+        )
+
+        # Garantir que o resultado seja armazenado no cache global
+        if "id" in result or "diff_id" in result:
+            result_id = result.get("id") or result.get("diff_id")
+            diff_cache[result_id] = result
+            print(
+                f"💾 Diff {result_id} salvo no cache (total: {len(diff_cache)} items)",
+                flush=True,
+            )
+        else:
+            print(
+                "⚠️  Resultado não tem campo 'id' ou 'diff_id', não salvando no cache",
+                flush=True,
+            )
+
+        return jsonify(result)
+    except Exception as e:
+        import traceback
+
+        error_msg = f"❌ EXCEÇÃO em process_document: {type(e).__name__}: {str(e)}\n{traceback.format_exc()}"
+        print(error_msg, flush=True)
+        sys.stderr.write(error_msg + "\n")
+        sys.stderr.flush()
+        return jsonify({"error": str(e), "traceback": traceback.format_exc()}), 500
 
 
 @app.route("/api/process-modelo", methods=["POST"])

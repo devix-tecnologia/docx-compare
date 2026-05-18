@@ -10,10 +10,11 @@ Combina múltiplas estratégias em cascata para maximizar performance e cobertur
 Meta: Score ≥90, Taxa ≥95%, Precisão ≥95%
 """
 
-from typing import List, Dict, Optional, Any
+from typing import Any
+
 from algoritmos.base import AlgoritmoVinculacao, UtilitariosVinculacao
-from algoritmos.regex.algoritmo import AlgoritmoRegex
 from algoritmos.fuzzy.algoritmo import AlgoritmoFuzzyAvancado
+from algoritmos.regex.algoritmo import AlgoritmoRegex
 
 
 class AlgoritmoHibrido(AlgoritmoVinculacao):
@@ -34,8 +35,8 @@ class AlgoritmoHibrido(AlgoritmoVinculacao):
         # Thresholds configuráveis
         self._thresholds = {
             "overlap": 0.5,  # 50% de overlap mínimo
-            "fuzzy": 0.85,   # 85% de similaridade
-            "ml": 0.80,      # 80% de confiança semântica
+            "fuzzy": 0.85,  # 85% de similaridade
+            "ml": 0.80,  # 80% de confiança semântica
         }
 
         # Estatísticas de uso
@@ -56,8 +57,8 @@ class AlgoritmoHibrido(AlgoritmoVinculacao):
         return "Combina overlap, regex, fuzzy e ML em cascata para máxima cobertura"
 
     def calcular_posicoes(
-        self, modificacoes: List[Dict[str, Any]], texto_completo: str
-    ) -> List[Dict[str, Any]]:
+        self, modificacoes: list[dict[str, Any]], texto_completo: str
+    ) -> list[dict[str, Any]]:
         """
         Calcula posições usando estratégias em cascata:
         1. Regex (rápido e preciso para padrões estruturados)
@@ -71,12 +72,14 @@ class AlgoritmoHibrido(AlgoritmoVinculacao):
         for mod in modificacoes:
             texto_busca = UtilitariosVinculacao.extrair_texto_busca(mod)
             if not texto_busca:
-                resultado.append({
-                    **mod,
-                    "posicao_inicio": None,
-                    "posicao_fim": None,
-                    "_estrategia_posicao": None,
-                })
+                resultado.append(
+                    {
+                        **mod,
+                        "posicao_inicio": None,
+                        "posicao_fim": None,
+                        "_estrategia_posicao": None,
+                    }
+                )
                 continue
 
             posicao = None
@@ -84,11 +87,16 @@ class AlgoritmoHibrido(AlgoritmoVinculacao):
 
             # 1. Tentar REGEX primeiro (mais rápido e preciso)
             try:
-                resultado_regex = self._alg_regex.calcular_posicoes([mod], texto_completo)
-                if resultado_regex and resultado_regex[0].get("posicao_inicio") is not None:
+                resultado_regex = self._alg_regex.calcular_posicoes(
+                    [mod], texto_completo
+                )
+                if (
+                    resultado_regex
+                    and resultado_regex[0].get("posicao_inicio") is not None
+                ):
                     posicao = (
                         resultado_regex[0]["posicao_inicio"],
-                        resultado_regex[0]["posicao_fim"]
+                        resultado_regex[0]["posicao_fim"],
                     )
                     estrategia_posicao = "regex"
             except Exception:
@@ -97,11 +105,16 @@ class AlgoritmoHibrido(AlgoritmoVinculacao):
             # 2. Se regex falhou, tentar FUZZY
             if posicao is None:
                 try:
-                    resultado_fuzzy = self._alg_fuzzy.calcular_posicoes([mod], texto_completo)
-                    if resultado_fuzzy and resultado_fuzzy[0].get("posicao_inicio") is not None:
+                    resultado_fuzzy = self._alg_fuzzy.calcular_posicoes(
+                        [mod], texto_completo
+                    )
+                    if (
+                        resultado_fuzzy
+                        and resultado_fuzzy[0].get("posicao_inicio") is not None
+                    ):
                         posicao = (
                             resultado_fuzzy[0]["posicao_inicio"],
-                            resultado_fuzzy[0]["posicao_fim"]
+                            resultado_fuzzy[0]["posicao_fim"],
                         )
                         estrategia_posicao = "fuzzy"
                 except Exception:
@@ -116,28 +129,32 @@ class AlgoritmoHibrido(AlgoritmoVinculacao):
 
             # Adicionar aos resultados
             if posicao:
-                resultado.append({
-                    **mod,
-                    "posicao_inicio": posicao[0],
-                    "posicao_fim": posicao[1],
-                    "_estrategia_posicao": estrategia_posicao,
-                })
+                resultado.append(
+                    {
+                        **mod,
+                        "posicao_inicio": posicao[0],
+                        "posicao_fim": posicao[1],
+                        "_estrategia_posicao": estrategia_posicao,
+                    }
+                )
             else:
-                resultado.append({
-                    **mod,
-                    "posicao_inicio": None,
-                    "posicao_fim": None,
-                    "_estrategia_posicao": None,
-                })
+                resultado.append(
+                    {
+                        **mod,
+                        "posicao_inicio": None,
+                        "posicao_fim": None,
+                        "_estrategia_posicao": None,
+                    }
+                )
 
         return resultado
 
     def vincular_clausulas(
         self,
-        modificacoes: List[Dict[str, Any]],
-        tags: List[Dict[str, Any]],
+        modificacoes: list[dict[str, Any]],
+        tags: list[dict[str, Any]],
         texto_completo: str,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Vincula modificações a tags usando estratégia em cascata:
         1. Calcular posições (já usa regex → fuzzy internamente)
@@ -207,16 +224,18 @@ class AlgoritmoHibrido(AlgoritmoVinculacao):
                 self._stats["nao_vinculada"] += 1
 
             # Adicionar aos resultados
-            resultado.append({
-                **mod,
-                "tag_vinculada": tag_vinculada,
-                "_estrategia_usada": estrategia_usada,
-                "_score_vinculacao": score_vinculacao,
-            })
+            resultado.append(
+                {
+                    **mod,
+                    "tag_vinculada": tag_vinculada,
+                    "_estrategia_usada": estrategia_usada,
+                    "_score_vinculacao": score_vinculacao,
+                }
+            )
 
         return resultado
 
-    def obter_estatisticas(self) -> Dict[str, Dict[str, Any]]:
+    def obter_estatisticas(self) -> dict[str, dict[str, Any]]:
         """
         Retorna estatísticas de uso das estratégias.
 
@@ -226,10 +245,7 @@ class AlgoritmoHibrido(AlgoritmoVinculacao):
         total = sum(self._stats.values()) or 1
 
         return {
-            estrategia: {
-                "count": count,
-                "percentage": round(100 * count / total, 2)
-            }
+            estrategia: {"count": count, "percentage": round(100 * count / total, 2)}
             for estrategia, count in self._stats.items()
         }
 

@@ -67,7 +67,7 @@ class UtilitariosVinculacao:
     ) -> float:
         """
         Calcula porcentagem de sobreposição do intervalo A em relação ao intervalo B.
-        
+
         IMPORTANTE: Retorna quanto do intervalo A (modificação) está contido no intervalo B (tag).
         Isso é diferente do Jaccard Index (interseção/união).
 
@@ -77,7 +77,7 @@ class UtilitariosVinculacao:
 
         Returns:
             Porcentagem de sobreposição de A em B (0.0 a 1.0)
-            
+
         Exemplo:
             - A: 100→120 (20 chars)
             - B: 90→150 (60 chars)
@@ -94,7 +94,7 @@ class UtilitariosVinculacao:
 
         # Calcular quanto de A está em B
         tamanho_a = pos_fim_a - pos_inicio_a
-        
+
         if tamanho_a == 0:
             return 0.0
 

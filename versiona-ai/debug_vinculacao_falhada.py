@@ -3,6 +3,7 @@
 Debug de modificações não vinculadas
 Analisa por que modificações com 100% overlap não foram vinculadas
 """
+
 import sys
 from pathlib import Path
 
@@ -15,11 +16,11 @@ from rapidfuzz import fuzz
 # Tag 1.5: pos 66226-66928, overlap 100%
 
 texto_modificacao = """4.  CORREÇÃO MONETÁRIA
-    1.  Se aplicável, a partir do 12º mês contado da data-base, a   
+    1.  Se aplicável, a partir do 12º mês contado da data-base, a
         CO"""
 
-texto_tag_1_5 = """A CONTRATADA, em nenhuma hipótese, poderá alegar, como justificativa   
-    ou defesa, o desconhecimento, incompreensão, dúvida, no todo ou em 
+texto_tag_1_5 = """A CONTRATADA, em nenhuma hipótese, poderá alegar, como justificativa
+    ou defesa, o desconhecimento, incompreensão, dúvida, no todo ou em
     parte,"""
 
 # Simular o que o algoritmo faz
@@ -27,15 +28,15 @@ print("=" * 80)
 print("🔍 ANÁLISE DE CASO FALHADO")
 print("=" * 80)
 
-print(f"\n📝 Modificação:")
-print(f"   Posição: 66655 → 66679 (24 chars)")
+print("\n📝 Modificação:")
+print("   Posição: 66655 → 66679 (24 chars)")
 print(f"   Conteúdo: {texto_modificacao[:100]}...")
 
-print(f"\n🏷️  Tag 1.5:")
-print(f"   Posição: 66226 → 66928 (702 chars)")
+print("\n🏷️  Tag 1.5:")
+print("   Posição: 66226 → 66928 (702 chars)")
 print(f"   Conteúdo: {texto_tag_1_5[:100]}...")
 
-print(f"\n📊 Cálculos:")
+print("\n📊 Cálculos:")
 
 # Overlap
 mod_inicio = 66655
@@ -56,7 +57,7 @@ else:
 print(f"   Overlap: {overlap:.1f}% ({tamanho_intersecao}/{tamanho_mod} chars)")
 
 # Fuzzy
-print(f"\n🔢 Fuzzy Matching:")
+print("\n🔢 Fuzzy Matching:")
 scores = {
     "ratio": fuzz.ratio(texto_modificacao, texto_tag_1_5),
     "partial_ratio": fuzz.partial_ratio(texto_modificacao, texto_tag_1_5),
@@ -71,7 +72,7 @@ score_composto = sum(scores.values()) / len(scores)
 print(f"   {'score_composto':20s}: {score_composto:5.1f}%")
 
 # Análise dos thresholds
-print(f"\n✅ Análise dos Thresholds:")
+print("\n✅ Análise dos Thresholds:")
 
 if overlap >= 90:
     threshold_fuzzy = 40
@@ -92,13 +93,17 @@ else:
 
 print(f"   {tier}")
 print(f"   Overlap: {overlap:.1f}% {'✅' if overlap >= 50 else '❌'}")
-print(f"   Fuzzy: {score_composto:.1f}% (threshold: ≥{threshold_fuzzy}%) {'✅' if passou else '❌'}")
+print(
+    f"   Fuzzy: {score_composto:.1f}% (threshold: ≥{threshold_fuzzy}%) {'✅' if passou else '❌'}"
+)
 
 if passou:
-    print(f"\n✅ DEVERIA TER SIDO VINCULADA!")
+    print("\n✅ DEVERIA TER SIDO VINCULADA!")
 else:
-    print(f"\n❌ NÃO PASSOU NOS THRESHOLDS")
-    print(f"   Motivo: Fuzzy score ({score_composto:.1f}%) < threshold ({threshold_fuzzy}%)")
+    print("\n❌ NÃO PASSOU NOS THRESHOLDS")
+    print(
+        f"   Motivo: Fuzzy score ({score_composto:.1f}%) < threshold ({threshold_fuzzy}%)"
+    )
 
 print("\n" + "=" * 80)
 print("🔍 CONCLUSÃO")
