@@ -1,6 +1,6 @@
 # Task 008: Adicionar Status Intermediário "processando" Durante Processamento
 
-Status: pending
+Status: in-progress
 
 ## Descrição
 
