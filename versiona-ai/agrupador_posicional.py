@@ -10,6 +10,7 @@ import tempfile
 
 import requests
 from dotenv import load_dotenv
+from repositorio import DirectusRepository
 
 load_dotenv()
 
@@ -87,6 +88,66 @@ class AgrupadorPosicional:
             print(f"❌ Erro ao buscar dados da versão: {e}")
             return None
 
+    def buscar_clausula_por_tag(self, tag_id: str) -> dict:
+        """
+        Busca os detalhes da cláusula vinculada a uma tag específica
+        """
+        try:
+            url = f"{self.directus_base_url}/items/clausula"
+            params = {
+                "filter[tag][_eq]": tag_id,
+                "fields": "id,numero,nome,objetivo",
+                "limit": 1,
+            }
+
+            response = requests.get(
+                url, headers=self.directus_headers, params=params, timeout=10
+            )
+
+            if response.status_code == 200:
+                data = response.json().get("data", [])
+                if data and len(data) > 0:
+                    clausula = data[0]
+                    # Buscar referências separadamente
+                    clausula_id = clausula.get("id")
+                    if clausula_id:
+                        referencias = self.buscar_referencias_clausula(clausula_id)
+                        clausula["referencias"] = referencias
+                    return clausula
+
+            return {}
+        except Exception as e:
+            print(f"⚠️  Erro ao buscar cláusula da tag {tag_id}: {e}")
+            return {}
+
+    def buscar_referencias_clausula(self, clausula_id: str) -> list:
+        """
+        Busca as referências vinculadas a uma cláusula específica
+        """
+        try:
+            url = f"{self.directus_base_url}/items/referencia"
+            params = {
+                "filter[clausula][_eq]": clausula_id,
+                "fields": "id,descricao",
+                "limit": 100,
+            }
+
+            response = requests.get(
+                url, headers=self.directus_headers, params=params, timeout=10
+            )
+
+            if response.status_code == 200:
+                data = response.json().get("data", [])
+                # Retornar lista de descrições
+                return [
+                    ref.get("descricao", "") for ref in data if ref.get("descricao")
+                ]
+
+            return []
+        except Exception as e:
+            print(f"⚠️  Erro ao buscar referências da cláusula {clausula_id}: {e}")
+            return []
+
     def buscar_tags_modelo(self, modelo_id: str) -> list[dict]:
         """
         Busca tags do modelo de contrato que são relevantes para processamento
@@ -95,8 +156,8 @@ class AgrupadorPosicional:
             url = f"{self.directus_base_url}/items/modelo_contrato_tag"
             params = {
                 "filter[modelo_contrato][_eq]": modelo_id,
-                "fields": "id,tag_nome,caminho_tag_inicio,caminho_tag_fim,posicao_inicio_texto,posicao_fim_texto,conteudo,clausulas.id,clausulas.numero",
-                "limit": 100,
+                "fields": "id,tag_nome,caminho_tag_inicio,caminho_tag_fim,posicao_inicio_texto,posicao_fim_texto,conteudo,clausulas.id,clausulas.numero,clausulas.nome,clausulas.objetivo,clausulas.referencias",
+                "limit": -1,  # -1 = sem limite (buscar todas as tags)
             }
 
             response = requests.get(
@@ -169,7 +230,7 @@ class AgrupadorPosicional:
             params = {
                 "filter[modelo_contrato][_eq]": modelo_id,
                 "fields": "id,numero,titulo,conteudo,tipo,posicao_no_documento,tags_relacionadas",
-                "limit": 100,
+                "limit": -1,  # -1 = sem limite (buscar todas as cláusulas)
             }
 
             response = requests.get(
@@ -433,142 +494,214 @@ class AgrupadorPosicional:
         else:
             return 0
 
-    def processar_agrupamento_posicional_versao(self, versao_id: str) -> dict:
+    def _encontrar_tag_mais_proxima(
+        self, pos_inicio: int, pos_fim: int, tags_modelo: list[dict]
+    ) -> dict | None:
         """
-        Processa o agrupamento posicional para uma versão específica
-        Retorna informações sobre blocos e tags identificados
+        Encontra a tag mais próxima/relevante para um bloco
+        Usa overlap de posições para determinar qual tag é mais relevante
         """
-        print(f"\n🎯 Processamento posicional - Versão: {versao_id}")
+        melhor_tag = None
+        melhor_overlap = 0
+
+        for tag in tags_modelo:
+            tag_inicio = tag.get("posicao_inicio_texto")
+            tag_fim = tag.get("posicao_fim_texto")
+
+            if tag_inicio is None or tag_fim is None:
+                continue
+
+            # Calcular overlap entre bloco e tag
+            overlap_inicio = max(pos_inicio, tag_inicio)
+            overlap_fim = min(pos_fim, tag_fim)
+
+            if overlap_fim > overlap_inicio:
+                overlap = overlap_fim - overlap_inicio
+                if overlap > melhor_overlap:
+                    melhor_overlap = overlap
+                    melhor_tag = tag
+
+        return melhor_tag
+
+    def processar_agrupamento_posicional_versao(
+        self, versao_id: str, modificacoes: list[dict]
+    ) -> dict:
+        """
+        Agrupa modificações em blocos baseado em proximidade posicional
+
+        IMPORTANTE: Blocos NÃO são tags nem cláusulas!
+        - Tags servem para enriquecer blocos com contexto (qual cláusula)
+        - Blocos são agrupamentos de modificações próximas
+
+        Args:
+            versao_id: ID da versão
+            modificacoes: Lista de modificações detectadas
+
+        Returns:
+            dict com blocos agrupados
+        """
+        print(f"\n🎯 Agrupamento de Modificações - Versão: {versao_id}")
         print("=" * 60)
+        print(f"📊 Total de modificações a agrupar: {len(modificacoes)}")
 
         try:
-            # 1. Buscar dados da versão
+            # 1. Buscar dados da versão (para obter tags/contexto)
             versao_data = self.buscar_dados_versao(versao_id)
             if not versao_data:
                 return {"erro": "Dados da versão não encontrados"}
 
             modelo_id = versao_data["modelo_id"]
-            arquivo_com_tags_id = versao_data["arquivo_com_tags_id"]
-            arquivo_modificado_id = versao_data["arquivo_modificado_id"]
-
             print(f"✅ Modelo de contrato: {modelo_id}")
-            print(f"📁 Arquivo com tags: {arquivo_com_tags_id}")
-            print(f"📁 Arquivo modificado: {arquivo_modificado_id}")
 
-            # 2. Buscar tags existentes do modelo
+            # 2. Buscar tags do modelo (para contexto/enriquecimento)
             tags_modelo = self.buscar_tags_modelo(modelo_id)
+            print(f"🏷️ Tags do modelo: {len(tags_modelo)}")
 
-            # 3. Baixar arquivos para análise
-            print("📥 Baixando arquivos...")
-            arquivo_com_tags_path = self.baixar_arquivo_directus(arquivo_com_tags_id)
-            arquivo_modificado_path = self.baixar_arquivo_directus(
-                arquivo_modificado_id
+            # 3. Agrupar modificações por proximidade posicional
+            DISTANCIA_MAXIMA = 2000  # Modificações a menos de 2000 chars são agrupadas
+
+            blocos_agrupados = []
+            modificacoes_ordenadas = sorted(
+                modificacoes, key=lambda m: m.get("posicao_inicio", 0)
             )
 
-            if not arquivo_com_tags_path or not arquivo_modificado_path:
-                return {"erro": "Não foi possível baixar os arquivos"}
+            bloco_atual = None
 
-            try:
-                # 4. Converter arquivos para texto
-                print("📊 Convertendo arquivos para análise...")
-                texto_com_tags = self.converter_docx_para_texto(arquivo_com_tags_path)
-                texto_modificado = self.converter_docx_para_texto(
-                    arquivo_modificado_path
+            for mod in modificacoes_ordenadas:
+                pos_inicio = mod.get("posicao_inicio", 0)
+                pos_fim = mod.get("posicao_fim", 0)
+
+                # Se não há bloco atual ou a modificação está longe, criar novo bloco
+                if bloco_atual is None or (
+                    pos_inicio - bloco_atual["posicao_fim"] > DISTANCIA_MAXIMA
+                ):
+                    # Finalizar bloco anterior
+                    if bloco_atual:
+                        blocos_agrupados.append(bloco_atual)
+
+                    # Criar novo bloco
+                    bloco_atual = {
+                        "posicao_inicio": pos_inicio,
+                        "posicao_fim": pos_fim,
+                        "modificacoes": [mod],
+                        "tipo": "agrupamento_posicional",
+                    }
+                else:
+                    # Adicionar modificação ao bloco atual
+                    bloco_atual["modificacoes"].append(mod)
+                    bloco_atual["posicao_fim"] = max(
+                        bloco_atual["posicao_fim"], pos_fim
+                    )
+
+            # Adicionar último bloco
+            if bloco_atual:
+                blocos_agrupados.append(bloco_atual)
+
+            # 4. Enriquecer blocos com contexto de tags/cláusulas
+            for bloco in blocos_agrupados:
+                # Encontrar tag mais relevante para este bloco
+                tag_relevante = self._encontrar_tag_mais_proxima(
+                    bloco["posicao_inicio"], bloco["posicao_fim"], tags_modelo
                 )
 
-                # 5. Analisar posições das tags (se modelo tiver tags com posições)
-                blocos_identificados = []
-                tags_com_posicoes = []
-
-                for tag in tags_modelo:
-                    if tag.get("posicao_inicio_texto") and tag.get("posicao_fim_texto"):
-                        tags_com_posicoes.append(
-                            {
-                                "nome": tag["tag_nome"],
-                                "posicao_inicio": tag["posicao_inicio_texto"],
-                                "posicao_fim": tag["posicao_fim_texto"],
-                                "tipo": "existente",
-                            }
-                        )
-
-                # 6. Se não há tags com posições, tentar extrair do texto modificado
-                if not tags_com_posicoes:
-                    print("🔍 Extraindo tags das diferenças...")
-                    tags_extraidas = self.extrair_tags_das_diferencas(
-                        texto_com_tags, texto_modificado
+                if tag_relevante:
+                    bloco["nome"] = tag_relevante.get("tag_nome", "Sem tag")
+                    bloco["clausula_id"] = tag_relevante.get("id")
+                    bloco["conteudo_estimado"] = tag_relevante.get("conteudo", "")[:100]
+                else:
+                    bloco["nome"] = (
+                        f"Bloco {bloco['posicao_inicio']}-{bloco['posicao_fim']}"
                     )
-                    for tag in tags_extraidas:
-                        tags_com_posicoes.append(
-                            {
-                                "nome": tag["nome"],
-                                "posicao_inicio": tag["posicao_inicio_texto"],
-                                "posicao_fim": tag["posicao_fim_texto"],
-                                "tipo": "extraida",
-                            }
-                        )
+                    bloco["conteudo_estimado"] = ""
 
-                # 7. Identificar blocos baseado nas tags
-                for tag in tags_com_posicoes:
-                    blocos_identificados.append(
-                        {
-                            "nome": tag["nome"],
-                            "posicao_inicio": tag["posicao_inicio"],
-                            "posicao_fim": tag["posicao_fim"],
-                            "tipo": tag["tipo"],
-                            "conteudo_estimado": texto_modificado[
-                                tag["posicao_inicio"] : tag["posicao_fim"]
-                            ][:100]
-                            + "...",
-                        }
-                    )
+                # Adicionar contador de modificações para o frontend
+                bloco["total_modificacoes"] = len(bloco.get("modificacoes", []))
 
-                # 8. Gerar estatísticas
-                resultado = {
-                    "versao_id": versao_id,
-                    "modelo_id": modelo_id,
-                    "total_blocos": len(blocos_identificados),
-                    "total_tags_modelo": len(tags_modelo),
-                    "tags_com_posicoes": len(tags_com_posicoes),
-                    "blocos": blocos_identificados,
-                    "estatisticas": {
-                        "tags_existentes": len(
-                            [t for t in tags_com_posicoes if t["tipo"] == "existente"]
-                        ),
-                        "tags_extraidas": len(
-                            [t for t in tags_com_posicoes if t["tipo"] == "extraida"]
-                        ),
-                        "texto_com_tags_tamanho": len(texto_com_tags),
-                        "texto_modificado_tamanho": len(texto_modificado),
-                    },
-                }
+                # Propagar dados da cláusula para cada modificação dentro do bloco
+                for mod in bloco.get("modificacoes", []):
+                    if tag_relevante:
+                        tag_id = tag_relevante.get("id")
+                        mod["clausula_nome"] = tag_relevante.get("tag_nome", "Sem tag")
+                        mod["clausula_id"] = tag_id
+                        mod["clausula_conteudo"] = tag_relevante.get("conteudo", "")[
+                            :200
+                        ]
 
-                print("\n📊 RELATÓRIO FINAL")
-                print("=" * 60)
-                print(f"📈 Total de blocos identificados: {resultado['total_blocos']}")
-                print(f"🏷️ Tags do modelo: {resultado['total_tags_modelo']}")
-                print(f"📍 Tags com posições: {resultado['tags_com_posicoes']}")
+                        # Buscar informações completas da cláusula vinculada
+                        clausula_detalhes = None
+                        if tag_id:
+                            clausula_detalhes = self.buscar_clausula_por_tag(tag_id)
+                        if clausula_detalhes:
+                            mod["clausula_objetivo"] = clausula_detalhes.get(
+                                "objetivo", ""
+                            )
+                            # Referencias é uma lista de strings
+                            referencias = clausula_detalhes.get("referencias", [])
+                            mod["clausula_referencias"] = (
+                                referencias if isinstance(referencias, list) else []
+                            )
+                            mod["clausula_numero"] = clausula_detalhes.get("numero", "")
+                            # Usar nome da cláusula se disponível, senão usar nome da tag
+                            clausula_nome = clausula_detalhes.get("nome", "")
+                            if clausula_nome:
+                                mod["clausula_nome"] = clausula_nome
+                    else:
+                        mod["clausula_nome"] = "Sem cláusula vinculada"
 
-                for bloco in blocos_identificados:
-                    print(
-                        f"   📋 Bloco '{bloco['nome']}' ({bloco['tipo']}): pos {bloco['posicao_inicio']}-{bloco['posicao_fim']}"
-                    )
+            # 5. Gerar estatísticas
+            resultado = {
+                "versao_id": versao_id,
+                "modelo_id": modelo_id,
+                "total_blocos": len(blocos_agrupados),
+                "total_modificacoes": len(modificacoes),
+                "blocos": blocos_agrupados,
+                "estatisticas": {
+                    "distancia_maxima_usada": DISTANCIA_MAXIMA,
+                    "tags_modelo_disponiveis": len(tags_modelo),
+                    "blocos_com_tag": len(
+                        [b for b in blocos_agrupados if b.get("clausula_id")]
+                    ),
+                    "blocos_sem_tag": len(
+                        [b for b in blocos_agrupados if not b.get("clausula_id")]
+                    ),
+                },
+            }
 
-                return resultado
+            print("\n📊 RELATÓRIO DE AGRUPAMENTO")
+            print("=" * 60)
+            print(f"📈 Blocos criados: {resultado['total_blocos']}")
+            print(f"🔧 Modificações agrupadas: {resultado['total_modificacoes']}")
+            print(
+                f"🏷️ Blocos com contexto de tag: {resultado['estatisticas']['blocos_com_tag']}"
+            )
+            print(
+                f"⚠️ Blocos sem contexto: {resultado['estatisticas']['blocos_sem_tag']}"
+            )
 
-            finally:
-                # Limpar arquivos temporários
-                for arquivo in [arquivo_com_tags_path, arquivo_modificado_path]:
-                    if arquivo and os.path.exists(arquivo):
-                        os.unlink(arquivo)
+            # Mostrar detalhes de cada bloco
+            for idx, bloco in enumerate(blocos_agrupados, 1):
+                print(f"\n  📦 Bloco {idx}: {bloco['nome']}")
+                print(
+                    f"     - Posição: {bloco['posicao_inicio']} → {bloco['posicao_fim']}"
+                )
+                print(f"     - Modificações: {len(bloco['modificacoes'])}")
+
+            return resultado
 
         except Exception as e:
             print(f"❌ Erro no processamento: {e}")
+            import traceback
+
+            traceback.print_exc()
             return {"erro": f"Erro no processamento: {e}"}
 
 
 def main():
     """Teste do agrupador posicional"""
     agrupador = AgrupadorPosicional()
+    repo = DirectusRepository(
+        base_url=os.getenv("DIRECTUS_BASE_URL", "https://contract.devix.co")
+    )
 
     print("🚀 Testando Agrupador Posicional Versiona AI")
     print("=" * 50)
@@ -576,7 +709,13 @@ def main():
     # Usar uma versão de exemplo - pode ser modificado conforme necessário
     versao_id = "10f99b61-dd4a-4041-9753-4fa88e359830"  # Exemplo do sistema
 
-    resultado = agrupador.processar_agrupamento_posicional_versao(versao_id)
+    # Buscar modificações da versão
+    modificacoes = repo.get_modificacoes_versao(versao_id)
+    print(f"📊 Modificações encontradas: {len(modificacoes)}")
+
+    resultado = agrupador.processar_agrupamento_posicional_versao(
+        versao_id, modificacoes
+    )
 
     if "erro" in resultado:
         print(f"❌ Erro: {resultado['erro']}")

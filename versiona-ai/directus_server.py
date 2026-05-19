@@ -625,7 +625,10 @@ class DirectusAPI:
                     modificacoes = modificacoes_vinculadas
 
             # Calcular blocos usando agrupamento posicional
-            resultado_blocos = self._calcular_blocos_avancado(versao_id, diff_html)
+            # IMPORTANTE: Passar modificações para agrupar corretamente
+            resultado_blocos = self._calcular_blocos_avancado(
+                versao_id, diff_html, modificacoes
+            )
 
             # Criar registro de diff
             diff_id = str(uuid.uuid4())
@@ -1517,33 +1520,51 @@ class DirectusAPI:
             mod["tag_nome"] = getattr(tag, "tag_nome", None)
 
             if getattr(tag, "clausulas", None):
-                primeira = tag.clausulas[0] if tag.clausulas else None
+                # IMPORTANTE: Tentar cada cláusula da tag até encontrar uma que exista
+                # Isso resolve o problema de tags com múltiplas cláusulas onde algumas
+                # podem ter IDs inválidos (referências antigas de outras bases)
                 clausula_id = None
+                clausula_numero = None
+                clausula_nome = None
 
-                if isinstance(primeira, dict):
-                    # Pode vir direto ({id, numero, nome}) ou aninhado via tabela de junção.
-                    clausula_obj = primeira
-                    if isinstance(primeira.get("clausula"), dict):
-                        clausula_obj = primeira.get("clausula")
-                    elif isinstance(primeira.get("clausula_id"), dict):
-                        clausula_obj = primeira.get("clausula_id")
+                for candidata in tag.clausulas:
+                    if isinstance(candidata, dict):
+                        # Pode vir direto ({id, numero, nome}) ou aninhado via tabela de junção
+                        clausula_obj = candidata
+                        if isinstance(candidata.get("clausula"), dict):
+                            clausula_obj = candidata.get("clausula")
+                        elif isinstance(candidata.get("clausula_id"), dict):
+                            clausula_obj = candidata.get("clausula_id")
 
-                    if not isinstance(clausula_obj, dict):
-                        clausula_obj = {}
+                        if not isinstance(clausula_obj, dict):
+                            continue  # Pular se não for dict válido
 
-                    clausula_id = clausula_obj.get("id") or primeira.get("clausula")
+                        # Tentar extrair ID
+                        temp_id = clausula_obj.get("id") or candidata.get("clausula")
 
-                    if clausula_obj.get("numero") and not mod.get("clausula_numero"):
-                        mod["clausula_numero"] = clausula_obj.get("numero")
-                    if clausula_obj.get("nome") and not mod.get("clausula_nome"):
-                        mod["clausula_nome"] = clausula_obj.get("nome")
-                elif isinstance(primeira, str):
-                    # Alguns ambientes podem retornar a relação como lista de IDs.
-                    clausula_id = primeira
+                        # Validar se a cláusula existe (tem status draft ou published)
+                        if temp_id and clausula_obj.get("status") in [
+                            "draft",
+                            "published",
+                        ]:
+                            clausula_id = temp_id
+                            clausula_numero = clausula_obj.get("numero")
+                            clausula_nome = clausula_obj.get("nome")
+                            break  # Encontrou cláusula válida, parar busca
 
-                # setdefault não sobrescreve None; aqui precisamos preencher quando ausente ou vazio.
+                    elif isinstance(candidata, str):
+                        # Alguns ambientes podem retornar a relação como lista de IDs
+                        # Neste caso, não temos como validar, então usar o primeiro
+                        clausula_id = candidata
+                        break
+
+                # Aplicar dados da cláusula válida encontrada
                 if clausula_id and not mod.get("clausula_id"):
                     mod["clausula_id"] = clausula_id
+                if clausula_numero and not mod.get("clausula_numero"):
+                    mod["clausula_numero"] = clausula_numero
+                if clausula_nome and not mod.get("clausula_nome"):
+                    mod["clausula_nome"] = clausula_nome
 
         for item in resultado.vinculadas:
             modificacao, meta = extrair_modificacao(item)
@@ -2255,7 +2276,9 @@ class DirectusAPI:
 
             # 6. Calcular blocos (usar HTML do AST)
             diff_html = resultado_ast.get("diff_html", "")
-            resultado_blocos = self._calcular_blocos_avancado(versao_id, diff_html)
+            resultado_blocos = self._calcular_blocos_avancado(
+                versao_id, diff_html, modificacoes
+            )
 
             # 7. Criar registro no cache
             diff_id = str(uuid.uuid4())
@@ -2354,6 +2377,17 @@ class DirectusAPI:
                     linha_fim = posicao_fim // 1000
                     coluna_fim = posicao_fim % 1000
 
+                    # Obter ID da cláusula vinculada
+                    clausula_id = mod.get("clausula_id")
+
+                    # DEBUG: Log vinculação
+                    if clausula_id:
+                        clausula_numero = mod.get("clausula_numero", "?")
+                        if idx <= 3:  # Log primeiras 3
+                            print(
+                                f"  🔗 Mod #{idx} vinculada à cláusula {clausula_numero} (ID: {clausula_id[:8]})"
+                            )
+
                     mod_data = {
                         "categoria": mod.get("tipo", "ALTERACAO"),  # tipo → categoria
                         "conteudo": mod.get("conteudo", {}).get(
@@ -2362,7 +2396,7 @@ class DirectusAPI:
                         "alteracao": mod.get("conteudo", {}).get(
                             "novo"
                         ),  # conteudo_novo → alteracao
-                        "clausula": mod.get("clausula_id"),  # ID da cláusula vinculada
+                        "clausula": clausula_id,  # ID da cláusula vinculada
                         "caminho_inicio": f"L{linha_inicio}:C{coluna_inicio}",
                         "caminho_fim": f"L{linha_fim}:C{coluna_fim}",
                         "posicao_inicio": posicao_inicio,  # ✅ USAR POSIÇÕES CALCULADAS
@@ -2377,6 +2411,22 @@ class DirectusAPI:
                         idx <= 5 or idx % 10 == 0
                     ):  # Mostrar primeiras 5 e múltiplos de 10
                         print(f"  ✅ Modificação #{idx} ({mod['tipo']}) preparada")
+
+                # Estatísticas de vinculação
+                com_clausula = sum(
+                    1 for m in modificacoes_directus if m.get("clausula")
+                )
+                sem_clausula = len(modificacoes_directus) - com_clausula
+                taxa = (
+                    (com_clausula / len(modificacoes_directus) * 100)
+                    if modificacoes_directus
+                    else 0
+                )
+
+                print("\n📊 Resumo de vinculações:")
+                print(f"   ✅ Com cláusula: {com_clausula}")
+                print(f"   ⚠️  Sem cláusula: {sem_clausula}")
+                print(f"   📈 Taxa: {taxa:.1f}%")
 
                 # Usar função centralizada para atualizar versão com modificações
                 # Não incluir status aqui pois já foi setado como "processada" no PATCH de métricas acima
@@ -2402,15 +2452,13 @@ class DirectusAPI:
                 f"📊 Resultados: {len(modificacoes)} modificações detectadas usando AST"
             )
 
-            return {
-                "success": True,
-                "diff_id": diff_id,
-                "url": diff_data["url"],
-                "modificacoes": modificacoes,
-                "metricas": resultado_ast.get("metricas", {}),
-                "total_blocos": resultado_blocos.get("total_blocos", 1),
-                "metodo": "AST_PANDOC",
-            }
+            # Retornar diff_data completo (inclui blocos_detalhados, original, modified, etc.)
+            # Adicionar campos para compatibilidade com API
+            diff_data["success"] = True
+            diff_data["diff_id"] = diff_id
+            diff_data["metodo"] = "AST_PANDOC"
+
+            return diff_data
 
         except Exception as e:
             print(f"❌ Erro no processamento AST: {e}")
@@ -3345,17 +3393,40 @@ class DirectusAPI:
 
         return None
 
-    def _calcular_blocos_avancado(self, versao_id, diff_html):
+    def _calcular_blocos_avancado(
+        self, versao_id, _diff_html, modificacoes: list[dict]
+    ):
         """
-        Calcula blocos usando agrupamento posicional se disponível,
-        senão usa contagem de clause-headers do HTML
-        Retorna tanto o total quanto os detalhes dos blocos
+        Calcula blocos AGRUPANDO MODIFICAÇÕES por proximidade posicional
+
+        IMPORTANTE: Blocos NÃO são tags nem cláusulas!
+        Blocos são agrupamentos de modificações próximas espacialmente.
+
+        Args:
+            versao_id: ID da versão
+            diff_html: HTML do diff (para fallback)
+            modificacoes: Lista de modificações detectadas
+
+        Returns:
+            dict com total_blocos, blocos_detalhados e metodo
         """
         try:
+            # Se não há modificações, não há blocos
+            if not modificacoes:
+                print("⚠️ Sem modificações, retornando 0 blocos")
+                return {
+                    "total_blocos": 0,
+                    "blocos_detalhados": [],
+                    "metodo": "sem_modificacoes",
+                }
+
             if AgrupadorPosicional:
                 print("🔍 Usando agrupamento posicional para cálculo de blocos")
                 agrupador = AgrupadorPosicional()
-                resultado = agrupador.processar_agrupamento_posicional_versao(versao_id)
+                # Passar modificações para agrupar corretamente
+                resultado = agrupador.processar_agrupamento_posicional_versao(
+                    versao_id, modificacoes
+                )
 
                 if "erro" not in resultado:
                     total_blocos = resultado.get("total_blocos", 1)
@@ -3371,22 +3442,32 @@ class DirectusAPI:
                 else:
                     print(f"⚠️ Erro no agrupamento posicional: {resultado['erro']}")
 
-            # Fallback: contar clause-headers no HTML
-            print("🔍 Usando contagem de clause-headers como fallback")
-            import re
+            # Fallback: criar 1 bloco por modificação (agrupamento simples)
+            print("🔍 Usando fallback simples: 1 bloco por modificação")
+            blocos_simples = []
 
-            clause_matches = re.findall(r"<div class='clause-header'>", diff_html)
-            total_blocos = len(clause_matches)
-            print(f"✅ Fallback: {total_blocos} clause-headers encontrados")
+            for idx, mod in enumerate(modificacoes, 1):
+                bloco = {
+                    "nome": f"Modificação {idx}",
+                    "posicao_inicio": mod.get("posicao_inicio", 0),
+                    "posicao_fim": mod.get("posicao_fim", 0),
+                    "tipo": "modificacao",
+                    "conteudo_estimado": mod.get("conteudo", {}).get("novo", "")[:100],
+                    "modificacoes": [mod],  # Bloco contém a modificação
+                }
+                blocos_simples.append(bloco)
 
             return {
-                "total_blocos": max(total_blocos, 1),
-                "blocos_detalhados": [],
-                "metodo": "clause_headers",
+                "total_blocos": len(blocos_simples),
+                "blocos_detalhados": blocos_simples,
+                "metodo": "fallback_simples",
             }
 
         except Exception as e:
             print(f"❌ Erro no cálculo de blocos: {e}")
+            import traceback
+
+            traceback.print_exc()
             return {"total_blocos": 1, "blocos_detalhados": [], "metodo": "fallback"}
 
     def _extrair_modificacoes_do_diff(
@@ -4010,7 +4091,9 @@ def _get_versao_json(versao_id):
             return jsonify({"error": "Versão não encontrada"}), 404
 
         # Verificar status do processamento
-        if versao_completa.get("status") != "concluido":
+        # Aceitar tanto "concluido" quanto "processada" como status válidos
+        status_validos = ["concluido", "processada"]
+        if versao_completa.get("status") not in status_validos:
             return jsonify(
                 {
                     "error": "Versão ainda não processada",
@@ -4219,7 +4302,7 @@ def _agrupar_modificacoes_em_blocos(modificacoes: list[dict]) -> list[dict]:
     blocos = []
 
     # Blocos com cláusula
-    for clausula_id, bloco_data in blocos_por_clausula.items():
+    for _clausula_id, bloco_data in blocos_por_clausula.items():
         blocos.append(
             {
                 "id": len(blocos) + 1,
@@ -4348,7 +4431,7 @@ def list_routes():
         routes.append(
             {
                 "endpoint": rule.endpoint,
-                "methods": list(rule.methods),
+                "methods": list(rule.methods or set()),
                 "path": str(rule),
             }
         )

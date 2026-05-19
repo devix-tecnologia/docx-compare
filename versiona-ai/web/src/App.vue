@@ -163,6 +163,39 @@
                 📍 Linha {{ modificacao.posicao.linha }}, Coluna {{ modificacao.posicao.coluna }}
               </div>
 
+              <div class="mod-clausula" v-if="modificacao.clausula_nome">
+                <div class="clausula-info">
+                  📋 Cláusula: <strong>{{ modificacao.clausula_nome }}</strong>
+                </div>
+                <div class="clausula-tooltip">
+                  <div class="tooltip-header">📋 {{ modificacao.clausula_nome || 'Sem nome' }}</div>
+                  <div class="tooltip-section" v-if="modificacao.clausula_objetivo">
+                    <div class="tooltip-label">🎯 Objetivo:</div>
+                    <div class="tooltip-text">{{ modificacao.clausula_objetivo }}</div>
+                  </div>
+                  <div
+                    class="tooltip-section"
+                    v-if="
+                      modificacao.clausula_referencias &&
+                      modificacao.clausula_referencias.length > 0
+                    "
+                  >
+                    <div class="tooltip-label">📚 Referências:</div>
+                    <div class="tooltip-text">
+                      <ul class="referencias-list">
+                        <li v-for="(ref, idx) in modificacao.clausula_referencias" :key="idx">
+                          {{ ref }}
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div class="tooltip-section" v-if="modificacao.clausula_conteudo">
+                    <div class="tooltip-label">📄 Preview:</div>
+                    <div class="tooltip-text preview">{{ modificacao.clausula_conteudo }}</div>
+                  </div>
+                </div>
+              </div>
+
               <div
                 class="mod-tags"
                 v-if="modificacao.tags_relacionadas && modificacao.tags_relacionadas.length > 0"
@@ -258,6 +291,46 @@
                           v-if="modificacao.caminho && modificacao.caminho.inicio"
                         >
                           📍 {{ modificacao.caminho.inicio }}
+                        </div>
+                        <div
+                          class="mod-clausula mod-clausula-small"
+                          v-if="modificacao.clausula_nome"
+                        >
+                          <div class="clausula-info">📋 {{ modificacao.clausula_nome }}</div>
+                          <div class="clausula-tooltip">
+                            <div class="tooltip-header">
+                              📋 {{ modificacao.clausula_nome || 'Sem nome' }}
+                            </div>
+                            <div class="tooltip-section" v-if="modificacao.clausula_objetivo">
+                              <div class="tooltip-label">🎯 Objetivo:</div>
+                              <div class="tooltip-text">{{ modificacao.clausula_objetivo }}</div>
+                            </div>
+                            <div
+                              class="tooltip-section"
+                              v-if="
+                                modificacao.clausula_referencias &&
+                                modificacao.clausula_referencias.length > 0
+                              "
+                            >
+                              <div class="tooltip-label">📚 Referências:</div>
+                              <div class="tooltip-text">
+                                <ul class="referencias-list">
+                                  <li
+                                    v-for="(ref, idx) in modificacao.clausula_referencias"
+                                    :key="idx"
+                                  >
+                                    {{ ref }}
+                                  </li>
+                                </ul>
+                              </div>
+                            </div>
+                            <div class="tooltip-section" v-if="modificacao.clausula_conteudo">
+                              <div class="tooltip-label">📄 Preview:</div>
+                              <div class="tooltip-text preview">
+                                {{ modificacao.clausula_conteudo }}
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -499,23 +572,37 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
         return blocos.map(bloco => {
           // Mapear modificações que estão dentro da faixa de posição do bloco
           const modificacoesDoBloco = modificacoes.filter(mod => {
-            // Se a modificação tem posição e está dentro da faixa do bloco
-            if (mod.posicao && bloco.posicao_inicio && bloco.posicao_fim) {
-              // Converter posição de linha/coluna para posição aproximada no texto
-              const posicaoAprox = (mod.posicao.linha - 1) * 50 + mod.posicao.coluna
-              const dentroDoBloco =
-                posicaoAprox >= bloco.posicao_inicio && posicaoAprox <= bloco.posicao_fim
-              return dentroDoBloco
+            // Usar posicao_inicio e posicao_fim diretamente (caracteres no texto)
+            if (
+              mod.posicao_inicio != null &&
+              mod.posicao_fim != null &&
+              bloco.posicao_inicio != null &&
+              bloco.posicao_fim != null
+            ) {
+              // Verificar se há overlap entre modificação e bloco
+              // Overlap existe se: inicio_mod <= fim_bloco AND fim_mod >= inicio_bloco
+              const hasOverlap =
+                mod.posicao_inicio <= bloco.posicao_fim && mod.posicao_fim >= bloco.posicao_inicio
+              return hasOverlap
             }
 
-            // Se não há posição exata, usar tags relacionadas
-            if (mod.tags_relacionadas && mod.tags_relacionadas.length > 0) {
+            // Fallback: Se não há posições numéricas, usar tags relacionadas
+            if (mod.tags_relacionadas && mod.tags_relacionadas.length > 0 && bloco.nome) {
               const temTagRelacionada = mod.tags_relacionadas.some(
                 tag =>
                   tag.toLowerCase().includes(bloco.nome.toLowerCase()) ||
                   bloco.nome.toLowerCase().includes(tag.toLowerCase())
               )
               return temTagRelacionada
+            }
+
+            // Outro fallback: usar clausula vinculada
+            if (mod.clausula_modificada && bloco.nome) {
+              const nomeClausula =
+                typeof mod.clausula_modificada === 'object'
+                  ? mod.clausula_modificada.nome
+                  : mod.clausula_modificada
+              return bloco.nome.toLowerCase().includes(nomeClausula?.toLowerCase() || '')
             }
 
             return false
@@ -1583,6 +1670,139 @@ As condições de pagamento seguem o cronograma estabelecido no documento princi
     font-size: 0.8rem;
     color: #6b7280;
     margin: 0.5rem 0;
+  }
+
+  .mod-clausula {
+    position: relative;
+    font-size: 0.85rem;
+    color: #4f46e5;
+    margin: 0.5rem 0;
+    padding: 0.4rem 0.7rem;
+    background: #eef2ff;
+    border-left: 3px solid #4f46e5;
+    border-radius: 4px;
+    cursor: help;
+    transition: all 0.2s ease;
+  }
+
+  .mod-clausula:hover {
+    background: #e0e7ff;
+    border-left-color: #3730a3;
+  }
+
+  .mod-clausula:hover .clausula-tooltip {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .clausula-info {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .clausula-info strong {
+    color: #3730a3;
+  }
+
+  .clausula-tooltip {
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 0;
+    z-index: 1000;
+    min-width: 350px;
+    max-width: 500px;
+    background: white;
+    border: 2px solid #4f46e5;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow:
+      0 10px 25px rgba(79, 70, 229, 0.15),
+      0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .tooltip-header {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #3730a3;
+    margin-bottom: 0.8rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e0e7ff;
+  }
+
+  .tooltip-section {
+    margin-bottom: 0.7rem;
+  }
+
+  .tooltip-section:last-child {
+    margin-bottom: 0;
+  }
+
+  .tooltip-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.3rem;
+  }
+
+  .tooltip-text {
+    font-size: 0.85rem;
+    color: #374151;
+    line-height: 1.5;
+  }
+
+  .tooltip-text.preview {
+    font-family: 'Monaco', 'Consolas', monospace;
+    font-size: 0.75rem;
+    background: #f9fafb;
+    padding: 0.5rem;
+    border-radius: 4px;
+    max-height: 120px;
+    overflow-y: auto;
+  }
+
+  .referencias-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+  }
+
+  .referencias-list li {
+    padding: 0.25rem 0;
+    padding-left: 1rem;
+    position: relative;
+    line-height: 1.4;
+  }
+
+  .referencias-list li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: #4f46e5;
+    font-weight: bold;
+  }
+
+  .mod-clausula-small {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.5rem;
+    margin: 0.3rem 0;
+  }
+
+  .mod-clausula-small .clausula-tooltip {
+    min-width: 300px;
+    max-width: 400px;
+    font-size: 0.8rem;
+  }
+
+  .mod-clausula-small .tooltip-header {
+    font-size: 0.9rem;
   }
 
   .mod-tags {

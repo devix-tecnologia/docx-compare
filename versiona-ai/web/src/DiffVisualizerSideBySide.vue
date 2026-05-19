@@ -59,22 +59,28 @@
 
   // Computed - Suporta ambas estruturas (antiga com documentos[] e nova direta)
   const documento = computed(() => {
-    // Estrutura nova (API direta)
+    // Estrutura nova (API direta) - usa original e modified diretos
     if (props.dados.modificacoes) {
       return {
-        conteudo_comparacao: props.dados.conteudo_comparacao || { original: '', modificado: '', diff_highlights: [] },
+        conteudo_comparacao: {
+          original: props.dados.original || '',
+          modificado: props.dados.modified || '',
+          diff_highlights: props.dados.diff_highlights || [],
+        },
         modificacoes: props.dados.modificacoes || [],
         estatisticas: {
           tempo_processamento: props.dados.tempo_processamento || 0,
-        }
+        },
       }
     }
     // Estrutura antiga (mock)
-    return props.dados.documentos?.[0] || {
-      conteudo_comparacao: { original: '', modificado: '', diff_highlights: [] },
-      modificacoes: [],
-      estatisticas: { tempo_processamento: 0 }
-    }
+    return (
+      props.dados.documentos?.[0] || {
+        conteudo_comparacao: { original: '', modificado: '', diff_highlights: [] },
+        modificacoes: [],
+        estatisticas: { tempo_processamento: 0 },
+      }
+    )
   })
 
   const totalDocumentos = computed(() => {
@@ -93,21 +99,13 @@
   const conteudoOriginalComDestaque = computed(() => {
     const conteudoComp = documento.value.conteudo_comparacao || {}
     const highlights = conteudoComp.diff_highlights || []
-    return aplicarDestaques(
-      conteudoComp.original || '',
-      highlights,
-      'original'
-    )
+    return aplicarDestaques(conteudoComp.original || '', highlights, 'original')
   })
 
   const conteudoModificadoComDestaque = computed(() => {
     const conteudoComp = documento.value.conteudo_comparacao || {}
     const highlights = conteudoComp.diff_highlights || []
-    return aplicarDestaques(
-      conteudoComp.modificado || '',
-      highlights,
-      'modificado'
-    )
+    return aplicarDestaques(conteudoComp.modificado || '', highlights, 'modificado')
   })
 
   // Methods

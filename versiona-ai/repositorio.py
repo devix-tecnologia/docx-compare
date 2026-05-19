@@ -689,9 +689,72 @@ class DirectusRepository:
         Raises:
             requests.RequestException: Em caso de erro de comunicação
         """
+        # No Directus v11+, usar /files/{id} que retorna o binário diretamente
+        # com autenticação via header (mais seguro que assets com token na URL)
+        # Se o arquivo for privado, precisa do token no header
+
+        # Tentar baixar via /assets/{id} primeiro (retorna binário diretamente)
         response = requests.get(
-            f"{self.base_url}/assets/{file_id}", headers=self.headers, timeout=60
+            f"{self.base_url}/assets/{file_id}",
+            headers=self.headers,
+            timeout=60,
         )
+
+        # Fallback: /files/{id} pode retornar JSON em algumas versões do Directus
+        # então tentamos apenas se assets falhar
+        if response.status_code in [403, 404]:
+            response = requests.get(
+                f"{self.base_url}/files/{file_id}",
+                headers=self.headers,
+                timeout=60,
+            )
+
+        # NOVO: Fallback para servidor de produção se arquivo não existir localmente OU estiver corrompido
+        should_try_production = False
+
+        if response.status_code in [403, 404]:
+            should_try_production = True
+        elif response.status_code == 200:
+            # Verificar se arquivo DOCX está válido (deve começar com magic bytes PK\x03\x04)
+            content = response.content
+            if len(content) < 4 or not content.startswith(b"PK\x03\x04"):
+                print(
+                    f"⚠️ Arquivo {file_id} localmente parece corrompido (tamanho: {len(content)} bytes, magic bytes: {content[:4].hex() if len(content) >= 4 else 'N/A'})"
+                )
+                should_try_production = True
+
+        if should_try_production:
+            import os
+
+            prod_url = os.getenv("DIRECTUS_PRODUCTION_URL", "https://contract.devix.co")
+            prod_token = os.getenv("DIRECTUS_PRODUCTION_TOKEN")
+
+            if prod_url and prod_url != self.base_url and prod_token:
+                print(f"⚠️ Tentando baixar arquivo {file_id} do servidor de produção...")
+                prod_headers = {
+                    "Authorization": f"Bearer {prod_token}",
+                    "Content-Type": "application/json",
+                }
+
+                # Tentar /assets/{id} no servidor de produção (retorna binário)
+                prod_response = requests.get(
+                    f"{prod_url}/assets/{file_id}",
+                    headers=prod_headers,
+                    timeout=60,
+                )
+
+                if prod_response.status_code == 200:
+                    # Validar se arquivo de produção está válido
+                    prod_content = prod_response.content
+                    if len(prod_content) >= 4 and prod_content.startswith(
+                        b"PK\x03\x04"
+                    ):
+                        print(
+                            f"✅ Arquivo {file_id} válido baixado do servidor de produção ({len(prod_content)} bytes)"
+                        )
+                        response = prod_response  # Usar arquivo de produção
+                    else:
+                        print("⚠️ Arquivo de produção também está corrompido")
 
         if response.status_code != 200:
             response.raise_for_status()

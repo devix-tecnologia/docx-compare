@@ -127,6 +127,8 @@ services:
       FLASK_ENV: testing
       DIRECTUS_BASE_URL: http://directus:8055
       DIRECTUS_TOKEN: ${DIRECTUS_TOKEN:-test-token-will-be-created}
+      DIRECTUS_PRODUCTION_URL: ${DIRECTUS_PRODUCTION_URL:-https://contract.devix.co}
+      DIRECTUS_PRODUCTION_TOKEN: ${DIRECTUS_PRODUCTION_TOKEN:-}
       PYTHONUNBUFFERED: 1
     volumes:
       - .:/app/versiona-ai
