@@ -399,7 +399,10 @@ class ProcessadorTagsModelo:
         return list(tags_encontradas.values())
 
     def _extrair_conteudo_entre_tags(
-        self, texto_com_tags: str, texto_limpo: str, mapa_posicoes: dict
+        self,
+        texto_com_tags: str,
+        texto_limpo: str | None = None,
+        mapa_posicoes: dict | None = None,
     ) -> dict[str, dict]:
         """
         Extrai conteúdo entre tags de abertura e fechamento.
@@ -409,13 +412,17 @@ class ProcessadorTagsModelo:
 
         Args:
             texto_com_tags: Texto original COM marcações {{TAG-X}}
-            texto_limpo: Texto SEM marcações (para extração de conteúdo)
-            mapa_posicoes: Mapeamento {pos_com_tags: pos_limpa}
+            texto_limpo: Texto SEM marcações (para extração de conteúdo). Se None, calculado automaticamente.
+            mapa_posicoes: Mapeamento {pos_com_tags: pos_limpa}. Se None, calculado automaticamente.
 
         Returns:
             dict com {tag_nome: {"conteudo": str, "posicao_inicial_texto": int, "posicao_final_texto": int}}
             Onde posicao_inicial_texto e posicao_final_texto são posições no texto LIMPO
         """
+        if texto_limpo is None or mapa_posicoes is None:
+            texto_limpo, mapa_posicoes = self._remover_marcacoes_e_mapear(
+                texto_com_tags
+            )
         conteudo_map = {}
         total_aberturas = 0
         total_pares = 0

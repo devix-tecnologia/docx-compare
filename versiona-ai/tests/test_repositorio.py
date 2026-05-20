@@ -425,9 +425,9 @@ class TestGetVersaoParaProcessar:
         params = call_args[1]["params"]
         fields = params["fields"]
 
-        # Verificar campos principais estão incluídos
-        assert "id" in fields
-        assert "contrato.modelo_contrato.tags.id" in fields
+        # Verificar que campos via wildcard estão incluídos
+        assert "*" in fields
+        assert "contrato.modelo_contrato.tags.*" in fields
 
 
 class TestGetVersaoCompletaParaView:
@@ -658,6 +658,100 @@ class TestRegistrarResultadoProcessamentoVersao:
         call_args = mock_patch.call_args
         json_data = call_args[1]["json"]
         assert json_data["status"] == "processando"
+
+
+class TestAtualizarStatusVersao:
+    """Testes para atualizar_status_versao()."""
+
+    @patch("repositorio.requests.patch")
+    def test_atualizar_status_versao_sucesso(self, mock_patch, repo):
+        """Status atualizado com sucesso retorna success=True."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "data": {"id": "v123", "status": "processando"}
+        }
+        mock_patch.return_value = mock_response
+
+        result = repo.atualizar_status_versao("v123", status="processando")
+
+        assert result["success"] is True
+        assert result["status_code"] == 200
+        call_args = mock_patch.call_args
+        assert call_args[1]["json"]["status"] == "processando"
+        assert "observacao" not in call_args[1]["json"]
+
+    @patch("repositorio.requests.patch")
+    def test_atualizar_status_versao_com_observacao(self, mock_patch, repo):
+        """Observacao é incluída no payload quando fornecida."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"data": {"id": "v123"}}
+        mock_patch.return_value = mock_response
+
+        result = repo.atualizar_status_versao(
+            "v123",
+            status="processando",
+            observacao="Processamento iniciado em 2026-05-19",
+        )
+
+        assert result["success"] is True
+        call_args = mock_patch.call_args
+        json_data = call_args[1]["json"]
+        assert json_data["status"] == "processando"
+        assert json_data["observacao"] == "Processamento iniciado em 2026-05-19"
+
+    @patch("repositorio.requests.patch")
+    def test_atualizar_status_versao_sem_observacao(self, mock_patch, repo):
+        """Sem observacao, payload contém apenas o campo status."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"data": {"id": "v123"}}
+        mock_patch.return_value = mock_response
+
+        repo.atualizar_status_versao("v123", status="concluido")
+
+        call_args = mock_patch.call_args
+        json_data = call_args[1]["json"]
+        assert set(json_data.keys()) == {"status"}
+
+    @patch("repositorio.requests.patch")
+    def test_atualizar_status_versao_erro_http(self, mock_patch, repo):
+        """Erro HTTP retorna success=False sem lançar exceção."""
+        mock_response = Mock()
+        mock_response.status_code = 403
+        mock_response.text = "Forbidden"
+        mock_patch.return_value = mock_response
+
+        result = repo.atualizar_status_versao("v123", status="processando")
+
+        assert result["success"] is False
+        assert result["status_code"] == 403
+        assert "error" in result
+
+    @patch("repositorio.requests.patch")
+    def test_atualizar_status_versao_excecao_rede(self, mock_patch, repo):
+        """Exceção de rede retorna success=False sem lançar."""
+        mock_patch.side_effect = Exception("Connection refused")
+
+        result = repo.atualizar_status_versao("v123", status="processando")
+
+        assert result["success"] is False
+        assert result["status_code"] == 0
+        assert "error" in result
+
+    @patch("repositorio.requests.patch")
+    def test_atualizar_status_versao_usa_timeout_curto(self, mock_patch, repo):
+        """Usa timeout=10 (rápido) por ser apenas atualização de status."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"data": {"id": "v123"}}
+        mock_patch.return_value = mock_response
+
+        repo.atualizar_status_versao("v123", status="processando")
+
+        call_args = mock_patch.call_args
+        assert call_args[1]["timeout"] == 10
 
 
 if __name__ == "__main__":

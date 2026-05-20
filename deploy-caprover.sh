@@ -47,7 +47,7 @@ if [ "$CAPROVER_APP_TOKEN" = "seu_token_aqui" ] || [ "$CAPROVER_APP_TOKEN" = "yo
 fi
 
 # Nome base da imagem (sem tag)
-DOCKER_IMAGE_BASE="docker-registry.de.vix.br/versiona-ai-minimal"
+DOCKER_IMAGE_BASE="docker-registry.de.vix.br/versiona-ai-complete"
 DOCKER_IMAGE_DEFAULT="${DOCKER_IMAGE_BASE}:latest"
 
 echo -e "${BLUE}📦 Configuração:${NC}"
@@ -70,7 +70,7 @@ if [[ $REPLY =~ ^[Ss]$ ]]; then
     BUILD_LOG=$(mktemp)
 
     # Executar build mostrando output em tempo real E salvando em arquivo
-    ./versiona-ai/build-minimal.sh 2>&1 | tee "$BUILD_LOG"
+    ./versiona-ai/build-and-push-complete.sh 2>&1 | tee "$BUILD_LOG"
     BUILD_EXIT_CODE=${PIPESTATUS[0]}
 
     echo ""
@@ -82,8 +82,8 @@ if [[ $REPLY =~ ^[Ss]$ ]]; then
         exit 1
     fi
 
-    # Extrair a versão gerada do output (linha que contém "Versão: ")
-    BUILD_VERSION=$(grep "🔖 Versão:" "$BUILD_LOG" | awk '{print $3}')
+    # Extrair a versão gerada do output (linha que contém "Tag: ")
+    BUILD_VERSION=$(grep "📋 Tag:" "$BUILD_LOG" | awk '{print $3}')
 
     # Limpar arquivo temporário
     rm -f "$BUILD_LOG"

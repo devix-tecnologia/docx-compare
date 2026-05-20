@@ -4,16 +4,8 @@ Teste de taxa de sucesso em cenário realista de produção.
 Valida que ambas estratégias encontram > 90% das cláusulas.
 """
 
-import sys
-from pathlib import Path
-
 import pytest
-
-# Adiciona versiona-ai ao path
-versiona_ai_path = Path(__file__).parent.parent / "versiona-ai"
-sys.path.insert(0, str(versiona_ai_path))
-
-from matching import DifflibMatcher, RapidFuzzMatcher  # noqa: E402
+from matching import DifflibMatcher, RapidFuzzMatcher
 
 
 def create_contract_document() -> str:

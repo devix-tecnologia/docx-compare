@@ -108,6 +108,7 @@ def versao_data(directus_headers):
 # ==============================================================================
 
 
+@pytest.mark.skip(reason="Requer ambiente E2E com Directus rodando em localhost:8065")
 def test_vinculacao_clausulas_versao_real_ast(
     api_headers, directus_headers, limpar_modificacoes_versao, versao_data
 ):
@@ -245,6 +246,7 @@ def test_vinculacao_clausulas_versao_real_ast(
     print("\n✅ Teste PASSOU! Vinculação funcionando corretamente")
 
 
+@pytest.mark.skip(reason="Requer ambiente E2E com Directus rodando em localhost:8065")
 def test_modificacoes_tem_conteudo_valido(
     api_headers, directus_headers, limpar_modificacoes_versao
 ):
@@ -305,6 +307,7 @@ def test_modificacoes_tem_conteudo_valido(
 # ==============================================================================
 
 
+@pytest.mark.skip(reason="Requer ambiente E2E com Directus rodando em localhost:8065")
 def test_debug_tags_modelo(directus_headers):
     """
     Teste auxiliar para debug: verificar tags do modelo.
@@ -327,6 +330,7 @@ def test_debug_tags_modelo(directus_headers):
         print(f"   - {tag['tag_nome']}: {len(tag.get('conteudo', ''))} chars")
 
 
+@pytest.mark.skip(reason="Requer ambiente E2E com Directus rodando em localhost:8065")
 def test_debug_clausulas_modelo(directus_headers):
     """
     Teste auxiliar para debug: verificar cláusulas do modelo.

@@ -334,7 +334,15 @@ class DirectusAPI:
         result = self.repo.test_connection()
         self.connected = result["success"]
         if not self.connected:
+            token = self.token or ""
+            masked = (
+                (token[:4] + "*" * (len(token) - 8) + token[-4:])
+                if len(token) >= 10
+                else "*" * len(token)
+            )
             print(f"❌ Erro ao conectar com Directus: {result['message']}")
+            print(f"   🔗 URL: {self.base_url}")
+            print(f"   🔑 Token: {masked or '(não definido)'}")
         return self.connected
 
     def get_contratos(self):
@@ -486,6 +494,22 @@ class DirectusAPI:
                     # No modo real, falha do Directus é erro (não usar mock como fallback)
                     print(f"❌ Versão {versao_id} não encontrada no Directus")
                     return {"error": f"Versão {versao_id} não encontrada no Directus"}
+
+                # Versão encontrada — atualizar para "em_processamento" antes de iniciar
+                resultado_status = self.repo.atualizar_status_versao(
+                    versao_id,
+                    status="em_processamento",
+                    observacao=f"Processamento iniciado em {datetime.now().isoformat()}",
+                )
+                if not resultado_status["success"]:
+                    print(
+                        f"⚠️ Não foi possível atualizar status para 'em_processamento': "
+                        f"{resultado_status.get('error')}"
+                    )
+                else:
+                    print(
+                        f"🔄 Status da versão {versao_id} atualizado para 'em_processamento'"
+                    )
 
                 print(f"✅ Versão {versao_id} carregada com sucesso")
                 print(f"🔍 DEBUG: type(versao_data) = {type(versao_data)}")
@@ -690,6 +714,12 @@ class DirectusAPI:
 
         except Exception as e:
             print(f"❌ Erro ao processar versão {versao_id}: {e}")
+            if not mock:
+                self.repo.atualizar_status_versao(
+                    versao_id,
+                    status="erro",
+                    observacao=f"Erro no processamento: {str(e)[:500]}",
+                )
             return {"error": str(e)}
 
     def _generate_mock_content(self, versao_id, versao_data):
@@ -1370,8 +1400,8 @@ class DirectusAPI:
         nao_vinculadas = []
 
         for idx, modificacao in enumerate(modificacoes):
-            mod_inicio = modificacao.get("posicao_inicio", 0)
-            mod_fim = modificacao.get("posicao_fim", 0)
+            mod_inicio = modificacao.get("posicao_inicio")
+            mod_fim = modificacao.get("posicao_fim")
             mod_tipo = modificacao.get("tipo", "")
 
             # Debug: primeiras 3 modificações
@@ -1384,42 +1414,77 @@ class DirectusAPI:
             melhor_score = 0.0
             melhor_sobreposicao = 0
 
-            # Calcular sobreposição com cada tag
-            for tag in tags_mapeadas:
-                # Calcular sobreposição das posições
-                inicio_sobreposicao = max(mod_inicio, tag.posicao_inicio_original)
-                fim_sobreposicao = min(mod_fim, tag.posicao_fim_original)
-                tamanho_sobreposicao = max(0, fim_sobreposicao - inicio_sobreposicao)
-
-                if tamanho_sobreposicao == 0:
-                    continue  # Sem sobreposição
-
-                # Debug: log TODAS as sobreposições (não só primeiras 3)
-                if tamanho_sobreposicao > 0:
-                    print(
-                        f"      → Mod[{mod_inicio}-{mod_fim}] ∩ Tag {tag.tag_nome}[{tag.posicao_inicio_original}-{tag.posicao_fim_original}]: {tamanho_sobreposicao} chars"
+            # Calcular sobreposição com cada tag (apenas quando posições estão disponíveis)
+            # Guard: posicao_inicio=None ocorre para REMOCAO e para INSERCAO cujo texto
+            # não foi encontrado no documento. Sem posições, max(None, int) levantaria TypeError.
+            if mod_inicio is not None and mod_fim is not None:
+                for tag in tags_mapeadas:
+                    # Calcular sobreposição das posições
+                    inicio_sobreposicao = max(mod_inicio, tag.posicao_inicio_original)
+                    fim_sobreposicao = min(mod_fim, tag.posicao_fim_original)
+                    tamanho_sobreposicao = max(
+                        0, fim_sobreposicao - inicio_sobreposicao
                     )
 
-                # Calcular tamanhos
-                tamanho_modificacao = mod_fim - mod_inicio
-                tamanho_tag = tag.posicao_fim_original - tag.posicao_inicio_original
+                    if tamanho_sobreposicao == 0:
+                        continue  # Sem sobreposição
 
-                # Score de sobreposição: percentual da menor região coberta
-                # Exemplo: se mod=10 chars e tag=100 chars, e sobreposição=10,
-                # então score = 10/10 = 1.0 (modificação inteira dentro da tag)
-                tamanho_menor = min(tamanho_modificacao, tamanho_tag)
-                score_sobreposicao = (
-                    tamanho_sobreposicao / tamanho_menor if tamanho_menor > 0 else 0.0
-                )
+                    # Debug: log TODAS as sobreposições (não só primeiras 3)
+                    if tamanho_sobreposicao > 0:
+                        print(
+                            f"      → Mod[{mod_inicio}-{mod_fim}] ∩ Tag {tag.tag_nome}[{tag.posicao_inicio_original}-{tag.posicao_fim_original}]: {tamanho_sobreposicao} chars"
+                        )
 
-                # Combinar com score de inferência da tag
-                # Score final = média ponderada (70% sobreposição + 30% inferência)
-                score_final = (0.7 * score_sobreposicao) + (0.3 * tag.score_inferencia)
+                    # Calcular tamanhos
+                    tamanho_modificacao = mod_fim - mod_inicio
+                    tamanho_tag = tag.posicao_fim_original - tag.posicao_inicio_original
 
-                if score_final > melhor_score:
-                    melhor_score = score_final
-                    melhor_tag = tag
-                    melhor_sobreposicao = tamanho_sobreposicao
+                    # Score de sobreposição: percentual da menor região coberta
+                    # Exemplo: se mod=10 chars e tag=100 chars, e sobreposição=10,
+                    # então score = 10/10 = 1.0 (modificação inteira dentro da tag)
+                    tamanho_menor = min(tamanho_modificacao, tamanho_tag)
+                    score_sobreposicao = (
+                        tamanho_sobreposicao / tamanho_menor
+                        if tamanho_menor > 0
+                        else 0.0
+                    )
+
+                    # Combinar com score de inferência da tag
+                    # Score final = média ponderada (70% sobreposição + 30% inferência)
+                    score_final = (0.7 * score_sobreposicao) + (
+                        0.3 * tag.score_inferencia
+                    )
+
+                    if score_final > melhor_score:
+                        melhor_score = score_final
+                        melhor_tag = tag
+                        melhor_sobreposicao = tamanho_sobreposicao
+
+            # Fallback para INSERCAO: quando não houve sobreposição por posição,
+            # usar o número da cláusula registrado no diff HTML (campo clausula_modificada).
+            # Isso ocorre quando a inserção está em posição fora do conteúdo original da tag.
+            if melhor_tag is None and mod_tipo == "INSERCAO":
+                clausula_num = modificacao.get("clausula_modificada")
+                if clausula_num:
+                    for tag in tags_mapeadas:
+                        for clausula in tag.clausulas:
+                            if not isinstance(clausula, dict):
+                                continue
+                            # Suporta estrutura plana {"numero": "2.1"} e
+                            # aninhada {"clausula_id": {"numero": "2.1"}}
+                            numero = clausula.get("numero") or (
+                                clausula.get("clausula_id", {}) or {}
+                            ).get("numero")
+                            if numero == clausula_num:
+                                melhor_tag = tag
+                                melhor_score = 0.7  # confiança média (fallback)
+                                break
+                        if melhor_tag:
+                            break
+                    if melhor_tag:
+                        print(
+                            f"   🔀 Fallback INSERCAO: clausula_modificada={clausula_num} → Tag {melhor_tag.tag_nome}"
+                        )
 
             # Categorizar baseado no score
             if melhor_tag is None:
@@ -1542,11 +1607,12 @@ class DirectusAPI:
                         # Tentar extrair ID
                         temp_id = clausula_obj.get("id") or candidata.get("clausula")
 
-                        # Validar se a cláusula existe (tem status draft ou published)
-                        if temp_id and clausula_obj.get("status") in [
-                            "draft",
-                            "published",
-                        ]:
+                        # Validar se a cláusula existe (status draft, published ou não informado)
+                        status = clausula_obj.get("status")
+                        if temp_id and (
+                            "status" not in clausula_obj
+                            or status in ["draft", "published"]
+                        ):
                             clausula_id = temp_id
                             clausula_numero = clausula_obj.get("numero")
                             clausula_nome = clausula_obj.get("nome")
@@ -1785,8 +1851,8 @@ class DirectusAPI:
         modificacoes,
         tags_modelo,
         texto_com_tags,
-        _texto_original=None,
-        _texto_modificado=None,
+        texto_original=None,  # noqa: ARG002
+        texto_modificado=None,  # noqa: ARG002
     ):
         """
         Vincula cada modificação à cláusula correspondente baseado nas tags do modelo
@@ -1826,30 +1892,29 @@ class DirectusAPI:
             if not tag_nome:
                 continue
 
-            # EXIGIR posições - não há fallback
             if posicao_inicio is None or posicao_fim is None:
                 tags_sem_posicao.append(tag_nome)
                 print(
-                    f"❌ Tag '{tag_nome}': SEM POSIÇÃO (erro no processamento do modelo)"
+                    f"⚠️ Tag '{tag_nome}': sem posição pré-computada, será localizada via texto"
                 )
-                continue
 
             tag_info = {
                 "tag_nome": tag_nome,
-                "posicao_inicio": posicao_inicio,
-                "posicao_fim": posicao_fim,
+                "posicao_inicio": posicao_inicio or 0,
+                "posicao_fim": posicao_fim or 0,
                 "clausulas": clausulas if isinstance(clausulas, list) else [],
             }
             tag_positions.append(tag_info)
 
         if tags_sem_posicao:
-            print(f"\n⚠️  AVISO: {len(tags_sem_posicao)} tags sem posição encontradas:")
-            for tag_nome in tags_sem_posicao[:10]:  # Mostrar até 10
+            print(
+                f"\n⚠️  {len(tags_sem_posicao)} tags sem posição pré-computada (serão localizadas via texto):"
+            )
+            for tag_nome in tags_sem_posicao[:10]:
                 print(f"   - {tag_nome}")
             if len(tags_sem_posicao) > 10:
                 print(f"   ... e mais {len(tags_sem_posicao) - 10} tags")
-            print("   ⚠️  Essas tags NÃO serão usadas para vinculação.")
-            print("   ⚠️  Verifique o processamento do modelo de contrato!\n")
+            print()
 
         # Ordenar tags por posição
         tag_positions.sort(key=lambda x: x["posicao_inicio"])
@@ -1983,28 +2048,36 @@ class DirectusAPI:
                 modificacoes_sem_conteudo.append(idx)
                 continue
 
-            # NORMALIZAR o texto da modificação também (para comparação justa)
-            texto_mod_normalizado = re.sub(r"\s+", " ", texto_mod).strip()
+            # Usar posição absoluta pré-computada se disponível (resolve duplicatas)
+            pos_inicio_precomputada = mod.get("posicao_inicio")
+            pos_fim_precomputada = mod.get("posicao_fim")
 
-            # Buscar posição no texto NORMALIZADO SEM tags
-            pos_inicio_mod = texto_sem_tags_normalizado.find(texto_mod_normalizado)
+            if pos_inicio_precomputada is not None and pos_fim_precomputada is not None:
+                pos_inicio_mod = pos_inicio_precomputada
+                pos_fim_mod = pos_fim_precomputada
+            else:
+                # NORMALIZAR o texto da modificação também (para comparação justa)
+                texto_mod_normalizado = re.sub(r"\s+", " ", texto_mod).strip()
 
-            if pos_inicio_mod < 0:
-                # Tentar busca parcial (primeiros 50 caracteres)
-                texto_parcial = (
-                    texto_mod_normalizado[:50]
-                    if len(texto_mod_normalizado) > 50
-                    else texto_mod_normalizado
-                )
-                pos_inicio_mod = texto_sem_tags_normalizado.find(texto_parcial)
-                if pos_inicio_mod >= 0:
-                    texto_mod_normalizado = texto_parcial
+                # Buscar posição no texto NORMALIZADO SEM tags
+                pos_inicio_mod = texto_sem_tags_normalizado.find(texto_mod_normalizado)
 
-            if pos_inicio_mod < 0:
-                print(f"⚠️ Mod #{idx}: texto não encontrado no documento")
-                continue
+                if pos_inicio_mod < 0:
+                    # Tentar busca parcial (primeiros 50 caracteres)
+                    texto_parcial = (
+                        texto_mod_normalizado[:50]
+                        if len(texto_mod_normalizado) > 50
+                        else texto_mod_normalizado
+                    )
+                    pos_inicio_mod = texto_sem_tags_normalizado.find(texto_parcial)
+                    if pos_inicio_mod >= 0:
+                        texto_mod_normalizado = texto_parcial
 
-            pos_fim_mod = pos_inicio_mod + len(texto_mod_normalizado)
+                if pos_inicio_mod < 0:
+                    print(f"⚠️ Mod #{idx}: texto não encontrado no documento")
+                    continue
+
+                pos_fim_mod = pos_inicio_mod + len(texto_mod_normalizado)
 
             # Encontrar a tag que contém esta posição (agora no mesmo espaço de coordenadas!)
             vinculada = False

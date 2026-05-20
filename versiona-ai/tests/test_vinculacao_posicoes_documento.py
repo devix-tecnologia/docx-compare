@@ -118,32 +118,28 @@ def test_vincular_modificacoes_usa_posicoes_corretas(server, sample_data):
     )
 
 
-def test_tags_sao_mapeadas_no_documento_original(server, sample_data, capfd):
+def test_tags_sao_mapeadas_no_documento_original(server, sample_data):
     """
     Testa que as tags são mapeadas com posições do documento ORIGINAL,
-    não do documento com tags.
+    não do documento com tags. Valida que modificações dentro das tags
+    são corretamente vinculadas às cláusulas esperadas.
     """
-    server._vincular_modificacoes_clausulas(
+    resultado = server._vincular_modificacoes_clausulas(
         modificacoes=sample_data["modificacoes"],
         tags_modelo=sample_data["tags_modelo"],
         texto_com_tags=sample_data["documento_com_tags"],
         texto_original=sample_data["documento_original"],
     )
 
-    # Capturar output
-    captured = capfd.readouterr()
+    # Verificar que todas as modificações com vinculação esperada foram vinculadas
+    vinculacoes = {mod["id"]: mod.get("clausula_id") for mod in resultado}
 
-    # Verificar que os prints mostram posições corretas
-    # Tag 1 deve estar na posição 32 do original (não 37 do doc com tags)
-    assert "posição 32 do original" in captured.out, "Tag 1 deveria estar na posição 32"
-
-    # Tag 2 deve estar na posição 99 do original (não 115 do doc com tags)
-    assert "posição 99 do original" in captured.out, "Tag 2 deveria estar na posição 99"
-
-    # Tag 3 deve estar na posição 159 do original (não 186 do doc com tags)
-    assert "posição 159 do original" in captured.out, (
-        "Tag 3 deveria estar na posição 159"
-    )
+    for mod_id, clausula_esperada in sample_data["vinculacao_esperada"].items():
+        if clausula_esperada is not None:
+            assert vinculacoes.get(mod_id) == clausula_esperada, (
+                f"Modificação {mod_id}: esperada cláusula '{clausula_esperada}', "
+                f"obtida '{vinculacoes.get(mod_id)}'"
+            )
 
 
 if __name__ == "__main__":

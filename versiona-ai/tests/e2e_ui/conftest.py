@@ -6,8 +6,8 @@ Combina Playwright (UI) + Directus SDK (validações de dados).
 
 import os
 import time
+from collections.abc import Generator
 from dataclasses import dataclass
-from typing import Generator
 
 import pytest
 import requests
@@ -56,7 +56,7 @@ def directus_session(e2e_ui_config: E2EUIConfig) -> requests.Session:
         "Authorization": f"Bearer {e2e_ui_config.directus_token}",
         "Content-Type": "application/json",
     })
-    
+
     # Aguardar Directus estar pronto
     max_retries = 30
     for i in range(max_retries):
@@ -72,7 +72,7 @@ def directus_session(e2e_ui_config: E2EUIConfig) -> requests.Session:
             if i == max_retries - 1:
                 raise RuntimeError(f"Directus não está acessível após {max_retries} tentativas")
             time.sleep(2)
-    
+
     return session
 
 
@@ -80,7 +80,7 @@ def directus_session(e2e_ui_config: E2EUIConfig) -> requests.Session:
 def api_session(e2e_ui_config: E2EUIConfig) -> requests.Session:
     """Cliente HTTP para API Versiona."""
     session = requests.Session()
-    
+
     # Aguardar API estar pronta
     max_retries = 20
     for i in range(max_retries):
@@ -96,7 +96,7 @@ def api_session(e2e_ui_config: E2EUIConfig) -> requests.Session:
             if i == max_retries - 1:
                 raise RuntimeError(f"API não está acessível após {max_retries} tentativas")
             time.sleep(2)
-    
+
     return session
 
 
@@ -108,7 +108,7 @@ def api_session(e2e_ui_config: E2EUIConfig) -> requests.Session:
 def playwright() -> Generator[Playwright, None, None]:
     """Instância Playwright para testes."""
     from playwright.sync_api import sync_playwright
-    
+
     with sync_playwright() as p:
         yield p
 
@@ -152,22 +152,22 @@ def directus_page_logged(
     """Página já autenticada no Directus Admin."""
     # Navegar para login
     page.goto(f"{e2e_ui_config.directus_url}/admin/login")
-    
+
     # Aguardar formulário de login
     page.wait_for_selector('input[type="email"]', timeout=10000)
-    
+
     # Preencher credenciais
     page.fill('input[type="email"]', e2e_ui_config.admin_email)
     page.fill('input[type="password"]', e2e_ui_config.admin_password)
-    
+
     # Clicar em login
     page.click('button[type="submit"]')
-    
+
     # Aguardar redirecionamento para dashboard
     page.wait_for_url("**/admin/**", timeout=15000)
-    
+
     print(f"✅ Login realizado no Directus: {e2e_ui_config.admin_email}")
-    
+
     yield page
 
 
@@ -182,14 +182,14 @@ def modelo_contrato_id(directus_session: requests.Session, e2e_ui_config: E2EUIC
         f"{e2e_ui_config.directus_url}/items/modelo_contrato",
         params={"filter": {"nome": {"_eq": "Modelo Teste Task 010"}}},
     )
-    
+
     if response.status_code != 200:
         pytest.skip("Modelo de contrato não encontrado no seed")
-    
+
     data = response.json()
     if not data.get("data"):
         pytest.skip("Modelo de contrato 'Modelo Teste Task 010' não existe")
-    
+
     return data["data"][0]["id"]
 
 
@@ -210,24 +210,24 @@ def versao_processada_id(
         "status": "aguardando_processamento",
         "arquivo": None,  # Em testes reais, seria upload de arquivo
     }
-    
+
     response = directus_session.post(
         f"{e2e_ui_config.directus_url}/items/contrato_versao",
         json=payload,
     )
-    
+
     if response.status_code not in [200, 201]:
         pytest.fail(f"Falha ao criar versão: {response.text}")
-    
+
     versao_id = response.json()["data"]["id"]
-    
+
     # Simular processamento (em ambiente real, webhook dispararia)
     # Aqui apenas alteramos status para "concluido"
     directus_session.patch(
         f"{e2e_ui_config.directus_url}/items/contrato_versao/{versao_id}",
         json={"status": "concluido"},
     )
-    
+
     return versao_id
 
 
@@ -239,7 +239,7 @@ def versao_processada_id(
 def cleanup_after_test(request):
     """Limpa dados de teste após cada execução (se configurado)."""
     yield
-    
+
     # Cleanup será implementado se necessário
     # Por ora, deixamos dados no banco para debug
     pass
@@ -270,19 +270,19 @@ def wait_for_processing(
     Retorna True se concluído, False se timeout.
     """
     start_time = time.time()
-    
+
     while time.time() - start_time < timeout:
         response = directus_session.get(
             f"{directus_url}/items/contrato_versao/{versao_id}",
         )
-        
+
         if response.status_code == 200:
             status = response.json()["data"]["status"]
             if status in ["concluido", "concluído"]:
                 return True
             elif status == "erro":
                 return False
-        
+
         time.sleep(2)
-    
+
     return False

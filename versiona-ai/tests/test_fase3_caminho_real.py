@@ -14,12 +14,6 @@ Testa:
 4. Resolução de ambiguidade (múltiplas ocorrências)
 """
 
-import sys
-from pathlib import Path
-
-# Adicionar diretório pai ao path para importar directus_server
-sys.path.insert(0, str(Path(__file__).parent.parent / "versiona-ai"))
-
 from directus_server import DirectusAPI
 
 

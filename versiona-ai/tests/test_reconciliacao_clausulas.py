@@ -11,19 +11,9 @@ Estratégia de reconciliação:
 Tudo via sintaxe "Detailed" do Directus (create/update em 1 PATCH).
 """
 
-import os
-import sys
 from unittest.mock import MagicMock
 
 import pytest
-
-# Adicionar o diretório versiona-ai ao path
-versiona_ai_dir = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "versiona-ai"
-)
-sys.path.insert(0, versiona_ai_dir)
-
-# ruff: noqa: E402
 from processador_tags_modelo import ProcessadorTagsModelo
 
 

@@ -46,9 +46,10 @@ USER app
 # Porta da aplicação
 EXPOSE 8001
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8001/health || exit 1
+# Health check — verifica apenas se o Flask está respondendo (não depende do Directus)
+# FLASK_PORT default 8000; start-period=20s para dar tempo ao startup
+HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
+    CMD curl -f http://localhost:${FLASK_PORT:-8000}/health || exit 1
 
 # Comando padrão para produção
-CMD ["uv", "run", "python", "versiona-ai/directus_server.py"]
+CMD ["uv", "run", "python", "directus_server.py"]

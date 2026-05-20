@@ -4,23 +4,15 @@ Testes unitários para estratégias de matching.
 Valida funcionalidade e qualidade de cada implementação.
 """
 
-import sys
-from pathlib import Path
-
 import pytest
-
-# Adiciona o diretório versiona-ai ao path
-versiona_ai_path = Path(__file__).parent.parent / "versiona-ai"
-sys.path.insert(0, str(versiona_ai_path))
-
-from matching import (  # noqa: E402
+from matching import (
     DifflibMatcher,
     MatchingStrategy,
     RapidFuzzMatcher,
 )
-from matching.rapidfuzz_matcher import RAPIDFUZZ_AVAILABLE  # noqa: E402
+from matching.rapidfuzz_matcher import RAPIDFUZZ_AVAILABLE
 
-from tests.matching_rinha_metrics import InstrumentedMatcher  # noqa: E402
+from tests.matching_rinha_metrics import InstrumentedMatcher
 
 
 # Fixture com diferentes estratégias

@@ -4,16 +4,10 @@ Benchmark de performance para estratégias de matching.
 Compara velocidade e qualidade de diferentes implementações.
 """
 
-import sys
 import time
-from pathlib import Path
 
-# Adiciona o diretório versiona-ai ao path
-versiona_ai_path = Path(__file__).parent.parent / "versiona-ai"
-sys.path.insert(0, str(versiona_ai_path))
-
-from matching import DifflibMatcher, MatchingStrategy  # noqa: E402
-from matching.rapidfuzz_matcher import (  # noqa: E402
+from matching import DifflibMatcher, MatchingStrategy
+from matching.rapidfuzz_matcher import (
     RAPIDFUZZ_AVAILABLE,
     RapidFuzzMatcher,
 )

@@ -280,6 +280,30 @@ class DirectusRepository:
         except Exception as e:
             return {"success": False, "status_code": 0, "error": f"Exceção: {str(e)}"}
 
+    def atualizar_status_versao(
+        self,
+        versao_id: str,
+        status: str,
+        observacao: str | None = None,
+    ) -> dict[str, Any]:
+        """
+        Atualiza apenas o status de uma versão.
+
+        Args:
+            versao_id: ID da versão
+            status: Novo status ("draft", "processar", "em_processamento", "concluido", "erro", "fechada")
+            observacao: Observação opcional (ex: timestamp de início, mensagem de erro)
+
+        Returns:
+            dict com success, status_code, data, error
+        """
+        update_data: dict[str, Any] = {"status": status}
+
+        if observacao:
+            update_data["observacao"] = observacao
+
+        return self.update_versao(versao_id, update_data, timeout=10)
+
     def registrar_resultado_processamento_versao(
         self,
         versao_id: str,
@@ -908,7 +932,7 @@ class DirectusRepository:
         """
         try:
             response = requests.get(
-                f"{self.base_url}/server/info", headers=self.headers, timeout=10
+                f"{self.base_url}/users/me", headers=self.headers, timeout=10
             )
 
             return {

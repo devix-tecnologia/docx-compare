@@ -28,6 +28,12 @@ coverage.xml
 
 # Diretórios locais de desenvolvimento
 results/*
+
+# Arquivos de ambiente - não empacotar credenciais na imagem
+.env
+.env.*
+versiona-ai/.env
+versiona-ai/.env.*
 !results/.gitkeep
 documentos/*
 !documentos/.gitkeep

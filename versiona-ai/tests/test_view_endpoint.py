@@ -3,13 +3,7 @@ Testes para o endpoint /versao/<versao_id> (Task-004)
 Testa a visualização de dados do Directus
 """
 
-import os
-import sys
-
 import pytest
-
-# Adicionar diretório pai ao path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "versiona-ai"))
 
 
 @pytest.fixture

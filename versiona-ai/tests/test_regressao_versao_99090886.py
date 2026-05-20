@@ -59,6 +59,12 @@ def resultado_processamento():
         with open(FIXTURE_DIR / "resultado_processamento.json") as f:
             return json.load(f)
 
+    # Verificar se servidor está disponível antes de tentar
+    try:
+        requests.get(f"{API_URL}/health", timeout=5)
+    except requests.exceptions.ConnectionError:
+        pytest.skip("Servidor não está rodando. Inicie com: python directus_server.py")
+
     versao_id = "99090886-7f43-45c9-bfe4-ec6eddd6cde0"
 
     print(f"\n🔄 Processando versão {versao_id} (executado 1x para todos os testes)...")

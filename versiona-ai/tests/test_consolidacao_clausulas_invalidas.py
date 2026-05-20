@@ -18,6 +18,7 @@ Este teste valida essa lógica.
 from dataclasses import dataclass
 
 import pytest
+from directus_server import DirectusAPI
 
 
 @dataclass
@@ -50,16 +51,6 @@ class TestConsolidacaoClausulasInvalidas:
     @pytest.fixture
     def processor(self):
         """Mock simplificado do processador para testar _consolidar_modificacoes_vinculacao."""
-        import sys
-        from pathlib import Path
-
-        # Adicionar versiona-ai ao path
-        versiona_ai_path = Path(__file__).parent.parent / "versiona-ai"
-        if str(versiona_ai_path) not in sys.path:
-            sys.path.insert(0, str(versiona_ai_path))
-
-        from directus_server import DirectusAPI
-
         # Criar instância mock sem necessidade de configuração completa
         processor = DirectusAPI.__new__(DirectusAPI)
         return processor

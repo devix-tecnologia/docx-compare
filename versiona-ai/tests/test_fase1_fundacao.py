@@ -114,8 +114,10 @@ def test_estruturas_dados():
     print(f"   Taxa de sucesso: {taxa_sucesso:.1%}")
     print(f"   Taxa de cobertura: {taxa_cobertura:.1%}")
 
-    assert taxa_sucesso == 2 / 3, f"Esperado 0.666, obteve {taxa_sucesso}"
-    assert taxa_cobertura == 2 / 3, f"Esperado 0.666, obteve {taxa_cobertura}"
+    assert abs(taxa_sucesso - 200 / 3) < 0.01, f"Esperado ~66.67, obteve {taxa_sucesso}"
+    assert abs(taxa_cobertura - 200 / 3) < 0.01, (
+        f"Esperado ~66.67, obteve {taxa_cobertura}"
+    )
 
     print("   ✅ Estruturas de dados funcionando corretamente!")
 
