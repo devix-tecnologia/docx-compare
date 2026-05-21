@@ -987,6 +987,50 @@ class DirectusAPI:
                 "error": result.get("error", "Erro desconhecido"),
             }
 
+    def _persistir_modificacoes_com_fallback(
+        self,
+        versao_id: str,
+        modificacoes_directus: list[dict],
+        **kwargs,
+    ) -> dict:
+        """
+        Tenta persistir modificações e, em caso de falha (ex: FK inválida), atualiza
+        o status da versão para "erro" via PATCH separado e simples.
+
+        O Directus realiza o write aninhado em uma única transação — se qualquer FK
+        for inválida, toda a operação é revertida.  Um PATCH posterior contendo
+        apenas {"status": "erro"} não possui writes aninhados e portanto não é
+        afetado pela mesma restrição, sendo suficiente para marcar o registro.
+
+        Args:
+            versao_id: ID da versão a ser atualizada
+            modificacoes_directus: Lista de modificações no formato do Directus
+            **kwargs: Campos adicionais repassados a _atualizar_versao_com_modificacoes
+
+        Returns:
+            dict com os mesmos campos de _atualizar_versao_com_modificacoes
+        """
+        resultado = self._atualizar_versao_com_modificacoes(
+            versao_id, modificacoes_directus, **kwargs
+        )
+
+        if not resultado["success"]:
+            print(
+                f"❌ Persistência falhou (versão {versao_id}): {resultado.get('error')}"
+            )
+            observacao = str(resultado.get("error", "Erro desconhecido"))[:200]
+            try:
+                self.repo.atualizar_status_versao(
+                    versao_id,
+                    status="erro",
+                    observacao=observacao,
+                )
+                print(f"✅ Status da versão {versao_id} atualizado para 'erro'")
+            except Exception as exc:
+                print(f"⚠️ Não foi possível atualizar status de erro: {exc}")
+
+        return resultado
+
     # ============================================================================
     # FASE 2: CAMINHO FELIZ - MAPEAMENTO VIA OFFSET
     # ============================================================================
@@ -2422,6 +2466,22 @@ class DirectusAPI:
                 print(
                     f"\n📝 Preparando {len(modificacoes)} modificações para o Directus..."
                 )
+
+                # IDs válidos de cláusulas = apenas os que já vieram na query do modelo
+                # (contrato.modelo_contrato.tags.clausulas.*). Se está ali, existe no Directus.
+                clausulas_validas: set[str] = set()
+                for _tag in tags_modelo:
+                    for _clausula in _tag.get("clausulas", []):
+                        if isinstance(_clausula, dict):
+                            _cid = _clausula.get("id")
+                        elif isinstance(_clausula, str):
+                            _cid = _clausula
+                        else:
+                            continue
+                        if _cid:
+                            clausulas_validas.add(_cid)
+                print(f"📋 {len(clausulas_validas)} cláusula(s) válidas do modelo")
+
                 modificacoes_directus = []
 
                 for idx, mod in enumerate(modificacoes, 1):
@@ -2450,8 +2510,10 @@ class DirectusAPI:
                     linha_fim = posicao_fim // 1000
                     coluna_fim = posicao_fim % 1000
 
-                    # Obter ID da cláusula vinculada
+                    # Obter ID da cláusula vinculada — apenas se existir no Directus
                     clausula_id = mod.get("clausula_id")
+                    if clausula_id and clausula_id not in clausulas_validas:
+                        clausula_id = None
 
                     # DEBUG: Log vinculação
                     if clausula_id:
@@ -2501,14 +2563,16 @@ class DirectusAPI:
                 print(f"   ⚠️  Sem cláusula: {sem_clausula}")
                 print(f"   📈 Taxa: {taxa:.1f}%")
 
-                # Usar função centralizada para atualizar versão com modificações
-                # Não incluir status aqui pois já foi setado como "processada" no PATCH de métricas acima
-                resultado = self._atualizar_versao_com_modificacoes(
+                # Usar função centralizada para atualizar versão com modificações.
+                # Em caso de falha (FK inválida, etc.), o fallback atualiza o status para "erro".
+                resultado = self._persistir_modificacoes_com_fallback(
                     versao_id, modificacoes_directus
                 )
 
                 if not resultado["success"]:
-                    print(f"⚠️ Erro ao persistir modificações: {resultado.get('error')}")
+                    print(
+                        f"❌ Erro ao persistir modificações: {resultado.get('error')}"
+                    )
 
             except Exception as e:
                 print(f"⚠️ Erro ao gravar no Directus: {e}")
