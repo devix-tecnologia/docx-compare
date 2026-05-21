@@ -64,3 +64,5 @@ versiona-ai/tests/e2e_ui/uploads/*
 
 # macOS
 .DS_Store
+
+!TASKS/assets/2026-05-20-task-015.log
