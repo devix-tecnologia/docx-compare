@@ -1638,18 +1638,42 @@ class DirectusAPI:
 
                 for candidata in tag.clausulas:
                     if isinstance(candidata, dict):
-                        # Pode vir direto ({id, numero, nome}) ou aninhado via tabela de junção
+                        # A cláusula pode vir em 3 formatos:
+                        # 1) Direto: {"id": "uuid-clausula", "numero": "3.3", ...}
+                        # 2) Nested via junction: {"clausula": {"id": "uuid-clausula", ...}}
+                        # 3) Nested via junction alt: {"clausula_id": {"id": "uuid-clausula", ...}}
+                        
+                        # Extrair objeto da cláusula
                         clausula_obj = candidata
-                        if isinstance(candidata.get("clausula"), dict):
-                            clausula_obj = candidata.get("clausula")
-                        elif isinstance(candidata.get("clausula_id"), dict):
-                            clausula_obj = candidata.get("clausula_id")
+                        
+                        # Se vier nested, extrair
+                        if "clausula" in candidata:
+                            if isinstance(candidata["clausula"], dict):
+                                clausula_obj = candidata["clausula"]
+                            elif isinstance(candidata["clausula"], str):
+                                # Caso especial: FK não expandido (apenas UUID)
+                                clausula_id = candidata["clausula"]
+                                break
+                        elif "clausula_id" in candidata:
+                            if isinstance(candidata["clausula_id"], dict):
+                                clausula_obj = candidata["clausula_id"]
+                            elif isinstance(candidata["clausula_id"], str):
+                                # Caso especial: FK não expandido (apenas UUID)
+                                clausula_id = candidata["clausula_id"]
+                                break
 
                         if not isinstance(clausula_obj, dict):
-                            continue  # Pular se não for dict válido
+                            continue  # Pular se não conseguiu extrair dict válido
 
-                        # Tentar extrair ID
-                        temp_id = clausula_obj.get("id") or candidata.get("clausula")
+                        # Extrair ID da cláusula (campo 'id' do objeto da cláusula)
+                        temp_id = clausula_obj.get("id")
+                        
+                        # IMPORTANTE: Garantir que não pegamos o ID da TAG por engano!
+                        # O ID da tag está em candidata["tag"] ou tag.tag_id
+                        # Se temp_id == tag.tag_id, então pegamos o campo errado!
+                        if temp_id and temp_id == getattr(tag, "tag_id", None):
+                            # Pegou o ID da tag por engano, ignorar
+                            continue
 
                         # Validar se a cláusula existe (status draft, published ou não informado)
                         status = clausula_obj.get("status")
@@ -1663,10 +1687,11 @@ class DirectusAPI:
                             break  # Encontrou cláusula válida, parar busca
 
                     elif isinstance(candidata, str):
-                        # Alguns ambientes podem retornar a relação como lista de IDs
-                        # Neste caso, não temos como validar, então usar o primeiro
-                        clausula_id = candidata
-                        break
+                        # Alguns ambientes podem retornar a relação como lista de IDs (strings)
+                        # Validar que não é o ID da tag
+                        if candidata != getattr(tag, "tag_id", None):
+                            clausula_id = candidata
+                            break
 
                 # Aplicar dados da cláusula válida encontrada
                 if clausula_id and not mod.get("clausula_id"):
