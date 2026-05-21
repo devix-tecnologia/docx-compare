@@ -4701,7 +4701,26 @@ def process_modelo():
         f"   ⚙️  Configurações: dry_run={dry_run}, use_ast={use_ast}, process_tags={process_tags}, process_versions={process_versions}"
     )
 
+    def _atualizar_status_modelo(status: str) -> None:
+        """Atualiza o status do modelo_contrato no Directus."""
+        if dry_run:
+            return
+        try:
+            url = f"{DIRECTUS_BASE_URL}/items/modelo_contrato/{modelo_id}"
+            headers = {
+                "Authorization": f"Bearer {DIRECTUS_TOKEN}",
+                "Content-Type": "application/json",
+            }
+            import requests as _req
+
+            _req.patch(url, headers=headers, json={"status": status}, timeout=10)
+        except Exception as _e:
+            print(
+                f"⚠️ Não foi possível atualizar status do modelo para '{status}': {_e}"
+            )
+
     try:
+        _atualizar_status_modelo("processando")
         resultado_final = {
             "modelo_id": modelo_id,
             "dry_run": dry_run,
@@ -4852,6 +4871,7 @@ def process_modelo():
             )
         print("=" * 80)
 
+        _atualizar_status_modelo("concluido")
         return jsonify(resultado_final), 200
 
     except Exception as e:
@@ -4859,6 +4879,7 @@ def process_modelo():
         import traceback
 
         traceback.print_exc()
+        _atualizar_status_modelo("erro")
         return jsonify({"error": str(e), "modelo_id": modelo_id, "status": "erro"}), 500
 
 

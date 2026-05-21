@@ -633,6 +633,11 @@ class AgrupadorPosicional:
                         if tag_id:
                             clausula_detalhes = self.buscar_clausula_por_tag(tag_id)
                         if clausula_detalhes:
+                            # Sobrescrever clausula_id com o ID real da cláusula
+                            # (tag_id é o ID da tag, não da cláusula)
+                            clausula_real_id = clausula_detalhes.get("id")
+                            if clausula_real_id:
+                                mod["clausula_id"] = clausula_real_id
                             mod["clausula_objetivo"] = clausula_detalhes.get(
                                 "objetivo", ""
                             )
@@ -646,6 +651,9 @@ class AgrupadorPosicional:
                             clausula_nome = clausula_detalhes.get("nome", "")
                             if clausula_nome:
                                 mod["clausula_nome"] = clausula_nome
+                        else:
+                            # Sem cláusula vinculada: não enviar tag ID como FK
+                            mod["clausula_id"] = None
                     else:
                         mod["clausula_nome"] = "Sem cláusula vinculada"
 
