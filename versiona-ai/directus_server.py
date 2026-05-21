@@ -5,6 +5,11 @@ Inclui agrupamento posicional para cálculo preciso de blocos
 Implementa algoritmo unificado de vinculação de modificações às cláusulas
 """
 
+# LOGS DE DEBUG PARA DIAGNOSTICAR INICIALIZAÇÃO
+print("=" * 80, flush=True)
+print("🚀 INICIANDO IMPORTAÇÃO DO DIRECTUS_SERVER.PY", flush=True)
+print("=" * 80, flush=True)
+
 import copy
 import difflib
 import os
@@ -14,21 +19,30 @@ import sys
 import tempfile
 import unicodedata
 import uuid
+
+print("✅ Imports básicos do Python OK", flush=True)
+
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from datetime import datetime
 
+print("✅ Imports de dataclasses e concurrent OK", flush=True)
+
 import requests
 from dotenv import load_dotenv
+
+print("✅ Imports de requests e dotenv OK", flush=True)
 
 # RapidFuzz para matching ultra-rápido (221x mais rápido que difflib)
 try:
     from rapidfuzz import fuzz
 
     RAPIDFUZZ_AVAILABLE = True
+    print("✅ RapidFuzz disponível", flush=True)
 except ImportError:
     RAPIDFUZZ_AVAILABLE = False
-    print("⚠️ RapidFuzz não disponível - usando difflib (mais lento)")
+    print("⚠️  RapidFuzz não disponível - usando difflib (mais lento)", flush=True)
+
 from flask import (
     Flask,
     jsonify,
@@ -37,15 +51,21 @@ from flask import (
 )
 from flask_cors import CORS
 
+print("✅ Imports do Flask OK", flush=True)
+
 # Importar agrupador posicional
 try:
     from agrupador_posicional import AgrupadorPosicional
+
+    print("✅ AgrupadorPosicional importado", flush=True)
 except ImportError:
-    print("⚠️ Agrupador posicional não disponível - usando contagem padrão")
+    print("⚠️  Agrupador posicional não disponível - usando contagem padrão", flush=True)
     AgrupadorPosicional = None
 
 # Importar processador de tags de modelo
 from processador_tags_modelo import ProcessadorTagsModelo
+
+print("✅ ProcessadorTagsModelo importado", flush=True)
 
 # Importar repositório Directus
 from repositorio import DirectusRepository
@@ -179,8 +199,10 @@ class PandocASTProcessor:
         return "".join(text_parts), list(formatting_types)
 
 
+print("✅ Criando app Flask...", flush=True)
 app = Flask(__name__, template_folder="templates")
 CORS(app)
+print("✅ App Flask criado com sucesso", flush=True)
 
 # Registrar documentação Swagger - TEMPORARIAMENTE DESABILITADO
 # O Swagger estava interceptando /api/process com um método vazio (pass)
@@ -196,11 +218,20 @@ CORS(app)
 # Cache de diffs para persistência
 diff_cache = {}
 
+print("🔍 Carregando variáveis de ambiente...", flush=True)
 # Configurações do Directus
 DIRECTUS_BASE_URL = os.getenv("DIRECTUS_BASE_URL", "https://contract.devix.co")
 DIRECTUS_TOKEN = os.getenv("DIRECTUS_TOKEN")
 FLASK_PORT = int(os.getenv("FLASK_PORT", "8001"))
 DEV_MODE = os.getenv("DEV_MODE", "false").lower() == "true"
+
+print(f"   DIRECTUS_BASE_URL: {DIRECTUS_BASE_URL}", flush=True)
+print(
+    f"   DIRECTUS_TOKEN: {'***' + DIRECTUS_TOKEN[-8:] if DIRECTUS_TOKEN else 'NOT SET'}",
+    flush=True,
+)
+print(f"   FLASK_PORT: {FLASK_PORT}", flush=True)
+print(f"   DEV_MODE: {DEV_MODE}", flush=True)
 
 # Headers para Directus
 DIRECTUS_HEADERS = {
@@ -1642,10 +1673,10 @@ class DirectusAPI:
                         # 1) Direto: {"id": "uuid-clausula", "numero": "3.3", ...}
                         # 2) Nested via junction: {"clausula": {"id": "uuid-clausula", ...}}
                         # 3) Nested via junction alt: {"clausula_id": {"id": "uuid-clausula", ...}}
-                        
+
                         # Extrair objeto da cláusula
                         clausula_obj = candidata
-                        
+
                         # Se vier nested, extrair
                         if "clausula" in candidata:
                             if isinstance(candidata["clausula"], dict):
@@ -1667,7 +1698,7 @@ class DirectusAPI:
 
                         # Extrair ID da cláusula (campo 'id' do objeto da cláusula)
                         temp_id = clausula_obj.get("id")
-                        
+
                         # IMPORTANTE: Garantir que não pegamos o ID da TAG por engano!
                         # O ID da tag está em candidata["tag"] ou tag.tag_id
                         # Se temp_id == tag.tag_id, então pegamos o campo errado!
@@ -4637,12 +4668,14 @@ def process_document():
             f"🔍 Processando versão {versao_id} (modo: {'mock' if mock else 'real'}, método: {metodo})",
             flush=True,
         )
-        print(f"🔍 DEBUG: directus_api = {directus_api}", flush=True)
-        print(f"🔍 DEBUG: type(directus_api) = {type(directus_api)}", flush=True)
+        # TRACE logs (comentados por serem muito verbosos):
+        # print(f"🔍 TRACE: directus_api = {directus_api}", flush=True)
+        # print(f"🔍 TRACE: type(directus_api) = {type(directus_api)}", flush=True)
 
         result = directus_api.process_versao(versao_id, mock=mock, use_ast=use_ast)
 
-        print(f"🔍 DEBUG: result após process_versao = {result}", flush=True)
+        # TRACE log (comentado por ser muito verboso - imprime objeto completo):
+        # print(f"🔍 TRACE: result após process_versao = {result}", flush=True)
         print(f"🔍 DEBUG: type(result) = {type(result)}", flush=True)
 
         if not result:
@@ -4973,6 +5006,12 @@ def debug_cache():
         }
     )
 
+
+print("=" * 80, flush=True)
+print("✅ DIRECTUS_SERVER.PY IMPORTADO COM SUCESSO", flush=True)
+print(f"   Flask app: {app.name}", flush=True)
+print(f"   Rotas registradas: {len([r for r in app.url_map.iter_rules()])}", flush=True)
+print("=" * 80, flush=True)
 
 if __name__ == "__main__":
     print("🚀 Servidor API com Directus Real")

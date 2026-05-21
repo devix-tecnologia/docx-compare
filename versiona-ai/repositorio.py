@@ -43,6 +43,12 @@ class DirectusRepository:
         if token is None:
             token = os.getenv("DIRECTUS_TOKEN")
 
+        # Debug: mostrar token mascarado para diagnóstico
+        token_masked = f"***{token[-8:]}" if token and len(token) > 8 else "None"
+        print(
+            f"🔑 DirectusRepository inicializado com token: {token_masked}", flush=True
+        )
+
         self.headers = {
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
@@ -818,16 +824,26 @@ class DirectusRepository:
         if fields:
             params["fields"] = ",".join(fields)
 
+        # Debug: log da requisição
+        url = f"{self.base_url}/items/clausula"
+        print(f"🔍 GET {url} com filtro modelo={modelo_contrato_id[:8]}...", flush=True)
+
         response = requests.get(
-            f"{self.base_url}/items/clausula",
+            url,
             headers=self.headers,
             params=params,
             timeout=30,
         )
 
+        # Debug: log do status
+        print(f"   📊 Status: {response.status_code}", flush=True)
+
         if response.status_code == 200:
-            return response.json().get("data", [])
+            data = response.json().get("data", [])
+            print(f"   ✅ {len(data)} cláusulas encontradas", flush=True)
+            return data
         else:
+            print(f"   ❌ Erro: {response.text[:200]}", flush=True)
             response.raise_for_status()
             return []
 
@@ -841,7 +857,7 @@ class DirectusRepository:
 
         Args:
             clausulas: Lista de dicts com campos de cada cláusula.
-                Cada dict deve conter: modelo_contrato, numero, nome, conteudo_original, status.
+                Cada dict deve conter: modelo_contrato, numero, nome, conteudo, status.
 
         Returns:
             Lista de cláusulas criadas com seus IDs.

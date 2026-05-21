@@ -593,7 +593,7 @@ class ProcessadorTagsModelo:
         Reconcilia cláusulas existentes com tags do documento reprocessado.
 
         Estratégia (nenhuma cláusula é deletada):
-          - Cláusula existe E conteúdo mudou      → update (só conteudo_original)
+          - Cláusula existe E conteúdo mudou      → update (só conteudo)
           - Cláusula existe E era inativa          → update (reativar + conteúdo novo)
           - Cláusula existe E conteúdo igual       → nada (skip)
           - Cláusula existe mas NÃO no documento   → update (status="inativo")
@@ -644,23 +644,23 @@ class ProcessadorTagsModelo:
             if numero_lower in numeros_no_documento:
                 # Cláusula ainda existe no documento
                 conteudo_novo = numeros_no_documento[numero_lower][:5000]
-                conteudo_antigo = (clausula.get("conteudo_original") or "").strip()
+                conteudo_antigo = (clausula.get("conteudo") or "").strip()
 
                 if status_atual == "inativo":
                     # Reativar cláusula que voltou ao documento
                     update_list.append(
                         {
                             "id": clausula["id"],
-                            "conteudo_original": conteudo_novo,
+                            "conteudo": conteudo_novo,
                             "status": "published",
                         }
                     )
                 elif conteudo_novo != conteudo_antigo:
-                    # Conteúdo mudou — atualizar só conteudo_original
+                    # Conteúdo mudou — atualizar só conteudo
                     update_list.append(
                         {
                             "id": clausula["id"],
-                            "conteudo_original": conteudo_novo,
+                            "conteudo": conteudo_novo,
                         }
                     )
                 # else: conteúdo igual, status ok → skip
@@ -688,7 +688,7 @@ class ProcessadorTagsModelo:
                     "modelo_contrato": modelo_id,
                     "numero": numero_lower,
                     "nome": nome,
-                    "conteudo_original": conteudo[:5000],
+                    "conteudo": conteudo[:5000],
                     "status": "published",
                 }
             )
@@ -725,7 +725,7 @@ class ProcessadorTagsModelo:
         try:
             clausulas_existentes = self.repo.get_clausulas_modelo(
                 modelo_id,
-                fields=["id", "numero", "nome", "conteudo_original", "status"],
+                fields=["id", "numero", "nome", "conteudo", "status"],
             )
         except Exception as e:
             print(f"⚠️  Erro ao buscar cláusulas existentes: {e}")

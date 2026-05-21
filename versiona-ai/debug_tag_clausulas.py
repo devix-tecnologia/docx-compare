@@ -44,23 +44,23 @@ print()
 
 if response.status_code == 200:
     data = response.json()["data"]
-    
+
     print("✅ TAG encontrada!")
     print(f"   tag_nome: {data.get('tag_nome')}")
     print(f"   tag_id: {data.get('id')}")
     print()
-    
+
     clausulas = data.get("clausulas", [])
     print(f"📝 Cláusulas ({len(clausulas)} total):")
     print()
-    
+
     if clausulas:
         print("Estrutura da primeira cláusula:")
         print("-" * 80)
         print(json.dumps(clausulas[0], indent=2, ensure_ascii=False))
         print("-" * 80)
         print()
-        
+
         # Analizar campos relevantes
         primeira = clausulas[0]
         print("Campos chave:")
@@ -69,16 +69,16 @@ if response.status_code == 200:
         print(f"  - 'numero': {primeira.get('numero')}")
         print(f"  - 'nome': {primeira.get('nome')}")
         print()
-        
+
         # Verificar se é o ID da tag ou da cláusula
         if primeira.get("id") == tag_id:
             print("❌ PROBLEMA: clausulas[0]['id'] é o ID DA TAG, não da cláusula!")
         else:
             print("✅ clausulas[0]['id'] é diferente do ID da tag (correto)")
-            
+
         if primeira.get("tag") == tag_id:
             print("✅ clausulas[0]['tag'] é o FK para a tag (correto)")
-        
+
     else:
         print("⚠️ Nenhuma cláusula vinculada a esta tag")
 else:

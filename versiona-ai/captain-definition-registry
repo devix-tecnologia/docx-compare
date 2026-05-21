@@ -1,4 +1,5 @@
 {
   "schemaVersion": 2,
-  "imageName": "docker-registry.de.vix.br/versiona-ai:latest"
+  "imageName": "docker-registry.de.vix.br/versiona-ai:20260521-123419",
+  "containerHttpPort": "8000"
 }

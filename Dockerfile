@@ -18,6 +18,7 @@ ENV PYTHONUNBUFFERED=1 \
 RUN apt-get update && apt-get install -y \
     curl \
     git \
+    pandoc \
     && rm -rf /var/lib/apt/lists/* \
     && pip install uv
 
@@ -45,12 +46,13 @@ USER app
 # Definir diretório de trabalho para a aplicação
 WORKDIR /app/versiona-ai
 
-# Porta da aplicação
-EXPOSE 8001
+# Porta da aplicação (8001 para dev, 8000 para produção via FLASK_PORT)
+EXPOSE 8001 8000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8001/health || exit 1
+# Health check - start-period aumentado para 60s pois imports levam ~30s
+# Usa porta 8000 por padrão (produção) ou 8001 se FLASK_PORT não estiver setado
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8000/health || curl -f http://localhost:8001/health || exit 1
 
 # Comando padrão para produção com Gunicorn
 # Usa o venv já instalado em /app/.venv diretamente para evitar que
