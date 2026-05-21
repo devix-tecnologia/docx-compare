@@ -36,8 +36,8 @@ RUN uv sync --frozen
 # Copiar código da aplicação
 COPY --chown=app:app versiona-ai/ ./versiona-ai/
 
-# Definir permissões adequadas
-RUN chown -R app:app /app
+# Criar diretório de logs e definir permissões adequadas
+RUN mkdir -p /app/logs && chown -R app:app /app
 
 # Mudar para usuário não-root
 USER app
@@ -53,4 +53,6 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8001/health || exit 1
 
 # Comando padrão para produção com Gunicorn
-CMD ["uv", "run", "gunicorn", "--config", "/app/versiona-ai/deploy/gunicorn.conf.py", "versiona-ai.wsgi:app"]
+# Usa o venv já instalado em /app/.venv diretamente para evitar que
+# 'uv run' recrie o ambiente ao detectar o pyproject.toml de versiona-ai/
+CMD ["/app/.venv/bin/gunicorn", "--config", "/app/versiona-ai/deploy/gunicorn.conf.py", "wsgi:app"]
