@@ -10,6 +10,7 @@ import tempfile
 
 import requests
 from dotenv import load_dotenv
+
 from repositorio import DirectusRepository
 
 load_dotenv()
@@ -562,7 +563,7 @@ class AgrupadorPosicional:
 
             blocos_agrupados = []
             modificacoes_ordenadas = sorted(
-                modificacoes, key=lambda m: m.get("posicao_inicio", 0)
+                modificacoes, key=lambda m: m.get("posicao_inicio") or 0
             )
 
             bloco_atual = None
