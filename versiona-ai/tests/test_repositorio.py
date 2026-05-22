@@ -59,7 +59,7 @@ class TestGetVersao:
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {
-            "data": {"id": "v123", "nome": "Versão 1.0", "status": "processando"}
+            "data": {"id": "v123", "nome": "Versão 1.0", "status": "em_processamento"}
         }
         mock_get.return_value = mock_response
 
@@ -649,7 +649,7 @@ class TestRegistrarResultadoProcessamentoVersao:
         mock_patch.return_value = mock_response
 
         result = repo.registrar_resultado_processamento_versao(
-            versao_id="versao-123", modificacoes=[], status="processando"
+            versao_id="versao-123", modificacoes=[], status="em_processamento"
         )
 
         assert result["success"] is True
@@ -657,7 +657,7 @@ class TestRegistrarResultadoProcessamentoVersao:
         # Verificar status customizado
         call_args = mock_patch.call_args
         json_data = call_args[1]["json"]
-        assert json_data["status"] == "processando"
+        assert json_data["status"] == "em_processamento"
 
 
 class TestAtualizarStatusVersao:
@@ -669,16 +669,16 @@ class TestAtualizarStatusVersao:
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {
-            "data": {"id": "v123", "status": "processando"}
+            "data": {"id": "v123", "status": "em_processamento"}
         }
         mock_patch.return_value = mock_response
 
-        result = repo.atualizar_status_versao("v123", status="processando")
+        result = repo.atualizar_status_versao("v123", status="em_processamento")
 
         assert result["success"] is True
         assert result["status_code"] == 200
         call_args = mock_patch.call_args
-        assert call_args[1]["json"]["status"] == "processando"
+        assert call_args[1]["json"]["status"] == "em_processamento"
         assert "observacao" not in call_args[1]["json"]
 
     @patch("repositorio.requests.patch")
@@ -691,14 +691,14 @@ class TestAtualizarStatusVersao:
 
         result = repo.atualizar_status_versao(
             "v123",
-            status="processando",
+            status="em_processamento",
             observacao="Processamento iniciado em 2026-05-19",
         )
 
         assert result["success"] is True
         call_args = mock_patch.call_args
         json_data = call_args[1]["json"]
-        assert json_data["status"] == "processando"
+        assert json_data["status"] == "em_processamento"
         assert json_data["observacao"] == "Processamento iniciado em 2026-05-19"
 
     @patch("repositorio.requests.patch")
@@ -723,7 +723,7 @@ class TestAtualizarStatusVersao:
         mock_response.text = "Forbidden"
         mock_patch.return_value = mock_response
 
-        result = repo.atualizar_status_versao("v123", status="processando")
+        result = repo.atualizar_status_versao("v123", status="em_processamento")
 
         assert result["success"] is False
         assert result["status_code"] == 403
@@ -734,7 +734,7 @@ class TestAtualizarStatusVersao:
         """Exceção de rede retorna success=False sem lançar."""
         mock_patch.side_effect = Exception("Connection refused")
 
-        result = repo.atualizar_status_versao("v123", status="processando")
+        result = repo.atualizar_status_versao("v123", status="em_processamento")
 
         assert result["success"] is False
         assert result["status_code"] == 0
@@ -748,7 +748,7 @@ class TestAtualizarStatusVersao:
         mock_response.json.return_value = {"data": {"id": "v123"}}
         mock_patch.return_value = mock_response
 
-        repo.atualizar_status_versao("v123", status="processando")
+        repo.atualizar_status_versao("v123", status="em_processamento")
 
         call_args = mock_patch.call_args
         assert call_args[1]["timeout"] == 10

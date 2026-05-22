@@ -40,7 +40,7 @@ class StatusProcessamento(Enum):
     """Status do processamento de documentos."""
 
     PENDENTE = "pendente"
-    PROCESSANDO = "processando"
+    EM_PROCESSAMENTO = "em_processamento"
     CONCLUIDO = "concluido"
     ERRO = "erro"
     CANCELADO = "cancelado"
@@ -258,7 +258,7 @@ def processar_modelos_pendentes(
                 if contexto.prioridade == PrioridadeProcessamento.CRITICA:
                     status = StatusProcessamento.CONCLUIDO
                 elif contexto.prioridade == PrioridadeProcessamento.ALTA:
-                    status = StatusProcessamento.PROCESSANDO
+                    status = StatusProcessamento.EM_PROCESSAMENTO
                 else:
                     status = StatusProcessamento.PENDENTE
 
@@ -301,7 +301,7 @@ def processar_versoes_pendentes(
             # Determinar status baseado no contexto
             if versao.status == StatusProcessamento.PENDENTE:
                 if contexto.modo_paralelo:
-                    status = StatusProcessamento.PROCESSANDO
+                    status = StatusProcessamento.EM_PROCESSAMENTO
                 else:
                     # Validar se há tags suficientes
                     if len(tags) > 0:

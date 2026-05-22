@@ -1,8 +1,8 @@
 """
-Testes TDD para a transição de status "processando" em process_versao.
+Testes TDD para a transição de status "em_processamento" em process_versao.
 
 Garante que:
-- Status "processando" é setado ANTES do processamento começar
+- Status "em_processamento" é setado ANTES do processamento começar
 - Status "erro" é setado quando processamento falha
 - Modo mock=True não altera status (sem efeito colateral)
 - Observação de erro é truncada para evitar payloads grandes
@@ -39,11 +39,11 @@ def versao_data_minimal():
     return {"id": "v123", "arquivo": "file-1", "contrato": {}}
 
 
-class TestProcessVersaoStatusProcessando:
+class TestProcessVersaoStatusEmProcessamento:
     """Testa transições de status em process_versao()."""
 
-    def test_seta_processando_antes_de_processar(self, api, versao_data_minimal):
-        """atualizar_status_versao('processando') deve ser chamado ANTES de _process_versao_com_ast."""
+    def test_seta_em_processamento_antes_de_processar(self, api, versao_data_minimal):
+        """atualizar_status_versao('em_processamento') deve ser chamado ANTES de _process_versao_com_ast."""
         api.repo.get_versao_para_processar.return_value = versao_data_minimal
 
         call_order = []
@@ -63,15 +63,15 @@ class TestProcessVersaoStatusProcessando:
             mock_ast.side_effect = track_ast
             api.process_versao("v123", mock=False, use_ast=True)
 
-        assert "status_processando" in call_order, (
-            "atualizar_status_versao('processando') não foi chamado"
+        assert "status_em_processamento" in call_order, (
+            "atualizar_status_versao('em_processamento') não foi chamado"
         )
         assert "ast" in call_order, "_process_versao_com_ast não foi chamado"
-        assert call_order.index("status_processando") < call_order.index("ast"), (
-            "status 'processando' deve ser setado ANTES do processamento AST"
+        assert call_order.index("status_em_processamento") < call_order.index("ast"), (
+            "status 'em_processamento' deve ser setado ANTES do processamento AST"
         )
 
-    def test_nao_seta_processando_se_mock_true(self, api):
+    def test_nao_seta_em_processamento_se_mock_true(self, api):
         """Com mock=True, atualizar_status_versao NÃO deve ser chamado."""
         # mock=True busca versão via _get_mock_versao_by_id (não usa repo)
         # Se versão mock não existe, retorna erro sem chamar repo
@@ -138,10 +138,10 @@ class TestProcessVersaoStatusProcessando:
 
         api.repo.atualizar_status_versao.assert_not_called()
 
-    def test_processando_nao_interrompe_se_falha_ao_setar(
+    def test_em_processamento_nao_interrompe_se_falha_ao_setar(
         self, api, versao_data_minimal
     ):
-        """Falha ao setar 'processando' não deve interromper o processamento."""
+        """Falha ao setar 'em_processamento' não deve interromper o processamento."""
         api.repo.get_versao_para_processar.return_value = versao_data_minimal
         api.repo.atualizar_status_versao.return_value = {
             "success": False,
@@ -158,7 +158,7 @@ class TestProcessVersaoStatusProcessando:
             api.process_versao("v123", mock=False, use_ast=True)
 
         assert ast_foi_chamado, (
-            "Processamento deve continuar mesmo se falhar ao setar status 'processando'"
+            "Processamento deve continuar mesmo se falhar ao setar status 'em_processamento'"
         )
 
 

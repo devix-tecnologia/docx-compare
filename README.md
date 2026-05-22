@@ -124,7 +124,7 @@ Sistema de processamento automático para comparação de documentos DOCX integr
 
 ### 🤖 Processamento Automático de Versões
 
-- **Monitoramento Contínuo**: Busca versões com status "processar" no Directus a cada minuto
+- **Monitoramento Contínuo**: Busca versões com status "solicitado" no Directus a cada minuto
 - **Processamento Inteligente**:
   - Primeira versão: compara com template do modelo de contrato
   - Versões subsequentes: compara com versão anterior
@@ -461,7 +461,7 @@ O processador executa na porta 5005 e oferece:
 
 #### 3. Lógica de Processamento
 
-**Busca Automática**: A cada minuto, busca versões com `status = "processar"`
+**Busca Automática**: A cada minuto, busca versões com `status = "solicitado"`
 
 **Determinação do Arquivo Original**:
 
@@ -471,7 +471,7 @@ O processador executa na porta 5005 e oferece:
 **Fluxo de Processamento**:
 
 1. 🔍 Busca versões pendentes no Directus
-2. 📝 Atualiza status para "processando"
+2. 📝 Atualiza status para "em_processamento"
 3. 📥 Baixa arquivos original e modificado
 4. 🔄 Executa comparação usando CLI
 5. 📊 Analisa diferenças textuais
@@ -533,7 +533,7 @@ python test_directus_sdk.py
 ### Processador Automático
 
 1. **⏰ Loop Contínuo**: Monitora Directus a cada minuto
-2. **🔍 Busca Inteligente**: Filtra versões com status "processar"
+2. **🔍 Busca Inteligente**: Filtra versões com status "solicitado"
 3. **🧠 Lógica de Negócio**: Determina arquivo original automaticamente
 4. **⚡ Processamento**: Executa comparação usando infraestrutura existente
 5. **💾 Transação Atômica**: Salva tudo em uma única operação no Directus
@@ -641,7 +641,7 @@ sudo apt-get install pandoc  # Ubuntu
 
 ### Processador Automático não encontra versões
 
-- Verifique se existem registros com `status = "processar"`
+- Verifique se existem registros com `status = "solicitado"`
 - Confirme se o campo `versiona_ai_request_json` está populado
 - Verifique logs no terminal do processador
 - Teste conexão: `curl http://localhost:5005/health`

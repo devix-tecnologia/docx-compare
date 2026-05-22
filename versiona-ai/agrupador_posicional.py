@@ -569,12 +569,12 @@ class AgrupadorPosicional:
             bloco_atual = None
 
             for mod in modificacoes_ordenadas:
-                pos_inicio = mod.get("posicao_inicio", 0)
-                pos_fim = mod.get("posicao_fim", 0)
+                pos_inicio = mod.get("posicao_inicio") or 0
+                pos_fim = mod.get("posicao_fim") or 0
 
                 # Se não há bloco atual ou a modificação está longe, criar novo bloco
                 if bloco_atual is None or (
-                    pos_inicio - bloco_atual["posicao_fim"] > DISTANCIA_MAXIMA
+                    pos_inicio - (bloco_atual["posicao_fim"] or 0) > DISTANCIA_MAXIMA
                 ):
                     # Finalizar bloco anterior
                     if bloco_atual:
@@ -591,7 +591,7 @@ class AgrupadorPosicional:
                     # Adicionar modificação ao bloco atual
                     bloco_atual["modificacoes"].append(mod)
                     bloco_atual["posicao_fim"] = max(
-                        bloco_atual["posicao_fim"], pos_fim
+                        bloco_atual["posicao_fim"] or 0, pos_fim
                     )
 
             # Adicionar último bloco

@@ -356,9 +356,12 @@ repositorio.registrar_resultado_processamento_versao(
 **Status possíveis:**
 
 - ✅ `concluido` - Processamento bem-sucedido
-- ⏳ `processando` - Em processamento
+- ⏳ `em_processamento` - Em processamento
 - ❌ `erro` - Falha no processamento
-- 🕐 `processar` - Aguardando processamento
+- 🕐 `solicitado` - Aguardando processamento
+- 📝 `draft` - Rascunho
+- 🔒 `fechada` - Fechada (versão apenas)
+- 🚫 `cancelada` - Cancelada (versão apenas)
 
 ---
 

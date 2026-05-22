@@ -297,7 +297,7 @@ class DirectusRepository:
 
         Args:
             versao_id: ID da versão
-            status: Novo status ("draft", "processar", "em_processamento", "concluido", "erro", "fechada")
+            status: Novo status ("draft", "solicitado", "em_processamento", "concluido", "erro", "fechada", "cancelada")
             observacao: Observação opcional (ex: timestamp de início, mensagem de erro)
 
         Returns:

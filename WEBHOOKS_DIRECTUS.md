@@ -1,6 +1,6 @@
 # Configuração de Webhooks no Directus
 
-Este documento explica como configurar webhooks no Directus para processar automaticamente modelos e versões quando o status mudar para "processar".
+Este documento explica como configurar webhooks no Directus para processar automaticamente modelos e versões quando o status mudar para "solicitado".
 
 ## 📋 Visão Geral
 
@@ -13,7 +13,7 @@ O sistema possui dois endpoints que podem ser acionados via webhook:
 
 ### 1. Webhook para Processar Modelo
 
-**Quando:** Status do modelo_contrato mudar para "processar"
+**Quando:** Status do modelo_contrato mudar para "solicitado"
 
 **Configuração:**
 
@@ -55,7 +55,7 @@ Content-Type: application/json
 
 ### 2. Webhook para Processar Versão
 
-**Quando:** Status da versão mudar para "processar"
+**Quando:** Status da versão mudar para "solicitado"
 
 **Configuração:**
 

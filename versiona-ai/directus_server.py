@@ -480,7 +480,7 @@ class DirectusAPI:
             {
                 "id": "versao_001",
                 "titulo": "Contrato de Prestação de Serviços v1.0 vs v2.0",
-                "status": "processar",
+                "status": "solicitado",
                 "data_criacao": "2025-09-11T10:00:00Z",
                 "versao_original": "1.0",
                 "versao_modificada": "2.0",
@@ -489,7 +489,7 @@ class DirectusAPI:
             {
                 "id": "versao_002",
                 "titulo": "Política de Privacidade v2.1 vs v2.2",
-                "status": "processar",
+                "status": "solicitado",
                 "data_criacao": "2025-09-12T14:30:00Z",
                 "versao_original": "2.1",
                 "versao_modificada": "2.2",
@@ -4091,7 +4091,7 @@ def get_versoes():
                         {
                             "id": "versao_001",
                             "titulo": "Contrato de Prestação de Serviços v1.0 vs v2.0",
-                            "status": "processar",
+                            "status": "solicitado",
                             "data_criacao": "2025-09-11T10:00:00Z",
                             "versao_original": "1.0",
                             "versao_modificada": "2.0",
@@ -4100,7 +4100,7 @@ def get_versoes():
                         {
                             "id": "versao_002",
                             "titulo": "Política de Privacidade v2.1 vs v2.2",
-                            "status": "processar",
+                            "status": "solicitado",
                             "data_criacao": "2025-09-12T14:30:00Z",
                             "versao_original": "2.1",
                             "versao_modificada": "2.2",
@@ -4184,7 +4184,7 @@ def _get_mock_versao_by_id(versao_id):
         "versao_001": {
             "id": "versao_001",
             "titulo": "Contrato de Prestação de Serviços v1.0 vs v2.0",
-            "status": "processar",
+            "status": "solicitado",
             "data_criacao": "2025-09-11T10:00:00Z",
             "versao_original": "1.0",
             "versao_modificada": "2.0",
@@ -4195,7 +4195,7 @@ def _get_mock_versao_by_id(versao_id):
         "versao_002": {
             "id": "versao_002",
             "titulo": "Política de Privacidade v2.1 vs v2.2",
-            "status": "processar",
+            "status": "solicitado",
             "data_criacao": "2025-09-12T14:30:00Z",
             "versao_original": "2.1",
             "versao_modificada": "2.2",
@@ -4778,7 +4778,7 @@ def process_modelo():
             )
 
     try:
-        _atualizar_status_modelo("processando")
+        _atualizar_status_modelo("em_processamento")
         resultado_final = {
             "modelo_id": modelo_id,
             "dry_run": dry_run,

@@ -74,7 +74,7 @@ def mock_versao_nao_processada():
     """Mock de versão ainda não processada"""
     return {
         "id": "test-versao-789",
-        "status": "processando",
+        "status": "em_processamento",
         "progresso": 45,
         "contrato": {"id": "contrato-123", "modelo_contrato": {"id": "modelo-123"}},
         "modificacao": [],
