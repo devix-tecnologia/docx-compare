@@ -1,6 +1,6 @@
 # Task 017 — Modo Semântico: Agrupamento de Modificações por Cláusula
 
-Status: open
+Status: pending
 Type: feature
 Priority: high
 Assignee: Sidarta Veloso
@@ -21,17 +21,19 @@ Após a correção da Task-016, o sistema detecta **115 modificações** (42% al
 ### Exemplo Real
 
 **Sistema** (5 modificações):
+
 ```json
 [
-  {"tipo": "ALTERACAO", "conteudo": "15", "original": "30"},
-  {"tipo": "ALTERACAO", "conteudo": "quinze", "original": "trinta"},
-  {"tipo": "INSERCAO", "conteudo": ","},
-  {"tipo": "ALTERACAO", "conteudo": "RESUMO", "original": "ESTIMADO"},
-  {"tipo": "ALTERACAO", "conteudo": "ou", "original": "DO"}
+  { "tipo": "ALTERACAO", "conteudo": "15", "original": "30" },
+  { "tipo": "ALTERACAO", "conteudo": "quinze", "original": "trinta" },
+  { "tipo": "INSERCAO", "conteudo": "," },
+  { "tipo": "ALTERACAO", "conteudo": "RESUMO", "original": "ESTIMADO" },
+  { "tipo": "ALTERACAO", "conteudo": "ou", "original": "DO" }
 ]
 ```
 
 **IA** (1 modificação):
+
 ```json
 {
   "tipo": "alteracao",
@@ -64,19 +66,19 @@ Criar **modo semântico** que agrupa modificações próximas dentro da mesma cl
 @dataclass
 class SemanticGroupingConfig:
     """Configuração do agrupamento semântico."""
-    
+
     # Distância máxima entre modificações para agrupar (chars)
     max_distance: int = 100
-    
+
     # Tamanho mínimo de modificação relevante (chars)
     min_modification_size: int = 10
-    
+
     # Agrupar apenas modificações da mesma cláusula
     require_same_clause: bool = True
-    
+
     # Agrupar apenas modificações do mesmo tipo
     require_same_type: bool = False
-    
+
     # Estratégia de merge de conteúdo
     merge_strategy: str = "concat"  # "concat", "summary", "range"
 ```
@@ -90,7 +92,7 @@ def group_modifications_semantically(
 ) -> list[dict]:
     """
     Agrupa modificações próximas em modificações semânticas.
-    
+
     Passos:
     1. Filtrar triviais (< min_modification_size)
     2. Ordenar por posicao_inicio
@@ -108,6 +110,7 @@ def group_modifications_semantically(
 ### Estratégias de Merge
 
 **1. concat (padrão)**: Concatena conteúdos separados por espaço
+
 ```python
 {
     "tipo": "ALTERACAO",
@@ -120,6 +123,7 @@ def group_modifications_semantically(
 ```
 
 **2. summary**: Resume mudanças em texto descritivo
+
 ```python
 {
     "tipo": "ALTERACAO",
@@ -132,6 +136,7 @@ def group_modifications_semantically(
 ```
 
 **3. range**: Indica início e fim do bloco modificado
+
 ```python
 {
     "tipo": "ALTERACAO_BLOCO",
@@ -166,6 +171,7 @@ def group_modifications_semantically(
 ### Integração com Teste A/B
 
 Modificar `teste_ab_orquestrador.py` para testar 3 modos:
+
 1. Sistema estruturado (baseline)
 2. Sistema estruturado + modo semântico
 3. IA pura
@@ -174,12 +180,12 @@ Modificar `teste_ab_orquestrador.py` para testar 3 modos:
 
 ## 📊 Métricas de Sucesso
 
-| Métrica | Sistema Atual | Meta Semântico | IA Referência |
-|---------|---------------|----------------|---------------|
-| **Total mods** | 115 | 40-50 | 44 |
-| **ALTERACAO** | 42% | ≥70% | 79% |
-| **Triviais** | 32% | ≤5% | 0% |
-| **Concordância com IA** | ? | ≥80% | 100% |
+| Métrica                 | Sistema Atual | Meta Semântico | IA Referência |
+| ----------------------- | ------------- | -------------- | ------------- |
+| **Total mods**          | 115           | 40-50          | 44            |
+| **ALTERACAO**           | 42%           | ≥70%           | 79%           |
+| **Triviais**            | 32%           | ≤5%            | 0%            |
+| **Concordância com IA** | ?             | ≥80%           | 100%          |
 
 ### Critérios de Aceitação
 
@@ -196,6 +202,7 @@ Modificar `teste_ab_orquestrador.py` para testar 3 modos:
 ### Caso 1: Modificações Próximas na Mesma Cláusula
 
 **Entrada**:
+
 ```python
 [
     {"tipo": "ALTERACAO", "pos": 100, "clausula": "2.5", "size": 2},
@@ -205,6 +212,7 @@ Modificar `teste_ab_orquestrador.py` para testar 3 modos:
 ```
 
 **Saída esperada** (config: max_distance=50, require_same_clause=True):
+
 ```python
 [
     {
@@ -220,6 +228,7 @@ Modificar `teste_ab_orquestrador.py` para testar 3 modos:
 ### Caso 2: Modificações Distantes não Agrupam
 
 **Entrada**:
+
 ```python
 [
     {"tipo": "ALTERACAO", "pos": 100, "clausula": "2.5"},
@@ -228,6 +237,7 @@ Modificar `teste_ab_orquestrador.py` para testar 3 modos:
 ```
 
 **Saída esperada** (max_distance=50):
+
 ```python
 [
     {"tipo": "ALTERACAO", "pos": 100, "clausula": "2.5"},
@@ -238,6 +248,7 @@ Modificar `teste_ab_orquestrador.py` para testar 3 modos:
 ### Caso 3: Filtro de Triviais
 
 **Entrada**:
+
 ```python
 [
     {"tipo": "INSERCAO", "pos": 100, "conteudo": ","},  # 1 char - trivial
@@ -246,6 +257,7 @@ Modificar `teste_ab_orquestrador.py` para testar 3 modos:
 ```
 
 **Saída esperada** (min_size=10):
+
 ```python
 [
     {"tipo": "ALTERACAO", "pos": 105, "conteudo": "palavra modificada"}
