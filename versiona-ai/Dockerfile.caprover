@@ -25,9 +25,8 @@ USER nodeuser
 # Copiar arquivos de configuração do frontend
 COPY --chown=nodeuser:nodeuser web/package*.json web/pnpm-lock.yaml ./
 
-# Instalar dependências
-RUN pnpm config set ignore-scripts false && \
-    pnpm install --frozen-lockfile
+# Instalar dependências (permitir builds específicos por segurança)
+RUN pnpm install --frozen-lockfile --allow-build=esbuild --allow-build=vue-demi
 
 # Copiar código fonte do frontend
 COPY --chown=nodeuser:nodeuser web/src/ ./src/
