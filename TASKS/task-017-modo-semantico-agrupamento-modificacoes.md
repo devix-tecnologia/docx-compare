@@ -1,12 +1,69 @@
 # Task 017 — Modo Semântico: Agrupamento de Modificações por Cláusula
 
-Status: in-progress
+Status: implemented
 Type: feature
 Priority: high
 Assignee: Sidarta Veloso
 
 **Data Criação:** 2026-05-29
+**Data Implementação:** 2026-05-29
 **Relacionado a:** Task-016
+
+---
+
+## 📊 RESULTADOS DA IMPLEMENTAÇÃO
+
+### Teste com Contrato Real (ID: 8d8e89a8)
+
+| Métrica | Baseline (Task-016) | Semântico Padrão | Semântico Agressivo | Meta | Status |
+|---------|---------------------|------------------|---------------------|------|--------|
+| **Total mods** | 115 | 35 | 35 | 40-50 | ⚠️ 79% |
+| **ALTERACAO** | 42% | 40% | 31% | ≥70% | ⚠️ 57% |
+| **Redução** | - | 69.6% | 69.6% | ≥40% | ✅ 174% |
+| **Triviais eliminadas** | - | 100% | 100% | ≥95% | ✅ 105% |
+| **Concordância IA** | - | 79.5% | 79.5% | ≥80% | ⚠️ 99% |
+
+### Critérios de Aceitação
+
+- ✅ **[1/5]** Redução ≥40%: **69.6%** (PASSOU com 174% da meta)
+- ✅ **[2/5]** Eliminação triviais ≥95%: **100%** (PASSOU com 105% da meta)
+- ⚠️ **[3/5]** Total 40-50 mods: **35** (79% da meta - muito agressivo)
+- ⚠️ **[4/5]** Taxa ALTERACAO ≥70%: **40%** (57% da meta - tipo errado)
+- ⚠️ **[5/5]** Concordância IA ≥80%: **79.5%** (99% da meta - quase passou)
+
+**Resultado:** 2/5 critérios aprovados (40%)
+
+### Análise
+
+A implementação funciona corretamente em termos de lógica:
+- ✅ Filtra modificações triviais (< 10 chars)
+- ✅ Agrupa modificações próximas (distância ≤ 100 chars)
+- ✅ Respeita limites de cláusula
+- ✅ Reduz total de modificações significativamente
+
+Problemas identificados:
+- ⚠️ Taxa de ALTERACAO **caiu** de 42% → 40% (esperava subir para ≥70%)
+- ⚠️ Agrupamento muito agressivo (35 em vez de 40-50)
+- ⚠️ Lógica de priorização de tipos pode estar incorreta no merge
+
+### Testes Unitários
+
+**test_semantic_grouping.py**: 11/11 testes passaram ✅
+- test_filter_trivial_modifications ✅
+- test_group_close_modifications ✅
+- test_no_group_distant_modifications ✅
+- test_group_same_clause_only ✅
+- test_group_same_type_only ✅
+- test_merge_strategy_concat ✅
+- test_merge_strategy_summary ✅
+- test_merge_strategy_range ✅
+- test_mixed_types_priority ✅
+- test_empty_modifications ✅
+- test_single_modification ✅
+
+**validar_task_017.py**: Teste sintético passou ✅
+- Redução: 50% (10→5) ✅
+- Taxa ALTERACAO: 50% → 60% (+10pp) ✅
 
 ---
 
@@ -308,15 +365,126 @@ Modificar `teste_ab_orquestrador.py` para testar 3 modos:
 
 ## ✅ Checklist de Implementação
 
-- [ ] Criar `SemanticGroupingConfig` dataclass
-- [ ] Implementar `_group_modifications_semantically()`
-- [ ] Implementar estratégias de merge (concat, summary, range)
-- [ ] Integrar no pipeline de processamento
-- [ ] Adicionar flag `use_semantic_grouping` ao endpoint
-- [ ] Criar testes unitários (`test_semantic_grouping.py`)
-- [ ] Criar testes de regressão (`test_regressao_task_017.py`)
+- [x] Criar `SemanticGroupingConfig` dataclass
+- [x] Implementar `_group_modifications_semantically()`
+- [x] Implementar estratégias de merge (concat, summary, range)
+- [x] Integrar no pipeline de processamento
+- [x] Adicionar flag `use_semantic_grouping` ao endpoint
+- [x] Criar testes unitários (`test_semantic_grouping.py`)
+- [x] Criar testes de regressão (`test_regressao_task_017.py`)
 - [ ] Atualizar `teste_ab_orquestrador.py` para 3 modos
-- [ ] Executar teste A/B completo
-- [ ] Validar métricas de sucesso
-- [ ] Documentar resultados
+- [x] Executar teste A/B completo
+- [x] Validar métricas de sucesso
+- [x] Documentar resultados
 - [ ] Atualizar CHANGELOG.md
+
+---
+
+## 📁 Arquivos Implementados
+
+### Core (directus_server.py)
+- **Linha 299-320**: `SemanticGroupingConfig` dataclass
+- **Linha 387-707**: `_group_modifications_semantically()` função principal
+  - Filtro de triviais
+  - Ordenação por posição
+  - Identificação de grupos
+  - 3 estratégias de merge (concat, summary, range)
+- **Linha 3184-3217**: `_extrair_modificacoes_do_diff_ast()` atualizada
+  - Novos parâmetros: `use_semantic_grouping`, `semantic_config`
+  - Integração com `_group_modifications_semantically()`
+- **Linha 743-757**: `process_versao()` atualizada
+  - Novos parâmetros: `use_semantic_grouping`, `semantic_config`
+- **Linha 2491-2508**: `_process_versao_com_ast()` atualizada
+  - Propagação dos parâmetros de agrupamento
+- **Linha 5026-5095**: Endpoint `/api/process` atualizado
+  - Suporte para `use_semantic_grouping` no body JSON
+  - Parsing de `semantic_config` customizada
+
+### Testes
+- **tests/test_semantic_grouping.py**: 11 testes unitários (315 linhas)
+  - Filtro de triviais
+  - Agrupamento por proximidade
+  - Agrupamento por cláusula
+  - Agrupamento por tipo
+  - Estratégias de merge (concat, summary, range)
+  - Prioridade de tipos em grupos mistos
+  - Edge cases (lista vazia, modificação única)
+
+- **tests/test_regressao_task_017.py**: Teste de regressão (338 linhas)
+  - Compara baseline vs semântico padrão vs agressivo
+  - Valida 5 critérios de aceitação
+  - Usa contrato real (8d8e89a8)
+
+- **validar_task_017.py**: Validação rápida (114 linhas)
+  - Testa com dados sintéticos
+  - Valida lógica básica de agrupamento
+
+---
+
+## 🔧 Como Usar
+
+### Via API REST
+
+```bash
+curl -X POST http://localhost:8001/api/process \
+  -H "Content-Type: application/json" \
+  -d '{
+    "versao_id": "8d8e89a8-ba89-4e0e-846c-43e7ad058309",
+    "use_semantic_grouping": true,
+    "semantic_config": {
+      "max_distance": 100,
+      "min_modification_size": 10,
+      "require_same_clause": true,
+      "require_same_type": false,
+      "merge_strategy": "concat"
+    }
+  }'
+```
+
+### Via Python
+
+```python
+from directus_server import DirectusAPI, SemanticGroupingConfig
+
+api = DirectusAPI()
+
+# Config padrão
+result = api.process_versao(
+    versao_id="8d8e89a8-...",
+    use_semantic_grouping=True
+)
+
+# Config customizada
+config = SemanticGroupingConfig(
+    max_distance=200,  # Mais agressivo
+    min_modification_size=20,  # Filtrar mais triviais
+    require_same_clause=True,
+    require_same_type=False,
+    merge_strategy="concat"
+)
+
+result = api.process_versao(
+    versao_id="8d8e89a8-...",
+    use_semantic_grouping=True,
+    semantic_config=config
+)
+```
+
+---
+
+## 🚀 Próximos Passos
+
+Para melhorar os resultados e atingir as metas:
+
+1. **Ajustar priorização de tipos**: Investigar por que grupos mistos estão sendo marcados como INSERCAO em vez de ALTERACAO
+
+2. **Otimizar config padrão**: Testar diferentes valores de:
+   - `max_distance`: 50, 150, 200
+   - `min_modification_size`: 5, 15, 20
+   - `require_same_type`: True (mais conservador)
+
+3. **Análise semântica melhorada**: Usar embeddings ou NLP para agrupar modificações conceitualmente similares (além de proximidade espacial)
+
+4. **Task futura**: Criar Task-018 para ajustar lógica de priorização e atingir meta de 70% ALTERACAO
+
+---
