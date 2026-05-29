@@ -1,6 +1,6 @@
 [project]
 name = "docx-compare"
-version = "1.0.0"
+version = "1.1.0"
 description = "Sistema completo para comparação de documentos DOCX com integração Directus"
 authors = [{ name = "Devix Tecnologia", email = "contato@devix.co" }]
 readme = "README.md"

@@ -7,6 +7,8 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-05-29
+
 ### Adicionado
 
 - 🎯 **Task-017: Modo Semântico de Agrupamento de Modificações** (feat/task-017)

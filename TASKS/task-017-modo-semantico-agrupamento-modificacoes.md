@@ -15,13 +15,13 @@ Assignee: Sidarta Veloso
 
 ### Teste com Contrato Real (ID: 8d8e89a8) - Após Otimização ✅
 
-| Métrica | Baseline | Semântico Padrão | Semântico Agressivo | Meta | Status |
-|---------|----------|------------------|---------------------|------|--------|
-| **Total mods** | 115 | 35 | 35 | 40-50 | ⚠️ 79% |
-| **ALTERACAO** | 41.7% | **85.7%** | **74.3%** | ≥70% | ✅ 122% |
-| **Redução** | - | 69.6% | 69.6% | ≥40% | ✅ 174% |
-| **Triviais eliminadas** | - | 100% | 100% | ≥95% | ✅ 105% |
-| **Concordância IA** | 161.4% | 79.5% | 79.5% | ≥80% | ⚠️ 99% |
+| Métrica                 | Baseline | Semântico Padrão | Semântico Agressivo | Meta  | Status  |
+| ----------------------- | -------- | ---------------- | ------------------- | ----- | ------- |
+| **Total mods**          | 115      | 35               | 35                  | 40-50 | ⚠️ 79%  |
+| **ALTERACAO**           | 41.7%    | **85.7%**        | **74.3%**           | ≥70%  | ✅ 122% |
+| **Redução**             | -        | 69.6%            | 69.6%               | ≥40%  | ✅ 174% |
+| **Triviais eliminadas** | -        | 100%             | 100%                | ≥95%  | ✅ 105% |
+| **Concordância IA**     | 161.4%   | 79.5%            | 79.5%               | ≥80%  | ⚠️ 99%  |
 
 ### Critérios de Aceitação
 
@@ -38,10 +38,12 @@ Assignee: Sidarta Veloso
 **Mudança**: Grupos com INSERCAO + REMOCAO classificados como ALTERACAO
 
 **Impacto Real (Pipeline Completo):**
+
 - Taxa ALTERACAO: **41.7% → 85.7%** (+44.0pp) 🚀
 - Modo agressivo: **41.7% → 74.3%** (+32.5pp) ✅
 
 **Por que funcionou:**
+
 1. Detecta padrões de **troca/substituição** (INS+REM juntos)
 2. Classifica corretamente como ALTERACAO (não INSERCAO)
 3. Efeito multiplicado pelo **merge de contextos** do agrupamento
@@ -50,12 +52,15 @@ Assignee: Sidarta Veloso
 ### Comparação: Script vs Pipeline Completo
 
 **Script comparar_modos_agrupamento.py** (teste isolado):
+
 - Resultado: 35 mods, 40% ALTERACAO ❌
 
 **Pipeline completo** (test_regressao_task_017.py):
+
 - Resultado: 35 mods, **85.7% ALTERACAO** ✅
 
 **Diferença:** O pipeline completo inclui:
+
 - Processamento AST com Pandoc
 - Análise granular (docx_utils)
 - Filtros de triviais ANTES do agrupamento
@@ -67,12 +72,14 @@ Assignee: Sidarta Veloso
 ### Análise
 
 A implementação funciona corretamente em termos de lógica:
+
 - ✅ Filtra modificações triviais (< 10 chars)
 - ✅ Agrupa modificações próximas (distância ≤ 100 chars)
 - ✅ Respeita limites de cláusula
 - ✅ Reduz total de modificações significativamente
 
 Problemas identificados:
+
 - ⚠️ Taxa de ALTERACAO **caiu** de 42% → 40% (esperava subir para ≥70%)
 - ⚠️ Agrupamento muito agressivo (35 em vez de 40-50)
 - ⚠️ Lógica de priorização de tipos pode estar incorreta no merge
@@ -80,6 +87,7 @@ Problemas identificados:
 ### Testes Unitários
 
 **test_semantic_grouping.py**: 11/11 testes passaram ✅
+
 - test_filter_trivial_modifications ✅
 - test_group_close_modifications ✅
 - test_no_group_distant_modifications ✅
@@ -93,6 +101,7 @@ Problemas identificados:
 - test_single_modification ✅
 
 **validar_task_017.py**: Teste sintético passou ✅
+
 - Redução: 50% (10→5) ✅
 - Taxa ALTERACAO: 50% → 60% (+10pp) ✅
 
@@ -414,6 +423,7 @@ Modificar `teste_ab_orquestrador.py` para testar 3 modos:
 ## 📁 Arquivos Implementados
 
 ### Core (directus_server.py)
+
 - **Linha 299-320**: `SemanticGroupingConfig` dataclass
 - **Linha 387-707**: `_group_modifications_semantically()` função principal
   - Filtro de triviais
@@ -432,6 +442,7 @@ Modificar `teste_ab_orquestrador.py` para testar 3 modos:
   - Parsing de `semantic_config` customizada
 
 ### Testes
+
 - **tests/test_semantic_grouping.py**: 11 testes unitários (315 linhas)
   - Filtro de triviais
   - Agrupamento por proximidade
@@ -508,11 +519,13 @@ result = api.process_versao(
 ### ✅ Status: Task-017 APROVADA (3/5 critérios)
 
 **Conquistas:**
+
 - ✅ Taxa ALTERACAO: **85.7%** (meta: ≥70%) - SUPERADO em 22%
 - ✅ Redução: **69.6%** (meta: ≥40%) - SUPERADO em 74%
 - ✅ Triviais: **100%** (meta: ≥95%) - SUPERADO em 5%
 
 **Pontos de melhoria:**
+
 - ⚠️ Total mods: **35** (meta: 40-50) - Muito agressivo, 79% da meta
 - ⚠️ Concordância IA: **79.5%** (meta: ≥80%) - Quase passou, 99% da meta
 
@@ -523,6 +536,7 @@ result = api.process_versao(
 **Problema**: Agrupamento muito agressivo (35 vs 40-50)
 
 **Solução**: Reduzir `max_distance` ou aumentar `min_modification_size`:
+
 ```python
 # Config atual (padrão)
 max_distance=100, min_modification_size=10  # → 35 mods
@@ -531,7 +545,8 @@ max_distance=100, min_modification_size=10  # → 35 mods
 max_distance=80, min_modification_size=8    # → ~42-48 mods (estimado)
 ```
 
-**Impacto esperado**: 
+**Impacto esperado**:
+
 - Total mods: 35 → ~45 ✅
 - Taxa ALTERACAO: 85.7% → ~75-80% (ainda acima de 70%) ✅
 
@@ -540,17 +555,20 @@ max_distance=80, min_modification_size=8    # → ~42-48 mods (estimado)
 **Problema**: 79.5% vs meta 80%
 
 **Análise**: Diferença é marginal (0.5pp). Causas possíveis:
+
 1. IA agrupa conceitos que sistema separa por distância
 2. IA ignora modificações que sistema detecta (falsos positivos)
 3. Métricas de concordância podem ser ajustadas
 
 **Solução**: Não recomendada no momento
+
 - Custo/benefício baixo (0.5pp de ganho)
 - Foco em produtizar Task-017 primeiro
 
 #### 3. **Task-018: Otimizações Avançadas (Opcional)**
 
 Se necessário no futuro:
+
 - Análise semântica com embeddings (detectar similaridade conceitual)
 - Clustering hierárquico de modificações
 - Aprendizado de máquina para prever agrupamentos ideais
