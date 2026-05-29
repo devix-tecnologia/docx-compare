@@ -297,6 +297,26 @@ class ResultadoVinculacao:
         return (cobertos / total * 100) if total > 0 else 0.0
 
 
+@dataclass
+class SemanticGroupingConfig:
+    """Configuração do agrupamento semântico de modificações (Task-017)."""
+
+    # Distância máxima entre modificações para agrupar (caracteres)
+    max_distance: int = 100
+
+    # Tamanho mínimo de modificação relevante (caracteres)
+    min_modification_size: int = 10
+
+    # Agrupar apenas modificações da mesma cláusula
+    require_same_clause: bool = True
+
+    # Agrupar apenas modificações do mesmo tipo
+    require_same_type: bool = False
+
+    # Estratégia de merge de conteúdo: "concat", "summary", "range"
+    merge_strategy: str = "concat"
+
+
 # ============================================================================
 # FUNÇÕES UTILITÁRIAS DE NORMALIZAÇÃO E SIMILARIDADE
 # ============================================================================
@@ -343,6 +363,243 @@ def calcular_similaridade(texto1: str, texto2: str) -> float:
     else:
         # Fallback para difflib (mais lento)
         return difflib.SequenceMatcher(None, texto1, texto2).ratio()
+
+
+def _group_modifications_semantically(
+    modifications: list[dict], config: SemanticGroupingConfig
+) -> list[dict]:
+    """
+    Agrupa modificações próximas em modificações semânticas (Task-017).
+
+    Passos:
+    1. Filtrar triviais (< min_modification_size)
+    2. Ordenar por posição
+    3. Identificar grupos:
+       - Modificações consecutivas
+       - Distância ≤ max_distance
+       - Mesma cláusula (se require_same_clause)
+       - Mesmo tipo (se require_same_type)
+    4. Merge de cada grupo em modificação única
+    5. Retornar modificações agrupadas
+
+    Args:
+        modifications: Lista de modificações extraídas do diff
+        config: Configuração de agrupamento
+
+    Returns:
+        Lista de modificações agrupadas semanticamente
+    """
+
+    def get_modification_size(mod: dict) -> int:
+        """Calcula tamanho total da modificação em caracteres."""
+        conteudo = mod.get("conteudo", {})
+        size = 0
+        if isinstance(conteudo, dict):
+            if "original" in conteudo:
+                size += len(str(conteudo["original"]))
+            if "novo" in conteudo:
+                size += len(str(conteudo["novo"]))
+        return size
+
+    def get_modification_position(mod: dict) -> int:
+        """Extrai posição da modificação (usa posicao.linha como proxy)."""
+        posicao = mod.get("posicao", {})
+        if isinstance(posicao, dict):
+            return (
+                posicao.get("linha", 0) * 1000
+            )  # Converter linha para offset aproximado
+        return 0
+
+    def get_clause(mod: dict) -> str:
+        """Extrai cláusula da modificação (original ou modificada)."""
+        return mod.get("clausula_original") or mod.get("clausula_modificada") or ""
+
+    def merge_modifications(group: list[dict], strategy: str) -> dict:
+        """Faz merge de um grupo de modificações em uma única modificação."""
+        if not group:
+            return {}
+
+        if len(group) == 1:
+            return group[0]
+
+        # Determinar tipo do grupo com lógica melhorada (Task-017 otimização)
+        # Contagem de tipos
+        tipos = [mod.get("tipo") for mod in group]
+        count_alteracao = tipos.count("ALTERACAO")
+        count_insercao = tipos.count("INSERCAO")
+        count_remocao = tipos.count("REMOCAO")
+
+        # Prioridade 1: Se tem pelo menos uma ALTERACAO, é ALTERACAO
+        if count_alteracao > 0 or count_insercao > 0 and count_remocao > 0:
+            tipo_grupo = "ALTERACAO"
+        # Prioridade 3: Tipo puro (só um tipo no grupo)
+        elif count_insercao > 0:
+            tipo_grupo = "INSERCAO"
+        else:
+            tipo_grupo = "REMOCAO"
+
+        # Posições (início do primeiro, fim do último)
+        posicao_inicio = get_modification_position(group[0])
+        posicao_fim = get_modification_position(group[-1])
+
+        # Cláusula (usar a mais comum)
+        clausulas = [get_clause(mod) for mod in group if get_clause(mod)]
+        clausula = max(set(clausulas), key=clausulas.count) if clausulas else None
+
+        if strategy == "concat":
+            # Estratégia 1: Concatenar conteúdos
+            original_parts = []
+            novo_parts = []
+
+            for mod in group:
+                conteudo = mod.get("conteudo", {})
+                if isinstance(conteudo, dict):
+                    if "original" in conteudo and conteudo["original"]:
+                        original_parts.append(str(conteudo["original"]))
+                    if "novo" in conteudo and conteudo["novo"]:
+                        novo_parts.append(str(conteudo["novo"]))
+
+            merged_conteudo = {}
+            if original_parts:
+                merged_conteudo["original"] = " ".join(original_parts)
+            if novo_parts:
+                merged_conteudo["novo"] = " ".join(novo_parts)
+
+            return {
+                "tipo": tipo_grupo,
+                "css_class": f"diff-{tipo_grupo.lower()}",
+                "confianca": 0.85,  # Confiança moderada para agrupamentos
+                "posicao": {"linha": posicao_inicio // 1000, "coluna": 1},
+                "clausula_original": clausula
+                if tipo_grupo in ["ALTERACAO", "REMOCAO"]
+                else None,
+                "clausula_modificada": clausula
+                if tipo_grupo in ["ALTERACAO", "INSERCAO"]
+                else None,
+                "conteudo": merged_conteudo,
+                "modificacoes_agrupadas": len(group),
+                "agrupamento_semantico": True,
+            }
+
+        elif strategy == "summary":
+            # Estratégia 2: Resumo descritivo
+            contexto_parts = []
+            for mod in group:
+                conteudo = mod.get("conteudo", {})
+                if isinstance(conteudo, dict):
+                    orig = conteudo.get("original", "")
+                    novo = conteudo.get("novo", "")
+                    if orig and novo:
+                        contexto_parts.append(f"{novo}←{orig}")
+                    elif novo:
+                        contexto_parts.append(f"+{novo}")
+                    elif orig:
+                        contexto_parts.append(f"-{orig}")
+
+            return {
+                "tipo": tipo_grupo,
+                "css_class": f"diff-{tipo_grupo.lower()}",
+                "confianca": 0.85,
+                "posicao": {"linha": posicao_inicio // 1000, "coluna": 1},
+                "clausula_original": clausula
+                if tipo_grupo in ["ALTERACAO", "REMOCAO"]
+                else None,
+                "clausula_modificada": clausula
+                if tipo_grupo in ["ALTERACAO", "INSERCAO"]
+                else None,
+                "conteudo": f"Bloco modificado com {len(group)} alterações",
+                "contexto": ", ".join(contexto_parts),
+                "modificacoes_agrupadas": len(group),
+                "agrupamento_semantico": True,
+            }
+
+        else:  # "range"
+            # Estratégia 3: Range com detalhes
+            return {
+                "tipo": f"{tipo_grupo}_BLOCO",
+                "css_class": f"diff-{tipo_grupo.lower()}",
+                "confianca": 0.85,
+                "posicao": {"linha": posicao_inicio // 1000, "coluna": 1},
+                "posicao_inicio": posicao_inicio,
+                "posicao_fim": posicao_fim,
+                "clausula_original": clausula
+                if tipo_grupo in ["ALTERACAO", "REMOCAO"]
+                else None,
+                "clausula_modificada": clausula
+                if tipo_grupo in ["ALTERACAO", "INSERCAO"]
+                else None,
+                "conteudo": "Bloco de modificações agrupadas",
+                "modificacoes_agrupadas": len(group),
+                "detalhes": group,
+                "agrupamento_semantico": True,
+            }
+
+    # Passo 1: Filtrar triviais
+    filtered_mods = [
+        mod
+        for mod in modifications
+        if get_modification_size(mod) >= config.min_modification_size
+    ]
+
+    print(
+        f"🔬 Agrupamento semântico: {len(modifications)} → {len(filtered_mods)} modificações (filtradas {len(modifications) - len(filtered_mods)} triviais)"
+    )
+
+    if not filtered_mods:
+        return []
+
+    # Passo 2: Ordenar por posição
+    sorted_mods = sorted(filtered_mods, key=get_modification_position)
+
+    # Passo 3: Identificar grupos
+    groups = []
+    current_group = [sorted_mods[0]]
+
+    for i in range(1, len(sorted_mods)):
+        current_mod = sorted_mods[i]
+        prev_mod = sorted_mods[i - 1]
+
+        # Verificar se deve agrupar
+        should_group = True
+
+        # Critério 1: Distância
+        distance = get_modification_position(current_mod) - get_modification_position(
+            prev_mod
+        )
+        if distance > config.max_distance:
+            should_group = False
+
+        # Critério 2: Mesma cláusula (se requerido)
+        if config.require_same_clause and should_group:
+            if get_clause(current_mod) != get_clause(prev_mod):
+                should_group = False
+
+        # Critério 3: Mesmo tipo (se requerido)
+        if config.require_same_type and should_group:
+            if current_mod.get("tipo") != prev_mod.get("tipo"):
+                should_group = False
+
+        if should_group:
+            current_group.append(current_mod)
+        else:
+            groups.append(current_group)
+            current_group = [current_mod]
+
+    # Adicionar último grupo
+    groups.append(current_group)
+
+    # Passo 4: Merge de cada grupo
+    grouped_mods = []
+    for group in groups:
+        merged = merge_modifications(group, config.merge_strategy)
+        if merged:
+            grouped_mods.append(merged)
+
+    print(
+        f"📊 Agrupamento semântico: {len(sorted_mods)} → {len(grouped_mods)} modificações agrupadas ({len(groups)} grupos)"
+    )
+
+    return grouped_mods
 
 
 def setup_signal_handlers():
@@ -512,13 +769,22 @@ class DirectusAPI:
             },
         ]
 
-    def process_versao(self, versao_id, mock=False, use_ast=True):
+    def process_versao(
+        self,
+        versao_id,
+        mock=False,
+        use_ast=True,
+        use_semantic_grouping=False,
+        semantic_config=None,
+    ):
         """Processa uma versão específica
 
         Args:
             versao_id: ID da versão a ser processada
             mock: Se True, usa dados mockados. Se False ou não informado, usa dados reais do Directus
             use_ast: Se True (PADRÃO), usa implementação AST do Pandoc (59.3% precisão). Se False, usa texto plano (51.9% precisão)
+            use_semantic_grouping: Se True, agrupa modificações próximas semanticamente (Task-017)
+            semantic_config: Configuração do agrupamento semântico (usa padrão se None)
         """
         global diff_cache  # Declarar acesso à variável global
 
@@ -591,7 +857,12 @@ class DirectusAPI:
                 print("=" * 100)
                 print("🔬 USANDO IMPLEMENTAÇÃO AST (59.3% precisão)")
                 print("=" * 100)
-                return self._process_versao_com_ast(versao_id, versao_data)
+                return self._process_versao_com_ast(
+                    versao_id,
+                    versao_data,
+                    use_semantic_grouping=use_semantic_grouping,
+                    semantic_config=semantic_config,
+                )
 
             # Gerar conteúdo baseado no modo (mock ou real)
             if mock:
@@ -2246,12 +2517,20 @@ class DirectusAPI:
 
         return modificacoes
 
-    def _process_versao_com_ast(self, versao_id, versao_data):
+    def _process_versao_com_ast(
+        self,
+        versao_id,
+        versao_data,
+        use_semantic_grouping=False,
+        semantic_config=None,
+    ):
         """Processa versão usando implementação AST do Pandoc
 
         Args:
             versao_id: ID da versão
             versao_data: Dados da versão do Directus
+            use_semantic_grouping: Se True, agrupa modificações semanticamente
+            semantic_config: Configuração do agrupamento semântico
 
         Returns:
             dict: Resultado do processamento com modificações e métricas
@@ -2322,7 +2601,11 @@ class DirectusAPI:
             # Extrair modificações do diff
             print("🔬 Extraindo modificações do HTML...")
             modificacoes = self._extrair_modificacoes_do_diff_ast(
-                diff_html, original_paras, modified_paras
+                diff_html,
+                original_paras,
+                modified_paras,
+                use_semantic_grouping=use_semantic_grouping,
+                semantic_config=semantic_config,
             )
 
             # Calcular métricas
@@ -2711,7 +2994,9 @@ class DirectusAPI:
                     if len(delete_texts) == len(insert_texts):
                         # Verificar se devemos parear baseado em similaridade
                         should_pair = False
-                        for d_text, i_text in zip(delete_texts, insert_texts, strict=False):
+                        for d_text, i_text in zip(
+                            delete_texts, insert_texts, strict=False
+                        ):
                             sim = difflib.SequenceMatcher(None, d_text, i_text).ratio()
                             if sim >= SIMILARITY_THRESHOLD_FOR_PAIRING:
                                 should_pair = True
@@ -2941,7 +3226,12 @@ class DirectusAPI:
         return modificacoes_com_posicoes
 
     def _extrair_modificacoes_do_diff_ast(
-        self, diff_html: str, _original_paras: list[dict], _modified_paras: list[dict]
+        self,
+        diff_html: str,
+        _original_paras: list[dict],
+        _modified_paras: list[dict],
+        use_semantic_grouping: bool = False,
+        semantic_config: SemanticGroupingConfig | None = None,
     ) -> list[dict]:
         """Extrai modificações do HTML de diff (versão AST).
 
@@ -2952,6 +3242,19 @@ class DirectusAPI:
 
         TASK #016: Agora detecta alterações granulares DENTRO de parágrafos pareados,
         não tratando o parágrafo inteiro como uma única modificação.
+
+        TASK #017: Opcionalmente agrupa modificações próximas em modificações semânticas
+        quando use_semantic_grouping=True.
+
+        Args:
+            diff_html: HTML do diff gerado
+            _original_paras: Parágrafos originais (não usado, mantido para compatibilidade)
+            _modified_paras: Parágrafos modificados (não usado, mantido para compatibilidade)
+            use_semantic_grouping: Se True, agrupa modificações próximas semanticamente
+            semantic_config: Configuração do agrupamento (usa padrão se None)
+
+        Returns:
+            Lista de modificações extraídas (agrupadas se use_semantic_grouping=True)
         """
         from difflib import SequenceMatcher
 
@@ -3182,6 +3485,14 @@ class DirectusAPI:
                     }
                 )
                 j += 1
+
+        # TASK #017: Aplicar agrupamento semântico se habilitado
+        if use_semantic_grouping:
+            config = semantic_config or SemanticGroupingConfig()
+            print(
+                f"🎯 Aplicando agrupamento semântico (config: max_distance={config.max_distance}, min_size={config.min_modification_size})"
+            )
+            modificacoes = _group_modifications_semantically(modificacoes, config)
 
         return modificacoes
 
@@ -4762,7 +5073,15 @@ def process_document():
     {
         "versao_id": "id_da_versao",
         "mock": true/false (opcional, default: false),
-        "use_ast": true/false (opcional, default: TRUE - AST 59.3% vs Texto 51.9%)
+        "use_ast": true/false (opcional, default: TRUE - AST 59.3% vs Texto 51.9%),
+        "use_semantic_grouping": true/false (opcional, default: false - Task-017),
+        "semantic_config": {
+            "max_distance": 100,
+            "min_modification_size": 10,
+            "require_same_clause": true,
+            "require_same_type": false,
+            "merge_strategy": "concat"
+        } (opcional)
     }
     """
     try:
@@ -4782,20 +5101,46 @@ def process_document():
         versao_id = data.get("versao_id") or data.get("doc_id")
         mock = data.get("mock", False)  # Default: usar dados reais
         use_ast = data.get("use_ast", True)  # Default: USAR AST (melhor precisão)
+        use_semantic_grouping = data.get(
+            "use_semantic_grouping", False
+        )  # Default: desabilitado
+
+        # Configuração de agrupamento semântico (Task-017)
+        semantic_config = None
+        if use_semantic_grouping and data.get("semantic_config"):
+            config_data = data["semantic_config"]
+            semantic_config = SemanticGroupingConfig(
+                max_distance=config_data.get("max_distance", 100),
+                min_modification_size=config_data.get("min_modification_size", 10),
+                require_same_clause=config_data.get("require_same_clause", True),
+                require_same_type=config_data.get("require_same_type", False),
+                merge_strategy=config_data.get("merge_strategy", "concat"),
+            )
 
         if not versao_id:
             return jsonify({"error": "versao_id é obrigatório"}), 400
 
         metodo = "AST (59.3%)" if use_ast else "Texto (51.9%)"
+        grouping_status = (
+            "COM agrupamento semântico"
+            if use_semantic_grouping
+            else "SEM agrupamento semântico"
+        )
         print(
-            f"🔍 Processando versão {versao_id} (modo: {'mock' if mock else 'real'}, método: {metodo})",
+            f"🔍 Processando versão {versao_id} (modo: {'mock' if mock else 'real'}, método: {metodo}, {grouping_status})",
             flush=True,
         )
         # TRACE logs (comentados por serem muito verbosos):
         # print(f"🔍 TRACE: directus_api = {directus_api}", flush=True)
         # print(f"🔍 TRACE: type(directus_api) = {type(directus_api)}", flush=True)
 
-        result = directus_api.process_versao(versao_id, mock=mock, use_ast=use_ast)
+        result = directus_api.process_versao(
+            versao_id,
+            mock=mock,
+            use_ast=use_ast,
+            use_semantic_grouping=use_semantic_grouping,
+            semantic_config=semantic_config,
+        )
 
         # TRACE log (comentado por ser muito verboso - imprime objeto completo):
         # print(f"🔍 TRACE: result após process_versao = {result}", flush=True)
