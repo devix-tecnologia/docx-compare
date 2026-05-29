@@ -430,10 +430,7 @@ def _group_modifications_semantically(
         count_remocao = tipos.count("REMOCAO")
 
         # Prioridade 1: Se tem pelo menos uma ALTERACAO, é ALTERACAO
-        if count_alteracao > 0:
-            tipo_grupo = "ALTERACAO"
-        # Prioridade 2: Se tem INSERCAO + REMOCAO (sem ALTERACAO), é uma troca → ALTERACAO
-        elif count_insercao > 0 and count_remocao > 0:
+        if count_alteracao > 0 or count_insercao > 0 and count_remocao > 0:
             tipo_grupo = "ALTERACAO"
         # Prioridade 3: Tipo puro (só um tipo no grupo)
         elif count_insercao > 0:

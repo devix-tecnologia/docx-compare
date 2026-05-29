@@ -7,7 +7,6 @@ taxa de ALTERACAO de 42%→≥70%.
 Usa o mesmo contrato da Task-016 (ID: 8d8e89a8-ba89-4e0e-846c-43e7ad058309).
 """
 
-import os
 import sys
 from pathlib import Path
 
@@ -225,10 +224,10 @@ def test_semantic_grouping_reduces_modifications():
     )
     aumento_alteracao = taxa_alteracao_semantic - taxa_alteracao_baseline
 
-    print(f"\n📉 Redução de modificações (baseline → semântico padrão):")
+    print("\n📉 Redução de modificações (baseline → semântico padrão):")
     print(f"   {total_baseline} → {total_semantic} ({reducao_percentual:.1f}% redução)")
 
-    print(f"\n📈 Taxa de ALTERACAO (baseline → semântico padrão):")
+    print("\n📈 Taxa de ALTERACAO (baseline → semântico padrão):")
     print(
         f"   {taxa_alteracao_baseline:.1f}% → {taxa_alteracao_semantic:.1f}% ({aumento_alteracao:+.1f}pp)"
     )
@@ -241,12 +240,12 @@ def test_semantic_grouping_reduces_modifications():
     )
     aumento_alteracao_agressiva = taxa_alteracao_aggressive - taxa_alteracao_baseline
 
-    print(f"\n📉 Redução de modificações (baseline → semântico agressivo):")
+    print("\n📉 Redução de modificações (baseline → semântico agressivo):")
     print(
         f"   {total_baseline} → {total_aggressive} ({reducao_agressiva:.1f}% redução)"
     )
 
-    print(f"\n📈 Taxa de ALTERACAO (baseline → semântico agressivo):")
+    print("\n📈 Taxa de ALTERACAO (baseline → semântico agressivo):")
     print(
         f"   {taxa_alteracao_baseline:.1f}% → {taxa_alteracao_aggressive:.1f}% ({aumento_alteracao_agressiva:+.1f}pp)"
     )
@@ -255,11 +254,11 @@ def test_semantic_grouping_reduces_modifications():
     ia_total = 44
     ia_taxa_alteracao = 79.0
 
-    print(f"\n🎯 Referência IA:")
+    print("\n🎯 Referência IA:")
     print(f"   Total: {ia_total} modificações")
     print(f"   Taxa ALTERACAO: {ia_taxa_alteracao:.1f}%")
 
-    print(f"\n📊 Concordância com IA (baseline → semântico padrão → agressivo):")
+    print("\n📊 Concordância com IA (baseline → semântico padrão → agressivo):")
     concordancia_baseline = abs(total_baseline - ia_total) / ia_total * 100
     concordancia_semantic = abs(total_semantic - ia_total) / ia_total * 100
     concordancia_aggressive = abs(total_aggressive - ia_total) / ia_total * 100
