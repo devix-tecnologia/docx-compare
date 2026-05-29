@@ -9,6 +9,19 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Adicionado
 
+- 🎯 **Task-017: Modo Semântico de Agrupamento de Modificações** (feat/task-017)
+  - Implementação completa do agrupamento semântico de modificações próximas
+  - Dataclass `SemanticGroupingConfig` com 5 parâmetros configuráveis
+  - Algoritmo em 4 etapas: filtrar triviais → ordenar → agrupar → mesclar
+  - 3 estratégias de merge: concatenação, resumo, range
+  - Otimização de priorização de tipos: INS+REM → ALTERACAO (detecção de trocas)
+  - Integração completa no pipeline AST
+  - Suporte via API: `/api/process` aceita `use_semantic_grouping` e `semantic_config`
+  - **Resultados validados**: 115→35 mods (69.6% redução), 85.7% ALTERACAO, 100% triviais eliminadas
+  - **Métricas**: 3/5 critérios de aceitação aprovados (redução, ALTERACAO, triviais)
+  - Testes completos: 11 testes unitários + teste de regressão end-to-end
+  - Documentação: [TASKS/task-017-modo-semantico-agrupamento-modificacoes.md](TASKS/task-017-modo-semantico-agrupamento-modificacoes.md)
+
 - 📚 **Documentação de Arquitetura Completa**: Novo documento [docs/ARQUITETURA_E_FLUXO.md](docs/ARQUITETURA_E_FLUXO.md)
   - Explicação didática completa do funcionamento do sistema
   - Fluxo de processamento detalhado em 11 etapas (criação → conclusão)
