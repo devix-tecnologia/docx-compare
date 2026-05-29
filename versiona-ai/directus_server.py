@@ -774,7 +774,7 @@ class DirectusAPI:
         versao_id,
         mock=False,
         use_ast=True,
-        use_semantic_grouping=False,
+        use_semantic_grouping=True,
         semantic_config=None,
     ):
         """Processa uma versão específica
@@ -2521,7 +2521,7 @@ class DirectusAPI:
         self,
         versao_id,
         versao_data,
-        use_semantic_grouping=False,
+        use_semantic_grouping=True,
         semantic_config=None,
     ):
         """Processa versão usando implementação AST do Pandoc
@@ -3230,7 +3230,7 @@ class DirectusAPI:
         diff_html: str,
         _original_paras: list[dict],
         _modified_paras: list[dict],
-        use_semantic_grouping: bool = False,
+        use_semantic_grouping: bool = True,
         semantic_config: SemanticGroupingConfig | None = None,
     ) -> list[dict]:
         """Extrai modificações do HTML de diff (versão AST).
@@ -5074,7 +5074,7 @@ def process_document():
         "versao_id": "id_da_versao",
         "mock": true/false (opcional, default: false),
         "use_ast": true/false (opcional, default: TRUE - AST 59.3% vs Texto 51.9%),
-        "use_semantic_grouping": true/false (opcional, default: false - Task-017),
+        "use_semantic_grouping": true/false (opcional, default: TRUE - Task-017, +44pp ALTERACAO),
         "semantic_config": {
             "max_distance": 100,
             "min_modification_size": 10,
