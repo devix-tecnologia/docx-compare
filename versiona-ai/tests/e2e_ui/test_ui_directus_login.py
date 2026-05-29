@@ -38,7 +38,9 @@ class TestDirectusLogin:
         page.wait_for_url("**/admin/**", timeout=15000)
 
         # Validar que não está mais na página de login
-        assert "login" not in page.url.lower(), "Ainda na página de login após submissão"
+        assert "login" not in page.url.lower(), (
+            "Ainda na página de login após submissão"
+        )
 
         print(f"✅ Login bem-sucedido: {page.url}")
 
@@ -60,7 +62,9 @@ class TestDirectusLogin:
         page.wait_for_timeout(2000)
 
         # Validar que ainda está na página de login
-        assert "login" in page.url.lower(), "Não deveria ter feito login com credenciais inválidas"
+        assert "login" in page.url.lower(), (
+            "Não deveria ter feito login com credenciais inválidas"
+        )
 
         print("✅ Login corretamente rejeitado para credenciais inválidas")
 

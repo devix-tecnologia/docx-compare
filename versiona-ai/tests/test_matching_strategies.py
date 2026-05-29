@@ -5,13 +5,13 @@ Valida funcionalidade e qualidade de cada implementação.
 """
 
 import pytest
+
 from matching import (
     DifflibMatcher,
     MatchingStrategy,
     RapidFuzzMatcher,
 )
 from matching.rapidfuzz_matcher import RAPIDFUZZ_AVAILABLE
-
 from tests.matching_rinha_metrics import InstrumentedMatcher
 
 

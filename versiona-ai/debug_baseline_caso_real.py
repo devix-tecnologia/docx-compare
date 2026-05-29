@@ -50,6 +50,7 @@ for mod in data["modificacoes"]:
 import os
 
 import docx
+
 from repositorio import DirectusRepository
 
 repo = DirectusRepository("http://localhost:8065", "pmUzcQ6EgMm9uqYcHIM-MYiZHz11rVfP")

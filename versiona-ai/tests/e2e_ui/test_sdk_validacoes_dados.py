@@ -10,10 +10,7 @@ class TestValidacoesDadosSDK:
     """Validações de dados via API Directus."""
 
     def test_modelo_contrato_existe(
-        self,
-        directus_session,
-        e2e_ui_config,
-        modelo_contrato_id: str
+        self, directus_session, e2e_ui_config, modelo_contrato_id: str
     ):
         """Valida que modelo de contrato de teste existe."""
         response = directus_session.get(
@@ -27,10 +24,7 @@ class TestValidacoesDadosSDK:
         print(f"✅ Modelo encontrado: {modelo['nome']}")
 
     def test_modelo_tem_clausulas(
-        self,
-        directus_session,
-        e2e_ui_config,
-        modelo_contrato_id: str
+        self, directus_session, e2e_ui_config, modelo_contrato_id: str
     ):
         """Valida que modelo tem cláusulas cadastradas."""
         response = directus_session.get(
@@ -41,22 +35,21 @@ class TestValidacoesDadosSDK:
         assert response.status_code == 200
         clausulas = response.json()["data"]
 
-        assert len(clausulas) >= 5, f"Modelo deve ter >= 5 cláusulas, tem {len(clausulas)}"
+        assert len(clausulas) >= 5, (
+            f"Modelo deve ter >= 5 cláusulas, tem {len(clausulas)}"
+        )
 
         print(f"✅ Modelo tem {len(clausulas)} cláusulas")
 
     def test_clausulas_tem_referencia_unica(
-        self,
-        directus_session,
-        e2e_ui_config,
-        modelo_contrato_id: str
+        self, directus_session, e2e_ui_config, modelo_contrato_id: str
     ):
         """Valida que cada cláusula tem referência única (ex: 1.0, 2.0)."""
         response = directus_session.get(
             f"{e2e_ui_config.directus_url}/items/clausula",
             params={
                 "filter": {"modelo_contrato": {"_eq": modelo_contrato_id}},
-                "fields": ["id", "referencia"]
+                "fields": ["id", "referencia"],
             },
         )
 
@@ -72,28 +65,16 @@ class TestValidacoesDadosSDK:
 
         print(f"✅ {len(referencias)} referências únicas: {referencias[:5]}...")
 
-    def test_directus_health_check(
-        self,
-        directus_session,
-        e2e_ui_config
-    ):
+    def test_directus_health_check(self, directus_session, e2e_ui_config):
         """Valida que Directus está saudável."""
-        response = directus_session.get(
-            f"{e2e_ui_config.directus_url}/server/health"
-        )
+        response = directus_session.get(f"{e2e_ui_config.directus_url}/server/health")
 
         assert response.status_code == 200
         print("✅ Directus health check: OK")
 
-    def test_api_versiona_health_check(
-        self,
-        api_session,
-        e2e_ui_config
-    ):
+    def test_api_versiona_health_check(self, api_session, e2e_ui_config):
         """Valida que API Versiona está saudável."""
-        response = api_session.get(
-            f"{e2e_ui_config.api_url}/health"
-        )
+        response = api_session.get(f"{e2e_ui_config.api_url}/health")
 
         assert response.status_code == 200
         data = response.json()
@@ -104,10 +85,7 @@ class TestValidacoesDadosSDK:
         print(f"✅ API Versiona health: {data['status']}")
 
     def test_consistencia_ids_modificacao_clausula(
-        self,
-        directus_session,
-        e2e_ui_config,
-        versao_processada_id: str
+        self, directus_session, e2e_ui_config, versao_processada_id: str
     ):
         """
         Valida consistência: IDs de cláusulas nas modificações
@@ -118,7 +96,7 @@ class TestValidacoesDadosSDK:
             f"{e2e_ui_config.directus_url}/items/modificacao",
             params={
                 "filter": {"versao": {"_eq": versao_processada_id}},
-                "fields": ["id", "clausula"]
+                "fields": ["id", "clausula"],
             },
         )
 
@@ -129,10 +107,7 @@ class TestValidacoesDadosSDK:
             pytest.skip("Versão não tem modificações para validar")
 
         # Coletar IDs únicos de cláusulas
-        clausula_ids = {
-            mod["clausula"] for mod in modificacoes
-            if mod.get("clausula")
-        }
+        clausula_ids = {mod["clausula"] for mod in modificacoes if mod.get("clausula")}
 
         # Buscar todas cláusulas em uma query
         response = directus_session.get(

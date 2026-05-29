@@ -5,6 +5,7 @@ Seguindo TDD: escrever testes antes da implementação
 """
 
 import pytest
+
 from agrupador_posicional import AgrupadorPosicional
 
 

@@ -15,10 +15,7 @@ class TestVisualizarModificacoesVinculadas:
     """
 
     def test_navegar_para_lista_modificacoes(
-        self,
-        directus_page_logged: Page,
-        e2e_ui_config,
-        versao_processada_id: str
+        self, directus_page_logged: Page, e2e_ui_config, versao_processada_id: str
     ):
         """Valida navegação para lista de modificações de uma versão."""
         # Navegar para collection de modificações
@@ -40,7 +37,7 @@ class TestVisualizarModificacoesVinculadas:
         directus_session,
         e2e_ui_config,
         versao_processada_id: str,
-        use_filter: bool
+        use_filter: bool,
     ):
         """
         CRÍTICO - Task 010
@@ -54,7 +51,9 @@ class TestVisualizarModificacoesVinculadas:
             params=params,
         )
 
-        assert response.status_code == 200, f"Falha ao buscar modificações: {response.text}"
+        assert response.status_code == 200, (
+            f"Falha ao buscar modificações: {response.text}"
+        )
 
         modificacoes = response.json()["data"]
 
@@ -62,7 +61,8 @@ class TestVisualizarModificacoesVinculadas:
         assert len(modificacoes) > 0, "Nenhuma modificação encontrada para a versão"
 
         modificacoes_sem_clausula = [
-            mod for mod in modificacoes
+            mod
+            for mod in modificacoes
             if mod.get("clausula") is None or mod.get("clausula") == ""
         ]
 
@@ -72,14 +72,16 @@ class TestVisualizarModificacoesVinculadas:
             f"IDs: {[mod['id'] for mod in modificacoes_sem_clausula]}"
         )
 
-        print(f"✅ TASK 010 OK: {len(modificacoes)} modificações com cláusula vinculada")
+        print(
+            f"✅ TASK 010 OK: {len(modificacoes)} modificações com cláusula vinculada"
+        )
 
     def test_ui_exibe_nome_clausula_nao_apenas_id(
         self,
         directus_page_logged: Page,
         directus_session,
         e2e_ui_config,
-        versao_processada_id: str
+        versao_processada_id: str,
     ):
         """
         Valida que UI exibe nome/título da cláusula, não apenas ID.
@@ -90,7 +92,7 @@ class TestVisualizarModificacoesVinculadas:
             params={
                 "filter": {"versao": {"_eq": versao_processada_id}},
                 "limit": 1,
-                "fields": ["id", "clausula.nome", "clausula.referencia"]
+                "fields": ["id", "clausula.nome", "clausula.referencia"],
             },
         )
 
@@ -116,8 +118,8 @@ class TestVisualizarModificacoesVinculadas:
         if clausula_info.get("nome"):
             # Se temos nome da cláusula, deve aparecer na UI
             assert (
-                clausula_info["nome"] in page_content or
-                clausula_info.get("referencia", "") in page_content
+                clausula_info["nome"] in page_content
+                or clausula_info.get("referencia", "") in page_content
             ), "Nome/referência da cláusula não aparece na UI"
 
         print(f"✅ UI exibe informação da cláusula: {clausula_info}")
@@ -127,7 +129,7 @@ class TestVisualizarModificacoesVinculadas:
         directus_page_logged: Page,
         directus_session,
         e2e_ui_config,
-        versao_processada_id: str
+        versao_processada_id: str,
     ):
         """
         Valida que é possível navegar de modificação → cláusula via UI.
@@ -138,7 +140,7 @@ class TestVisualizarModificacoesVinculadas:
             params={
                 "filter": {"versao": {"_eq": versao_processada_id}},
                 "limit": 1,
-                "fields": ["id", "clausula"]
+                "fields": ["id", "clausula"],
             },
         )
 
@@ -174,15 +176,14 @@ class TestVisualizarModificacoesVinculadas:
                 assert str(clausula_id) in page_content, (
                     "ID da cláusula não aparece na página de modificação"
                 )
-                print("✅ ID da cláusula aparece na UI (link pode não estar acessível em teste)")
+                print(
+                    "✅ ID da cláusula aparece na UI (link pode não estar acessível em teste)"
+                )
         except Exception as e:
             pytest.skip(f"Não foi possível validar link UI: {e}")
 
     def test_filtrar_modificacoes_por_clausula(
-        self,
-        directus_session,
-        e2e_ui_config,
-        modelo_contrato_id: str
+        self, directus_session, e2e_ui_config, modelo_contrato_id: str
     ):
         """
         Valida que é possível filtrar modificações por cláusula específica.
@@ -192,7 +193,7 @@ class TestVisualizarModificacoesVinculadas:
             f"{e2e_ui_config.directus_url}/items/clausula",
             params={
                 "filter": {"modelo_contrato": {"_eq": modelo_contrato_id}},
-                "limit": 1
+                "limit": 1,
             },
         )
 
@@ -216,13 +217,12 @@ class TestVisualizarModificacoesVinculadas:
                 f"Filtro retornou modificação de outra cláusula: {mod['id']}"
             )
 
-        print(f"✅ Filtro por cláusula funciona: {len(modificacoes)} modificações encontradas")
+        print(
+            f"✅ Filtro por cláusula funciona: {len(modificacoes)} modificações encontradas"
+        )
 
     def test_validacao_foreign_key_banco(
-        self,
-        directus_session,
-        e2e_ui_config,
-        versao_processada_id: str
+        self, directus_session, e2e_ui_config, versao_processada_id: str
     ):
         """
         Valida integridade referencial: clausula_id aponta para registro válido.
@@ -232,7 +232,7 @@ class TestVisualizarModificacoesVinculadas:
             f"{e2e_ui_config.directus_url}/items/modificacao",
             params={
                 "filter": {"versao": {"_eq": versao_processada_id}},
-                "fields": ["id", "clausula"]
+                "fields": ["id", "clausula"],
             },
         )
 

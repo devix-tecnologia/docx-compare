@@ -41,16 +41,22 @@ class SubagenteSetup:
     def buscar_contrato(self) -> dict:
         """Busca dados do contrato."""
         url = f"{DIRECTUS_BASE_URL}/items/contrato/{self.contrato_id}"
-        response = requests.get(
-            url, headers=self.headers, params={"fields": "*,versoes.*"}, timeout=30
-        )
+        params = {
+            "fields": "*,versoes.*",
+            "deep[versoes][_limit]": "-1",
+        }
+        response = requests.get(url, headers=self.headers, params=params, timeout=30)
         response.raise_for_status()
         return response.json()["data"]
 
     def buscar_modelo(self, modelo_id: str) -> dict:
         """Busca modelo de contrato com tags."""
         url = f"{DIRECTUS_BASE_URL}/items/modelo_contrato/{modelo_id}"
-        params = {"fields": "*,tags.*,clausulas.*"}
+        params = {
+            "fields": "*,tags.*,clausulas.*",
+            "deep[tags][_limit]": "-1",
+            "deep[clausulas][_limit]": "-1",
+        }
         response = requests.get(url, headers=self.headers, params=params, timeout=30)
         response.raise_for_status()
         return response.json()["data"]
@@ -58,7 +64,10 @@ class SubagenteSetup:
     def buscar_versao(self, versao_id: str) -> dict:
         """Busca versão específica."""
         url = f"{DIRECTUS_BASE_URL}/items/versao/{versao_id}"
-        params = {"fields": "*,arquivo.*,modificacoes.*"}
+        params = {
+            "fields": "*,arquivo.*,modificacoes.*",
+            "deep[modificacoes][_limit]": "-1",
+        }
         response = requests.get(url, headers=self.headers, params=params, timeout=30)
         response.raise_for_status()
         return response.json()["data"]
@@ -571,21 +580,43 @@ class SubagenteComparador:
         return comparacao
 
 
-def comparar_resultados(output_dir: Path):
+def comparar_resultados(output_dir: Path, contrato_id: str = None):
     """Compara resultados após usuário processar com IA."""
     print("=" * 80)
     print("🔄 COMPARANDO RESULTADOS SISTEMA vs IA")
     print("=" * 80)
     print()
 
-    # Encontrar estado intermediário mais recente
-    estados = sorted(output_dir.glob("estado_intermediario_*.json"), reverse=True)
-    if not estados:
-        print("❌ Nenhum estado intermediário encontrado. Execute o script primeiro.")
-        sys.exit(1)
+    # Encontrar estado intermediário
+    if contrato_id:
+        # Buscar por contrato_id específico
+        estados = []
+        for estado_file in output_dir.glob("estado_intermediario_*.json"):
+            with open(estado_file, encoding="utf-8") as f:
+                estado_data = json.load(f)
+                if estado_data.get("contrato_id") == contrato_id:
+                    estados.append(estado_file)
 
-    estado_path = estados[0]
-    print(f"📂 Carregando estado: {estado_path.name}")
+        if not estados:
+            print(f"❌ Nenhum estado encontrado para contrato {contrato_id}")
+            sys.exit(1)
+
+        # Usar o mais recente deste contrato
+        estado_path = sorted(estados, reverse=True)[0]
+        print(
+            f"📂 Carregando estado: {estado_path.name} (contrato: {contrato_id[:8]}...)"
+        )
+    else:
+        # Buscar o mais recente de qualquer contrato
+        estados = sorted(output_dir.glob("estado_intermediario_*.json"), reverse=True)
+        if not estados:
+            print(
+                "❌ Nenhum estado intermediário encontrado. Execute o script primeiro."
+            )
+            sys.exit(1)
+
+        estado_path = estados[0]
+        print(f"📂 Carregando estado: {estado_path.name}")
 
     with open(estado_path, encoding="utf-8") as f:
         estado = json.load(f)
@@ -676,11 +707,17 @@ def main():
     if len(sys.argv) > 1 and sys.argv[1] == "--comparar":
         # Modo comparação: usuário já processou com IA
         output_dir = Path(__file__).parent / "teste_ab_output"
-        comparar_resultados(output_dir)
+
+        # Verificar se foi passado contrato_id como segundo argumento
+        contrato_id = sys.argv[2] if len(sys.argv) > 2 else None
+        comparar_resultados(output_dir, contrato_id)
         return
 
-    # Contrato para teste A/B
-    contrato_id = "77b8555b-e40d-4ece-8c8a-88367b36a625"
+    # Contrato para teste A/B (pode ser passado como argumento)
+    if len(sys.argv) > 1 and sys.argv[1] != "--comparar":
+        contrato_id = sys.argv[1]
+    else:
+        contrato_id = "77b8555b-e40d-4ece-8c8a-88367b36a625"  # default
 
     # Diretório de saída
     output_dir = Path(__file__).parent / "teste_ab_output"

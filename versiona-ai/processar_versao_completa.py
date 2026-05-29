@@ -10,9 +10,9 @@ from pathlib import Path
 
 import requests
 from rapidfuzz import fuzz
-from repositorio import DirectusRepository
 
 from docx_utils import convert_docx_to_text
+from repositorio import DirectusRepository
 
 DIRECTUS_URL = "http://localhost:8065"
 DIRECTUS_TOKEN = "pmUzcQ6EgMm9uqYcHIM-MYiZHz11rVfP"

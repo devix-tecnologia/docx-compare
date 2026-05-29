@@ -9,6 +9,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent / "tests"))
 
 from algoritmos.producao.algoritmo import AlgoritmoProducao
+
 from processar_caso_real import extrair_dados_para_algoritmo, processar_com_algoritmo
 
 # Carregar dados do JSON salvo

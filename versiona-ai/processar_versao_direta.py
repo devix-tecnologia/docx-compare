@@ -15,9 +15,9 @@ import re
 import tempfile
 
 from algoritmos.producao.algoritmo import AlgoritmoProducao
-from repositorio import DirectusRepository
 
 from docx_utils import convert_docx_to_text
+from repositorio import DirectusRepository
 
 
 def processar_versao_direta(versao_id: str, directus_url: str, directus_token: str):

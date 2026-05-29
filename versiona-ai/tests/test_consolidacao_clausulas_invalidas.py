@@ -18,6 +18,7 @@ Este teste valida essa lógica.
 from dataclasses import dataclass
 
 import pytest
+
 from directus_server import DirectusAPI
 
 

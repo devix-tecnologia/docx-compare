@@ -16,7 +16,6 @@ from processar_caso_real import (
     extrair_dados_para_algoritmo,
     processar_com_algoritmo,
 )
-
 from tests.algoritmos.producao.algoritmo import AlgoritmoProducao
 
 

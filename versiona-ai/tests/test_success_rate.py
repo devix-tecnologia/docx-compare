@@ -5,6 +5,7 @@ Valida que ambas estratégias encontram > 90% das cláusulas.
 """
 
 import pytest
+
 from matching import DifflibMatcher, RapidFuzzMatcher
 
 

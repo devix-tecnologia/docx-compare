@@ -21,6 +21,7 @@ for i, tag in enumerate(tags, 1):
 import os
 
 import docx
+
 from repositorio import DirectusRepository
 
 DIRECTUS_URL = "http://localhost:8065"

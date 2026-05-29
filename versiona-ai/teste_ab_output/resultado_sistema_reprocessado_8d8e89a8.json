@@ -1,0 +1,2835 @@
+{
+  "versao_id": "8d8e89a8-ba89-4e0e-846c-43e7ad058309",
+  "contrato_id": "86035523-977b-42cf-adda-6fd364170aa9",
+  "timestamp": "2026-05-29T08:02:54.129282",
+  "tempo_processamento": 107.134223,
+  "total_modificacoes": 115,
+  "por_categoria": {
+    "DESCONHECIDO": 115
+  },
+  "modificacoes": [
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.7947368421052631,
+      "posicao": {
+        "linha": 16,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "indenização",
+        "novo": "eventual"
+      },
+      "posicao_inicio": 69181,
+      "posicao_fim": 69189,
+      "tag_nome": "2.3",
+      "clausula_id": "4667555d-ef82-427b-af74-4b430b8ed190",
+      "clausula_numero": "1.6",
+      "clausula_nome": "Cláusula 1ª - 1.6",
+      "score_vinculacao": 0.8362650602409638,
+      "sobreposicao_chars": 8,
+      "metodo_vinculacao": "fuzzy_match_88%",
+      "status_vinculacao": "automatico",
+      "clausula_conteudo": "A CONTRATADA declara ter ciência das condições da região onde se\n    localizam as instalações da CONTRATANTE, assumindo exclusiva\n    responsabilidade pelo perfeito conhecimento das diversas\n    condi",
+      "clausula_objetivo": "Atribuir à CONTRATADA a responsabilidade por conhecer previamente as condições do local de prestação dos serviços, impedindo-a de reivindicar compensações por dificuldades operacionais não previstas.",
+      "clausula_referencias": [
+        "Tendo em vista que a ressalva sugerida já está embarcada em uma eventualidade de caso fortuito, a Samarco acata o ajuste sugerido.",
+        "É possível revisar a cláusula para incluir ressalva quanto a informações erradas apresentadas pela Contratante.",
+        "Inclusão de ressalva em casos de eventos hidrológicos, hidrometeorológicos e pluviométricos que destoam da média histórica, Inclusão de ressalva caso houver apresentação de informação errada da Contratante."
+      ]
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.8640350877192983,
+      "posicao": {
+        "linha": 16,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "melhorias de qualquer espécie realizadas no IMÓVEL",
+        "novo": "escrito"
+      },
+      "posicao_inicio": 69030,
+      "posicao_fim": 69037,
+      "tag_nome": "2.2",
+      "clausula_id": "4667555d-ef82-427b-af74-4b430b8ed190",
+      "clausula_numero": "1.6",
+      "clausula_nome": "Cláusula 1ª - 1.6",
+      "score_vinculacao": 0.8799999999999999,
+      "sobreposicao_chars": 7,
+      "metodo_vinculacao": "fuzzy_match_95%",
+      "status_vinculacao": "automatico",
+      "clausula_conteudo": "A CONTRATADA declara ter ciência das condições da região onde se\n    localizam as instalações da CONTRATANTE, assumindo exclusiva\n    responsabilidade pelo perfeito conhecimento das diversas\n    condi",
+      "clausula_objetivo": "Atribuir à CONTRATADA a responsabilidade por conhecer previamente as condições do local de prestação dos serviços, impedindo-a de reivindicar compensações por dificuldades operacionais não previstas.",
+      "clausula_referencias": [
+        "Tendo em vista que a ressalva sugerida já está embarcada em uma eventualidade de caso fortuito, a Samarco acata o ajuste sugerido.",
+        "É possível revisar a cláusula para incluir ressalva quanto a informações erradas apresentadas pela Contratante.",
+        "Inclusão de ressalva em casos de eventos hidrológicos, hidrometeorológicos e pluviométricos que destoam da média histórica, Inclusão de ressalva caso houver apresentação de informação errada da Contratante."
+      ]
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.95,
+      "posicao": {
+        "linha": 33,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "A CONTRATANTE reserva-se o direito de auditar qualquer das etapas do objeto do CONTRATO, a qualquer tempo, desde que no horário normal de trabalho da CONTRATADA e de seus subcontratados aprovados.",
+        "novo": "A CONTRATANTE reserva-se o direito de auditar qualquer das etapas do objeto do CONTRATO, a qualquer tempo, desde que no horário normal de trabalho da CONTRATADA e de seus subcontratados aprovados, mediante aviso prévio mínimo de 5 (cinco) DIAS úteis, salvo hipótese de urgência, investigação de compliance ou risco à saúde, segurança, meio ambiente ou continuidade operacional."
+      },
+      "posicao_inicio": 166080,
+      "posicao_fim": 166457,
+      "tag_nome": "25.3",
+      "clausula_id": "e6565e62-78f1-4e14-a67a-85995f7016ad",
+      "clausula_numero": "25.3",
+      "clausula_nome": "Sem cláusula vinculada",
+      "score_vinculacao": 0.825970515970516,
+      "sobreposicao_chars": 203,
+      "metodo_vinculacao": "fuzzy_match_86%",
+      "status_vinculacao": "automatico"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.95,
+      "posicao": {
+        "linha": 1,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "A CONTRATADA prestará à CONTRATANTE os serviços técnicos especializados detalhados no campo Serviços do QUADRO RESUMO, os quais serão prestados conforme disciplinado neste CONTRATO.",
+        "novo": "A CONTRATADA prestará à CONTRATANTE os serviços técnicos especializados detalhados no campo Serviços do QUADRO RESUMO, os quais serão prestados conforme disciplinado neste CONTRATO e nas ordens de serviço emitidas pela CONTRATANTE, admitindo-se ajustes operacionais de escopo por comunicação escrita do Gestor do Contrato, desde que não impliquem alteração substancial do objeto."
+      },
+      "posicao_inicio": 65128,
+      "posicao_fim": 65507,
+      "tag_nome": "1.1",
+      "clausula_id": "4667555d-ef82-427b-af74-4b430b8ed190",
+      "clausula_numero": "1.6",
+      "clausula_nome": "Cláusula 1ª - 1.6",
+      "score_vinculacao": 0.7668887941145112,
+      "motivo_vinculacao": "score_medio",
+      "status_vinculacao": "revisao_manual",
+      "clausula_conteudo": "A CONTRATADA declara ter ciência das condições da região onde se\n    localizam as instalações da CONTRATANTE, assumindo exclusiva\n    responsabilidade pelo perfeito conhecimento das diversas\n    condi",
+      "clausula_objetivo": "Atribuir à CONTRATADA a responsabilidade por conhecer previamente as condições do local de prestação dos serviços, impedindo-a de reivindicar compensações por dificuldades operacionais não previstas.",
+      "clausula_referencias": [
+        "Tendo em vista que a ressalva sugerida já está embarcada em uma eventualidade de caso fortuito, a Samarco acata o ajuste sugerido.",
+        "É possível revisar a cláusula para incluir ressalva quanto a informações erradas apresentadas pela Contratante.",
+        "Inclusão de ressalva em casos de eventos hidrológicos, hidrometeorológicos e pluviométricos que destoam da média histórica, Inclusão de ressalva caso houver apresentação de informação errada da Contratante."
+      ]
+    },
+    {
+      "tipo": "REMOCAO",
+      "css_class": "diff-remocao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 2,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "conteudo": {
+        "original": "Este CONTRATO não implica em nenhum dever de exclusividade da CONTRATANTE, que poderá firmar contratos com outras empresas para os mesmos fins, de acordo com seus interesses."
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 2,
+        "coluna": 1
+      },
+      "clausula_modificada": null,
+      "conteudo": {
+        "novo": "Este CONTRATO não implica dever de exclusividade da CONTRATANTE, ressalvado que, durante a vigência contratual, a CONTRATANTE deverá preferencialmente consultar a CONTRATADA antes de contratar terceiros para escopo idêntico no mesmo LOCAL DE PRESTAÇÃO DOS SERVIÇOS."
+      },
+      "posicao_inicio": 65565,
+      "posicao_fim": 65830,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 1ª - 1.6",
+      "clausula_id": "4667555d-ef82-427b-af74-4b430b8ed190",
+      "clausula_conteudo": "A CONTRATADA declara ter ciência das condições da região onde se\n    localizam as instalações da CONTRATANTE, assumindo exclusiva\n    responsabilidade pelo perfeito conhecimento das diversas\n    condi",
+      "clausula_objetivo": "Atribuir à CONTRATADA a responsabilidade por conhecer previamente as condições do local de prestação dos serviços, impedindo-a de reivindicar compensações por dificuldades operacionais não previstas.",
+      "clausula_referencias": [
+        "Tendo em vista que a ressalva sugerida já está embarcada em uma eventualidade de caso fortuito, a Samarco acata o ajuste sugerido.",
+        "É possível revisar a cláusula para incluir ressalva quanto a informações erradas apresentadas pela Contratante.",
+        "Inclusão de ressalva em casos de eventos hidrológicos, hidrometeorológicos e pluviométricos que destoam da média histórica, Inclusão de ressalva caso houver apresentação de informação errada da Contratante."
+      ],
+      "clausula_numero": "1.6"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 3,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "",
+        "novo": ","
+      },
+      "posicao_inicio": 628,
+      "posicao_fim": 629,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 3,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "",
+        "novo": ", exceto quando determinado ANEXO contiver condição técnica mais específica e expressamente aceita pelas PARTES"
+      },
+      "posicao_inicio": 66401,
+      "posicao_fim": 66512,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 1ª - 1.6",
+      "clausula_id": "4667555d-ef82-427b-af74-4b430b8ed190",
+      "clausula_conteudo": "A CONTRATADA declara ter ciência das condições da região onde se\n    localizam as instalações da CONTRATANTE, assumindo exclusiva\n    responsabilidade pelo perfeito conhecimento das diversas\n    condi",
+      "clausula_objetivo": "Atribuir à CONTRATADA a responsabilidade por conhecer previamente as condições do local de prestação dos serviços, impedindo-a de reivindicar compensações por dificuldades operacionais não previstas.",
+      "clausula_referencias": [
+        "Tendo em vista que a ressalva sugerida já está embarcada em uma eventualidade de caso fortuito, a Samarco acata o ajuste sugerido.",
+        "É possível revisar a cláusula para incluir ressalva quanto a informações erradas apresentadas pela Contratante.",
+        "Inclusão de ressalva em casos de eventos hidrológicos, hidrometeorológicos e pluviométricos que destoam da média histórica, Inclusão de ressalva caso houver apresentação de informação errada da Contratante."
+      ],
+      "clausula_numero": "1.6"
+    },
+    {
+      "tipo": "REMOCAO",
+      "css_class": "diff-remocao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 4,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": ", independente da anuência da CONTRATADA e/ou de procedimento judicial",
+        "novo": ""
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 4,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "30",
+        "novo": "15"
+      },
+      "posicao_inicio": 49119,
+      "posicao_fim": 49121,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.7999999999999999,
+      "posicao": {
+        "linha": 4,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "trinta",
+        "novo": "quinze"
+      },
+      "posicao_inicio": 49123,
+      "posicao_fim": 49129,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.859090909090909,
+      "posicao": {
+        "linha": 4,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "se",
+        "novo": "urgência operacional"
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "REMOCAO",
+      "css_class": "diff-remocao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 4,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "por",
+        "novo": ""
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.8153846153846154,
+      "posicao": {
+        "linha": 4,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "Judiciário",
+        "novo": "decisão judicial"
+      },
+      "posicao_inicio": 69701,
+      "posicao_fim": 69717,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 1ª - 1.6",
+      "clausula_id": "4667555d-ef82-427b-af74-4b430b8ed190",
+      "clausula_conteudo": "A CONTRATADA declara ter ciência das condições da região onde se\n    localizam as instalações da CONTRATANTE, assumindo exclusiva\n    responsabilidade pelo perfeito conhecimento das diversas\n    condi",
+      "clausula_objetivo": "Atribuir à CONTRATADA a responsabilidade por conhecer previamente as condições do local de prestação dos serviços, impedindo-a de reivindicar compensações por dificuldades operacionais não previstas.",
+      "clausula_referencias": [
+        "Tendo em vista que a ressalva sugerida já está embarcada em uma eventualidade de caso fortuito, a Samarco acata o ajuste sugerido.",
+        "É possível revisar a cláusula para incluir ressalva quanto a informações erradas apresentadas pela Contratante.",
+        "Inclusão de ressalva em casos de eventos hidrológicos, hidrometeorológicos e pluviométricos que destoam da média histórica, Inclusão de ressalva caso houver apresentação de informação errada da Contratante."
+      ],
+      "clausula_numero": "1.6"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 4,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "for",
+        "novo": "hipótese"
+      },
+      "posicao_inicio": 66533,
+      "posicao_fim": 66541,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 1ª - 1.6",
+      "clausula_id": "4667555d-ef82-427b-af74-4b430b8ed190",
+      "clausula_conteudo": "A CONTRATADA declara ter ciência das condições da região onde se\n    localizam as instalações da CONTRATANTE, assumindo exclusiva\n    responsabilidade pelo perfeito conhecimento das diversas\n    condi",
+      "clausula_objetivo": "Atribuir à CONTRATADA a responsabilidade por conhecer previamente as condições do local de prestação dos serviços, impedindo-a de reivindicar compensações por dificuldades operacionais não previstas.",
+      "clausula_referencias": [
+        "Tendo em vista que a ressalva sugerida já está embarcada em uma eventualidade de caso fortuito, a Samarco acata o ajuste sugerido.",
+        "É possível revisar a cláusula para incluir ressalva quanto a informações erradas apresentadas pela Contratante.",
+        "Inclusão de ressalva em casos de eventos hidrológicos, hidrometeorológicos e pluviométricos que destoam da média histórica, Inclusão de ressalva caso houver apresentação de informação errada da Contratante."
+      ],
+      "clausula_numero": "1.6"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.87,
+      "posicao": {
+        "linha": 4,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "previsto",
+        "novo": "em"
+      },
+      "posicao_inicio": 1201,
+      "posicao_fim": 1203,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.875,
+      "posicao": {
+        "linha": 4,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "menor",
+        "novo": "que"
+      },
+      "posicao_inicio": 47201,
+      "posicao_fim": 47204,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.866,
+      "posicao": {
+        "linha": 4,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "prazo",
+        "novo": "a suspensão poderá produzir efeitos imediatos"
+      },
+      "posicao_inicio": 69743,
+      "posicao_fim": 69788,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 1ª - 1.6",
+      "clausula_id": "4667555d-ef82-427b-af74-4b430b8ed190",
+      "clausula_conteudo": "A CONTRATADA declara ter ciência das condições da região onde se\n    localizam as instalações da CONTRATANTE, assumindo exclusiva\n    responsabilidade pelo perfeito conhecimento das diversas\n    condi",
+      "clausula_objetivo": "Atribuir à CONTRATADA a responsabilidade por conhecer previamente as condições do local de prestação dos serviços, impedindo-a de reivindicar compensações por dificuldades operacionais não previstas.",
+      "clausula_referencias": [
+        "Tendo em vista que a ressalva sugerida já está embarcada em uma eventualidade de caso fortuito, a Samarco acata o ajuste sugerido.",
+        "É possível revisar a cláusula para incluir ressalva quanto a informações erradas apresentadas pela Contratante.",
+        "Inclusão de ressalva em casos de eventos hidrológicos, hidrometeorológicos e pluviométricos que destoam da média histórica, Inclusão de ressalva caso houver apresentação de informação errada da Contratante."
+      ],
+      "clausula_numero": "1.6"
+    },
+    {
+      "tipo": "REMOCAO",
+      "css_class": "diff-remocao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 5,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "conteudo": {
+        "original": "A CONTRATADA não terá direito de indenização de qualquer natureza em razão da suspensão dos Serviços, exceto em relação a valores justificados e comprovados pela CONTRATADA que sejam aprovados pela CONTRATANTE, conforme exclusivo critério da CONTRATANTE."
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 5,
+        "coluna": 1
+      },
+      "clausula_modificada": null,
+      "conteudo": {
+        "novo": "A CONTRATADA não terá direito de indenização de qualquer natureza em razão da suspensão dos Serviços, exceto em relação aos custos diretos, necessários e comprovadamente incorridos em razão da suspensão, desde que previamente aprovados pela CONTRATANTE e sem inclusão de margem, lucros cessantes ou custos indiretos."
+      },
+      "posicao_inicio": 70037,
+      "posicao_fim": 70353,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 1ª - 1.6",
+      "clausula_id": "4667555d-ef82-427b-af74-4b430b8ed190",
+      "clausula_conteudo": "A CONTRATADA declara ter ciência das condições da região onde se\n    localizam as instalações da CONTRATANTE, assumindo exclusiva\n    responsabilidade pelo perfeito conhecimento das diversas\n    condi",
+      "clausula_objetivo": "Atribuir à CONTRATADA a responsabilidade por conhecer previamente as condições do local de prestação dos serviços, impedindo-a de reivindicar compensações por dificuldades operacionais não previstas.",
+      "clausula_referencias": [
+        "Tendo em vista que a ressalva sugerida já está embarcada em uma eventualidade de caso fortuito, a Samarco acata o ajuste sugerido.",
+        "É possível revisar a cláusula para incluir ressalva quanto a informações erradas apresentadas pela Contratante.",
+        "Inclusão de ressalva em casos de eventos hidrológicos, hidrometeorológicos e pluviométricos que destoam da média histórica, Inclusão de ressalva caso houver apresentação de informação errada da Contratante."
+      ],
+      "clausula_numero": "1.6"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 6,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "",
+        "novo": "o"
+      },
+      "posicao_inicio": 274,
+      "posicao_fim": 275,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "REMOCAO",
+      "css_class": "diff-remocao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 6,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "(i)",
+        "novo": ""
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.855,
+      "posicao": {
+        "linha": 6,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "todo o VALOR ESTIMADO DO CONTRATO",
+        "novo": "valores"
+      },
+      "posicao_inicio": 70676,
+      "posicao_fim": 70683,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 1ª - 1.6",
+      "clausula_id": "4667555d-ef82-427b-af74-4b430b8ed190",
+      "clausula_conteudo": "A CONTRATADA declara ter ciência das condições da região onde se\n    localizam as instalações da CONTRATANTE, assumindo exclusiva\n    responsabilidade pelo perfeito conhecimento das diversas\n    condi",
+      "clausula_objetivo": "Atribuir à CONTRATADA a responsabilidade por conhecer previamente as condições do local de prestação dos serviços, impedindo-a de reivindicar compensações por dificuldades operacionais não previstas.",
+      "clausula_referencias": [
+        "Tendo em vista que a ressalva sugerida já está embarcada em uma eventualidade de caso fortuito, a Samarco acata o ajuste sugerido.",
+        "É possível revisar a cláusula para incluir ressalva quanto a informações erradas apresentadas pela Contratante.",
+        "Inclusão de ressalva em casos de eventos hidrológicos, hidrometeorológicos e pluviométricos que destoam da média histórica, Inclusão de ressalva caso houver apresentação de informação errada da Contratante."
+      ],
+      "clausula_numero": "1.6"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 6,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "",
+        "novo": ", salvo hipóteses de mobilização, desmobilização"
+      },
+      "posicao_inicio": 70755,
+      "posicao_fim": 70803,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 1ª - 1.6",
+      "clausula_id": "4667555d-ef82-427b-af74-4b430b8ed190",
+      "clausula_conteudo": "A CONTRATADA declara ter ciência das condições da região onde se\n    localizam as instalações da CONTRATANTE, assumindo exclusiva\n    responsabilidade pelo perfeito conhecimento das diversas\n    condi",
+      "clausula_objetivo": "Atribuir à CONTRATADA a responsabilidade por conhecer previamente as condições do local de prestação dos serviços, impedindo-a de reivindicar compensações por dificuldades operacionais não previstas.",
+      "clausula_referencias": [
+        "Tendo em vista que a ressalva sugerida já está embarcada em uma eventualidade de caso fortuito, a Samarco acata o ajuste sugerido.",
+        "É possível revisar a cláusula para incluir ressalva quanto a informações erradas apresentadas pela Contratante.",
+        "Inclusão de ressalva em casos de eventos hidrológicos, hidrometeorológicos e pluviométricos que destoam da média histórica, Inclusão de ressalva caso houver apresentação de informação errada da Contratante."
+      ],
+      "clausula_numero": "1.6"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.8710526315789473,
+      "posicao": {
+        "linha": 6,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "(ii)",
+        "novo": "disponibilidade"
+      },
+      "posicao_inicio": 67816,
+      "posicao_fim": 67831,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 1ª - 1.6",
+      "clausula_id": "4667555d-ef82-427b-af74-4b430b8ed190",
+      "clausula_conteudo": "A CONTRATADA declara ter ciência das condições da região onde se\n    localizam as instalações da CONTRATANTE, assumindo exclusiva\n    responsabilidade pelo perfeito conhecimento das diversas\n    condi",
+      "clausula_objetivo": "Atribuir à CONTRATADA a responsabilidade por conhecer previamente as condições do local de prestação dos serviços, impedindo-a de reivindicar compensações por dificuldades operacionais não previstas.",
+      "clausula_referencias": [
+        "Tendo em vista que a ressalva sugerida já está embarcada em uma eventualidade de caso fortuito, a Samarco acata o ajuste sugerido.",
+        "É possível revisar a cláusula para incluir ressalva quanto a informações erradas apresentadas pela Contratante.",
+        "Inclusão de ressalva em casos de eventos hidrológicos, hidrometeorológicos e pluviométricos que destoam da média histórica, Inclusão de ressalva caso houver apresentação de informação errada da Contratante."
+      ],
+      "clausula_numero": "1.6"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.8633333333333333,
+      "posicao": {
+        "linha": 6,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "pretender",
+        "novo": "mínima"
+      },
+      "posicao_inicio": 69604,
+      "posicao_fim": 69610,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 1ª - 1.6",
+      "clausula_id": "4667555d-ef82-427b-af74-4b430b8ed190",
+      "clausula_conteudo": "A CONTRATADA declara ter ciência das condições da região onde se\n    localizam as instalações da CONTRATANTE, assumindo exclusiva\n    responsabilidade pelo perfeito conhecimento das diversas\n    condi",
+      "clausula_objetivo": "Atribuir à CONTRATADA a responsabilidade por conhecer previamente as condições do local de prestação dos serviços, impedindo-a de reivindicar compensações por dificuldades operacionais não previstas.",
+      "clausula_referencias": [
+        "Tendo em vista que a ressalva sugerida já está embarcada em uma eventualidade de caso fortuito, a Samarco acata o ajuste sugerido.",
+        "É possível revisar a cláusula para incluir ressalva quanto a informações erradas apresentadas pela Contratante.",
+        "Inclusão de ressalva em casos de eventos hidrológicos, hidrometeorológicos e pluviométricos que destoam da média histórica, Inclusão de ressalva caso houver apresentação de informação errada da Contratante."
+      ],
+      "clausula_numero": "1.6"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.87,
+      "posicao": {
+        "linha": 6,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "atingir",
+        "novo": "expressamente"
+      },
+      "posicao_inicio": 66487,
+      "posicao_fim": 66500,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 1ª - 1.6",
+      "clausula_id": "4667555d-ef82-427b-af74-4b430b8ed190",
+      "clausula_conteudo": "A CONTRATADA declara ter ciência das condições da região onde se\n    localizam as instalações da CONTRATANTE, assumindo exclusiva\n    responsabilidade pelo perfeito conhecimento das diversas\n    condi",
+      "clausula_objetivo": "Atribuir à CONTRATADA a responsabilidade por conhecer previamente as condições do local de prestação dos serviços, impedindo-a de reivindicar compensações por dificuldades operacionais não previstas.",
+      "clausula_referencias": [
+        "Tendo em vista que a ressalva sugerida já está embarcada em uma eventualidade de caso fortuito, a Samarco acata o ajuste sugerido.",
+        "É possível revisar a cláusula para incluir ressalva quanto a informações erradas apresentadas pela Contratante.",
+        "Inclusão de ressalva em casos de eventos hidrológicos, hidrometeorológicos e pluviométricos que destoam da média histórica, Inclusão de ressalva caso houver apresentação de informação errada da Contratante."
+      ],
+      "clausula_numero": "1.6"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.8653846153846154,
+      "posicao": {
+        "linha": 6,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "todo",
+        "novo": "previstas"
+      },
+      "posicao_inicio": 70852,
+      "posicao_fim": 70861,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 1ª - 1.6",
+      "clausula_id": "4667555d-ef82-427b-af74-4b430b8ed190",
+      "clausula_conteudo": "A CONTRATADA declara ter ciência das condições da região onde se\n    localizam as instalações da CONTRATANTE, assumindo exclusiva\n    responsabilidade pelo perfeito conhecimento das diversas\n    condi",
+      "clausula_objetivo": "Atribuir à CONTRATADA a responsabilidade por conhecer previamente as condições do local de prestação dos serviços, impedindo-a de reivindicar compensações por dificuldades operacionais não previstas.",
+      "clausula_referencias": [
+        "Tendo em vista que a ressalva sugerida já está embarcada em uma eventualidade de caso fortuito, a Samarco acata o ajuste sugerido.",
+        "É possível revisar a cláusula para incluir ressalva quanto a informações erradas apresentadas pela Contratante.",
+        "Inclusão de ressalva em casos de eventos hidrológicos, hidrometeorológicos e pluviométricos que destoam da média histórica, Inclusão de ressalva caso houver apresentação de informação errada da Contratante."
+      ],
+      "clausula_numero": "1.6"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.8999999999999999,
+      "posicao": {
+        "linha": 6,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "o",
+        "novo": "no"
+      },
+      "posicao_inicio": 1556,
+      "posicao_fim": 1558,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.8090909090909091,
+      "posicao": {
+        "linha": 6,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "VALOR",
+        "novo": "QUADRO"
+      },
+      "posicao_inicio": 108,
+      "posicao_fim": 114,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.8714285714285713,
+      "posicao": {
+        "linha": 6,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "ESTIMADO",
+        "novo": "RESUMO"
+      },
+      "posicao_inicio": 115,
+      "posicao_fim": 121,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 6,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "DO",
+        "novo": "ou"
+      },
+      "posicao_inicio": 11498,
+      "posicao_fim": 11500,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 6,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "CONTRATO,",
+        "novo": "nos"
+      },
+      "posicao_inicio": 8303,
+      "posicao_fim": 8306,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.858421052631579,
+      "posicao": {
+        "linha": 6,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "sem que a CONTRATANTE tenha, a seu exclusivo critério, autorizado a prestação de Serviços",
+        "novo": "ANEXOS"
+      },
+      "posicao_inicio": 14876,
+      "posicao_fim": 14882,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "REMOCAO",
+      "css_class": "diff-remocao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 7,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "conteudo": {
+        "original": "Se aplicável, a partir do 12º mês contado da data-base, a CONTRATADA poderá solicitar, anualmente, o reajuste dos preços praticados no CONTRATO mediante a aplicação do ÍNDICE DE REAJUSTE indicado no QUADRO RESUMO. A atualização com base no ÍNDICE DE REAJUSTE somente será aplicada sobre os preços unitários do CONTRATO e após negociação entre as PARTES, aprovação por escrito da CONTRATANTE, formalização de aditivo contratual e autorização de faturamento pela CONTRATANTE."
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 7,
+        "coluna": 1
+      },
+      "clausula_modificada": null,
+      "conteudo": {
+        "novo": "Se aplicável, a partir do 12º mês contado da data-base, a CONTRATADA poderá solicitar, anualmente, o reajuste dos preços praticados no CONTRATO mediante a aplicação do ÍNDICE DE REAJUSTE indicado no QUADRO RESUMO. A atualização com base no ÍNDICE DE REAJUSTE será aplicada mediante solicitação formal da CONTRATADA e aprovação do Gestor do Contrato, dispensada a formalização de aditivo quando não houver alteração de escopo ou de valor global estimado."
+      },
+      "posicao_inicio": 72425,
+      "posicao_fim": 72878,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 1ª - 1.6",
+      "clausula_id": "4667555d-ef82-427b-af74-4b430b8ed190",
+      "clausula_conteudo": "A CONTRATADA declara ter ciência das condições da região onde se\n    localizam as instalações da CONTRATANTE, assumindo exclusiva\n    responsabilidade pelo perfeito conhecimento das diversas\n    condi",
+      "clausula_objetivo": "Atribuir à CONTRATADA a responsabilidade por conhecer previamente as condições do local de prestação dos serviços, impedindo-a de reivindicar compensações por dificuldades operacionais não previstas.",
+      "clausula_referencias": [
+        "Tendo em vista que a ressalva sugerida já está embarcada em uma eventualidade de caso fortuito, a Samarco acata o ajuste sugerido.",
+        "É possível revisar a cláusula para incluir ressalva quanto a informações erradas apresentadas pela Contratante.",
+        "Inclusão de ressalva em casos de eventos hidrológicos, hidrometeorológicos e pluviométricos que destoam da média histórica, Inclusão de ressalva caso houver apresentação de informação errada da Contratante."
+      ],
+      "clausula_numero": "1.6"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.82,
+      "posicao": {
+        "linha": 8,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "90",
+        "novo": "120"
+      },
+      "posicao_inicio": 53874,
+      "posicao_fim": 53877,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.7899999999999999,
+      "posicao": {
+        "linha": 8,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "noventa",
+        "novo": "cento e vinte"
+      },
+      "posicao_inicio": 73017,
+      "posicao_fim": 73030,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 1ª - 1.6",
+      "clausula_id": "4667555d-ef82-427b-af74-4b430b8ed190",
+      "clausula_conteudo": "A CONTRATADA declara ter ciência das condições da região onde se\n    localizam as instalações da CONTRATANTE, assumindo exclusiva\n    responsabilidade pelo perfeito conhecimento das diversas\n    condi",
+      "clausula_objetivo": "Atribuir à CONTRATADA a responsabilidade por conhecer previamente as condições do local de prestação dos serviços, impedindo-a de reivindicar compensações por dificuldades operacionais não previstas.",
+      "clausula_referencias": [
+        "Tendo em vista que a ressalva sugerida já está embarcada em uma eventualidade de caso fortuito, a Samarco acata o ajuste sugerido.",
+        "É possível revisar a cláusula para incluir ressalva quanto a informações erradas apresentadas pela Contratante.",
+        "Inclusão de ressalva em casos de eventos hidrológicos, hidrometeorológicos e pluviométricos que destoam da média histórica, Inclusão de ressalva caso houver apresentação de informação errada da Contratante."
+      ],
+      "clausula_numero": "1.6"
+    },
+    {
+      "tipo": "REMOCAO",
+      "css_class": "diff-remocao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 9,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "conteudo": {
+        "original": "Em caso de não aceitação do BM ou BMM por parte da CONTRATANTE, as medições serão recusadas e o pagamento correspondente ficará suspenso até que as obrigações pendentes, registradas em documento específico, sejam integralmente executados pela CONTRATADA e devidamente aceitos pela CONTRATANTE. A CONTRATANTE poderá, a seu exclusivo critério, realizar o pagamento do faturamento da parte incontroversa dos Serviços executados. Os itens controversos deverão ser informados pela CONTRATANTE por escrito."
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 9,
+        "coluna": 1
+      },
+      "clausula_modificada": null,
+      "conteudo": {
+        "novo": "Em caso de não aceitação do BM ou BMM por parte da CONTRATANTE, as medições serão recusadas e o pagamento correspondente ficará suspenso quanto aos itens efetivamente controvertidos, devendo a CONTRATANTE liberar o faturamento da parte incontroversa dos Serviços executados. Os itens controversos deverão ser informados pela CONTRATANTE por escrito e de forma fundamentada."
+      },
+      "posicao_inicio": 78012,
+      "posicao_fim": 78385,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 6ª - 6.17",
+      "clausula_id": "c8f9d604-34c5-4d25-a2b0-fe01062eaa11",
+      "clausula_conteudo": "Caso ocorra comprovado descumprimento de quaisquer obrigações\n    contratuais, referentes, mas sem se limitar: a entrega de\n    documentação de planejamento e controle (físico e financeiro),\n    atras",
+      "clausula_objetivo": "Autorizar a CONTRATANTE a reter parcial ou totalmente os pagamentos mensais da CONTRATADA em caso de descumprimento contratual comprovado, até o valor correspondente à irregularidade.",
+      "clausula_referencias": [
+        "Supressão de cláusula.",
+        "A previsão de retenção proporcional ao valor do descumprimento é adequada e não deve ser alterada.",
+        "Previsibilidade à CONTRATADA, que a cláusula preveja expressamente que a retenção somente ocorrerá após notificação formal com prazo de resposta da CONTRATADA, e será limitada ao valor estimado do impacto econômico do descumprimento, devidamente fundamentado pela área técnica."
+      ],
+      "clausula_numero": "6.17"
+    },
+    {
+      "tipo": "REMOCAO",
+      "css_class": "diff-remocao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 10,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "conteudo": {
+        "original": "Caso a CONTRATANTE constate qualquer erro, imprecisão, falha no BM ou BMM, incompletude ou deficiência de informação nos documentos mencionados no item anterior, o BM ou BMM será devolvido à CONTRATADA, contendo a justificativas para a sua rejeição, a fim de que a CONTRATADA efetue as devidas correções. Nessa hipótese, o prazo para a CONTRATANTE aprovar o BM ou BMM, se renovará, passando a contar apenas quando da reapresentação do BM ou BMM pela CONTRATADA, devidamente corrigido."
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 10,
+        "coluna": 1
+      },
+      "clausula_modificada": null,
+      "conteudo": {
+        "novo": "Caso a CONTRATANTE constate qualquer erro, imprecisão, falha no BM ou BMM, incompletude ou deficiência de informação nos documentos mencionados no item anterior, o BM ou BMM será devolvido à CONTRATADA, contendo as justificativas para a sua rejeição. Nessa hipótese, o prazo para a CONTRATANTE aprovar o BM ou BMM ficará suspenso até a reapresentação, não se renovando integralmente quando as correções forem meramente formais."
+      },
+      "posicao_inicio": 79451,
+      "posicao_fim": 79878,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 6ª - 6.17",
+      "clausula_id": "c8f9d604-34c5-4d25-a2b0-fe01062eaa11",
+      "clausula_conteudo": "Caso ocorra comprovado descumprimento de quaisquer obrigações\n    contratuais, referentes, mas sem se limitar: a entrega de\n    documentação de planejamento e controle (físico e financeiro),\n    atras",
+      "clausula_objetivo": "Autorizar a CONTRATANTE a reter parcial ou totalmente os pagamentos mensais da CONTRATADA em caso de descumprimento contratual comprovado, até o valor correspondente à irregularidade.",
+      "clausula_referencias": [
+        "Supressão de cláusula.",
+        "A previsão de retenção proporcional ao valor do descumprimento é adequada e não deve ser alterada.",
+        "Previsibilidade à CONTRATADA, que a cláusula preveja expressamente que a retenção somente ocorrerá após notificação formal com prazo de resposta da CONTRATADA, e será limitada ao valor estimado do impacto econômico do descumprimento, devidamente fundamentado pela área técnica."
+      ],
+      "clausula_numero": "6.17"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.95,
+      "posicao": {
+        "linha": 11,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "A não apresentação do pleito até o mês seguinte à data da sua ocorrência caracteriza a renúncia e a decadência do direito da CONTRATADA.",
+        "novo": "A não apresentação do pleito até 30 (trinta) DIAS contados da data em que a CONTRATADA tiver ciência do evento poderá caracterizar renúncia ao direito, salvo se demonstrada impossibilidade justificada de apuração imediata do impacto financeiro ou de prazo."
+      },
+      "posicao_inicio": 80478,
+      "posicao_fim": 80734,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 6ª - 6.17",
+      "clausula_id": "c8f9d604-34c5-4d25-a2b0-fe01062eaa11",
+      "clausula_conteudo": "Caso ocorra comprovado descumprimento de quaisquer obrigações\n    contratuais, referentes, mas sem se limitar: a entrega de\n    documentação de planejamento e controle (físico e financeiro),\n    atras",
+      "clausula_objetivo": "Autorizar a CONTRATANTE a reter parcial ou totalmente os pagamentos mensais da CONTRATADA em caso de descumprimento contratual comprovado, até o valor correspondente à irregularidade.",
+      "clausula_referencias": [
+        "Supressão de cláusula.",
+        "A previsão de retenção proporcional ao valor do descumprimento é adequada e não deve ser alterada.",
+        "Previsibilidade à CONTRATADA, que a cláusula preveja expressamente que a retenção somente ocorrerá após notificação formal com prazo de resposta da CONTRATADA, e será limitada ao valor estimado do impacto econômico do descumprimento, devidamente fundamentado pela área técnica."
+      ],
+      "clausula_numero": "6.17"
+    },
+    {
+      "tipo": "REMOCAO",
+      "css_class": "diff-remocao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 12,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "conteudo": {
+        "original": "A liberação do BM ou BMM não configura aceitação técnica, implícita ou tácita, dos Serviços executados, mas apenas reconhece condições para que os mesmos possam ser faturados, podendo o Gestor do Contrato rejeitá-los posteriormente e solicitar que tais Serviços sejam refeitos pela CONTRATADA."
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 12,
+        "coluna": 1
+      },
+      "clausula_modificada": null,
+      "conteudo": {
+        "novo": "A liberação do BM ou BMM não configura aceitação técnica definitiva dos Serviços executados, mas reconhece condições para faturamento. A rejeição posterior de Serviços já medidos deverá ser justificada tecnicamente pela CONTRATANTE e não poderá alcançar serviços que tenham sido expressamente aprovados sem ressalvas."
+      },
+      "posicao_inicio": 80792,
+      "posicao_fim": 81109,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 6ª - 6.17",
+      "clausula_id": "c8f9d604-34c5-4d25-a2b0-fe01062eaa11",
+      "clausula_conteudo": "Caso ocorra comprovado descumprimento de quaisquer obrigações\n    contratuais, referentes, mas sem se limitar: a entrega de\n    documentação de planejamento e controle (físico e financeiro),\n    atras",
+      "clausula_objetivo": "Autorizar a CONTRATANTE a reter parcial ou totalmente os pagamentos mensais da CONTRATADA em caso de descumprimento contratual comprovado, até o valor correspondente à irregularidade.",
+      "clausula_referencias": [
+        "Supressão de cláusula.",
+        "A previsão de retenção proporcional ao valor do descumprimento é adequada e não deve ser alterada.",
+        "Previsibilidade à CONTRATADA, que a cláusula preveja expressamente que a retenção somente ocorrerá após notificação formal com prazo de resposta da CONTRATADA, e será limitada ao valor estimado do impacto econômico do descumprimento, devidamente fundamentado pela área técnica."
+      ],
+      "clausula_numero": "6.17"
+    },
+    {
+      "tipo": "REMOCAO",
+      "css_class": "diff-remocao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 13,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "conteudo": {
+        "original": "É vedado à CONTRATADA, sob pena de rescisão, ceder total ou parcialmente, oferecer em garantia ou realizar qualquer operação comercial tendo por objeto crédito decorrente deste CONTRATO, bem como descontar em banco duplicatas emitidas sobre notas fiscais/faturas ou endossá-las a terceiros, salvo prévia e expressa concordância, por escrito, em cada caso, da CONTRATANTE."
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 13,
+        "coluna": 1
+      },
+      "clausula_modificada": null,
+      "conteudo": {
+        "novo": "É vedado à CONTRATADA ceder total ou parcialmente, oferecer em garantia ou realizar qualquer operação comercial tendo por objeto crédito decorrente deste CONTRATO, salvo prévia comunicação à CONTRATANTE com antecedência mínima de 10 (dez) DIAS, ou prévia e expressa concordância da CONTRATANTE quando houver impacto operacional ou risco de travamento bancário."
+      },
+      "posicao_inicio": 82754,
+      "posicao_fim": 83114,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 6ª - 6.17",
+      "clausula_id": "c8f9d604-34c5-4d25-a2b0-fe01062eaa11",
+      "clausula_conteudo": "Caso ocorra comprovado descumprimento de quaisquer obrigações\n    contratuais, referentes, mas sem se limitar: a entrega de\n    documentação de planejamento e controle (físico e financeiro),\n    atras",
+      "clausula_objetivo": "Autorizar a CONTRATANTE a reter parcial ou totalmente os pagamentos mensais da CONTRATADA em caso de descumprimento contratual comprovado, até o valor correspondente à irregularidade.",
+      "clausula_referencias": [
+        "Supressão de cláusula.",
+        "A previsão de retenção proporcional ao valor do descumprimento é adequada e não deve ser alterada.",
+        "Previsibilidade à CONTRATADA, que a cláusula preveja expressamente que a retenção somente ocorrerá após notificação formal com prazo de resposta da CONTRATADA, e será limitada ao valor estimado do impacto econômico do descumprimento, devidamente fundamentado pela área técnica."
+      ],
+      "clausula_numero": "6.17"
+    },
+    {
+      "tipo": "REMOCAO",
+      "css_class": "diff-remocao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 14,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "conteudo": {
+        "original": "Os pagamentos impugnados pela CONTRATANTE não estão sujeitos a qualquer atualização e incidências de ônus financeiros relativos ao período contestado até que a CONTRATADA atenda completamente às exigências formuladas pela CONTRATANTE."
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 14,
+        "coluna": 1
+      },
+      "clausula_modificada": null,
+      "conteudo": {
+        "novo": "Os pagamentos impugnados pela CONTRATANTE não estão sujeitos a atualização ou ônus financeiros durante o período contestado, desde que a impugnação seja fundamentada e enviada à CONTRATADA antes do vencimento da respectiva nota fiscal/fatura."
+      },
+      "posicao_inicio": 83164,
+      "posicao_fim": 83406,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 6ª - 6.17",
+      "clausula_id": "c8f9d604-34c5-4d25-a2b0-fe01062eaa11",
+      "clausula_conteudo": "Caso ocorra comprovado descumprimento de quaisquer obrigações\n    contratuais, referentes, mas sem se limitar: a entrega de\n    documentação de planejamento e controle (físico e financeiro),\n    atras",
+      "clausula_objetivo": "Autorizar a CONTRATANTE a reter parcial ou totalmente os pagamentos mensais da CONTRATADA em caso de descumprimento contratual comprovado, até o valor correspondente à irregularidade.",
+      "clausula_referencias": [
+        "Supressão de cláusula.",
+        "A previsão de retenção proporcional ao valor do descumprimento é adequada e não deve ser alterada.",
+        "Previsibilidade à CONTRATADA, que a cláusula preveja expressamente que a retenção somente ocorrerá após notificação formal com prazo de resposta da CONTRATADA, e será limitada ao valor estimado do impacto econômico do descumprimento, devidamente fundamentado pela área técnica."
+      ],
+      "clausula_numero": "6.17"
+    },
+    {
+      "tipo": "REMOCAO",
+      "css_class": "diff-remocao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 15,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "conteudo": {
+        "original": "Caso ocorra comprovado descumprimento de quaisquer obrigações contratuais, referentes, mas sem se limitar: a entrega de documentação de planejamento e controle (físico e financeiro), atrasos de Marcos Contratuais, descumprimento de legislação, fica desde já autorizada a CONTRATANTE a realizar a retenção de parte ou totalidade das medições mensais da CONTRATADA, até que se atinja o valor do referido descumprimento."
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 15,
+        "coluna": 1
+      },
+      "clausula_modificada": null,
+      "conteudo": {
+        "novo": "Caso ocorra comprovado descumprimento de obrigações contratuais, a CONTRATANTE poderá realizar a retenção proporcional de parte das medições mensais da CONTRATADA, limitada ao valor razoavelmente estimado do descumprimento, devendo liberar o saldo incontroverso e indicar por escrito a forma de regularização."
+      },
+      "posicao_inicio": 83548,
+      "posicao_fim": 83857,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 6ª - 6.17",
+      "clausula_id": "c8f9d604-34c5-4d25-a2b0-fe01062eaa11",
+      "clausula_conteudo": "Caso ocorra comprovado descumprimento de quaisquer obrigações\n    contratuais, referentes, mas sem se limitar: a entrega de\n    documentação de planejamento e controle (físico e financeiro),\n    atras",
+      "clausula_objetivo": "Autorizar a CONTRATANTE a reter parcial ou totalmente os pagamentos mensais da CONTRATADA em caso de descumprimento contratual comprovado, até o valor correspondente à irregularidade.",
+      "clausula_referencias": [
+        "Supressão de cláusula.",
+        "A previsão de retenção proporcional ao valor do descumprimento é adequada e não deve ser alterada.",
+        "Previsibilidade à CONTRATADA, que a cláusula preveja expressamente que a retenção somente ocorrerá após notificação formal com prazo de resposta da CONTRATADA, e será limitada ao valor estimado do impacto econômico do descumprimento, devidamente fundamentado pela área técnica."
+      ],
+      "clausula_numero": "6.17"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.8690476190476191,
+      "posicao": {
+        "linha": 16,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "porventura",
+        "novo": "necessárias"
+      },
+      "posicao_inicio": 12694,
+      "posicao_fim": 12705,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "REMOCAO",
+      "css_class": "diff-remocao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 16,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "qualquer",
+        "novo": ""
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 16,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "",
+        "novo": ","
+      },
+      "posicao_inicio": 628,
+      "posicao_fim": 629,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.8785714285714286,
+      "posicao": {
+        "linha": 16,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "e/ou",
+        "novo": "ressalvado"
+      },
+      "posicao_inicio": 65638,
+      "posicao_fim": 65648,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 1ª - 1.6",
+      "clausula_id": "4667555d-ef82-427b-af74-4b430b8ed190",
+      "clausula_conteudo": "A CONTRATADA declara ter ciência das condições da região onde se\n    localizam as instalações da CONTRATANTE, assumindo exclusiva\n    responsabilidade pelo perfeito conhecimento das diversas\n    condi",
+      "clausula_objetivo": "Atribuir à CONTRATADA a responsabilidade por conhecer previamente as condições do local de prestação dos serviços, impedindo-a de reivindicar compensações por dificuldades operacionais não previstas.",
+      "clausula_referencias": [
+        "Tendo em vista que a ressalva sugerida já está embarcada em uma eventualidade de caso fortuito, a Samarco acata o ajuste sugerido.",
+        "É possível revisar a cláusula para incluir ressalva quanto a informações erradas apresentadas pela Contratante.",
+        "Inclusão de ressalva em casos de eventos hidrológicos, hidrometeorológicos e pluviométricos que destoam da média histórica, Inclusão de ressalva caso houver apresentação de informação errada da Contratante."
+      ],
+      "clausula_numero": "1.6"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.8785714285714286,
+      "posicao": {
+        "linha": 16,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "em razão",
+        "novo": "ressarcimento"
+      },
+      "posicao_inicio": 86419,
+      "posicao_fim": 86432,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 7ª - 7.10",
+      "clausula_id": "a1cadef3-e12b-48fc-8cdc-caa3b1568a07",
+      "clausula_conteudo": "O IMÓVEL não poderá ser objeto de cessão, transferência, sublocação\n    total ou parcial para terceiros, salvo prévia anuência por escrito\n    da CONTRATANTE.",
+      "clausula_objetivo": "Proibir a CONTRATADA de ceder, transferir ou sublocar total ou parcialmente o imóvel a terceiros sem a autorização prévia e por escrito da CONTRATANTE, garantindo controle sobre o uso do imóvel durante a vigência do contrato.",
+      "clausula_referencias": [
+        "A exigência de anuência prévia por escrito é padrão e indispensável para assegurar a segurança jurídica da operação.",
+        "Sugere-se prever que a Samarco poderá manifestar sua anuência por escrito no prazo máximo de xx dias úteis a contar do pedido formal da CONTRATADA, sob pena de aprovação tácita.",
+        "Sugestão de suprimir a cláusula. (maior flexibilidade para autorizar cessões ou sublocações em situações específicas, especialmente para parceiros ou filiais)"
+      ],
+      "clausula_numero": "7.10"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.8666666666666667,
+      "posicao": {
+        "linha": 16,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "e",
+        "novo": "previamente"
+      },
+      "posicao_inicio": 48265,
+      "posicao_fim": 48276,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 16,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "obras",
+        "novo": "autorizadas"
+      },
+      "posicao_inicio": 86469,
+      "posicao_fim": 86480,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 7ª - 7.10",
+      "clausula_id": "a1cadef3-e12b-48fc-8cdc-caa3b1568a07",
+      "clausula_conteudo": "O IMÓVEL não poderá ser objeto de cessão, transferência, sublocação\n    total ou parcial para terceiros, salvo prévia anuência por escrito\n    da CONTRATANTE.",
+      "clausula_objetivo": "Proibir a CONTRATADA de ceder, transferir ou sublocar total ou parcialmente o imóvel a terceiros sem a autorização prévia e por escrito da CONTRATANTE, garantindo controle sobre o uso do imóvel durante a vigência do contrato.",
+      "clausula_referencias": [
+        "A exigência de anuência prévia por escrito é padrão e indispensável para assegurar a segurança jurídica da operação.",
+        "Sugere-se prever que a Samarco poderá manifestar sua anuência por escrito no prazo máximo de xx dias úteis a contar do pedido formal da CONTRATADA, sob pena de aprovação tácita.",
+        "Sugestão de suprimir a cláusula. (maior flexibilidade para autorizar cessões ou sublocações em situações específicas, especialmente para parceiros ou filiais)"
+      ],
+      "clausula_numero": "7.10"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 16,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "e",
+        "novo": "por"
+      },
+      "posicao_inicio": 13911,
+      "posicao_fim": 13914,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.9285714285714285,
+      "posicao": {
+        "linha": 16,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "CONTRATADA",
+        "novo": "CONTRATANTE"
+      },
+      "posicao_inicio": 463,
+      "posicao_fim": 474,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "REMOCAO",
+      "css_class": "diff-remocao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 17,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": ", todas",
+        "novo": ""
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 17,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "",
+        "novo": "que sejam de sua responsabilidade legal, cabendo à CONTRATADA obter as licenças, cadastros e autorizações específicas relacionadas ao seu método executivo, equipamentos e atividades próprias"
+      },
+      "posicao_inicio": 94769,
+      "posicao_fim": 94959,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 10ª - 10.3.1",
+      "clausula_id": "0cc6c8bd-f1db-45e1-8686-41b7cb5bcc27",
+      "clausula_conteudo": "Quando houver desligamento de Colaborador de outras localidades,\n    providenciar seu imediato retorno ao respectivo local de origem.",
+      "clausula_objetivo": "Estabelecer que, em caso de desligamento de colaboradores que vieram de outras localidades, a CONTRATADA deve garantir o retorno imediato desses funcionários ao seu local de origem.",
+      "clausula_referencias": [
+        "A cláusula em questão está em conformidade com as diretrizes de responsabilidade social e trabalhista da Contratante, resguardando a segurança e a dignidade dos trabalhadores deslocados. O retorno imediato ao local de origem, após o desligamento, é uma obrigação que recai exclusivamente sobre a empregadora, sendo indispensável para evitar passivos trabalhistas e riscos de exposição à imagem da Contratante. Assim, sugerimos a manutenção integral da cláusula.",
+        "Sugerimos a possibilidade de pactuar previamente, em atenção às eventuais limitações logísticas da Contratada, admite-se que o \\\"imediato retorno\\\" possa ser interpretado como retorno no menor prazo possível, respeitadas as condições operacionais e mediante prévia comunicação à Contratante. Contudo, permanece o entendimento de que o retorno ao local de origem é obrigação exclusiva da Contratada e deverá ocorrer sem ônus ou responsabilidade para a Contratante.",
+        "Suprimir ou alterar a redação da cláusula para questionar a obrigação de providenciar o retorno imediato, especialmente se o desligamento ocorrer por iniciativa do trabalhador ou em situações que envolvam rescisão por justa causa."
+      ],
+      "clausula_numero": "10.3.1"
+    },
+    {
+      "tipo": "REMOCAO",
+      "css_class": "diff-remocao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 18,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "conteudo": {
+        "original": "Custear, como única empregadora - e fazer com que seus subcontratados também o façam - as despesas decorrentes, direta ou indiretamente, dos Serviços, incluindo, mas não se limitando à remuneração de fornecedores, ao pagamento de encargos trabalhistas e previdenciários com relação a seus empregados e outros contratados, inclusive ao seguro de acidentes do trabalho;"
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 18,
+        "coluna": 1
+      },
+      "clausula_modificada": null,
+      "conteudo": {
+        "novo": "Custear, como única empregadora - e fazer com que seus subcontratados também o façam - as despesas decorrentes, direta ou indiretamente, dos Serviços, incluindo remuneração de fornecedores e pagamento de encargos trabalhistas e previdenciários, sem prejuízo do direito de reequilíbrio econômico-financeiro em caso de alteração superveniente de escopo ou obrigação legal imposta pela CONTRATANTE."
+      },
+      "posicao_inicio": 97025,
+      "posicao_fim": 97420,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 10ª - 10.5.2",
+      "clausula_id": "6dfd3292-9e2f-46d8-a757-e90664ef9800",
+      "clausula_conteudo": "Quando aplicável, e nos casos em que houver necessidade dos\n    Funcionários da CONTRATADA adentrarem nas unidades da CONTRATANTE, o\n    pessoal sob sua responsabilidade deverá obedecer às Normas de\n ",
+      "clausula_objetivo": "Assegurar que os funcionários da CONTRATADA, ao entrarem nas unidades da CONTRATANTE, cumpram normas de segurança, utilizem equipamentos de proteção individual e estejam devidamente uniformizados.",
+      "clausula_referencias": [
+        "A exigência do cumprimento integral das normas de saúde, segurança, meio ambiente e comunidade, assim como da utilização dos EPIs especificados, está alinhada às diretrizes internas da CONTRATANTE e é condição indispensável para o acesso às suas unidades operacionais. A identificação da Contratada no capacete é importante para fins de controle e segurança operacional.",
+        "Com o objetivo de preservar a rastreabilidade e garantir a segurança no acesso às unidades, a CONTRATANTE mantém a obrigatoriedade do uso de EPIs, incluindo o capacete com identificação. Contudo, admite a possibilidade de a identificação ser feita por meio de adesivo visível contendo logomarca da Contratada, desde que aprovado previamente pelo Gestor do Contrato.",
+        "Em caráter excepcional, a fim de viabilizar a assinatura do contrato e respeitar políticas internas da Contratada, admite-se que o capacete possa ser utilizado sem logomarca desde que haja outra forma de identificação clara da empresa (ex: crachá, uniforme ou adesivo padrão).",
+        "Suprimir ou alterar a redação da cláusula."
+      ],
+      "clausula_numero": "10.5.2"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.95,
+      "posicao": {
+        "linha": 19,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "Apresentar, mensalmente, junto com o BM ou BMM e com a nota fiscal de faturamento, as guias relacionadas abaixo, do mês anterior, como condição para recebimento do valor faturado: Guias de recolhimento de INSS; Guias de recolhimento de FGTS; Guias de recolhimento de ISSQN.",
+        "novo": "Apresentar, mensalmente, junto com o BM ou BMM e com a nota fiscal de faturamento, as guias relacionadas abaixo, do mês anterior, como condição para recebimento do valor faturado, admitida a apresentação em até 5 (cinco) DIAS úteis após a entrega da medição quando houver indisponibilidade sistêmica comprovada: Guias de recolhimento de INSS; Guias de recolhimento de FGTS; Guias de recolhimento de ISSQN."
+      },
+      "posicao_inicio": 97858,
+      "posicao_fim": 98263,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 10ª - 10.5.2",
+      "clausula_id": "6dfd3292-9e2f-46d8-a757-e90664ef9800",
+      "clausula_conteudo": "Quando aplicável, e nos casos em que houver necessidade dos\n    Funcionários da CONTRATADA adentrarem nas unidades da CONTRATANTE, o\n    pessoal sob sua responsabilidade deverá obedecer às Normas de\n ",
+      "clausula_objetivo": "Assegurar que os funcionários da CONTRATADA, ao entrarem nas unidades da CONTRATANTE, cumpram normas de segurança, utilizem equipamentos de proteção individual e estejam devidamente uniformizados.",
+      "clausula_referencias": [
+        "A exigência do cumprimento integral das normas de saúde, segurança, meio ambiente e comunidade, assim como da utilização dos EPIs especificados, está alinhada às diretrizes internas da CONTRATANTE e é condição indispensável para o acesso às suas unidades operacionais. A identificação da Contratada no capacete é importante para fins de controle e segurança operacional.",
+        "Com o objetivo de preservar a rastreabilidade e garantir a segurança no acesso às unidades, a CONTRATANTE mantém a obrigatoriedade do uso de EPIs, incluindo o capacete com identificação. Contudo, admite a possibilidade de a identificação ser feita por meio de adesivo visível contendo logomarca da Contratada, desde que aprovado previamente pelo Gestor do Contrato.",
+        "Em caráter excepcional, a fim de viabilizar a assinatura do contrato e respeitar políticas internas da Contratada, admite-se que o capacete possa ser utilizado sem logomarca desde que haja outra forma de identificação clara da empresa (ex: crachá, uniforme ou adesivo padrão).",
+        "Suprimir ou alterar a redação da cláusula."
+      ],
+      "clausula_numero": "10.5.2"
+    },
+    {
+      "tipo": "REMOCAO",
+      "css_class": "diff-remocao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 20,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "imediata",
+        "novo": ""
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "REMOCAO",
+      "css_class": "diff-remocao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 20,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": ",",
+        "novo": ""
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 20,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "",
+        "novo": ", no prazo de até 48 (quarenta e oito) horas, salvo em caso de risco à segurança, hipótese em que a retirada deverá ser imediata"
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "REMOCAO",
+      "css_class": "diff-remocao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 21,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "conteudo": {
+        "original": "Caso os Serviços devam ser sustados e/ou refeitos por estarem não conformes com as normas técnicas e/ou com os padrões operacionais aplicáveis e/ou não tenham sido aceitos, justificadamente, pela CONTRATANTE, a CONTRATADA arcará com os custos decorrentes."
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 21,
+        "coluna": 1
+      },
+      "clausula_modificada": null,
+      "conteudo": {
+        "novo": "A CONTRATADA deverá isentar e defender a CONTRATANTE contra quaisquer vínculos, liames ou reivindicações de subcontratados ou de terceiros com ela relacionados, com fundamento no objeto deste CONTRATO, desde que tais reivindicações não decorram de ato, omissão ou instrução direta da CONTRATANTE."
+      },
+      "posicao_inicio": 109948,
+      "posicao_fim": 110244,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 11ª - 11.4",
+      "clausula_id": "ddff5e4a-66eb-4999-a6ca-5c119231369c",
+      "clausula_conteudo": "Fica expressamente convencionado que, se porventura, a CONTRATANTE\n    for condenada em razão do não pagamento em época própria de qualquer\n    obrigação atribuível à CONTRATADA ou suas subcontratadas",
+      "clausula_objetivo": "Permitir que a contratante retenha valores a pagar à contratada se for condenada por dívidas que eram responsabilidade da contratada ou de suas subcontratadas (como tributos ou encargos trabalhistas), até que a contratada comprove que quitou a dívida ou garantiu o pagamento.",
+      "clausula_referencias": [
+        "Sugerimos aceitar que a retenção de pagamentos ocorra somente após comprovação formal e definitiva da condenação, estabelecendo prazo razoável para regularização pela CONTRATADA, sem prejuízo do direito da CONTRATANTE de se resguardar.",
+        "Sugerimos que seja admitida a retenção limitada a parcelas vinculadas ao valor da condenação, com prazo máximo para regularização e liberação dos pagamentos, reforçando que tal ajuste não prejudica o direito da CONTRATANTE de exigir garantias em outros termos do contrato.",
+        "Sugerimos que a cláusula seja mantida conforme redigida, pois assegura à CONTRATANTE um mecanismo efetivo para garantia do cumprimento das obrigações da CONTRATADA, evitando prejuízos decorrentes de inadimplência, mesmo após o término do contrato.",
+        "Suprimir ou alterar a redação da cláusula, para limitar o direito de retenção a débitos já formalmente comprovados e não à mera condenação."
+      ],
+      "clausula_numero": "11.4"
+    },
+    {
+      "tipo": "REMOCAO",
+      "css_class": "diff-remocao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 22,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "conteudo": {
+        "original": "A CONTRATADA deverá promover a substituição, sempre que solicitado justificadamente pela CONTRATANTE, sem prejuízo do andamento dos Serviços, de qualquer Colaborador, e/ou mandatário que venha a apresentar, comportamento em desacordo com as normas ou regulamentos internos da CONTRATANTE."
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 22,
+        "coluna": 1
+      },
+      "clausula_modificada": null,
+      "conteudo": {
+        "novo": "A CONTRATADA se obriga a arcar com despesas com indenizações/reclamações decorrentes de prejuízos, perdas e danos físicos, materiais e morais que venham a ser causados por sua ação ou omissão comprovada, direta ou indireta, própria ou de seus empregados, auxiliares, prepostos ou subcontratados, incluindo os relacionados com o uso de materiais ou processos que requeiram técnicas especiais."
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 23,
+        "coluna": 1
+      },
+      "clausula_modificada": null,
+      "conteudo": {
+        "novo": "Eventuais limitações de responsabilidade contidas neste CONTRATO não se aplicam a dolo, fraude, violação de confidencialidade, infrações anticorrupção, danos ambientais, danos à vida ou à integridade física, coberturas securitárias e/ou eventual direito de regresso da(s) seguradora(s) das PARTES."
+      },
+      "posicao_inicio": 114719,
+      "posicao_fim": 115016,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 12ª - 12.7",
+      "clausula_id": "ab58160f-68c8-4be4-b417-29cd8bd309b2",
+      "clausula_conteudo": "No caso de inobservância, pela CONTRATADA, das exigências do Gestor\n    do Contrato, amparadas neste CONTRATO, terá a CONTRATANTE, além do\n    direito de aplicação das sanções previstas no CONTRATO, t",
+      "clausula_objetivo": "Definir atribuições do gestor do Contrato",
+      "clausula_referencias": [
+        "A cláusula é fundamental para garantir o fiel cumprimento das obrigações contratuais. A possibilidade de suspensão dos serviços e de pagamentos diante do descumprimento de exigências contratuais é um mecanismo legítimo de proteção da CONTRATANTE. A redação atual reflete prática consolidada e não será alterada.",
+        "Aceita-se limitar a suspensão de pagamentos às parcelas diretamente afetadas pelo descumprimento, e prever que a suspensão da execução dos serviços será adotada apenas em caso de descumprimento relevante, após notificação prévia com prazo mínimo para regularização. Ressalta-se, contudo, que essa cláusula é uma medida de salvaguarda da boa execução do contrato como um todo.",
+        "Admite-se esclarecer que a suspensão dos pagamentos incidirá prioritariamente sobre as parcelas relacionadas às obrigações descumpridas, sem prejuízo de sua extensão a valores maiores quando o inadimplemento afetar a totalidade da prestação. A suspensão da execução dos serviços ocorrerá após comunicação formal, conforme já previsto na cláusula.",
+        "Suprimir ou alterar a redação da cláusula para que a suspensão dos pagamentos seja restrita aos valores diretamente relacionados ao descumprimento apontado, evitando prejuízo financeiro desproporcional. Pode também requerer que a suspensão da execução dos serviços só ocorra em casos de descumprimento grave e após prazo para correção, com notificação prévia e fundamentada."
+      ],
+      "clausula_numero": "12.7"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 24,
+        "coluna": 1
+      },
+      "clausula_modificada": null,
+      "conteudo": {
+        "novo": "A CONTRATADA deverá providenciar para que não haja qualquer parada ou atraso injustificado na execução dos Serviços e, se ocorrer a indisponibilidade de qualquer Serviço ou recurso por motivo sob sua responsabilidade, compromete-se a buscar os meios necessários ao seu restabelecimento, sem ônus adicional à CONTRATANTE."
+      },
+      "posicao_inicio": 114916,
+      "posicao_fim": 115236,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 12ª - 12.7",
+      "clausula_id": "ab58160f-68c8-4be4-b417-29cd8bd309b2",
+      "clausula_conteudo": "No caso de inobservância, pela CONTRATADA, das exigências do Gestor\n    do Contrato, amparadas neste CONTRATO, terá a CONTRATANTE, além do\n    direito de aplicação das sanções previstas no CONTRATO, t",
+      "clausula_objetivo": "Definir atribuições do gestor do Contrato",
+      "clausula_referencias": [
+        "A cláusula é fundamental para garantir o fiel cumprimento das obrigações contratuais. A possibilidade de suspensão dos serviços e de pagamentos diante do descumprimento de exigências contratuais é um mecanismo legítimo de proteção da CONTRATANTE. A redação atual reflete prática consolidada e não será alterada.",
+        "Aceita-se limitar a suspensão de pagamentos às parcelas diretamente afetadas pelo descumprimento, e prever que a suspensão da execução dos serviços será adotada apenas em caso de descumprimento relevante, após notificação prévia com prazo mínimo para regularização. Ressalta-se, contudo, que essa cláusula é uma medida de salvaguarda da boa execução do contrato como um todo.",
+        "Admite-se esclarecer que a suspensão dos pagamentos incidirá prioritariamente sobre as parcelas relacionadas às obrigações descumpridas, sem prejuízo de sua extensão a valores maiores quando o inadimplemento afetar a totalidade da prestação. A suspensão da execução dos serviços ocorrerá após comunicação formal, conforme já previsto na cláusula.",
+        "Suprimir ou alterar a redação da cláusula para que a suspensão dos pagamentos seja restrita aos valores diretamente relacionados ao descumprimento apontado, evitando prejuízo financeiro desproporcional. Pode também requerer que a suspensão da execução dos serviços só ocorra em casos de descumprimento grave e após prazo para correção, com notificação prévia e fundamentada."
+      ],
+      "clausula_numero": "12.7"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 25,
+        "coluna": 1
+      },
+      "clausula_modificada": null,
+      "conteudo": {
+        "novo": "A CONTRATANTE exercerá a fiscalização sobre a execução do CONTRATO através de uma equipe, denominada Fiscalização, integrada por pessoal pertencente ao seu quadro ou de terceiros. A indicação ou substituição de fiscais produzirá efeitos perante a CONTRATADA a partir da comunicação escrita para qualquer dos endereços físico ou eletrônico indicados no QUADRO RESUMO."
+      },
+      "posicao_inicio": 116779,
+      "posicao_fim": 117145,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 12ª - 12.7",
+      "clausula_id": "ab58160f-68c8-4be4-b417-29cd8bd309b2",
+      "clausula_conteudo": "No caso de inobservância, pela CONTRATADA, das exigências do Gestor\n    do Contrato, amparadas neste CONTRATO, terá a CONTRATANTE, além do\n    direito de aplicação das sanções previstas no CONTRATO, t",
+      "clausula_objetivo": "Definir atribuições do gestor do Contrato",
+      "clausula_referencias": [
+        "A cláusula é fundamental para garantir o fiel cumprimento das obrigações contratuais. A possibilidade de suspensão dos serviços e de pagamentos diante do descumprimento de exigências contratuais é um mecanismo legítimo de proteção da CONTRATANTE. A redação atual reflete prática consolidada e não será alterada.",
+        "Aceita-se limitar a suspensão de pagamentos às parcelas diretamente afetadas pelo descumprimento, e prever que a suspensão da execução dos serviços será adotada apenas em caso de descumprimento relevante, após notificação prévia com prazo mínimo para regularização. Ressalta-se, contudo, que essa cláusula é uma medida de salvaguarda da boa execução do contrato como um todo.",
+        "Admite-se esclarecer que a suspensão dos pagamentos incidirá prioritariamente sobre as parcelas relacionadas às obrigações descumpridas, sem prejuízo de sua extensão a valores maiores quando o inadimplemento afetar a totalidade da prestação. A suspensão da execução dos serviços ocorrerá após comunicação formal, conforme já previsto na cláusula.",
+        "Suprimir ou alterar a redação da cláusula para que a suspensão dos pagamentos seja restrita aos valores diretamente relacionados ao descumprimento apontado, evitando prejuízo financeiro desproporcional. Pode também requerer que a suspensão da execução dos serviços só ocorra em casos de descumprimento grave e após prazo para correção, com notificação prévia e fundamentada."
+      ],
+      "clausula_numero": "12.7"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 26,
+        "coluna": 1
+      },
+      "clausula_modificada": null,
+      "conteudo": {
+        "novo": "A CONTRATADA não poderá transferir a terceiros nem subcontratar, no todo ou em parte, os Serviços e/ou as obrigações deste CONTRATO, sem prévia identificação do cessionário/subcontratado perante a CONTRATANTE. A ausência de manifestação da CONTRATANTE no prazo de 10 (dez) DIAS úteis, contado do recebimento das informações completas, será interpretada como não objeção à subcontratação indicada."
+      },
+      "posicao_inicio": 122035,
+      "posicao_fim": 122431,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 15ª - 15.3",
+      "clausula_id": "d0c0054b-2ff9-4d88-9d73-dce64bc72d48",
+      "clausula_conteudo": "As estipulações e obrigações constantes da presente cláusula não\n    serão aplicadas a qualquer informação que: (i) seja de domínio\n    público; (ii) já esteja em poder da CONTRATADA como resultado de",
+      "clausula_objetivo": "Especificar que a obrigação de sigilo não se aplica a informações que já sejam públicas, que a contratada já conhecia legitimamente, que foram recebidas de terceiros de forma lícita, ou que precisem ser reveladas por ordem legal — desde que a contratante seja previamente avisada e tenha chance de tomar medidas de proteção.",
+      "clausula_referencias": [
+        "Propõe exclusão da exigência de notificação prévia em caso de ordem judicial ou administrativa, alegando inviabilidade prática.",
+        "Pode-se ajustar a redação para prever que a notificação seja feita “sempre que possível”, sem eximir a contratada do dever de informar a contratante com a maior brevidade.",
+        "A obrigação de notificação prévia visa proteger adequadamente os interesses da contratante. Mesmo diante de ordem legal, a comunicação prévia — sempre que viável — é essencial para permitir adoção de medidas de proteção. Solicitamos manutenção."
+      ],
+      "clausula_numero": "15.3"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 27,
+        "coluna": 1
+      },
+      "clausula_modificada": null,
+      "conteudo": {
+        "novo": "A subcontratação do OBJETO pela CONTRATADA, ou de parte dele, sem a prévia autorização ou sem a não objeção da CONTRATANTE será considerada inadimplemento contratual e permitirá à CONTRATANTE, a seu exclusivo critério: (i) solicitar a imediata paralisação do objeto; (ii) exigir a desmobilização imediata da(s) subcontratada(s); (iii) exigir a substituição da(s) subcontratada(s), sem prejuízo das penalidades cabíveis."
+      },
+      "posicao_inicio": 122946,
+      "posicao_fim": 123365,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 15ª - 15.3",
+      "clausula_id": "d0c0054b-2ff9-4d88-9d73-dce64bc72d48",
+      "clausula_conteudo": "As estipulações e obrigações constantes da presente cláusula não\n    serão aplicadas a qualquer informação que: (i) seja de domínio\n    público; (ii) já esteja em poder da CONTRATADA como resultado de",
+      "clausula_objetivo": "Especificar que a obrigação de sigilo não se aplica a informações que já sejam públicas, que a contratada já conhecia legitimamente, que foram recebidas de terceiros de forma lícita, ou que precisem ser reveladas por ordem legal — desde que a contratante seja previamente avisada e tenha chance de tomar medidas de proteção.",
+      "clausula_referencias": [
+        "Propõe exclusão da exigência de notificação prévia em caso de ordem judicial ou administrativa, alegando inviabilidade prática.",
+        "Pode-se ajustar a redação para prever que a notificação seja feita “sempre que possível”, sem eximir a contratada do dever de informar a contratante com a maior brevidade.",
+        "A obrigação de notificação prévia visa proteger adequadamente os interesses da contratante. Mesmo diante de ordem legal, a comunicação prévia — sempre que viável — é essencial para permitir adoção de medidas de proteção. Solicitamos manutenção."
+      ],
+      "clausula_numero": "15.3"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 28,
+        "coluna": 1
+      },
+      "clausula_modificada": null,
+      "conteudo": {
+        "novo": "As PARTES não poderão prestar informações a terceiros nem divulgar quaisquer dados, informações relacionadas ao CONTRATO, ou o CONTRATO em si, ANEXOS e eventuais aditivos, sem autorização prévia e por escrito da outra PARTE, exceto a seus consultores, auditores, seguradoras, financiadores e assessores profissionais, desde que sujeitos a deveres de confidencialidade compatíveis."
+      },
+      "posicao_inicio": 125842,
+      "posicao_fim": 126222,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 16ª - 16.7",
+      "clausula_id": "34df7885-c5bf-4a1e-8932-e823276a76a6",
+      "clausula_conteudo": "As PARTES acordam, desde já, que os prazos previstos neste CONTRATO\n    poderão ser proporcionalmente prorrogados pelo mesmo número de dias\n    relativos à eventual suspensão dos Serviços em razão da ",
+      "clausula_objetivo": "Permitir que os prazos do contrato sejam prorrogados, na mesma proporção do tempo de paralisação causada por eventos imprevisíveis, mas somente se a contratante concordar e formalizar isso por escrito.",
+      "clausula_referencias": [
+        "Previsão expressa de prorrogação sempre que houver suspensão total ou parcial dos serviços por força maior.",
+        "A prorrogação de prazos por força maior não é automática, pois depende da análise do impacto real na execução do contrato e do cronograma geral. A cláusula preserva a possibilidade de avaliação técnica e de interesse público pela contratante. Propõe-se manter a redação original",
+        "Aceita-se prever que, em caso de suspensão efetiva dos serviços por força maior devidamente reconhecida e comunicada, os prazos contratuais serão prorrogados proporcionalmente, ressalvando-se o direito da contratante de avaliar eventuais impactos no cronograma global e a necessidade de ajustes adicionais via aditivo contratual."
+      ],
+      "clausula_numero": "16.7"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 29,
+        "coluna": 1
+      },
+      "clausula_modificada": null,
+      "conteudo": {
+        "novo": "As estipulações e obrigações constantes da presente cláusula não serão aplicadas a qualquer informação que: (i) seja de domínio público; (ii) já esteja em poder da CONTRATADA como resultado de sua própria pesquisa ou desenvolvimento; (iii) tenha sido legitimamente recebida de terceiros sem violação de dever de confidencialidade; ou (iv) deva ser divulgada por ordem legal, regulatória, judicial ou arbitral, hipótese em que a outra PARTE deverá ser previamente comunicada, quando permitido."
+      },
+      "posicao_inicio": 126583,
+      "posicao_fim": 127075,
+      "tag_nome": "15.1",
+      "clausula_id": "34df7885-c5bf-4a1e-8932-e823276a76a6",
+      "clausula_numero": "16.7",
+      "clausula_nome": "Cláusula 16ª - 16.7",
+      "score_vinculacao": 0.16681818181818184,
+      "motivo_vinculacao": "score_baixo",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_conteudo": "As PARTES acordam, desde já, que os prazos previstos neste CONTRATO\n    poderão ser proporcionalmente prorrogados pelo mesmo número de dias\n    relativos à eventual suspensão dos Serviços em razão da ",
+      "clausula_objetivo": "Permitir que os prazos do contrato sejam prorrogados, na mesma proporção do tempo de paralisação causada por eventos imprevisíveis, mas somente se a contratante concordar e formalizar isso por escrito.",
+      "clausula_referencias": [
+        "Previsão expressa de prorrogação sempre que houver suspensão total ou parcial dos serviços por força maior.",
+        "A prorrogação de prazos por força maior não é automática, pois depende da análise do impacto real na execução do contrato e do cronograma geral. A cláusula preserva a possibilidade de avaliação técnica e de interesse público pela contratante. Propõe-se manter a redação original",
+        "Aceita-se prever que, em caso de suspensão efetiva dos serviços por força maior devidamente reconhecida e comunicada, os prazos contratuais serão prorrogados proporcionalmente, ressalvando-se o direito da contratante de avaliar eventuais impactos no cronograma global e a necessidade de ajustes adicionais via aditivo contratual."
+      ]
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 30,
+        "coluna": 1
+      },
+      "clausula_modificada": null,
+      "conteudo": {
+        "novo": "Salvo se expressamente previsto em sentido diverso no QUADRO RESUMO ou em instrumento específico, a titularidade das criações intelectuais, documentos, relatórios, desenhos, bases de dados, métodos, melhorias e demais resultados desenvolvidos especificamente no âmbito dos Serviços pertencerá à CONTRATANTE, assegurada à CONTRATADA licença interna, não exclusiva e sem direito de sublicenciamento para fins de arquivo, defesa técnica e comprovação de experiência."
+      },
+      "posicao_inicio": 130355,
+      "posicao_fim": 130818,
+      "tag_nome": "16.2",
+      "clausula_id": "c693575d-f8b7-40fd-92eb-dca1400ff524",
+      "clausula_numero": "17.5",
+      "clausula_nome": "Cláusula 17ª - 17.5",
+      "score_vinculacao": 0.18460082116788326,
+      "motivo_vinculacao": "score_baixo",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_conteudo": "As multas serão descontadas do pagamento da primeira nota\n    fiscal/fatura apresentada pela CONTRATADA após a sua aplicação e,\n    não sendo estes suficientes, serão descontados dos montantes das\n   ",
+      "clausula_objetivo": "Estabelece que as multas serão descontadas das faturas da CONTRATADA ou cobradas por outros meios legais, se necessário.",
+      "clausula_referencias": [
+        "Trata-se de procedimento padrão da Samarco para os casos de aplicação de penalidades/multas contratuais. Solicitamos manter.",
+        "Solicitamos orientação da gestão de contratos para indicar se é possível manter os descontos apenas na primeira nota fiscal posterior ao descumprimento/aplicação de multas.",
+        "Trata-se de procedimento padrão da Samarco para os casos de aplicação de penalidades/multas contratuais. Solicitamos manter.",
+        "A Samarco flexibiliza para restringir o desconto à primeira nota fiscal, observado o ajuste na cláusula para constar a possibilidade de retenção de valores caso ultrapasse o desconto feito na primeira nota. Gentileza validar."
+      ]
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 31,
+        "coluna": 1
+      },
+      "clausula_modificada": null,
+      "conteudo": {
+        "novo": "Os direitos de propriedade intelectual pré-existentes de cada PARTE permanecerão de sua respectiva titularidade. O simples uso de ferramentas, metodologias, templates, know-how, softwares ou materiais previamente desenvolvidos pela CONTRATADA não transferirá tais direitos à CONTRATANTE, salvo previsão expressa em contrário."
+      },
+      "posicao_inicio": 131714,
+      "posicao_fim": 132039,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 17ª - 17.5",
+      "clausula_id": "c693575d-f8b7-40fd-92eb-dca1400ff524",
+      "clausula_conteudo": "As multas serão descontadas do pagamento da primeira nota\n    fiscal/fatura apresentada pela CONTRATADA após a sua aplicação e,\n    não sendo estes suficientes, serão descontados dos montantes das\n   ",
+      "clausula_objetivo": "Estabelece que as multas serão descontadas das faturas da CONTRATADA ou cobradas por outros meios legais, se necessário.",
+      "clausula_referencias": [
+        "Trata-se de procedimento padrão da Samarco para os casos de aplicação de penalidades/multas contratuais. Solicitamos manter.",
+        "Solicitamos orientação da gestão de contratos para indicar se é possível manter os descontos apenas na primeira nota fiscal posterior ao descumprimento/aplicação de multas.",
+        "Trata-se de procedimento padrão da Samarco para os casos de aplicação de penalidades/multas contratuais. Solicitamos manter.",
+        "A Samarco flexibiliza para restringir o desconto à primeira nota fiscal, observado o ajuste na cláusula para constar a possibilidade de retenção de valores caso ultrapasse o desconto feito na primeira nota. Gentileza validar."
+      ],
+      "clausula_numero": "17.5"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 32,
+        "coluna": 1
+      },
+      "clausula_modificada": null,
+      "conteudo": {
+        "novo": "A CONTRATADA não poderá usar o nome, marcas, logotipos ou sinais distintivos da CONTRATANTE em materiais publicitários, portfólios, propostas comerciais, redes sociais ou comunicações públicas sem autorização prévia e por escrito da CONTRATANTE."
+      },
+      "posicao_inicio": 133768,
+      "posicao_fim": 134013,
+      "tag_nome": "17.2",
+      "clausula_id": "c693575d-f8b7-40fd-92eb-dca1400ff524",
+      "clausula_numero": "17.5",
+      "clausula_nome": "Cláusula 17ª - 17.5",
+      "score_vinculacao": 0.1676015473887814,
+      "motivo_vinculacao": "score_baixo",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_conteudo": "As multas serão descontadas do pagamento da primeira nota\n    fiscal/fatura apresentada pela CONTRATADA após a sua aplicação e,\n    não sendo estes suficientes, serão descontados dos montantes das\n   ",
+      "clausula_objetivo": "Estabelece que as multas serão descontadas das faturas da CONTRATADA ou cobradas por outros meios legais, se necessário.",
+      "clausula_referencias": [
+        "Trata-se de procedimento padrão da Samarco para os casos de aplicação de penalidades/multas contratuais. Solicitamos manter.",
+        "Solicitamos orientação da gestão de contratos para indicar se é possível manter os descontos apenas na primeira nota fiscal posterior ao descumprimento/aplicação de multas.",
+        "Trata-se de procedimento padrão da Samarco para os casos de aplicação de penalidades/multas contratuais. Solicitamos manter.",
+        "A Samarco flexibiliza para restringir o desconto à primeira nota fiscal, observado o ajuste na cláusula para constar a possibilidade de retenção de valores caso ultrapasse o desconto feito na primeira nota. Gentileza validar."
+      ]
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.8999999999999999,
+      "posicao": {
+        "linha": 23,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "15",
+        "novo": "5"
+      },
+      "posicao_inicio": 3189,
+      "posicao_fim": 3190,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.8090909090909091,
+      "posicao": {
+        "linha": 23,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "quinze",
+        "novo": "cinco"
+      },
+      "posicao_inicio": 81977,
+      "posicao_fim": 81982,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 6ª - 6.17",
+      "clausula_id": "c8f9d604-34c5-4d25-a2b0-fe01062eaa11",
+      "clausula_conteudo": "Caso ocorra comprovado descumprimento de quaisquer obrigações\n    contratuais, referentes, mas sem se limitar: a entrega de\n    documentação de planejamento e controle (físico e financeiro),\n    atras",
+      "clausula_objetivo": "Autorizar a CONTRATANTE a reter parcial ou totalmente os pagamentos mensais da CONTRATADA em caso de descumprimento contratual comprovado, até o valor correspondente à irregularidade.",
+      "clausula_referencias": [
+        "Supressão de cláusula.",
+        "A previsão de retenção proporcional ao valor do descumprimento é adequada e não deve ser alterada.",
+        "Previsibilidade à CONTRATADA, que a cláusula preveja expressamente que a retenção somente ocorrerá após notificação formal com prazo de resposta da CONTRATADA, e será limitada ao valor estimado do impacto econômico do descumprimento, devidamente fundamentado pela área técnica."
+      ],
+      "clausula_numero": "6.17"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 23,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "",
+        "novo": "úteis"
+      },
+      "posicao_inicio": 12268,
+      "posicao_fim": 12273,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "REMOCAO",
+      "css_class": "diff-remocao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 24,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "conteudo": {
+        "original": "Durante o prazo do presente CONTRATO e por 5 (cinco) anos após o seu término, mediante comunicado por escrito com 15 (quinze) DIAS de antecedência, a CONTRATADA concorda em permitir que a CONTRATANTE, ou terceiros por ela autorizados, tenham acesso a todos os livros, registros, documentos e informações relacionados ao objeto do CONTRATO, podendo obter cópias, a fim de verificar a conformidade da CONTRATADA com este CONTRATO. A CONTRATANTE envidará seus melhores esforços para garantir que qualquer auditoria não interfira desarrazoadamente nas atividades normais da CONTRATADA. A CONTRATADA concorda em cooperar integralmente com a auditoria da CONTRATANTE, permitindo também que seus Funcionários sejam entrevistados."
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 34,
+        "coluna": 1
+      },
+      "clausula_modificada": null,
+      "conteudo": {
+        "novo": "Durante o prazo do presente CONTRATO e por 5 (cinco) anos após o seu término, mediante comunicado por escrito com 10 (dez) DIAS de antecedência, a CONTRATADA concorda em permitir que a CONTRATANTE, ou terceiros por ela autorizados, tenham acesso a livros, registros, documentos e informações diretamente relacionados ao objeto do CONTRATO, podendo obter cópias, a fim de verificar a conformidade da CONTRATADA com este CONTRATO. A auditoria deverá ocorrer em horário comercial e de modo a não interferir desarrazoadamente nas atividades normais da CONTRATADA."
+      },
+      "posicao_inicio": 146802,
+      "posicao_fim": 147361,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 23ª - 23.5.3",
+      "clausula_id": "7babc64c-546c-413b-a970-61ca2c9b4eef",
+      "clausula_conteudo": "Promover, supervenientemente, ações judiciais contra a CONTRATANTE,\n    suas controladas, controladoras e empresas a ela coligadas,\n    considerando não somente ações movidas pela CONTRATADA, mas tamb",
+      "clausula_objetivo": "Garantir à CONTRATANTE o direito de rescindir o contrato se a CONTRATADA, seus sócios ou empresas do mesmo grupo moverem ações judiciais contra a CONTRATANTE ou suas empresas vinculadas.",
+      "clausula_referencias": [
+        "A cláusula não impede o exercício do direito de ação, mas confere à Samarco o direito de encerrar relações contratuais quando há conflito de interesse instaurado por litígio superveniente, inclusive por integrantes do grupo econômico da contratada. Solicitamos manter.",
+        "Acatamos a exclusão da cláusula 23.5.3, sem prejuízo das demais disposições contratuais que já conferem à contratante o direito de rescindir o contrato em caso de quebra de confiança, descumprimento contratual ou conflito de interesses relevante.",
+        "Questiona a razoabilidade da cláusula, por entender que restringe o direito de acesso ao Judiciário e que não deveria abranger atos de terceiros (acionistas, empresas do grupo), sobre os quais não teria controle direto."
+      ],
+      "clausula_numero": "23.5.3"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.8384615384615384,
+      "posicao": {
+        "linha": 25,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "qualquer violação",
+        "novo": "violações"
+      },
+      "posicao_inicio": 105455,
+      "posicao_fim": 105464,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 10ª - 10.8.5",
+      "clausula_id": "b346331a-99a2-4882-ad22-e53b64cc51f7",
+      "clausula_conteudo": "Caso aplicável, arcar com todos os custos e despesas decorrentes da\n    instalação, conexão e operação do canteiro de obras e de suas\n    atividades no LOCAL DA PRESTAÇÃO DOS SERVIÇOS, restaurando-o, ",
+      "clausula_objetivo": "Arcar com custos de instalação, operação e restauração do canteiro de obras conforme exigências contratuais e ambientais.",
+      "clausula_referencias": [
+        "Sugerimos aceitar que a responsabilidade da Contratada se restrinja àquelas áreas previamente definidas como sob sua gestão direta, considerando a situação original do local e eventuais orientações específicas da CONTRATANTE, mediante formalização prévia.",
+        "Sugerimos que seja exigido da Contratada o integral cumprimento da cláusula como redigida, considerando que a responsabilidade pelos custos e pela restauração do canteiro e áreas correlatas é prática comum e necessária para assegurar a integridade do local, o atendimento à legislação ambiental e o cumprimento dos padrões internos da CONTRATANTE.",
+        "Suprimir ou alterar a redação da cláusula, para limitar a responsabilidade da Contratada àquelas áreas efetivamente utilizadas por ela, ou para condicionar os custos de restauração às exigências legais e à situação original da área.",
+        "Sugerimos que seja ajustado para que a obrigação de restaurar se limite às áreas efetivamente ocupadas ou utilizadas pela Contratada, conforme levantamento conjunto realizado no início da mobilização, desde que respeitadas as exigências legais e da CONTRATANTE."
+      ],
+      "clausula_numero": "10.8.5"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.82,
+      "posicao": {
+        "linha": 25,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "venha",
+        "novo": "sejam"
+      },
+      "posicao_inicio": 94773,
+      "posicao_fim": 94778,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 10ª - 10.3.1",
+      "clausula_id": "0cc6c8bd-f1db-45e1-8686-41b7cb5bcc27",
+      "clausula_conteudo": "Quando houver desligamento de Colaborador de outras localidades,\n    providenciar seu imediato retorno ao respectivo local de origem.",
+      "clausula_objetivo": "Estabelecer que, em caso de desligamento de colaboradores que vieram de outras localidades, a CONTRATADA deve garantir o retorno imediato desses funcionários ao seu local de origem.",
+      "clausula_referencias": [
+        "A cláusula em questão está em conformidade com as diretrizes de responsabilidade social e trabalhista da Contratante, resguardando a segurança e a dignidade dos trabalhadores deslocados. O retorno imediato ao local de origem, após o desligamento, é uma obrigação que recai exclusivamente sobre a empregadora, sendo indispensável para evitar passivos trabalhistas e riscos de exposição à imagem da Contratante. Assim, sugerimos a manutenção integral da cláusula.",
+        "Sugerimos a possibilidade de pactuar previamente, em atenção às eventuais limitações logísticas da Contratada, admite-se que o \\\"imediato retorno\\\" possa ser interpretado como retorno no menor prazo possível, respeitadas as condições operacionais e mediante prévia comunicação à Contratante. Contudo, permanece o entendimento de que o retorno ao local de origem é obrigação exclusiva da Contratada e deverá ocorrer sem ônus ou responsabilidade para a Contratante.",
+        "Suprimir ou alterar a redação da cláusula para questionar a obrigação de providenciar o retorno imediato, especialmente se o desligamento ocorrer por iniciativa do trabalhador ou em situações que envolvam rescisão por justa causa."
+      ],
+      "clausula_numero": "10.3.1"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.8624999999999999,
+      "posicao": {
+        "linha": 25,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "a",
+        "novo": "comprovadamente"
+      },
+      "posicao_inicio": 70215,
+      "posicao_fim": 70230,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 1ª - 1.6",
+      "clausula_id": "4667555d-ef82-427b-af74-4b430b8ed190",
+      "clausula_conteudo": "A CONTRATADA declara ter ciência das condições da região onde se\n    localizam as instalações da CONTRATANTE, assumindo exclusiva\n    responsabilidade pelo perfeito conhecimento das diversas\n    condi",
+      "clausula_objetivo": "Atribuir à CONTRATADA a responsabilidade por conhecer previamente as condições do local de prestação dos serviços, impedindo-a de reivindicar compensações por dificuldades operacionais não previstas.",
+      "clausula_referencias": [
+        "Tendo em vista que a ressalva sugerida já está embarcada em uma eventualidade de caso fortuito, a Samarco acata o ajuste sugerido.",
+        "É possível revisar a cláusula para incluir ressalva quanto a informações erradas apresentadas pela Contratante.",
+        "Inclusão de ressalva em casos de eventos hidrológicos, hidrometeorológicos e pluviométricos que destoam da média histórica, Inclusão de ressalva caso houver apresentação de informação errada da Contratante."
+      ],
+      "clausula_numero": "1.6"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.9285714285714285,
+      "posicao": {
+        "linha": 25,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "ser cometida",
+        "novo": "cometidas"
+      },
+      "posicao_inicio": 149855,
+      "posicao_fim": 149864,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 23ª - 23.9",
+      "clausula_id": "eedab959-7c46-43e8-ab09-6d7e0ad9b5f9",
+      "clausula_conteudo": "Uma vez distratado ou rescindido este CONTRATO, poderá a CONTRATANTE\n    entregar a conclusão dos Serviços a qualquer outra executante,\n    independentemente da anuência da CONTRATADA.",
+      "clausula_objetivo": "Permitir que, após a rescisão, a CONTRATANTE conclua os serviços com outro fornecedor, sem depender de autorização da CONTRATADA.",
+      "clausula_referencias": [
+        "Solicita que seja incluída menção de que eventual uso de documentos, métodos ou entregas parciais da contratada por terceiros esteja condicionado à autorização expressa ou preservação de direitos de propriedade intelectual.",
+        "A cláusula apenas assegura à contratante a liberdade de dar continuidade aos serviços com outra executante após a extinção do contrato. O uso de entregas protegidas por direito autoral ou industrial será regido pelas cláusulas de propriedade intelectual, já previstas no contrato. Solicitamos manter."
+      ],
+      "clausula_numero": "23.9"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 26,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "30",
+        "novo": "60"
+      },
+      "posicao_inicio": 3749,
+      "posicao_fim": 3751,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.8285714285714285,
+      "posicao": {
+        "linha": 26,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "trinta",
+        "novo": "sessenta"
+      },
+      "posicao_inicio": 54446,
+      "posicao_fim": 54454,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 26,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "",
+        "novo": ", ressalvado o pagamento dos Serviços efetivamente prestados e dos custos de desmobilização previamente aprovados"
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 27,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "",
+        "novo": "materiais"
+      },
+      "posicao_inicio": 67792,
+      "posicao_fim": 67801,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 1ª - 1.6",
+      "clausula_id": "4667555d-ef82-427b-af74-4b430b8ed190",
+      "clausula_conteudo": "A CONTRATADA declara ter ciência das condições da região onde se\n    localizam as instalações da CONTRATANTE, assumindo exclusiva\n    responsabilidade pelo perfeito conhecimento das diversas\n    condi",
+      "clausula_objetivo": "Atribuir à CONTRATADA a responsabilidade por conhecer previamente as condições do local de prestação dos serviços, impedindo-a de reivindicar compensações por dificuldades operacionais não previstas.",
+      "clausula_referencias": [
+        "Tendo em vista que a ressalva sugerida já está embarcada em uma eventualidade de caso fortuito, a Samarco acata o ajuste sugerido.",
+        "É possível revisar a cláusula para incluir ressalva quanto a informações erradas apresentadas pela Contratante.",
+        "Inclusão de ressalva em casos de eventos hidrológicos, hidrometeorológicos e pluviométricos que destoam da média histórica, Inclusão de ressalva caso houver apresentação de informação errada da Contratante."
+      ],
+      "clausula_numero": "1.6"
+    },
+    {
+      "tipo": "REMOCAO",
+      "css_class": "diff-remocao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 27,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "por exemplo",
+        "novo": ""
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 27,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "",
+        "novo": ", confidencialidade, proteção de dados, saúde e segurança ou meio ambiente"
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 28,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "5",
+        "novo": "10"
+      },
+      "posicao_inicio": 4537,
+      "posicao_fim": 4539,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 28,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "cinco",
+        "novo": "dez"
+      },
+      "posicao_inicio": 57645,
+      "posicao_fim": 57648,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.95,
+      "posicao": {
+        "linha": 28,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "executada",
+        "novo": "executadas"
+      },
+      "posicao_inicio": 155365,
+      "posicao_fim": 155375,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 24ª - 24.3.3",
+      "clausula_id": "43f7d4e2-f749-4f16-992e-cfd8d8c3f1d3",
+      "clausula_conteudo": "A arbitragem será conduzida por 3 (três) árbitros, cabendo a cada\n    uma das PARTES a indicação de um árbitro. O arbitro deverá ser\n    pessoa de reconhecida competência no assunto principal objeto d",
+      "clausula_objetivo": "Definir que a arbitragem será feita por três árbitros: cada parte escolhe um, e esses dois escolhem juntos o terceiro, que será o presidente do tribunal arbitral. Se não houver acordo sobre esse terceiro árbitro, a CAMARB fará a nomeação. Todos os árbitros devem ser especializados no tema da disputa e estar na lista da CAMARB.",
+      "clausula_referencias": [
+        "A composição com três árbitros assegura imparcialidade e maior robustez técnica na análise de disputas complexas, condizente com os contratos firmados pela contratante. Solicitamos manter.",
+        "Favor validar, junto com a gerência, se o pedido de ajuste da contratada pode ser acatado.",
+        "Admite-se reformulação para prever árbitro único como regra geral.",
+        "Solicita substituição do tribunal arbitral composto por três árbitros por árbitro único"
+      ],
+      "clausula_numero": "24.3.3"
+    },
+    {
+      "tipo": "REMOCAO",
+      "css_class": "diff-remocao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 29,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "plenamente",
+        "novo": ""
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 29,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "e",
+        "novo": "quanto"
+      },
+      "posicao_inicio": 78165,
+      "posicao_fim": 78171,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 6ª - 6.17",
+      "clausula_id": "c8f9d604-34c5-4d25-a2b0-fe01062eaa11",
+      "clausula_conteudo": "Caso ocorra comprovado descumprimento de quaisquer obrigações\n    contratuais, referentes, mas sem se limitar: a entrega de\n    documentação de planejamento e controle (físico e financeiro),\n    atras",
+      "clausula_objetivo": "Autorizar a CONTRATANTE a reter parcial ou totalmente os pagamentos mensais da CONTRATADA em caso de descumprimento contratual comprovado, até o valor correspondente à irregularidade.",
+      "clausula_referencias": [
+        "Supressão de cláusula.",
+        "A previsão de retenção proporcional ao valor do descumprimento é adequada e não deve ser alterada.",
+        "Previsibilidade à CONTRATADA, que a cláusula preveja expressamente que a retenção somente ocorrerá após notificação formal com prazo de resposta da CONTRATADA, e será limitada ao valor estimado do impacto econômico do descumprimento, devidamente fundamentado pela área técnica."
+      ],
+      "clausula_numero": "6.17"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.8681818181818182,
+      "posicao": {
+        "linha": 29,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "quitado",
+        "novo": "às obrigações operacionais"
+      },
+      "posicao_inicio": 158326,
+      "posicao_fim": 158352,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Cláusula 24ª - 24.7",
+      "clausula_id": "76004ef5-ab81-4353-abb9-a0d5825526da",
+      "clausula_conteudo": "Para a resolução de disputas que se refiram exclusivamente ao\n    COMODATO, , se aplicável, as partes elegem como foro contratual, a\n    Comarca de Belo Horizonte, Estado de Minas Gerais, excluindo\n  ",
+      "clausula_objetivo": "Estabelecer que, se houver disputas relacionadas apenas ao contrato de comodato (empréstimo de bens), elas serão resolvidas na Justiça comum, com foro na Comarca de Belo Horizonte/MG.",
+      "clausula_referencias": [],
+      "clausula_numero": "24.7"
+    },
+    {
+      "tipo": "REMOCAO",
+      "css_class": "diff-remocao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 29,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "de encerramento",
+        "novo": ""
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 29,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "",
+        "novo": ", sem prejuízo de obrigações de confidencialidade, garantia, indenização, auditoria, propriedade intelectual e proteção de dados"
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "REMOCAO",
+      "css_class": "diff-remocao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 30,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": ",",
+        "novo": ""
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 30,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "",
+        "novo": "no prazo de 30 (trinta) DIAS contado da notificação da controvérsia"
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "REMOCAO",
+      "css_class": "diff-remocao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 30,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": ", de forma irrenunciável,",
+        "novo": ""
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "REMOCAO",
+      "css_class": "diff-remocao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 30,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": ",",
+        "novo": ""
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "REMOCAO",
+      "css_class": "diff-remocao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 30,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": ",",
+        "novo": ""
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "REMOCAO",
+      "css_class": "diff-remocao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 31,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "não",
+        "novo": ""
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 31,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "",
+        "novo": ", observados os limites da legislação aplicável e o Regulamento da CAMARB"
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "REMOCAO",
+      "css_class": "diff-remocao",
+      "confianca": 0.85,
+      "posicao": {
+        "linha": 32,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "conteudo": {
+        "original": "A PARTE que violar a cláusula de arbitragem ou para prejudicar, obstaculizar ou impedir a solução da controvérsia por meio da arbitragem, ficará automaticamente sujeita ao pagamento de multa no valor correspondente a 10% sobre o VALOR ESTIMADO CONTRATO."
+      },
+      "posicao_inicio": null,
+      "posicao_fim": null,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "INSERCAO",
+      "css_class": "diff-insercao",
+      "confianca": 0.9,
+      "posicao": {
+        "linha": 42,
+        "coluna": 1
+      },
+      "clausula_modificada": null,
+      "conteudo": {
+        "novo": "A PARTE que violar a cláusula de arbitragem ou praticar ato destinado a prejudicar, obstaculizar ou impedir a solução da controvérsia por meio da arbitragem ficará sujeita ao pagamento de multa no valor correspondente a 5% sobre o VALOR ESTIMADO DO CONTRATO, sem prejuízo de perdas e danos comprovados."
+      },
+      "posicao_inicio": 163692,
+      "posicao_fim": 163994,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    },
+    {
+      "tipo": "ALTERACAO",
+      "css_class": "diff-alteracao",
+      "confianca": 0.95,
+      "posicao": {
+        "linha": 34,
+        "coluna": 1
+      },
+      "clausula_original": null,
+      "clausula_modificada": null,
+      "conteudo": {
+        "original": "Nenhuma modificação do CONTRATO vinculará as PARTES, exceto quando efetuada por escrito, assinada pelos representantes legais de cada PARTE, mediante o respectivo Termo Aditivo Contratual.",
+        "novo": "Nenhuma modificação do CONTRATO vinculará as PARTES, exceto quando efetuada por escrito, assinada pelos representantes legais de cada PARTE, mediante o respectivo Termo Aditivo Contratual, admitindo-se que ajustes operacionais de rotina, sem impacto financeiro ou alteração de risco, sejam formalizados por ordem de serviço ou e-mail dos Gestores do Contrato."
+      },
+      "posicao_inicio": 167163,
+      "posicao_fim": 167522,
+      "score_vinculacao": 0.0,
+      "motivo_vinculacao": "sem_sobreposicao",
+      "status_vinculacao": "nao_vinculada",
+      "clausula_nome": "Sem cláusula vinculada"
+    }
+  ],
+  "metodo": "sistema_estruturado_com_analise_granular",
+  "validacao": {
+    "meta_total_min": 40,
+    "meta_alteracao_pct_min": 60,
+    "passou_meta_total": true,
+    "passou_meta_alteracao": false
+  }
+}

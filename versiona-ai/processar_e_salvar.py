@@ -8,9 +8,9 @@ import sys
 from pathlib import Path
 
 import psycopg2
-from repositorio import DirectusRepository
 
 from docx_utils import analyze_differences, convert_docx_to_text
+from repositorio import DirectusRepository
 from tests.algoritmos.producao.algoritmo import AlgoritmoProducao
 
 

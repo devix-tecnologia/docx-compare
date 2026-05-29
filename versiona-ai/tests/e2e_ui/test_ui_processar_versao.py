@@ -11,9 +11,7 @@ class TestProcessarVersao:
     """Testes de criação e processamento de versões."""
 
     def test_navegar_para_formulario_versao(
-        self,
-        directus_page_logged: Page,
-        e2e_ui_config
+        self, directus_page_logged: Page, e2e_ui_config
     ):
         """Valida navegação para formulário de criação de versão."""
         # Navegar para collection de versões
@@ -30,10 +28,7 @@ class TestProcessarVersao:
         print("✅ Navegou para lista de versões")
 
     def test_criar_versao_via_api_sdk(
-        self,
-        directus_session,
-        e2e_ui_config,
-        modelo_contrato_id: str
+        self, directus_session, e2e_ui_config, modelo_contrato_id: str
     ):
         """
         Cria versão via API (simula envio de formulário).
@@ -65,10 +60,7 @@ class TestProcessarVersao:
         assert versao_data["modelo_contrato"] == modelo_contrato_id
 
     def test_aguardar_processamento_concluir(
-        self,
-        directus_session,
-        e2e_ui_config,
-        versao_processada_id: str
+        self, directus_session, e2e_ui_config, versao_processada_id: str
     ):
         """
         Valida que processamento conclui (status muda para 'concluido').
@@ -89,10 +81,7 @@ class TestProcessarVersao:
         print(f"✅ Versão processada com status: {versao['status']}")
 
     def test_versao_processada_tem_modificacoes(
-        self,
-        directus_session,
-        e2e_ui_config,
-        versao_processada_id: str
+        self, directus_session, e2e_ui_config, versao_processada_id: str
     ):
         """
         Valida que versão processada gerou modificações.
@@ -114,10 +103,7 @@ class TestProcessarVersao:
         print(f"✅ Versão tem {len(modificacoes)} modificação(ões)")
 
     def test_visualizar_detalhes_versao_ui(
-        self,
-        directus_page_logged: Page,
-        e2e_ui_config,
-        versao_processada_id: str
+        self, directus_page_logged: Page, e2e_ui_config, versao_processada_id: str
     ):
         """
         Valida visualização de detalhes da versão na UI.

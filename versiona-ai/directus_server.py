@@ -110,22 +110,37 @@ class PandocASTProcessor:
 
     @staticmethod
     def extract_paragraphs_from_ast(ast_json: dict) -> list[dict]:
-        """Extrai parágrafos estruturados do AST."""
+        """Extrai parágrafos estruturados do AST (busca recursiva em profundidade)."""
         paragraphs = []
+
+        def find_paragraphs_recursive(node):
+            """Busca recursiva por Para e Header em qualquer profundidade."""
+            # Se node é um dict com tipo 't'
+            if isinstance(node, dict):
+                node_type = node.get("t")
+
+                if node_type == "Para":
+                    para_info = PandocASTProcessor._extract_paragraph(node)
+                    if para_info["text"].strip():
+                        paragraphs.append(para_info)
+
+                elif node_type == "Header":
+                    para_info = PandocASTProcessor._extract_header(node)
+                    if para_info["text"].strip():
+                        paragraphs.append(para_info)
+
+                # Continuar busca recursiva em todos os valores do dict
+                for value in node.values():
+                    find_paragraphs_recursive(value)
+
+            # Se node é uma lista, processar cada elemento
+            elif isinstance(node, list):
+                for item in node:
+                    find_paragraphs_recursive(item)
+
+        # Começar busca a partir dos blocks
         blocks = ast_json.get("blocks", [])
-
-        for block in blocks:
-            block_type = block.get("t")
-
-            if block_type == "Para":
-                para_info = PandocASTProcessor._extract_paragraph(block)
-                if para_info["text"].strip():
-                    paragraphs.append(para_info)
-
-            elif block_type == "Header":
-                para_info = PandocASTProcessor._extract_header(block)
-                if para_info["text"].strip():
-                    paragraphs.append(para_info)
+        find_paragraphs_recursive(blocks)
 
         return paragraphs
 
@@ -2666,13 +2681,53 @@ class DirectusAPI:
         """Gera HTML de diff baseado em parágrafos estruturados do AST."""
         html = ["<div class='diff-container'>"]
 
+        # TASK #016 FIX: Threshold para parear delete+insert como replace
+        SIMILARITY_THRESHOLD_FOR_PAIRING = 0.4
+
         # Usar SequenceMatcher para comparar parágrafos
         orig_texts = [p["text"] for p in original_paras]
         mod_texts = [p["text"] for p in modified_paras]
 
         matcher = difflib.SequenceMatcher(None, orig_texts, mod_texts, autojunk=False)
 
-        for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        # TASK #016: Pós-processar opcodes para transformar delete+insert próximos em replace
+        opcodes = list(matcher.get_opcodes())
+        merged_opcodes = []
+
+        i = 0
+        while i < len(opcodes):
+            tag, i1, i2, j1, j2 = opcodes[i]
+
+            # Detectar delete seguido de insert
+            if i + 1 < len(opcodes):
+                next_tag, next_i1, next_i2, next_j1, next_j2 = opcodes[i + 1]
+
+                if tag == "delete" and next_tag == "insert":
+                    # Calcular similaridade entre blocos
+                    delete_texts = orig_texts[i1:i2]
+                    insert_texts = mod_texts[next_j1:next_j2]
+
+                    # Se tamanhos são similares, tentar parear
+                    if len(delete_texts) == len(insert_texts):
+                        # Verificar se devemos parear baseado em similaridade
+                        should_pair = False
+                        for d_text, i_text in zip(delete_texts, insert_texts, strict=False):
+                            sim = difflib.SequenceMatcher(None, d_text, i_text).ratio()
+                            if sim >= SIMILARITY_THRESHOLD_FOR_PAIRING:
+                                should_pair = True
+                                break
+
+                        if should_pair:
+                            # Transformar em replace
+                            merged_opcodes.append(("replace", i1, i2, next_j1, next_j2))
+                            i += 2  # Pular ambos
+                            continue
+
+            # Manter opcode original
+            merged_opcodes.append((tag, i1, i2, j1, j2))
+            i += 1
+
+        for tag, i1, i2, j1, j2 in merged_opcodes:
             if tag == "equal":
                 # Parágrafos inalterados
                 for i in range(i1, i2):
@@ -2894,13 +2949,27 @@ class DirectusAPI:
         1. Mesma cláusula (data-clause)
         2. Proximidade de posição (< 200 chars)
         3. Similaridade textual (> 60%) - Usa difflib.SequenceMatcher
+
+        TASK #016: Agora detecta alterações granulares DENTRO de parágrafos pareados,
+        não tratando o parágrafo inteiro como uma única modificação.
         """
         from difflib import SequenceMatcher
+
+        # Importar função de análise granular
+        try:
+            from docx_utils import analyze_differences_granular
+        except ImportError:
+            print("⚠️ Não foi possível importar analyze_differences_granular")
+            analyze_differences_granular = None
 
         modificacoes = []
 
         # Threshold de similaridade para considerar ALTERACAO (60%)
         SIMILARITY_THRESHOLD = 0.6
+
+        # Threshold para comparação granular (50% - se parágrafos forem muito similares,
+        # vale a pena buscar mudanças internas)
+        GRANULAR_SIMILARITY_THRESHOLD = 0.5
 
         # Parse HTML simples para extrair divs
         removed_pattern = r"<div class='diff-removed'[^>]*>- (.*?)</div>"
@@ -2983,6 +3052,60 @@ class DirectusAPI:
 
                 if is_pair:
                     # É uma ALTERACAO (pareada por: mesma_clausula, proximidade ou similaridade)
+                    removed_text = self._unescape_html(removed["text"])
+                    added_text = self._unescape_html(added["text"])
+
+                    # TASK #016: Análise granular para detectar alterações internas
+                    # Se os textos têm alta similaridade mas não são idênticos,
+                    # extrair as mudanças específicas dentro do parágrafo
+                    if (
+                        analyze_differences_granular
+                        and removed_text != added_text
+                        and similarity >= GRANULAR_SIMILARITY_THRESHOLD
+                    ):
+                        print(
+                            f"🔬 Analisando granularmente par com similaridade {similarity:.2f}"
+                        )
+
+                        try:
+                            resultado_granular = analyze_differences_granular(
+                                removed_text, added_text
+                            )
+
+                            mods_granulares = resultado_granular.get("modificacoes", [])
+
+                            if len(mods_granulares) > 1:
+                                # Encontrou múltiplas modificações dentro do parágrafo
+                                print(
+                                    f"  ✅ Encontradas {len(mods_granulares)} modificações granulares"
+                                )
+
+                                for mod_gran in mods_granulares:
+                                    modificacoes.append(
+                                        {
+                                            "tipo": mod_gran.get("tipo", "ALTERACAO"),
+                                            "css_class": f"diff-{mod_gran.get('tipo', 'ALTERACAO').lower()}",
+                                            "confianca": mod_gran.get("confianca", 0.9),
+                                            "posicao": {"linha": i + 1, "coluna": 1},
+                                            "clausula_original": removed.get("clause"),
+                                            "clausula_modificada": added.get("clause"),
+                                            "conteudo": mod_gran.get("conteudo", {}),
+                                            "posicao_inicio": mod_gran.get(
+                                                "posicao_inicio"
+                                            ),
+                                            "posicao_fim": mod_gran.get("posicao_fim"),
+                                        }
+                                    )
+
+                                i += 1
+                                j += 1
+                                continue  # Pular criação de modificação única abaixo
+
+                        except Exception as e:
+                            print(f"  ⚠️ Erro na análise granular: {e}")
+                            # Fallback para comportamento padrão
+
+                    # Comportamento padrão: parágrafo inteiro como uma modificação
                     modificacoes.append(
                         {
                             "tipo": "ALTERACAO",
@@ -2992,8 +3115,8 @@ class DirectusAPI:
                             "clausula_original": removed.get("clause"),
                             "clausula_modificada": added.get("clause"),
                             "conteudo": {
-                                "original": self._unescape_html(removed["text"]),
-                                "novo": self._unescape_html(added["text"]),
+                                "original": removed_text,
+                                "novo": added_text,
                             },
                         }
                     )

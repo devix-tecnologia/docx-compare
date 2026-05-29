@@ -27,6 +27,7 @@ from algoritmos.fuzzy.algoritmo import AlgoritmoFuzzyAvancado
 from algoritmos.hibrido.algoritmo import AlgoritmoHibrido
 from algoritmos.producao.algoritmo import AlgoritmoProducao
 from algoritmos.regex.algoritmo import AlgoritmoRegex
+
 from repositorio import DirectusRepository
 
 # Configuração

@@ -537,7 +537,12 @@ def _html_to_text_with_structure(html_content: str) -> str:
 
 
 def analyze_differences(original_text: str, modified_text: str) -> dict:
-    """Analisa as diferenças e extrai estatísticas detalhadas."""
+    """
+    Analisa as diferenças e extrai estatísticas detalhadas.
+
+    LEGADO: Mantido para compatibilidade. Use analyze_differences_granular() para
+    melhor detecção de alterações dentro de cláusulas.
+    """
     original_lines = original_text.splitlines()
     modified_lines = modified_text.splitlines()
 
@@ -578,6 +583,203 @@ def analyze_differences(original_text: str, modified_text: str) -> dict:
         "total_deletions": deletions,
         "total_modifications": len(modifications),
         "modifications": modifications[:10],  # Limitar a 10 exemplos
+    }
+
+
+def analyze_differences_granular(original_text: str, modified_text: str) -> dict:
+    """
+    Analisa diferenças com granularidade de palavra/caractere.
+
+    Detecta alterações dentro de cláusulas (não apenas inserções/remoções de blocos).
+    Usa difflib.SequenceMatcher para comparação granular.
+
+    Returns:
+        {
+            "modificacoes": [
+                {
+                    "tipo": "ALTERACAO" | "INSERCAO" | "REMOCAO",
+                    "conteudo": {"original": str, "novo": str},
+                    "posicao_inicio": int,
+                    "posicao_fim": int,
+                    "confianca": float
+                }
+            ],
+            "estatisticas": {
+                "total_modificacoes": int,
+                "por_tipo": {"ALTERACAO": int, "INSERCAO": int, "REMOCAO": int}
+            }
+        }
+    """
+    # Dividir em palavras mantendo espaços e pontuação
+    import re
+
+    def tokenize(text: str) -> list[str]:
+        """Divide texto em tokens (palavras + pontuação)"""
+        # Padrão: palavras, números, pontuação como tokens separados
+        return re.findall(r"\w+|\s+|[^\w\s]", text)
+
+    original_tokens = tokenize(original_text)
+    modified_tokens = tokenize(modified_text)
+
+    # Usar SequenceMatcher para detectar diferenças
+    matcher = difflib.SequenceMatcher(None, original_tokens, modified_tokens)
+
+    modificacoes = []
+
+    # Threshold para considerar alteração (vs inserção+remoção)
+    SIMILARITY_THRESHOLD = 0.3  # 30% de similaridade mínima
+
+    # Buffer para combinar operações próximas em uma única modificação
+    pending_delete = None
+    pending_insert = None
+
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        if tag == "equal":
+            # Texto idêntico - salvar modificações pendentes se houver
+            if pending_delete or pending_insert:
+                modificacoes.append(
+                    _create_modification(
+                        pending_delete,
+                        pending_insert,
+                        modified_tokens,
+                    )
+                )
+                pending_delete = None
+                pending_insert = None
+            continue
+
+        elif tag == "replace":
+            # Substituição - pode ser ALTERACAO ou INSERCAO+REMOCAO
+            orig_text = "".join(original_tokens[i1:i2])
+            mod_text = "".join(modified_tokens[j1:j2])
+
+            # Calcular similaridade
+            similarity = difflib.SequenceMatcher(None, orig_text, mod_text).ratio()
+
+            if similarity >= SIMILARITY_THRESHOLD:
+                # Alta similaridade = ALTERACAO
+                mod = {
+                    "tipo": "ALTERACAO",
+                    "conteudo": {
+                        "original": orig_text.strip(),
+                        "novo": mod_text.strip(),
+                    },
+                    "confianca": min(0.95, 0.7 + similarity * 0.3),
+                }
+                # Calcular posição no texto modificado
+                pos_inicio = len("".join(modified_tokens[:j1]))
+                pos_fim = len("".join(modified_tokens[:j2]))
+                mod["posicao_inicio"] = pos_inicio
+                mod["posicao_fim"] = pos_fim
+                modificacoes.append(mod)
+            else:
+                # Baixa similaridade = tratar como REMOCAO + INSERCAO separadas
+                # Salvar como pendentes para possível combinação
+                pending_delete = {"tokens": original_tokens[i1:i2], "i1": i1, "i2": i2}
+                pending_insert = {"tokens": modified_tokens[j1:j2], "j1": j1, "j2": j2}
+
+        elif tag == "delete":
+            # Remoção pura
+            pending_delete = {"tokens": original_tokens[i1:i2], "i1": i1, "i2": i2}
+
+        elif tag == "insert":
+            # Inserção pura
+            pending_insert = {"tokens": modified_tokens[j1:j2], "j1": j1, "j2": j2}
+
+    # Salvar modificações pendentes finais
+    if pending_delete or pending_insert:
+        modificacoes.append(
+            _create_modification(
+                pending_delete,
+                pending_insert,
+                modified_tokens,
+            )
+        )
+
+    # Calcular estatísticas
+    por_tipo = {"ALTERACAO": 0, "INSERCAO": 0, "REMOCAO": 0}
+    for mod in modificacoes:
+        tipo = mod.get("tipo", "ALTERACAO")
+        por_tipo[tipo] = por_tipo.get(tipo, 0) + 1
+
+    return {
+        "modificacoes": modificacoes,
+        "estatisticas": {
+            "total_modificacoes": len(modificacoes),
+            "por_tipo": por_tipo,
+        },
+    }
+
+
+def _create_modification(
+    pending_delete,
+    pending_insert,
+    modified_tokens,
+):
+    """Cria modificação a partir de operações pendentes de delete/insert"""
+    if pending_delete and pending_insert:
+        # Ambos presentes - verificar se é ALTERACAO
+        orig_text = "".join(pending_delete["tokens"])
+        mod_text = "".join(pending_insert["tokens"])
+
+        similarity = difflib.SequenceMatcher(None, orig_text, mod_text).ratio()
+
+        # Se há delete + insert no mesmo contexto, considerar ALTERACAO
+        # Threshold baixo (10%) para capturar até mudanças simples como "30" → "15"
+        if similarity >= 0.1 or len(orig_text.strip()) > 0:
+            # Tratar como ALTERACAO
+            pos_inicio = len("".join(modified_tokens[: pending_insert["j1"]]))
+            pos_fim = len("".join(modified_tokens[: pending_insert["j2"]]))
+            return {
+                "tipo": "ALTERACAO",
+                "conteudo": {"original": orig_text.strip(), "novo": mod_text.strip()},
+                "posicao_inicio": pos_inicio,
+                "posicao_fim": pos_fim,
+                "confianca": 0.85 + (similarity * 0.1),  # 0.85-0.95
+            }
+        else:
+            # Sem similaridade alguma - reportar como INSERCAO (raro)
+            pos_inicio = len("".join(modified_tokens[: pending_insert["j1"]]))
+            pos_fim = len("".join(modified_tokens[: pending_insert["j2"]]))
+            return {
+                "tipo": "INSERCAO",
+                "conteudo": {"original": "", "novo": mod_text.strip()},
+                "posicao_inicio": pos_inicio,
+                "posicao_fim": pos_fim,
+                "confianca": 0.9,
+            }
+
+    elif pending_insert:
+        # Apenas inserção
+        mod_text = "".join(pending_insert["tokens"])
+        pos_inicio = len("".join(modified_tokens[: pending_insert["j1"]]))
+        pos_fim = len("".join(modified_tokens[: pending_insert["j2"]]))
+        return {
+            "tipo": "INSERCAO",
+            "conteudo": {"original": "", "novo": mod_text.strip()},
+            "posicao_inicio": pos_inicio,
+            "posicao_fim": pos_fim,
+            "confianca": 0.9,
+        }
+
+    elif pending_delete:
+        # Apenas remoção
+        orig_text = "".join(pending_delete["tokens"])
+        return {
+            "tipo": "REMOCAO",
+            "conteudo": {"original": orig_text.strip(), "novo": ""},
+            "posicao_inicio": None,  # Não existe no texto modificado
+            "posicao_fim": None,
+            "confianca": 0.85,
+        }
+
+    # Fallback vazio (não deveria acontecer)
+    return {
+        "tipo": "ALTERACAO",
+        "conteudo": {"original": "", "novo": ""},
+        "posicao_inicio": 0,
+        "posicao_fim": 0,
+        "confianca": 0.5,
     }
 
 

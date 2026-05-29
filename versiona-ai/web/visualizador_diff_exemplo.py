@@ -20,7 +20,6 @@ from core.pipeline_funcional import (
     PrioridadeProcessamento,
     executar_pipeline_completo,
 )
-
 from tests.teste_implementacoes_mock import criar_modelo_teste
 
 

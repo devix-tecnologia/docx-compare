@@ -14,6 +14,7 @@ Tudo via sintaxe "Detailed" do Directus (create/update em 1 PATCH).
 from unittest.mock import MagicMock
 
 import pytest
+
 from processador_tags_modelo import ProcessadorTagsModelo
 
 

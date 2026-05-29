@@ -52,25 +52,28 @@ def e2e_ui_config() -> E2EUIConfig:
 def directus_session(e2e_ui_config: E2EUIConfig) -> requests.Session:
     """Cliente HTTP para Directus API (via SDK)."""
     session = requests.Session()
-    session.headers.update({
-        "Authorization": f"Bearer {e2e_ui_config.directus_token}",
-        "Content-Type": "application/json",
-    })
+    session.headers.update(
+        {
+            "Authorization": f"Bearer {e2e_ui_config.directus_token}",
+            "Content-Type": "application/json",
+        }
+    )
 
     # Aguardar Directus estar pronto
     max_retries = 30
     for i in range(max_retries):
         try:
             response = session.get(
-                f"{e2e_ui_config.directus_url}/server/health",
-                timeout=5
+                f"{e2e_ui_config.directus_url}/server/health", timeout=5
             )
             if response.status_code == 200:
                 print(f"✅ Directus está pronto: {e2e_ui_config.directus_url}")
                 break
         except requests.exceptions.RequestException:
             if i == max_retries - 1:
-                raise RuntimeError(f"Directus não está acessível após {max_retries} tentativas")
+                raise RuntimeError(
+                    f"Directus não está acessível após {max_retries} tentativas"
+                )
             time.sleep(2)
 
     return session
@@ -85,16 +88,15 @@ def api_session(e2e_ui_config: E2EUIConfig) -> requests.Session:
     max_retries = 20
     for i in range(max_retries):
         try:
-            response = session.get(
-                f"{e2e_ui_config.api_url}/health",
-                timeout=5
-            )
+            response = session.get(f"{e2e_ui_config.api_url}/health", timeout=5)
             if response.status_code == 200:
                 print(f"✅ API está pronta: {e2e_ui_config.api_url}")
                 break
         except requests.exceptions.RequestException:
             if i == max_retries - 1:
-                raise RuntimeError(f"API não está acessível após {max_retries} tentativas")
+                raise RuntimeError(
+                    f"API não está acessível após {max_retries} tentativas"
+                )
             time.sleep(2)
 
     return session
@@ -103,6 +105,7 @@ def api_session(e2e_ui_config: E2EUIConfig) -> requests.Session:
 # =================================================================
 # Fixtures Playwright
 # =================================================================
+
 
 @pytest.fixture(scope="session")
 def playwright() -> Generator[Playwright, None, None]:
@@ -114,7 +117,9 @@ def playwright() -> Generator[Playwright, None, None]:
 
 
 @pytest.fixture(scope="session")
-def browser(playwright: Playwright, e2e_ui_config: E2EUIConfig) -> Generator[Browser, None, None]:
+def browser(
+    playwright: Playwright, e2e_ui_config: E2EUIConfig
+) -> Generator[Browser, None, None]:
     """Browser Chromium configurado."""
     browser = playwright.chromium.launch(
         headless=e2e_ui_config.playwright_headless,
@@ -146,8 +151,7 @@ def page(context: BrowserContext) -> Generator[Page, None, None]:
 
 @pytest.fixture
 def directus_page_logged(
-    page: Page,
-    e2e_ui_config: E2EUIConfig
+    page: Page, e2e_ui_config: E2EUIConfig
 ) -> Generator[Page, None, None]:
     """Página já autenticada no Directus Admin."""
     # Navegar para login
@@ -175,8 +179,11 @@ def directus_page_logged(
 # Fixtures de Dados de Teste
 # =================================================================
 
+
 @pytest.fixture(scope="session")
-def modelo_contrato_id(directus_session: requests.Session, e2e_ui_config: E2EUIConfig) -> str:
+def modelo_contrato_id(
+    directus_session: requests.Session, e2e_ui_config: E2EUIConfig
+) -> str:
     """ID do modelo de contrato de teste (criado pelo seed)."""
     response = directus_session.get(
         f"{e2e_ui_config.directus_url}/items/modelo_contrato",
@@ -197,7 +204,7 @@ def modelo_contrato_id(directus_session: requests.Session, e2e_ui_config: E2EUIC
 def versao_processada_id(
     directus_session: requests.Session,
     e2e_ui_config: E2EUIConfig,
-    modelo_contrato_id: str
+    modelo_contrato_id: str,
 ) -> str:
     """
     Cria uma versão de teste e aguarda processamento.
@@ -235,6 +242,7 @@ def versao_processada_id(
 # Fixtures de Limpeza
 # =================================================================
 
+
 @pytest.fixture(autouse=True)
 def cleanup_after_test(request):
     """Limpa dados de teste após cada execução (se configurado)."""
@@ -248,6 +256,7 @@ def cleanup_after_test(request):
 # =================================================================
 # Helpers
 # =================================================================
+
 
 def wait_for_element(page: Page, selector: str, timeout: int = 10000):
     """Helper para aguardar elemento com timeout."""
@@ -263,7 +272,7 @@ def wait_for_processing(
     directus_session: requests.Session,
     directus_url: str,
     versao_id: str,
-    timeout: int = 60
+    timeout: int = 60,
 ) -> bool:
     """
     Aguarda processamento de versão ficar completo.
