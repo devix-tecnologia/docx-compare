@@ -67,7 +67,8 @@ RUN apk add --no-cache \
     pip3 install --break-system-packages uv
 
 # Criar usuários e diretórios
-RUN adduser -D -S -h /app app && \
+RUN addgroup -S app && \
+    adduser -D -S -h /app -G app app && \
     mkdir -p /app /var/log/supervisor /run/supervisor && \
     chown -R app:app /app
 
