@@ -24,7 +24,7 @@ USER nodeuser
 COPY --chown=nodeuser:nodeuser web/package*.json web/pnpm-lock.yaml ./
 
 # Instalar dependências
-RUN echo "enable-pre-post-scripts=true" > .npmrc && \
+RUN pnpm config set ignore-scripts false && \
     pnpm install --frozen-lockfile
 
 # Copiar código fonte do frontend
