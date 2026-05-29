@@ -1,6 +1,6 @@
 # Task 017 — Modo Semântico: Agrupamento de Modificações por Cláusula
 
-Status: pending
+Status: in-progress
 Type: feature
 Priority: high
 Assignee: Sidarta Veloso
