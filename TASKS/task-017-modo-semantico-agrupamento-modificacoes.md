@@ -13,25 +13,37 @@ Assignee: Sidarta Veloso
 
 ## 📊 RESULTADOS DA IMPLEMENTAÇÃO
 
-### Teste com Contrato Real (ID: 8d8e89a8)
+### Teste com Contrato Real (ID: 8d8e89a8) - Após Otimização
 
-| Métrica | Baseline (Task-016) | Semântico Padrão | Semântico Agressivo | Meta | Status |
-|---------|---------------------|------------------|---------------------|------|--------|
-| **Total mods** | 115 | 35 | 35 | 40-50 | ⚠️ 79% |
-| **ALTERACAO** | 42% | 40% | 31% | ≥70% | ⚠️ 57% |
-| **Redução** | - | 69.6% | 69.6% | ≥40% | ✅ 174% |
-| **Triviais eliminadas** | - | 100% | 100% | ≥95% | ✅ 105% |
-| **Concordância IA** | - | 79.5% | 79.5% | ≥80% | ⚠️ 99% |
+| Métrica | Baseline | Semântico Padrão | Same_type=True | Meta | Status |
+|---------|----------|------------------|----------------|------|--------|
+| **Total mods** | 115 | 35 | 65 | 40-50 | ⚠️ |
+| **ALTERACAO** | 41.7% | 40.0% | 23.1% | ≥70% | ❌ |
+| **Redução** | - | 69.6% | 43.5% | ≥40% | ✅ |
+| **Triviais eliminadas** | - | 100% | 100% | ≥95% | ✅ |
 
 ### Critérios de Aceitação
 
 - ✅ **[1/5]** Redução ≥40%: **69.6%** (PASSOU com 174% da meta)
 - ✅ **[2/5]** Eliminação triviais ≥95%: **100%** (PASSOU com 105% da meta)
 - ⚠️ **[3/5]** Total 40-50 mods: **35** (79% da meta - muito agressivo)
-- ⚠️ **[4/5]** Taxa ALTERACAO ≥70%: **40%** (57% da meta - tipo errado)
-- ⚠️ **[5/5]** Concordância IA ≥80%: **79.5%** (99% da meta - quase passou)
+- ❌ **[4/5]** Taxa ALTERACAO ≥70%: **40.0%** (57% da meta)
+- ⚠️ **[5/5]** Concordância IA ≥80%: N/A (não testado)
 
 **Resultado:** 2/5 critérios aprovados (40%)
+
+### Otimização Aplicada (commit 96ba3b4)
+
+**Mudança**: Grupos com INSERCAO + REMOCAO classificados como ALTERACAO
+
+**Impacto:**
+- Taxa ALTERACAO: 41.7% → 40.0% (-1.7pp) ❌
+- A otimização não melhorou significativamente
+
+**Motivo do fracasso:**
+- Baseline (Task-016) já tem apenas **41.7% ALTERACAO**
+- Com baseline baixo, é **impossível atingir 70%** via agrupamento
+- Problema fundamental está na **classificação de tipos** (Task-016)
 
 ### Análise
 
@@ -474,17 +486,64 @@ result = api.process_versao(
 
 ## 🚀 Próximos Passos
 
-Para melhorar os resultados e atingir as metas:
+### ⚠️ Conclusão da Análise
 
-1. **Ajustar priorização de tipos**: Investigar por que grupos mistos estão sendo marcados como INSERCAO em vez de ALTERACAO
+**Descoberta fundamental:**
+O problema **NÃO** está no agrupamento semântico (Task-017), mas sim na **classificação de tipos** da Task-016.
 
-2. **Otimizar config padrão**: Testar diferentes valores de:
-   - `max_distance`: 50, 150, 200
-   - `min_modification_size`: 5, 15, 20
-   - `require_same_type`: True (mais conservador)
+**Evidências:**
+1. Baseline (Task-016) tem apenas **41.7% de ALTERACAO**
+2. Otimização de priorização (INS+REM → ALT) melhorou apenas **-1.7pp**
+3. Com baseline baixo, é **impossível atingir 70%** via agrupamento
 
-3. **Análise semântica melhorada**: Usar embeddings ou NLP para agrupar modificações conceitualmente similares (além de proximidade espacial)
+**Impacto:**
+- ✅ **Redução funciona**: 69.6% (115→35 mods) - meta 40%
+- ✅ **Triviais funcionam**: 100% - meta 95%
+- ❌ **Taxa ALTERACAO**: Limitada pelo baseline (41.7%)
 
-4. **Task futura**: Criar Task-018 para ajustar lógica de priorização e atingir meta de 70% ALTERACAO
+### Próximas Ações Recomendadas
+
+#### 1. **Task-018: Revisar Classificação de Tipos (Task-016)**
+**Prioridade: ALTA**
+
+Investigar por que apenas 41.7% são classificados como ALTERACAO:
+- Revisar thresholds de similaridade (atualmente 0.5-0.6)
+- Analisar padrões de INS/REM que deveriam ser ALT
+- Considerar análise semântica (embeddings) para detectar trocas
+- Testar com diferentes algoritmos de diff (Myers, Patience, Histogram)
+
+**Meta**: Aumentar baseline de 41.7% → ≥70% ALTERACAO
+
+#### 2. **Manter Task-017 como Opcional**
+**Status: IMPLEMENTADA, funcional mas limitada**
+
+O agrupamento semântico funciona corretamente:
+- Reduz modificações efetivamente
+- Elimina triviais
+- Lógica de merge está correta
+
+**Limitação**: Não pode corrigir classificação errada do baseline.
+
+**Uso recomendado**:
+- Usar para **reduzir volume** (69.6%)
+- Desabilitar se meta for **aumentar taxa ALTERACAO**
+
+#### 3. **Configurações Alternativas (Opcional)**
+
+Se não for possível melhorar Task-016, testar:
+- `max_distance=200`: Agrupamento mais agressivo
+- `min_modification_size=5`: Manter mais ALTERACOEs pequenas
+- `require_same_type=False`: Permitir grupos mistos (atual padrão)
+
+**Expectativa realista**: Margem de melhora limitada (<5pp)
+
+---
+
+## 📝 Lições Aprendidas
+
+1. **Agrupamento é downstream**: Qualidade depende do baseline
+2. **Metas interdependentes**: Redução ⬆️ pode conflitar com Taxa ALT ⬆️
+3. **Otimização isolada**: Task-017 não pode compensar problemas da Task-016
+4. **Validação end-to-end**: Sempre testar pipeline completo, não módulos isolados
 
 ---
