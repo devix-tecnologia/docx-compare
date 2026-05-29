@@ -422,11 +422,21 @@ def _group_modifications_semantically(
         if len(group) == 1:
             return group[0]
 
-        # Determinar tipo do grupo (prioridade: ALTERACAO > INSERCAO > REMOCAO)
+        # Determinar tipo do grupo com lógica melhorada (Task-017 otimização)
+        # Contagem de tipos
         tipos = [mod.get("tipo") for mod in group]
-        if "ALTERACAO" in tipos:
+        count_alteracao = tipos.count("ALTERACAO")
+        count_insercao = tipos.count("INSERCAO")
+        count_remocao = tipos.count("REMOCAO")
+
+        # Prioridade 1: Se tem pelo menos uma ALTERACAO, é ALTERACAO
+        if count_alteracao > 0:
             tipo_grupo = "ALTERACAO"
-        elif "INSERCAO" in tipos:
+        # Prioridade 2: Se tem INSERCAO + REMOCAO (sem ALTERACAO), é uma troca → ALTERACAO
+        elif count_insercao > 0 and count_remocao > 0:
+            tipo_grupo = "ALTERACAO"
+        # Prioridade 3: Tipo puro (só um tipo no grupo)
+        elif count_insercao > 0:
             tipo_grupo = "INSERCAO"
         else:
             tipo_grupo = "REMOCAO"
