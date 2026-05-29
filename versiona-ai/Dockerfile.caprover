@@ -13,7 +13,9 @@ RUN npm install -g pnpm
 
 # Criar usuário não-root para build
 RUN addgroup -g 1001 -S nodeuser && \
-    adduser -S -D -H -u 1001 -h /home/nodeuser -s /bin/sh -G nodeuser nodeuser
+    adduser -S -D -H -u 1001 -h /home/nodeuser -s /bin/sh -G nodeuser nodeuser && \
+    mkdir -p /home/nodeuser && \
+    chown nodeuser:nodeuser /home/nodeuser
 
 # Definir diretório de trabalho
 WORKDIR /app
