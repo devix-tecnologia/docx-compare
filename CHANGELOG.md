@@ -22,6 +22,18 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - Testes completos: 11 testes unitários + teste de regressão end-to-end
   - Documentação: [TASKS/task-017-modo-semantico-agrupamento-modificacoes.md](TASKS/task-017-modo-semantico-agrupamento-modificacoes.md)
 
+### Alterado
+
+- ⚡ **BREAKING CHANGE: Agrupamento Semântico Habilitado por Padrão**
+  - `use_semantic_grouping` agora é `True` por padrão (era `False`)
+  - Impacto esperado em produção:
+    - Taxa ALTERACAO: +44pp (41.7% → 85.7%)
+    - Redução de modificações: 69.6% (115 → 35 mods por contrato)
+    - Triviais eliminadas: 100%
+  - Para desabilitar, passar `"use_semantic_grouping": false` na API
+  - Recomendação: Monitorar primeiras 10-20 versões processadas após deploy
+  - Commit: 720c388
+
 - 📚 **Documentação de Arquitetura Completa**: Novo documento [docs/ARQUITETURA_E_FLUXO.md](docs/ARQUITETURA_E_FLUXO.md)
   - Explicação didática completa do funcionamento do sistema
   - Fluxo de processamento detalhado em 11 etapas (criação → conclusão)
