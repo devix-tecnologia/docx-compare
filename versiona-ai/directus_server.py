@@ -571,11 +571,19 @@ def _group_modifications_semantically(
             should_group = False
 
         # Critério 2: Mesma cláusula (se requerido)
-        if config.require_same_clause and should_group and get_clause(current_mod) != get_clause(prev_mod):
+        if (
+            config.require_same_clause
+            and should_group
+            and get_clause(current_mod) != get_clause(prev_mod)
+        ):
             should_group = False
 
         # Critério 3: Mesmo tipo (se requerido)
-        if config.require_same_type and should_group and current_mod.get("tipo") != prev_mod.get("tipo"):
+        if (
+            config.require_same_type
+            and should_group
+            and current_mod.get("tipo") != prev_mod.get("tipo")
+        ):
             should_group = False
 
         if should_group:
