@@ -5,6 +5,7 @@ Inclui agrupamento posicional para cálculo preciso de blocos
 Implementa algoritmo unificado de vinculação de modificações às cláusulas
 """
 
+# ruff: noqa: E402
 # LOGS DE DEBUG PARA DIAGNOSTICAR INICIALIZAÇÃO
 print("=" * 80, flush=True)
 print("🚀 INICIANDO IMPORTAÇÃO DO DIRECTUS_SERVER.PY", flush=True)
@@ -570,14 +571,12 @@ def _group_modifications_semantically(
             should_group = False
 
         # Critério 2: Mesma cláusula (se requerido)
-        if config.require_same_clause and should_group:
-            if get_clause(current_mod) != get_clause(prev_mod):
-                should_group = False
+        if config.require_same_clause and should_group and get_clause(current_mod) != get_clause(prev_mod):
+            should_group = False
 
         # Critério 3: Mesmo tipo (se requerido)
-        if config.require_same_type and should_group:
-            if current_mod.get("tipo") != prev_mod.get("tipo"):
-                should_group = False
+        if config.require_same_type and should_group and current_mod.get("tipo") != prev_mod.get("tipo"):
+            should_group = False
 
         if should_group:
             current_group.append(current_mod)
@@ -5478,7 +5477,7 @@ def debug_cache():
 print("=" * 80, flush=True)
 print("✅ DIRECTUS_SERVER.PY IMPORTADO COM SUCESSO", flush=True)
 print(f"   Flask app: {app.name}", flush=True)
-print(f"   Rotas registradas: {len([r for r in app.url_map.iter_rules()])}", flush=True)
+print(f"   Rotas registradas: {len(list(app.url_map.iter_rules()))}", flush=True)
 print("=" * 80, flush=True)
 
 if __name__ == "__main__":
