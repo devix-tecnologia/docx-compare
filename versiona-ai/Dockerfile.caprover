@@ -43,7 +43,7 @@ ENV VITE_API_BASE_URL=/api
 RUN pnpm build:vite
 
 # Stage 2: Setup da API Python
-FROM python:3.13-slim AS api-builder
+FROM python:3.13.2-slim AS api-builder
 
 # Instalar dependências do sistema e uv
 RUN apt-get update && apt-get install -y \
