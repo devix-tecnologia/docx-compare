@@ -35,6 +35,9 @@
     "vue-eslint-parser": "^9.4.3",
     "vue-tsc": "^3.0.7"
   },
+  "engines": {
+    "node": ">=24.0.0"
+  },
   "keywords": [
     "vue3",
     "diff",
