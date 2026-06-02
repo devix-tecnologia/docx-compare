@@ -347,7 +347,11 @@ def test_preenchimento_campo_deve_ser_alteracao_nao_remocao_insercao(
 
         # A análise granular captura apenas o que realmente mudou,
         # sem o contexto estável ("R$ " é igual nos dois textos)
-        assert "__________" in original_text or "2.000,00" in novo_text or "2000" in novo_text, (
+        assert (
+            "__________" in original_text
+            or "2.000,00" in novo_text
+            or "2000" in novo_text
+        ), (
             "Modificação deve conter o preenchimento do campo de aluguel "
             "(apenas a parte que mudou, sem contexto estável)"
         )
@@ -502,16 +506,18 @@ def test_alteracao_case_insensitive_deve_ser_pareada(mock_repositorio):
             "aplicável" in original_lower
             or "contratada" in original_lower
             or "retroatividade" in original_lower
-        ), f"Original deve conter alguma das palavras que mudaram de case, mas tem: {original[:100]}"
+        ), (
+            f"Original deve conter alguma das palavras que mudaram de case, mas tem: {original[:100]}"
+        )
 
         # Novo deve ter pelo menos uma das palavras em UPPERCASE
         assert (
-            "APLICÁVEL" in novo
-            or "CONTRATADA" in novo
-            or "RETROATIVIDADE" in novo
+            "APLICÁVEL" in novo or "CONTRATADA" in novo or "RETROATIVIDADE" in novo
         ), f"Novo deve conter alguma palavra em UPPERCASE, mas tem: {novo[:100]}"
 
-        print(f"✅ Case preservado em modificação granular: '{original[:30]}...' → '{novo[:30]}...'")
+        print(
+            f"✅ Case preservado em modificação granular: '{original[:30]}...' → '{novo[:30]}...'"
+        )
 
 
 if __name__ == "__main__":

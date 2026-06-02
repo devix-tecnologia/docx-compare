@@ -1,0 +1,8 @@
+{
+  "versao_id": "8d8e89a8-ba89-4e0e-846c-43e7ad058309",
+  "modelo_id": "48b43d38-76b4-47a2-93a4-4216ad57defc",
+  "taxa_minima_vinculacao": 0.4,
+  "total_tags_minimo": 250,
+  "total_modificacoes_minimo": 10,
+  "nota": "Baseline: atualmente 0% vinculação devido a bug de coordenadas. Após correção, esperamos >40%."
+}

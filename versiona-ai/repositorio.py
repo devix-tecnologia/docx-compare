@@ -164,8 +164,14 @@ class DirectusRepository:
 
         # -1 = buscar todos os itens (sem limite)
         deep = {
-            "contrato.modelo_contrato.tags": {"_limit": -1},
-            "contrato.modelo_contrato.tags.clausulas": {"_limit": -1},
+            "contrato": {
+                "modelo_contrato": {
+                    "tags": {
+                        "_limit": -1,
+                        "clausulas": {"_limit": -1},
+                    }
+                }
+            }
         }
 
         return self.get_versao(versao_id, fields=fields, deep=deep)
