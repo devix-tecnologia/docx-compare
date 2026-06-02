@@ -1,6 +1,6 @@
 # Task 018 — Corrigir sistema de coordenadas incompatível entre processamento de modelo e versão
 
-Status: open
+Status: in-progress
 Type: fix
 Priority: critical
 Assignee: Sidarta Veloso
