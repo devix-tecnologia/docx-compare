@@ -70,6 +70,7 @@ RUN apk add --no-cache \
     python3 \
     py3-pip \
     curl \
+    pandoc \
     supervisor && \
     pip3 install --break-system-packages uv && \
     ln -sf /usr/bin/uv /usr/local/bin/uv 2>/dev/null || \
