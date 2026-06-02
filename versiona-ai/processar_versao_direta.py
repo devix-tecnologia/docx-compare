@@ -190,23 +190,22 @@ def processar_versao_direta(versao_id: str, directus_url: str, directus_token: s
             }
         )
 
-    dados_algoritmo = {
-        "modificacoes": modificacoes,
-        "tags": tags_data,
-        "texto_completo": texto_original,
-    }
-
     # 5. Executar algoritmo
     print("\n🔬 Executando algoritmo de vinculação...")
     algoritmo = AlgoritmoProducao()
-    resultado = algoritmo.processar(dados_algoritmo)
+    
+    # Calcular posições
+    modificacoes_com_pos = algoritmo.calcular_posicoes(modificacoes, texto_original)
+    
+    # Vincular cláusulas
+    modificacoes_vinculadas = algoritmo.vincular_clausulas(modificacoes_com_pos, tags_data, texto_original)
 
-    vinculadas = resultado["vinculacao"]["vinculadas"]
-    nao_vinculadas = resultado["vinculacao"]["nao_vinculadas"]
-    taxa = resultado["vinculacao"]["taxa_vinculacao"]
+    vinculadas = sum(1 for m in modificacoes_vinculadas if m.get("tag_vinculada"))
+    nao_vinculadas = len(modificacoes_vinculadas) - vinculadas
+    taxa = (vinculadas / len(modificacoes_vinculadas) * 100) if modificacoes_vinculadas else 0
 
     print("✅ Vinculação concluída:")
-    print(f"   Vinculadas: {vinculadas}/{vinculadas + nao_vinculadas} ({taxa:.1f}%)")
+    print(f"   Vinculadas: {vinculadas}/{len(modificacoes_vinculadas)} ({taxa:.1f}%)")
 
     # 6. Salvar modificações no Directus
     print("\n💾 Salvando modificações no Directus...")
@@ -221,7 +220,10 @@ def processar_versao_direta(versao_id: str, directus_url: str, directus_token: s
     salvas = 0
     erros = 0
 
-    for mod in resultado["modificacoes_vinculadas"]:
+    for mod in modificacoes_vinculadas:
+        tag_vinculada = mod.get("tag_vinculada")
+        clausula_id = tag_vinculada.get("clausula_id") if tag_vinculada else None
+        
         dados_mod = {
             "versao": versao_id,
             "categoria": mod["categoria"],
@@ -229,7 +231,7 @@ def processar_versao_direta(versao_id: str, directus_url: str, directus_token: s
             "alteracao": mod.get("alteracao", ""),
             "posicao_inicio": mod.get("posicao_inicio"),
             "posicao_fim": mod.get("posicao_fim"),
-            "clausula": mod.get("clausula_id"),
+            "clausula": clausula_id,
         }
 
         url = f"{directus_url}/items/modificacao"
