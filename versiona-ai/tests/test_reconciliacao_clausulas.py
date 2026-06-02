@@ -3,7 +3,7 @@
 Testes TDD para reconciliação de cláusulas no reprocessamento de modelos.
 
 Estratégia de reconciliação:
-  - Cláusula existe no modelo E no documento → update (só conteudo_original)
+  - Cláusula existe no modelo E no documento → update (só conteudo)
   - Cláusula existe no modelo mas NÃO no documento → update (status="inativo")
   - Cláusula NÃO existe no modelo mas SIM no documento → create (nova)
   - Nenhuma cláusula é deletada — dados manuais nunca são perdidos.
@@ -38,21 +38,21 @@ def _clausulas_existentes():
             "id": "clau-aaa",
             "numero": "1.1",
             "nome": "Objeto do Contrato",
-            "conteudo_original": "Texto original da cláusula 1.1",
+            "conteudo": "Texto original da cláusula 1.1",
             "status": "published",
         },
         {
             "id": "clau-bbb",
             "numero": "2.1",
             "nome": "Vigência",
-            "conteudo_original": "Texto original da cláusula 2.1",
+            "conteudo": "Texto original da cláusula 2.1",
             "status": "published",
         },
         {
             "id": "clau-ccc",
             "numero": "3.1",
             "nome": "Pagamento",
-            "conteudo_original": "Texto original da cláusula 3.1",
+            "conteudo": "Texto original da cláusula 3.1",
             "status": "published",
         },
     ]
@@ -107,7 +107,7 @@ class TestReconciliarClausulas:
         assert "4.1" in numeros_criados
 
     def test_clausula_nova_tem_campos_obrigatorios(self, processador):
-        """Cláusulas criadas devem ter modelo_contrato, numero, nome, conteudo_original, status."""
+        """Cláusulas criadas devem ter modelo_contrato, numero, nome, conteudo, status."""
         resultado = processador._reconciliar_clausulas(
             modelo_id="modelo-123",
             clausulas_existentes=_clausulas_existentes(),
@@ -119,7 +119,7 @@ class TestReconciliarClausulas:
             assert clausula["modelo_contrato"] == "modelo-123"
             assert "numero" in clausula
             assert "nome" in clausula
-            assert "conteudo_original" in clausula
+            assert "conteudo" in clausula, "Campo deve ser 'conteudo', não 'conteudo'"
             assert clausula["status"] == "published"
 
     def test_clausula_existente_com_conteudo_alterado_vai_para_update(
@@ -135,9 +135,9 @@ class TestReconciliarClausulas:
         ids_atualizados = [c["id"] for c in resultado["update"]]
         assert "clau-bbb" in ids_atualizados
 
-        # Verificar que o conteudo_original foi atualizado
+        # Verificar que o conteudo foi atualizado
         update_bbb = next(c for c in resultado["update"] if c["id"] == "clau-bbb")
-        assert update_bbb["conteudo_original"] == "Texto ATUALIZADO da cláusula 2.1"
+        assert update_bbb["conteudo"] == "Texto ATUALIZADO da cláusula 2.1"
 
     def test_clausula_existente_com_mesmo_conteudo_nao_vai_para_update(
         self, processador
@@ -176,11 +176,11 @@ class TestReconciliarClausulas:
 
         update_ccc = next(c for c in resultado["update"] if c["id"] == "clau-ccc")
         # Só deve ter id e status, sem sobrescrever conteudo/nome
-        assert "conteudo_original" not in update_ccc
+        assert "conteudo" not in update_ccc
         assert "nome" not in update_ccc
 
-    def test_update_so_altera_conteudo_original(self, processador):
-        """Para cláusulas com conteúdo alterado, o update só muda conteudo_original."""
+    def test_update_so_altera_conteudo(self, processador):
+        """Para cláusulas com conteúdo alterado, o update só muda conteudo."""
         resultado = processador._reconciliar_clausulas(
             modelo_id="modelo-123",
             clausulas_existentes=_clausulas_existentes(),
@@ -188,9 +188,9 @@ class TestReconciliarClausulas:
         )
 
         update_bbb = next(c for c in resultado["update"] if c["id"] == "clau-bbb")
-        # Deve ter id e conteudo_original, NÃO deve sobrescrever nome
+        # Deve ter id e conteudo, NÃO deve sobrescrever nome
         assert "id" in update_bbb
-        assert "conteudo_original" in update_bbb
+        assert "conteudo" in update_bbb
         assert "nome" not in update_bbb
 
     def test_tags_nao_numericas_sao_ignoradas(self, processador):
@@ -266,7 +266,7 @@ class TestReconciliarClausulas:
                 "id": "clau-inativa",
                 "numero": "5.1",
                 "nome": "Cláusula inativa",
-                "conteudo_original": "Texto antigo",
+                "conteudo": "Texto antigo",
                 "status": "inativo",
             },
         ]
@@ -285,11 +285,11 @@ class TestReconciliarClausulas:
         assert len(resultado["update"]) == 1
         update = resultado["update"][0]
         assert update["id"] == "clau-inativa"
-        assert update["conteudo_original"] == "Texto novo"
+        assert update["conteudo"] == "Texto novo"
         assert update["status"] == "published"
 
-    def test_conteudo_original_limitado_a_5000_chars(self, processador):
-        """conteudo_original deve ser truncado a 5000 caracteres."""
+    def test_conteudo_limitado_a_5000_chars(self, processador):
+        """conteudo deve ser truncado a 5000 caracteres."""
         tags = [{"nome": "1.1", "conteudo": "x" * 10000}]
 
         resultado = processador._reconciliar_clausulas(
@@ -299,7 +299,7 @@ class TestReconciliarClausulas:
         )
 
         for clausula in resultado["create"]:
-            assert len(clausula["conteudo_original"]) <= 5000
+            assert len(clausula["conteudo"]) <= 5000
 
 
 # ---------------------------------------------------------------------------
@@ -357,13 +357,13 @@ class TestReconciliacaoEdgeCases:
     """Edge cases para reconciliação de cláusulas."""
 
     def test_clausula_existente_com_conteudo_none(self, processador):
-        """Cláusula no Directus com conteudo_original=None não deve causar erro."""
+        """Cláusula no Directus com conteudo=None não deve causar erro."""
         clausulas = [
             {
                 "id": "clau-null",
                 "numero": "1.1",
                 "nome": "Cláusula sem conteúdo",
-                "conteudo_original": None,
+                "conteudo": None,
                 "status": "published",
             },
         ]
@@ -377,7 +377,7 @@ class TestReconciliacaoEdgeCases:
 
         # Deve atualizar pois None != "Texto novo"
         assert len(resultado["update"]) == 1
-        assert resultado["update"][0]["conteudo_original"] == "Texto novo"
+        assert resultado["update"][0]["conteudo"] == "Texto novo"
 
     def test_clausula_existente_sem_numero(self, processador):
         """Cláusula existente sem 'numero' (campo vazio/None) deve ser ignorada."""
@@ -386,14 +386,14 @@ class TestReconciliacaoEdgeCases:
                 "id": "clau-sem-numero",
                 "numero": "",
                 "nome": "Manual sem número",
-                "conteudo_original": "Texto qualquer",
+                "conteudo": "Texto qualquer",
                 "status": "published",
             },
             {
                 "id": "clau-none-numero",
                 "numero": None,
                 "nome": "Outro sem número",
-                "conteudo_original": "Outro texto",
+                "conteudo": "Outro texto",
                 "status": "published",
             },
         ]
@@ -418,7 +418,7 @@ class TestReconciliacaoEdgeCases:
                 "id": "clau-ja-inativa",
                 "numero": "9.9",
                 "nome": "Já desativada",
-                "conteudo_original": "Texto antigo",
+                "conteudo": "Texto antigo",
                 "status": "inativo",
             },
         ]
@@ -440,7 +440,7 @@ class TestReconciliacaoEdgeCases:
                 "id": "clau-ws",
                 "numero": "1.1",
                 "nome": "Cláusula",
-                "conteudo_original": "  Texto com espaços  ",
+                "conteudo": "  Texto com espaços  ",
                 "status": "published",
             },
         ]
@@ -464,7 +464,7 @@ class TestReconciliacaoEdgeCases:
                 "id": "clau-com-conteudo",
                 "numero": "1.1",
                 "nome": "Com conteúdo",
-                "conteudo_original": "Texto existente",
+                "conteudo": "Texto existente",
                 "status": "published",
             },
         ]
@@ -478,7 +478,7 @@ class TestReconciliacaoEdgeCases:
 
         # Conteúdo mudou de "Texto existente" para "" — deve atualizar
         assert len(resultado["update"]) == 1
-        assert resultado["update"][0]["conteudo_original"] == ""
+        assert resultado["update"][0]["conteudo"] == ""
 
     def test_tag_sem_chave_conteudo(self, processador):
         """Tag dict sem a chave 'conteudo' não deve causar KeyError."""
@@ -491,7 +491,7 @@ class TestReconciliacaoEdgeCases:
         )
 
         assert len(resultado["create"]) == 1
-        assert resultado["create"][0]["conteudo_original"] == ""
+        assert resultado["create"][0]["conteudo"] == ""
 
 
 # ---------------------------------------------------------------------------
