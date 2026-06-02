@@ -78,7 +78,7 @@ RUN apk add --no-cache \
 # Criar usuários e diretórios
 RUN addgroup -S app && \
     adduser -D -S -h /app -G app app && \
-    mkdir -p /app /var/log/supervisor /run/supervisor && \
+    mkdir -p /app /var/log/supervisor /run/supervisor /app/.cache/uv && \
     chown -R app:app /app
 
 # Copiar frontend buildado para o Nginx
