@@ -1023,7 +1023,9 @@ class DirectusAPI:
                     # Obter arquivo_original_id para atualizar na versão
                     arquivo_original_id = None
                     if not mock:
-                        arquivo_original_id = self._get_arquivo_original(versao_data)
+                        arquivo_original_id = self.repo.get_arquivo_original(
+                            versao_data
+                        )
 
                     self._persistir_modificacoes_directus(
                         versao_id, modificacoes, arquivo_original_id
@@ -2564,7 +2566,7 @@ class DirectusAPI:
             print(f"🔍 DEBUG: arquivo_novo_id = {arquivo_novo_id}")
 
             print("🔍 DEBUG: Obtendo arquivo_original_id...")
-            arquivo_original_id = self._get_arquivo_original(versao_data)
+            arquivo_original_id = self.repo.get_arquivo_original(versao_data)
             print(f"🔍 DEBUG: arquivo_original_id = {arquivo_original_id}")
 
             if not arquivo_novo_id or not arquivo_original_id:
@@ -3541,7 +3543,7 @@ class DirectusAPI:
                 )
 
             # Buscar arquivo original (anterior)
-            arquivo_original_id = self._get_arquivo_original(versao_data)
+            arquivo_original_id = self.repo.get_arquivo_original(versao_data)
 
             if not arquivo_original_id:
                 error_msg = "❌ Não foi possível determinar o arquivo original/anterior"

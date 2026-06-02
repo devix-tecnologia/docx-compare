@@ -52,8 +52,12 @@ def processar_versao_direta(versao_id: str, directus_url: str, directus_token: s
     modelo_data = contrato_data.get("modelo_contrato", {})
     tags_modelo = modelo_data.get("tags", [])
 
-    arquivo_original_id = versao_data.get("arquivo")
-    arquivo_modificado_id = versao_data.get("modifica_arquivo")
+    # LÓGICA: Usar método centralizado do repositório
+    # 1. Se existe versão anterior → comparar com versão anterior
+    # 2. Se é primeira versão → comparar com modelo.arquivo_original
+    print("\n🔍 Determinando arquivo original/anterior...")
+    arquivo_modificado_id = versao_data.get("arquivo")
+    arquivo_original_id = repo.get_arquivo_original(versao_data)
     arquivo_com_tags_id = modelo_data.get("arquivo_com_tags")
 
     print(f"📊 Contrato: {contrato_data.get('id')}")

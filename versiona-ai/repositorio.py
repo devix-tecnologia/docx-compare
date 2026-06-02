@@ -204,6 +204,44 @@ class DirectusRepository:
 
         return self.get_versao(versao_id, fields=fields)
 
+    def buscar_versao_anterior(
+        self, contrato_id: str, date_created_atual: str
+    ) -> dict[str, Any] | None:
+        """
+        Busca a versão anterior do mesmo contrato (por data de criação).
+
+        Args:
+            contrato_id: ID do contrato
+            date_created_atual: Data de criação da versão atual (ISO format)
+
+        Returns:
+            dict com dados da versão anterior ou None se não existe
+
+        Raises:
+            requests.RequestException: Em caso de erro de comunicação
+        """
+        params = {
+            "filter[contrato][_eq]": contrato_id,
+            "filter[date_created][_lt]": date_created_atual,
+            "sort": "-date_created",  # Mais recente primeiro
+            "limit": 1,
+            "fields": "id,arquivo,date_created",
+        }
+
+        response = requests.get(
+            f"{self.base_url}/items/versao",
+            headers=self.headers,
+            params=params,
+            timeout=30,
+        )
+
+        if response.status_code == 200:
+            data = response.json().get("data", [])
+            return data[0] if data else None
+        else:
+            response.raise_for_status()
+            return None
+
     def get_versoes_por_modelo(self, modelo_id: str) -> list[dict]:
         """
         Busca todas as versões vinculadas a um modelo de contrato.
@@ -701,6 +739,96 @@ class DirectusRepository:
             return None
 
         except (AttributeError, TypeError):
+            return None
+
+    def get_arquivo_original(self, versao_data: dict[str, Any]) -> str | None:
+        """
+        Busca o arquivo original/anterior baseado na lógica de negócio.
+
+        Lógica:
+        1. Se já tem arquivo_original nos dados nested, usa
+        2. Se existe versão anterior do mesmo contrato, usa arquivo da versão anterior
+        3. Senão, usa arquivo_original do modelo_contrato
+
+        Args:
+            versao_data: Dados da versão (resultado de get_versao_para_processar)
+
+        Returns:
+            ID do arquivo original/anterior ou None se não encontrado
+        """
+        try:
+            # 1. Tentar extrair arquivo_original_id diretamente dos dados nested
+            arquivo_id = self.get_arquivo_id(versao_data)
+            if arquivo_id:
+                print(f"✅ Usando arquivo_original do nested: {arquivo_id}")
+                return arquivo_id
+
+            # Extrair ID do contrato e data da versão atual
+            contrato = versao_data.get("contrato")
+            contrato_id = contrato.get("id") if isinstance(contrato, dict) else contrato
+            versao_atual_date = versao_data.get("date_created")
+
+            if not contrato_id or not versao_atual_date:
+                print("❌ Dados insuficientes para buscar arquivo original")
+                return None
+
+            # 2. Buscar versão anterior (date_created menor que a atual)
+            print(f"🔍 Buscando versão anterior do contrato {contrato_id}")
+            print(f"   Versão atual date_created: {versao_atual_date}")
+
+            response = requests.get(
+                f"{self.base_url}/items/versao",
+                headers=self.headers,
+                params={
+                    "filter[contrato][_eq]": contrato_id,
+                    "filter[date_created][_lt]": versao_atual_date,
+                    "sort": "-date_created",  # Mais recente primeiro
+                    "limit": 1,
+                    "fields": "id,arquivo,date_created",
+                },
+                timeout=10,
+            )
+
+            if response.status_code == 200:
+                versoes_anteriores = response.json().get("data", [])
+                print(f"🔍 Versões anteriores encontradas: {len(versoes_anteriores)}")
+
+                if versoes_anteriores:
+                    versao_anterior = versoes_anteriores[0]
+                    arquivo_anterior_id = versao_anterior.get("arquivo")
+                    if arquivo_anterior_id:
+                        print(f"✅ Encontrada versão anterior: {versao_anterior['id']}")
+                        return arquivo_anterior_id
+
+            # 3. Se não encontrou versão anterior, buscar modelo_contrato.arquivo_original
+            print("🔍 Não encontrou versão anterior, buscando modelo do contrato")
+
+            response = requests.get(
+                f"{self.base_url}/items/contrato/{contrato_id}",
+                headers=self.headers,
+                params={"fields": "modelo_contrato.arquivo_original"},
+                timeout=10,
+            )
+
+            if response.status_code == 200:
+                contrato_data = response.json().get("data", {})
+
+                if isinstance(contrato_data, dict):
+                    modelo_contrato = contrato_data.get("modelo_contrato")
+
+                    if isinstance(modelo_contrato, dict):
+                        arquivo_original_id = modelo_contrato.get("arquivo_original")
+                        if arquivo_original_id:
+                            print(
+                                f"✅ Encontrado arquivo original do modelo: {arquivo_original_id}"
+                            )
+                            return arquivo_original_id
+
+            print("❌ Não foi possível encontrar arquivo original/anterior")
+            return None
+
+        except Exception as e:
+            print(f"❌ Erro ao buscar arquivo original: {e}")
             return None
 
     def download_file(
