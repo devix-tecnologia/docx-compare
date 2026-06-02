@@ -56,7 +56,7 @@ class TestProcessVersaoStatusEmProcessamento:
 
         with patch.object(api, "_process_versao_com_ast") as mock_ast:
 
-            def track_ast(versao_id, versao_data):
+            def track_ast(versao_id, versao_data, **kwargs):
                 call_order.append("ast")
                 return {"resultado": "ok"}
 
