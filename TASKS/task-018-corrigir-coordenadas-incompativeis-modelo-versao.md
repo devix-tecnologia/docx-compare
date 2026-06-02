@@ -43,12 +43,14 @@ As **tags do modelo** e as **modificações da versão** estão mapeadas em **si
 ### Evidências
 
 #### Teste Automatizado
+
 ```bash
 # tests/test_integracao_modelo_versao.py::test_coordenadas_alinhadas
 ❌ ERRO DE COORDENADAS: 0% vinculação indica que posições estão em sistemas diferentes
 ```
 
 #### Dados Reais
+
 ```python
 # Processamento manual da versão 8d8e89a8:
 Tags: 294
@@ -57,6 +59,7 @@ Vinculadas: 0/67 (0.0%)
 ```
 
 #### Código Problemático
+
 ```python
 # processador_tags_modelo.py linha 85:
 texto_limpo, mapa_posicoes = self._remover_marcacoes_e_mapear(texto_tagged)
@@ -90,11 +93,13 @@ Alinhar os sistemas de coordenadas para que tags e modificações usem **o mesmo
 ### Opção 1: Usar arquivo_com_tags como base (Recomendada)
 
 **Vantagens:**
+
 - Tags já mapeadas neste arquivo
 - Menor mudança no código do modelo
 - Arquivo com tags é sempre disponível
 
 **Implementação:**
+
 1. Em `processar_versao_direta.py`, usar `arquivo_com_tags` do modelo como base
 2. Fazer diff: `arquivo_com_tags` (limpo) vs `arquivo_modificado`
 3. Tags e modificações estarão no mesmo `texto_limpo`
@@ -115,10 +120,12 @@ modificacoes = fazer_diff(texto_original_limpo, texto_modificado)
 ### Opção 2: Recalcular tags no texto original
 
 **Vantagens:**
+
 - Mantém lógica atual do processamento de versão
 - Tags recalculadas para cada versão
 
 **Desvantagens:**
+
 - Mais complexo
 - Tags já foram processadas uma vez
 - Risco de divergência
@@ -126,10 +133,12 @@ modificacoes = fazer_diff(texto_original_limpo, texto_modificado)
 ### Opção 3: Criar mapeamento entre coordenadas
 
 **Vantagens:**
+
 - Não modifica fluxo existente
 - Solução "ponte"
 
 **Desvantagens:**
+
 - Mais complexo
 - Propenso a erros
 - Não resolve problema na raiz
@@ -139,11 +148,13 @@ modificacoes = fazer_diff(texto_original_limpo, texto_modificado)
 ## 📊 Impacto
 
 ### Componentes Afetados
+
 - ✅ `processar_versao_direta.py` (modificar busca de arquivo base)
 - ✅ `repositorio.py` (garantir que arquivo_com_tags está disponível)
 - ⚠️ `processador_tags_modelo.py` (possivelmente exportar função de limpeza)
 
 ### Testes Necessários
+
 - ✅ `tests/test_integracao_modelo_versao.py` (já existe, deve passar)
 - ✅ Teste manual com versão 8d8e89a8
 - ✅ Regressão: versões já processadas não devem quebrar
@@ -153,6 +164,7 @@ modificacoes = fazer_diff(texto_original_limpo, texto_modificado)
 ## 📝 Notas de Implementação
 
 ### Fixtures Disponíveis
+
 ```
 tests/sample/integracao-completa/
 ├── arquivo_com_tags.docx      495K (modelo)
@@ -163,6 +175,7 @@ tests/sample/integracao-completa/
 ```
 
 ### Constante Compartilhada
+
 ```python
 # processador_tags_modelo.py linha 24-26:
 PATTERN_REMOVER_TAGS = r"\{\{/?TAG-[^}]+\}\}|\{\{/?[a-zA-Z_][a-zA-Z0-9_]*\}\}|\{\{/?\d+(?:\.\d+)*\}\}"
@@ -175,6 +188,7 @@ Esta constante JÁ está sendo importada corretamente em `processar_versao_diret
 ## 🚦 Validação
 
 ### Comando de Teste
+
 ```bash
 # Teste automatizado
 cd versiona-ai
@@ -188,6 +202,7 @@ uv run python processar_versao_direta.py \
 ```
 
 ### Resultados Esperados
+
 ```
 ✅ 44 modificações encontradas
 ✅ Vinculadas: ≥18/44 (≥40%)  # Meta mínima

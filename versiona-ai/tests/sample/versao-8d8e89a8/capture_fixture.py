@@ -21,7 +21,7 @@ def capture_fixture():
 
     versao_id = "8d8e89a8-ba89-4e0e-846c-43e7ad058309"
     modelo_id = "48b43d38-76b4-47a2-93a4-4216ad57defc"
-    
+
     directus_url = "https://contract.devix.co"
     directus_token = "pA7sDYtCMVBhX9jonHaOEM3ujcYtGNsg"
 
@@ -33,32 +33,48 @@ def capture_fixture():
         # 1. Buscar dados da versão com deep parameters
         print("📥 Buscando dados da versão com tags...")
         versao_data = repo.get_versao_para_processar(versao_id)
-        
+
         if not versao_data:
             raise ValueError(f"Versão {versao_id} não encontrada")
-        
+
         # Extrair dados do modelo e tags
         contrato_data = versao_data.get("contrato", {})
-        modelo_data = contrato_data.get("modelo_contrato", {}) if isinstance(contrato_data, dict) else {}
+        modelo_data = (
+            contrato_data.get("modelo_contrato", {})
+            if isinstance(contrato_data, dict)
+            else {}
+        )
         tags_data = modelo_data.get("tags", [])
-        
+
         print(f"   ✓ Tags encontradas: {len(tags_data)}")
 
         # 2. Baixar arquivos
         print("📥 Identificando arquivos...")
-        
+
         # Arquivo modificado da versão
         arquivo_modificado_id = versao_data.get("arquivo")
-        arquivo_modificado_url = f"{directus_url}/assets/{arquivo_modificado_id}" if arquivo_modificado_id else None
-        
+        arquivo_modificado_url = (
+            f"{directus_url}/assets/{arquivo_modificado_id}"
+            if arquivo_modificado_id
+            else None
+        )
+
         # Arquivo com tags do modelo
         arquivo_com_tags_id = modelo_data.get("arquivo_com_tags")
-        arquivo_com_tags_url = f"{directus_url}/assets/{arquivo_com_tags_id}" if arquivo_com_tags_id else None
-        
+        arquivo_com_tags_url = (
+            f"{directus_url}/assets/{arquivo_com_tags_id}"
+            if arquivo_com_tags_id
+            else None
+        )
+
         # Arquivo original do modelo (não da versão)
         arquivo_original_id = modelo_data.get("arquivo_original")
-        arquivo_original_url = f"{directus_url}/assets/{arquivo_original_id}" if arquivo_original_id else None
-        
+        arquivo_original_url = (
+            f"{directus_url}/assets/{arquivo_original_id}"
+            if arquivo_original_id
+            else None
+        )
+
         print(f"   ✓ Arquivo modificado: {arquivo_modificado_id}")
         print(f"   ✓ Arquivo original: {arquivo_original_id}")
         print(f"   ✓ Arquivo com tags: {arquivo_com_tags_id}")
@@ -91,9 +107,9 @@ def capture_fixture():
                 "arquivo_modificado": arquivo_modificado_url,
                 "arquivo_original": arquivo_original_url,
                 "arquivo_com_tags": arquivo_com_tags_url,
-            }
+            },
         }
-        
+
         with open(sample_dir / "metadata.json", "w") as f:
             json.dump(metadata, f, indent=2, ensure_ascii=False)
         print("   ✓ metadata.json")
@@ -123,9 +139,9 @@ def capture_fixture():
                 "metadata.json",
                 "tags_modelo.json",
                 "clausulas.json",
-            ]
+            ],
         }
-        
+
         with open(sample_dir / "fixture_summary.json", "w") as f:
             json.dump(summary, f, indent=2, ensure_ascii=False)
         print("   ✓ fixture_summary.json")
@@ -142,6 +158,7 @@ def capture_fixture():
     except Exception as e:
         print(f"\n❌ Erro ao capturar fixture: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
 

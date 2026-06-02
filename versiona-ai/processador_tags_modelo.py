@@ -19,10 +19,11 @@ import requests
 sys.path.insert(0, str(Path(__file__).parent))
 from repositorio import DirectusRepository  # noqa: E402
 
-
 # Constante: Padrão regex para remover marcações de tags
 # Usado para alinhar coordenadas entre processador_tags_modelo e processar_versao_direta
-PATTERN_REMOVER_TAGS = r"\{\{/?TAG-[^}]+\}\}|\{\{/?[a-zA-Z_][a-zA-Z0-9_]*\}\}|\{\{/?\d+(?:\.\d+)*\}\}"
+PATTERN_REMOVER_TAGS = (
+    r"\{\{/?TAG-[^}]+\}\}|\{\{/?[a-zA-Z_][a-zA-Z0-9_]*\}\}|\{\{/?\d+(?:\.\d+)*\}\}"
+)
 
 
 class ProcessadorTagsModelo:
@@ -912,19 +913,21 @@ class ProcessadorTagsModelo:
         print(f"🔄 Atualizando modelo {modelo_id} com {len(tags_data)} tags...")
 
         # Serializar para JSON e comprimir com gzip para reduzir payload
-        json_payload = json.dumps(update_data).encode('utf-8')
+        json_payload = json.dumps(update_data).encode("utf-8")
         gzipped_payload = gzip.compress(json_payload)
-        
+
         original_size_kb = len(json_payload) / 1024
         compressed_size_kb = len(gzipped_payload) / 1024
         compression_ratio = (1 - compressed_size_kb / original_size_kb) * 100
-        
-        print(f"📦 Payload: {original_size_kb:.1f}KB → {compressed_size_kb:.1f}KB (compressão: {compression_ratio:.1f}%)")
-        
+
+        print(
+            f"📦 Payload: {original_size_kb:.1f}KB → {compressed_size_kb:.1f}KB (compressão: {compression_ratio:.1f}%)"
+        )
+
         # Headers com Content-Encoding: gzip
         gzip_headers = self.headers.copy()
         gzip_headers["Content-Encoding"] = "gzip"
-        
+
         response = requests.patch(
             update_url, headers=gzip_headers, data=gzipped_payload, timeout=300
         )
@@ -1012,52 +1015,54 @@ def processar_modelo_local(
 ) -> list[dict]:
     """
     Processa modelo localmente sem usar Directus (para testes).
-    
+
     Args:
         arquivo_bytes: Bytes do arquivo DOCX com tags
         clausulas_existentes: Lista de cláusulas já existentes no sistema
-    
+
     Returns:
         Lista de tags processadas com posições mapeadas
     """
     import tempfile
     from pathlib import Path
-    
+
     # Salvar arquivo temporariamente
     with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as tmp:
         tmp.write(arquivo_bytes)
         tmp_path = tmp.name
-    
+
     try:
         # Extrair texto do DOCX
         from docx_utils import convert_docx_to_text
+
         texto_tagged = convert_docx_to_text(tmp_path)
-        
+
         # Remover marcações e mapear posições
-        texto_limpo, mapa_posicoes = _remover_marcacoes_e_mapear_standalone(texto_tagged)
-        
+        texto_limpo, mapa_posicoes = _remover_marcacoes_e_mapear_standalone(
+            texto_tagged
+        )
+
         # Extrair tags
         tags = _extrair_tags_standalone(texto_tagged)
-        
+
         # Criar mapa de cláusulas por nome/número
-        clausulas_map = {c.get("numero") or c.get("nome"): c for c in clausulas_existentes}
-        
+        clausulas_map = {
+            c.get("numero") or c.get("nome"): c for c in clausulas_existentes
+        }
+
         # Extrair conteúdo entre tags e vincular com cláusulas
         tags_processadas = []
         for tag in tags:
             conteudo_data = _extrair_conteudo_tag_standalone(
-                tag["nome"],
-                texto_tagged,
-                texto_limpo,
-                mapa_posicoes
+                tag["nome"], texto_tagged, texto_limpo, mapa_posicoes
             )
-            
+
             if not conteudo_data:
                 continue
-            
+
             # Vincular com cláusula existente
             clausula = clausulas_map.get(tag["nome"])
-            
+
             tag_data = {
                 "tag_nome": tag["nome"],
                 "texto": conteudo_data["conteudo"],
@@ -1066,9 +1071,9 @@ def processar_modelo_local(
                 "clausula_id": clausula["id"] if clausula else None,
             }
             tags_processadas.append(tag_data)
-        
+
         return tags_processadas
-    
+
     finally:
         # Limpar arquivo temporário
         Path(tmp_path).unlink(missing_ok=True)
@@ -1077,83 +1082,79 @@ def processar_modelo_local(
 def _remover_marcacoes_e_mapear_standalone(texto_com_tags: str) -> tuple[str, dict]:
     """Versão standalone de _remover_marcacoes_e_mapear."""
     pattern = PATTERN_REMOVER_TAGS
-    
+
     texto_limpo = ""
     mapa_posicoes = {}
     offset = 0
     ultima_pos = 0
-    
+
     for match in re.finditer(pattern, texto_com_tags):
         start = match.start()
         end = match.end()
         tag_len = end - start
-        
+
         # Adicionar texto antes da tag
         texto_limpo += texto_com_tags[ultima_pos:start]
-        
+
         # Mapear posições
         for i in range(ultima_pos, start):
             mapa_posicoes[i] = i - offset
-        
+
         # Atualizar offset e posição
         offset += tag_len
         ultima_pos = end
-    
+
     # Adicionar texto final
     texto_limpo += texto_com_tags[ultima_pos:]
     for i in range(ultima_pos, len(texto_com_tags)):
         mapa_posicoes[i] = i - offset
-    
+
     return texto_limpo, mapa_posicoes
 
 
 def _extrair_tags_standalone(texto: str) -> list[dict]:
     """Extrai tags do texto."""
     import re
-    
+
     pattern = r"\{\{TAG-([^}]+)\}\}"
     tags = []
     for match in re.finditer(pattern, texto):
         tag_nome = match.group(1)
         if not any(t["nome"] == tag_nome for t in tags):
             tags.append({"nome": tag_nome})
-    
+
     return tags
 
 
 def _extrair_conteudo_tag_standalone(
-    tag_nome: str,
-    texto_com_tags: str,
-    texto_limpo: str,
-    mapa_posicoes: dict
+    tag_nome: str, texto_com_tags: str, texto_limpo: str, mapa_posicoes: dict
 ) -> dict | None:
     """Extrai conteúdo entre tags de abertura e fechamento."""
     import re
-    
+
     # Procurar marcações de abertura e fechamento
     pattern_abertura = re.escape(f"{{{{TAG-{tag_nome}}}}}")
     pattern_fechamento = re.escape(f"{{{{/TAG-{tag_nome}}}}}")
-    
+
     match_abertura = re.search(pattern_abertura, texto_com_tags)
     match_fechamento = re.search(pattern_fechamento, texto_com_tags)
-    
+
     if not match_abertura or not match_fechamento:
         return None
-    
+
     # Posições no texto COM tags
     pos_inicio_com_tags = match_abertura.end()
     pos_fim_com_tags = match_fechamento.start()
-    
+
     # Converter para posições no texto limpo
     pos_inicio_limpo = mapa_posicoes.get(pos_inicio_com_tags, 0)
     pos_fim_limpo = mapa_posicoes.get(pos_fim_com_tags, len(texto_limpo))
-    
+
     # Extrair conteúdo do texto limpo
     conteudo = texto_limpo[pos_inicio_limpo:pos_fim_limpo].strip()
-    
+
     return {
         "conteudo": conteudo,
         "posicao_inicial_texto": pos_inicio_limpo,
         "posicao_final_texto": pos_fim_limpo,
     }
-

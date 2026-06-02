@@ -33,9 +33,11 @@ Este diretório contém fixtures para testes de integração completos que simul
 ## Arquivos Necessários
 
 ### 1. `clausulas_inicial.json`
+
 Lista de cláusulas existentes no sistema antes do processamento.
 
 **Formato:**
+
 ```json
 [
   {
@@ -50,6 +52,7 @@ Lista de cláusulas existentes no sistema antes do processamento.
 ```
 
 **Como capturar:**
+
 ```bash
 # Buscar cláusulas do modelo antes do processamento
 curl -H "Authorization: Bearer TOKEN" \
@@ -58,30 +61,38 @@ curl -H "Authorization: Bearer TOKEN" \
 ```
 
 ### 2. `arquivo_com_tags.docx`
+
 Arquivo DOCX do modelo com tags de marcação `{{TAG-1.1}}...{{/TAG-1.1}}`.
 
 **Como capturar:**
+
 - Baixar do Directus: campo `arquivo_com_tags` do modelo
 - URL: `https://contract.devix.co/assets/UUID_ARQUIVO`
 
 ### 3. `arquivo_original.docx`
+
 Arquivo DOCX original do modelo SEM tags (usado como base para comparação).
 
 **Como capturar:**
+
 - Baixar do Directus: campo `arquivo_original` do modelo
 - URL: `https://contract.devix.co/assets/UUID_ARQUIVO`
 
 ### 4. `arquivo_modificado.docx`
+
 Arquivo DOCX modificado da versão (com alterações feitas pelo usuário).
 
 **Como capturar:**
+
 - Baixar do Directus: campo `arquivo` da versão
 - URL: `https://contract.devix.co/assets/UUID_ARQUIVO`
 
 ### 5. `tags_esperadas.json` (opcional)
+
 Tags esperadas após processamento do modelo, para validação adicional.
 
 **Formato:**
+
 ```json
 [
   {
@@ -96,9 +107,11 @@ Tags esperadas após processamento do modelo, para validação adicional.
 ```
 
 ### 6. `metricas_esperadas.json` (opcional)
+
 Métricas mínimas esperadas do processamento.
 
 **Formato:**
+
 ```json
 {
   "taxa_minima_vinculacao": 0.4,
@@ -117,6 +130,7 @@ uv run python capture_fixture.py
 ```
 
 O script irá:
+
 1. ✅ Baixar dados do Directus automaticamente
 2. ✅ Salvar JSONs estruturados
 3. ⚠️ Imprimir URLs dos arquivos DOCX para download manual
@@ -124,6 +138,7 @@ O script irá:
 ## Casos de Teste Existentes
 
 ### `versao-8d8e89a8/`
+
 - **Modelo:** 48b43d38-76b4-47a2-93a4-4216ad57defc
 - **Versão:** 8d8e89a8-ba89-4e0e-846c-43e7ad058309
 - **Status:** Em construção
@@ -153,6 +168,7 @@ uv run pytest tests/test_integracao_modelo_versao.py -v -s --tb=short
 ## Exemplo Real de Bug Detectado
 
 Em 2 de junho de 2026, descobrimos que:
+
 - Tags eram mapeadas em `texto_limpo` do `arquivo_com_tags`
 - Modificações eram mapeadas em `texto_original` do diff
 - **Resultado:** 0% vinculação (coordenadas incompatíveis)
