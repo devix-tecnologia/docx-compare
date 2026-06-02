@@ -26,6 +26,230 @@ PATTERN_REMOVER_TAGS = (
 )
 
 
+# ============================================================================
+# FUNÇÕES CORE - LÓGICA PURA COMPARTILHADA ENTRE CLASSE E TESTES
+# ============================================================================
+
+
+def _analisar_diferencas_core(
+    texto_original: str, texto_modificado: str
+) -> list[dict]:
+    """
+    Analisa diferenças entre os textos usando difflib.
+    Função pura sem dependências externas.
+    """
+    import difflib
+
+    linhas_original = texto_original.splitlines()
+    linhas_modificado = texto_modificado.splitlines()
+
+    modificacoes = []
+    matcher = difflib.SequenceMatcher(None, linhas_original, linhas_modificado)
+
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        if tag == "replace":
+            modificacoes.append(
+                {
+                    "categoria": "modificacao",
+                    "conteudo": "\n".join(linhas_original[i1:i2]),
+                    "alteracao": "\n".join(linhas_modificado[j1:j2]),
+                    "linha_inicio": i1,
+                    "linha_fim": i2,
+                }
+            )
+        elif tag == "insert":
+            modificacoes.append(
+                {
+                    "categoria": "adicao",
+                    "conteudo": "",
+                    "alteracao": "\n".join(linhas_modificado[j1:j2]),
+                    "linha_inicio": j1,
+                    "linha_fim": j2,
+                }
+            )
+        elif tag == "delete":
+            modificacoes.append(
+                {
+                    "categoria": "remocao",
+                    "conteudo": "\n".join(linhas_original[i1:i2]),
+                    "alteracao": "",
+                    "linha_inicio": i1,
+                    "linha_fim": i2,
+                }
+            )
+
+    return modificacoes
+
+
+def _extrair_tags_core(modificacoes: list[dict]) -> list[dict]:
+    """
+    Extrai tags das modificações encontradas no diff.
+    Suporta: {{tag}}, {{ tag }}, {{tag /}}, {{/tag}}, {{1.2.3}}
+    Função pura sem dependências externas.
+    """
+    tag_patterns = [
+        # Tags textuais
+        r"(?<!\{)\{\{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\}\}(?!\})",
+        r"(?<!\{)\{\{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*/\s*\}\}(?!\})",
+        r"(?<!\{)\{\{\s*/\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\}\}(?!\})",
+        # Tags com prefixo TAG-
+        r"(?<!\{)\{\{\s*TAG-([a-zA-Z_][a-zA-Z0-9_]*)\s*\}\}(?!\})",
+        r"(?<!\{)\{\{\s*TAG-([a-zA-Z_][a-zA-Z0-9_]*)\s*/\s*\}\}(?!\})",
+        r"(?<!\{)\{\{\s*/\s*TAG-([a-zA-Z_][a-zA-Z0-9_]*)\s*\}\}(?!\})",
+        # Tags numéricas
+        r"(?<!\{)\{\{\s*(\d+(?:\.\d+)*)\s*\}\}(?!\})",
+        r"(?<!\{)\{\{\s*(\d+(?:\.\d+)*)\s*/\s*\}\}(?!\})",
+        r"(?<!\{)\{\{\s*/\s*(\d+(?:\.\d+)*)\s*\}\}(?!\})",
+    ]
+
+    tags_encontradas = {}
+
+    for idx, modification in enumerate(modificacoes):
+        textos_para_analisar = [
+            ("original", modification.get("conteudo", "")),
+            ("alteracao", modification.get("alteracao", "")),
+        ]
+
+        for fonte, texto in textos_para_analisar:
+            if not texto:
+                continue
+
+            for pattern in tag_patterns:
+                matches = re.finditer(pattern, texto, re.IGNORECASE)
+                for match in matches:
+                    tag_nome = match.group(1).strip()
+
+                    # Normalizar nome
+                    if re.match(r"^\d+(?:\.\d+)*$", tag_nome):
+                        tag_nome_normalizado = tag_nome
+                    else:
+                        tag_nome_normalizado = tag_nome.lower()
+
+                    pos_inicio = match.start()
+                    pos_fim = match.end()
+                    texto_completo = match.group(0)
+
+                    if tag_nome_normalizado not in tags_encontradas or len(
+                        texto
+                    ) > len(tags_encontradas[tag_nome_normalizado].get("contexto", "")):
+                        linha_aproximada = texto[:pos_inicio].count("\n") + 1
+
+                        tags_encontradas[tag_nome_normalizado] = {
+                            "nome": tag_nome_normalizado,
+                            "texto_completo": texto_completo,
+                            "posicao_inicio": pos_inicio,
+                            "posicao_fim": pos_fim,
+                            "contexto": texto[
+                                max(0, pos_inicio - 100) : pos_fim + 100
+                            ],
+                            "fonte": fonte,
+                            "modificacao_indice": idx,
+                            "caminho_tag_inicio": f"modificacao_{idx}_linha_{linha_aproximada}_pos_{pos_inicio}",
+                            "caminho_tag_fim": f"modificacao_{idx}_linha_{linha_aproximada}_pos_{pos_fim}",
+                        }
+
+    return list(tags_encontradas.values())
+
+
+def _remover_marcacoes_e_mapear_core(texto_com_tags: str) -> tuple[str, dict]:
+    """
+    Remove marcações {{TAG-X}} do texto e cria mapa de conversão de posições.
+    Função pura sem dependências externas.
+    
+    Returns:
+        tuple[str, dict]: (texto_limpo, mapa_posicoes)
+    """
+    pattern = re.compile(PATTERN_REMOVER_TAGS)
+
+    texto_limpo = ""
+    mapa_posicoes = {}
+    offset = 0
+    ultima_pos = 0
+
+    for match in re.finditer(pattern, texto_com_tags):
+        start = match.start()
+        end = match.end()
+        tag_len = end - start
+
+        # Adicionar texto antes da tag
+        texto_limpo += texto_com_tags[ultima_pos:start]
+
+        # Mapear posições
+        for i in range(ultima_pos, start):
+            mapa_posicoes[i] = i - offset
+
+        offset += tag_len
+        ultima_pos = end
+
+    # Adicionar texto final
+    texto_limpo += texto_com_tags[ultima_pos:]
+    for i in range(ultima_pos, len(texto_com_tags)):
+        mapa_posicoes[i] = i - offset
+
+    return texto_limpo, mapa_posicoes
+
+
+def _extrair_conteudo_tag_core(
+    tag_nome: str, texto_com_tags: str, texto_limpo: str, mapa_posicoes: dict
+) -> dict | None:
+    """
+    Extrai conteúdo entre tags de abertura e fechamento de UMA tag específica.
+    Função pura sem dependências externas.
+    
+    Args:
+        tag_nome: Nome da tag (ex: "clausula_1" ou "1.2.3")
+        texto_com_tags: Texto original com marcações
+        texto_limpo: Texto sem marcações
+        mapa_posicoes: Mapa de conversão {pos_com_tags: pos_limpa}
+    
+    Returns:
+        dict com conteudo, posicao_inicial_texto, posicao_final_texto ou None se não encontrar
+    """
+    # Tentar diferentes formatos de tag
+    formatos = [
+        (f"{{{{TAG-{tag_nome}}}}}", f"{{{{/TAG-{tag_nome}}}}}"),  # {{TAG-X}} ... {{/TAG-X}}
+        (f"{{{{{tag_nome}}}}}", f"{{{{/{tag_nome}}}}}"),  # {{X}} ... {{/X}}
+    ]
+    
+    for formato_abertura, formato_fechamento in formatos:
+        # Escapar para uso em regex
+        pattern_abertura = re.escape(formato_abertura)
+        pattern_fechamento = re.escape(formato_fechamento)
+        
+        match_abertura = re.search(pattern_abertura, texto_com_tags, re.IGNORECASE)
+        match_fechamento = re.search(pattern_fechamento, texto_com_tags, re.IGNORECASE)
+        
+        if match_abertura and match_fechamento:
+            # Posições no texto COM tags (após tag de abertura, antes tag de fechamento)
+            pos_inicio_com_tags = match_abertura.end()
+            pos_fim_com_tags = match_fechamento.start()
+            
+            # Converter para posições no texto limpo
+            pos_inicio_limpo = mapa_posicoes.get(pos_inicio_com_tags, 0)
+            pos_fim_limpo = mapa_posicoes.get(pos_fim_com_tags, len(texto_limpo))
+            
+            # Extrair conteúdo do texto limpo
+            conteudo = texto_limpo[pos_inicio_limpo:pos_fim_limpo].strip()
+            
+            # Remover numeração comum
+            conteudo = re.sub(r"^\d+\.\s*", "", conteudo)
+            conteudo = re.sub(r"^[a-z]\)\s*", "", conteudo)
+            conteudo = re.sub(r"^\([a-z]\)\s*", "", conteudo)
+            
+            return {
+                "conteudo": conteudo,
+                "posicao_inicial_texto": pos_inicio_limpo,
+                "posicao_final_texto": pos_fim_limpo,
+            }
+    
+    return None
+
+
+# ============================================================================
+# CLASSE PROCESSADOR (USA AS FUNÇÕES CORE ACIMA)
+# ============================================================================
+
+
 class ProcessadorTagsModelo:
     """
     Processa modelos de contrato extraindo tags e salvando no Directus
@@ -225,56 +449,12 @@ class ProcessadorTagsModelo:
     def _analisar_diferencas(
         self, texto_original: str, texto_modificado: str
     ) -> list[dict]:
-        """Analisa diferenças entre os textos"""
-        import difflib
-
-        # Dividir em linhas para análise
-        linhas_original = texto_original.splitlines()
-        linhas_modificado = texto_modificado.splitlines()
-
-        modificacoes = []
-        matcher = difflib.SequenceMatcher(None, linhas_original, linhas_modificado)
-
-        for tag, i1, i2, j1, j2 in matcher.get_opcodes():
-            if tag == "replace":
-                # Conteúdo substituído
-                modificacoes.append(
-                    {
-                        "categoria": "modificacao",
-                        "conteudo": "\n".join(linhas_original[i1:i2]),
-                        "alteracao": "\n".join(linhas_modificado[j1:j2]),
-                        "linha_inicio": i1,
-                        "linha_fim": i2,
-                    }
-                )
-            elif tag == "insert":
-                # Conteúdo adicionado
-                modificacoes.append(
-                    {
-                        "categoria": "adicao",
-                        "conteudo": "",
-                        "alteracao": "\n".join(linhas_modificado[j1:j2]),
-                        "linha_inicio": j1,
-                        "linha_fim": j2,
-                    }
-                )
-            elif tag == "delete":
-                # Conteúdo removido
-                modificacoes.append(
-                    {
-                        "categoria": "remocao",
-                        "conteudo": "\n".join(linhas_original[i1:i2]),
-                        "alteracao": "",
-                        "linha_inicio": i1,
-                        "linha_fim": i2,
-                    }
-                )
-
-        return modificacoes
+        """Analisa diferenças entre os textos (delega para função core)"""
+        return _analisar_diferencas_core(texto_original, texto_modificado)
 
     def _remover_marcacoes_e_mapear(self, texto_com_tags: str) -> tuple[str, dict]:
         """
-        Remove marcações {{TAG-X}} do texto e cria mapa de conversão de posições.
+        Remove marcações {{TAG-X}} do texto e cria mapa de conversão de posições (delega para função core).
 
         Args:
             texto_com_tags: Texto com marcações {{TAG-X}}
@@ -284,127 +464,14 @@ class ProcessadorTagsModelo:
             - texto_limpo: texto sem marcações
             - mapa_posicoes: dict {posicao_com_tags: posicao_limpa}
         """
-        import re
-
-        # Usar padrão definido como constante global
-        pattern = PATTERN_REMOVER_TAGS
-
-        texto_limpo = ""
-        mapa_posicoes = {}  # {pos_original: pos_limpa}
-        offset = 0  # Deslocamento acumulado devido a remoções
-        ultima_pos = 0
-
-        for match in re.finditer(pattern, texto_com_tags):
-            start = match.start()
-            end = match.end()
-            tag_len = end - start
-
-            # Copiar texto entre última tag e esta tag
-            texto_limpo += texto_com_tags[ultima_pos:start]
-
-            # Registrar mapeamento para cada posição afetada
-            # Posições ANTES da tag mantêm offset atual
-            for pos in range(ultima_pos, start):
-                if pos not in mapa_posicoes:
-                    mapa_posicoes[pos] = pos - offset
-
-            # Atualizar offset (tag será removida)
-            offset += tag_len
-
-            # Próxima iteração começa após a tag
-            ultima_pos = end
-
-        # Copiar resto do texto
-        texto_limpo += texto_com_tags[ultima_pos:]
-
-        # Mapear posições restantes
-        for pos in range(ultima_pos, len(texto_com_tags)):
-            if pos not in mapa_posicoes:
-                mapa_posicoes[pos] = pos - offset
-
-        # Adicionar mapeamento para posição final
-        mapa_posicoes[len(texto_com_tags)] = len(texto_limpo)
-
-        return texto_limpo, mapa_posicoes
+        return _remover_marcacoes_e_mapear_core(texto_com_tags)
 
     def _extrair_tags(self, modificacoes: list[dict]) -> list[dict]:
         """
-        Extrai tags das modificações encontradas
+        Extrai tags das modificações encontradas (delega para função core)
         Suporta: {{tag}}, {{ tag }}, {{tag /}}, {{/tag}}, {{1.2.3}}
         """
-        tag_patterns = [
-            # Tags textuais
-            r"(?<!\{)\{\{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\}\}(?!\})",  # {{tag}}
-            r"(?<!\{)\{\{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*/\s*\}\}(?!\})",  # {{tag /}}
-            r"(?<!\{)\{\{\s*/\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\}\}(?!\})",  # {{/tag}}
-            # Tags com prefixo TAG-
-            r"(?<!\{)\{\{\s*TAG-([a-zA-Z_][a-zA-Z0-9_]*)\s*\}\}(?!\})",  # {{TAG-nome}}
-            r"(?<!\{)\{\{\s*TAG-([a-zA-Z_][a-zA-Z0-9_]*)\s*/\s*\}\}(?!\})",  # {{TAG-nome /}}
-            r"(?<!\{)\{\{\s*/\s*TAG-([a-zA-Z_][a-zA-Z0-9_]*)\s*\}\}(?!\})",  # {{/TAG-nome}}
-            # Tags numéricas
-            r"(?<!\{)\{\{\s*(\d+(?:\.\d+)*)\s*\}\}(?!\})",  # {{1.2.3}}
-            r"(?<!\{)\{\{\s*(\d+(?:\.\d+)*)\s*/\s*\}\}(?!\})",  # {{1 /}}
-            r"(?<!\{)\{\{\s*/\s*(\d+(?:\.\d+)*)\s*\}\}(?!\})",  # {{/1}}
-        ]
-
-        tags_encontradas = {}
-
-        for idx, modification in enumerate(modificacoes):
-            # Verificar tanto o conteúdo original quanto a alteração
-            textos_para_analisar = [
-                ("original", modification.get("conteudo", "")),
-                ("alteracao", modification.get("alteracao", "")),
-            ]
-
-            for fonte, texto in textos_para_analisar:
-                if not texto:
-                    continue
-
-                # Aplicar todos os padrões de regex
-                for pattern in tag_patterns:
-                    matches = re.finditer(pattern, texto, re.IGNORECASE)
-                    for match in matches:
-                        # Limpar e normalizar o nome da tag
-                        tag_nome = match.group(1).strip()
-
-                        # Para tags numéricas, manter formato original
-                        if re.match(r"^\d+(?:\.\d+)*$", tag_nome):
-                            tag_nome_normalizado = tag_nome  # Manter formato numérico
-                        else:
-                            tag_nome_normalizado = (
-                                tag_nome.lower()
-                            )  # Minúscula para tags textuais
-
-                        # Calcular posições no texto
-                        pos_inicio = match.start()
-                        pos_fim = match.end()
-                        texto_completo = match.group(0)
-
-                        # Se a tag já existe, manter a versão com mais contexto
-                        if tag_nome_normalizado not in tags_encontradas or len(
-                            texto
-                        ) > len(
-                            tags_encontradas[tag_nome_normalizado].get("contexto", "")
-                        ):
-                            # Calcular linha aproximada
-                            linha_aproximada = texto[:pos_inicio].count("\n") + 1
-
-                            tags_encontradas[tag_nome_normalizado] = {
-                                "nome": tag_nome_normalizado,
-                                "texto_completo": texto_completo,
-                                "posicao_inicio": pos_inicio,
-                                "posicao_fim": pos_fim,
-                                "contexto": texto[
-                                    max(0, pos_inicio - 100) : pos_fim + 100
-                                ],
-                                "fonte": fonte,
-                                "linha_aproximada": linha_aproximada,
-                                "modificacao_indice": idx,
-                                "caminho_tag_inicio": f"modificacao_{idx}_linha_{linha_aproximada}_pos_{pos_inicio}",
-                                "caminho_tag_fim": f"modificacao_{idx}_linha_{linha_aproximada}_pos_{pos_fim}",
-                            }
-
-        return list(tags_encontradas.values())
+        return _extrair_tags_core(modificacoes)
 
     def _extrair_conteudo_entre_tags(
         self,
@@ -413,7 +480,7 @@ class ProcessadorTagsModelo:
         mapa_posicoes: dict | None = None,
     ) -> dict[str, dict]:
         """
-        Extrai conteúdo entre tags de abertura e fechamento.
+        Extrai conteúdo entre tags de abertura e fechamento (delega para função core).
         Calcula posições no texto LIMPO (sem marcações) para compatibilidade com diff.
 
         Ex: {{TAG-nome}}...conteúdo...{{/TAG-nome}} ou {{6}}...conteúdo...{{/6}}
@@ -431,103 +498,8 @@ class ProcessadorTagsModelo:
             texto_limpo, mapa_posicoes = self._remover_marcacoes_e_mapear(
                 texto_com_tags
             )
-        conteudo_map = {}
-        total_aberturas = 0
-        total_pares = 0
-
-        # Padrões para tags de abertura e fechamento
-        patterns = [
-            # Tags com prefixo TAG-
-            (
-                r"\{\{TAG-([a-zA-Z_][a-zA-Z0-9_]*)\}\}",
-                r"\{\{/TAG-\1\}\}",
-            ),  # {{TAG-nome}}...{{/TAG-nome}}
-            # Tags textuais
-            (
-                r"\{\{([a-zA-Z_][a-zA-Z0-9_]*)\}\}",
-                r"\{\{/\1\}\}",
-            ),  # {{nome}}...{{/nome}}
-            # Tags numéricas
-            (
-                r"\{\{(\d+(?:\.\d+)*)\}\}",
-                r"\{\{/\1\}\}",
-            ),  # {{6}}...{{/6}} ou {{7.4}}...{{/7.4}}
-        ]
-
-        for _pattern_idx, (open_pattern, close_pattern_template) in enumerate(patterns):
-            # Encontrar todas as tags de abertura
-            for open_match in re.finditer(open_pattern, texto_com_tags):
-                total_aberturas += 1
-                tag_nome = open_match.group(1).lower()
-                open_pos = open_match.end()  # Posição no texto COM tags
-
-                # Construir padrão de fechamento específico para esta tag
-                close_pattern = close_pattern_template.replace(
-                    r"\1", re.escape(open_match.group(1))
-                )
-
-                # Buscar tag de fechamento correspondente
-                close_match = re.search(
-                    close_pattern, texto_com_tags[open_pos:], re.IGNORECASE
-                )
-
-                if close_match:
-                    total_pares += 1
-                    # Posições no texto COM tags
-                    conteudo_inicio_com_tags = open_pos
-                    conteudo_fim_com_tags = open_pos + close_match.start()
-
-                    # Converter para posições no texto LIMPO
-                    conteudo_inicio_limpo = mapa_posicoes.get(
-                        conteudo_inicio_com_tags,
-                        conteudo_inicio_com_tags,  # Fallback
-                    )
-                    conteudo_fim_limpo = mapa_posicoes.get(
-                        conteudo_fim_com_tags,
-                        conteudo_fim_com_tags,  # Fallback
-                    )
-
-                    # Extrair conteúdo do texto LIMPO usando posições convertidas
-                    conteudo_bruto = texto_limpo[
-                        conteudo_inicio_limpo:conteudo_fim_limpo
-                    ]
-
-                    # Remover espaços, quebras de linha e numeração do início
-                    conteudo = conteudo_bruto.strip()
-
-                    # Remover numeração no início (ex: "4. ", "1. ", "a) ", etc)
-                    conteudo = re.sub(r"^\d+\.\s*", "", conteudo)
-                    conteudo = re.sub(r"^[a-z]\)\s*", "", conteudo)
-                    conteudo = re.sub(r"^\([a-z]\)\s*", "", conteudo)
-
-                    conteudo_map[tag_nome] = {
-                        "conteudo": conteudo,
-                        "posicao_inicial_texto": conteudo_inicio_limpo,  # ← Posição no texto LIMPO
-                        "posicao_final_texto": conteudo_fim_limpo,  # ← Posição no texto LIMPO
-                    }
-                else:
-                    # Log quando não encontra par
-                    if total_aberturas <= 5:  # Log apenas primeiras 5 falhas
-                        contexto = texto_com_tags[open_pos : open_pos + 100].replace(
-                            "\n", " "
-                        )
-                        print(
-                            f"❌ Sem par para tag {open_match.group(1)}: {contexto[:50]}..."
-                        )
-
-        print(f"🔍 Tags de abertura encontradas: {total_aberturas}")
-        print(f"✓ Pares completos encontrados: {total_pares}")
-        print(f"📝 Tags com conteúdo extraído: {len(conteudo_map)}")
-        print("🗺️  Posições calculadas no texto LIMPO (sem marcações)")
-
-        # Log amostra do texto para debug
-        if total_aberturas == 0:
-            print(f"⚠️ TEXTO SAMPLE (primeiros 500 chars): {texto_com_tags[:500]}")
-            print("⚠️ Buscando tags numéricas explicitamente...")
-            numeric_tags = re.findall(r"\{\{(\d+(?:\.\d+)*)\}\}", texto_com_tags)
-            print(f"⚠️ Tags numéricas encontradas: {numeric_tags[:10]}")
-
-        return conteudo_map
+        
+        return _extrair_conteudo_entre_tags_core(texto_com_tags, texto_limpo, mapa_posicoes)
 
     def _extrair_numero_nome_clausula(
         self, tag_nome: str, conteudo: str
@@ -1010,14 +982,19 @@ if __name__ == "__main__":
 
 
 def processar_modelo_local(
-    arquivo_bytes: bytes,
+    arquivo_com_tags_bytes: bytes,
+    arquivo_original_bytes: bytes,
     clausulas_existentes: list[dict],
 ) -> list[dict]:
     """
     Processa modelo localmente sem usar Directus (para testes).
+    
+    REPLICA EXATAMENTE O COMPORTAMENTO de ProcessadorTagsModelo.processar_modelo(),
+    apenas recebendo arquivos como bytes ao invés de buscar do Directus.
 
     Args:
-        arquivo_bytes: Bytes do arquivo DOCX com tags
+        arquivo_com_tags_bytes: Bytes do arquivo DOCX com tags (modelo preenchido)
+        arquivo_original_bytes: Bytes do arquivo DOCX original (modelo vazio)
         clausulas_existentes: Lista de cláusulas já existentes no sistema
 
     Returns:
@@ -1025,136 +1002,82 @@ def processar_modelo_local(
     """
     import tempfile
     from pathlib import Path
+    from docx_utils import convert_docx_to_text
 
-    # Salvar arquivo temporariamente
+    # Salvar arquivos temporariamente
     with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as tmp:
-        tmp.write(arquivo_bytes)
-        tmp_path = tmp.name
+        tmp.write(arquivo_com_tags_bytes)
+        tmp_com_tags = tmp.name
+    
+    with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as tmp:
+        tmp.write(arquivo_original_bytes)
+        tmp_original = tmp.name
 
     try:
-        # Extrair texto do DOCX
-        from docx_utils import convert_docx_to_text
-
-        texto_tagged = convert_docx_to_text(tmp_path)
-
-        # Remover marcações e mapear posições
-        texto_limpo, mapa_posicoes = _remover_marcacoes_e_mapear_standalone(
-            texto_tagged
-        )
-
-        # Extrair tags
-        tags = _extrair_tags_standalone(texto_tagged)
-
-        # Criar mapa de cláusulas por nome/número
+        # 1. Extrair textos (igual ao processador real)
+        print("🔵 [1/6] Convertendo arquivo_com_tags...")
+        texto_com_tags = convert_docx_to_text(tmp_com_tags)
+        print("🔵 [2/6] Convertendo arquivo_original...")
+        texto_original = convert_docx_to_text(tmp_original)
+        
+        print(f"📊 Texto original: {len(texto_original)} caracteres")
+        print(f"📊 Texto com tags: {len(texto_com_tags)} caracteres")
+        
+        # 2. Analisar diferenças usando função core
+        print("🔵 [3/6] Analisando diferenças...")
+        modificacoes = _analisar_diferencas_core(texto_original, texto_com_tags)
+        print(f"🔍 Encontradas {len(modificacoes)} modificações")
+        
+        # 3. Extrair tags das diferenças usando função core
+        print("🔵 [4/6] Extraindo tags...")
+        tags_encontradas = _extrair_tags_core(modificacoes)
+        tag_names = [tag["nome"] for tag in tags_encontradas]
+        print(f"🏷️  Extraídas {len(tags_encontradas)} tags únicas: {sorted(tag_names)[:10]}...")
+        
+        # 4. Remover marcações e mapear posições usando função core
+        print("🔵 [5/6] Removendo marcações e mapeando posições...")
+        texto_limpo, mapa_posicoes = _remover_marcacoes_e_mapear_core(texto_com_tags)
+        print(f"📊 Texto limpo: {len(texto_limpo)} caracteres")
+        
+        # 5. Criar mapa de cláusulas por nome/número para vinculação
         clausulas_map = {
             c.get("numero") or c.get("nome"): c for c in clausulas_existentes
         }
-
-        # Extrair conteúdo entre tags e vincular com cláusulas
+        
+        # 6. Para cada tag encontrada, extrair conteúdo individualmente
+        print(f"🔵 [6/6] Extraindo conteúdo de {len(tags_encontradas)} tags...")
         tags_processadas = []
-        for tag in tags:
-            conteudo_data = _extrair_conteudo_tag_standalone(
-                tag["nome"], texto_tagged, texto_limpo, mapa_posicoes
+        for idx, tag_info in enumerate(tags_encontradas):
+            if idx % 50 == 0:
+                print(f"   Processando tag {idx + 1}/{len(tags_encontradas)}...")
+            
+            tag_nome = tag_info["nome"]
+            
+            # Extrair conteúdo desta tag específica usando função core
+            conteudo_data = _extrair_conteudo_tag_core(
+                tag_nome, texto_com_tags, texto_limpo, mapa_posicoes
             )
-
+            
             if not conteudo_data:
                 continue
-
+            
             # Vincular com cláusula existente
-            clausula = clausulas_map.get(tag["nome"])
-
+            clausula = clausulas_map.get(tag_nome)
+            
             tag_data = {
-                "tag_nome": tag["nome"],
+                "tag_nome": tag_nome,
                 "texto": conteudo_data["conteudo"],
                 "posicao_inicio": conteudo_data["posicao_inicial_texto"],
                 "posicao_fim": conteudo_data["posicao_final_texto"],
                 "clausula_id": clausula["id"] if clausula else None,
             }
             tags_processadas.append(tag_data)
-
+        
+        print(f"✨ {len(tags_processadas)} tags válidas com conteúdo")
         return tags_processadas
 
     finally:
-        # Limpar arquivo temporário
-        Path(tmp_path).unlink(missing_ok=True)
+        # Limpar arquivos temporários
+        Path(tmp_com_tags).unlink(missing_ok=True)
+        Path(tmp_original).unlink(missing_ok=True)
 
-
-def _remover_marcacoes_e_mapear_standalone(texto_com_tags: str) -> tuple[str, dict]:
-    """Versão standalone de _remover_marcacoes_e_mapear."""
-    pattern = PATTERN_REMOVER_TAGS
-
-    texto_limpo = ""
-    mapa_posicoes = {}
-    offset = 0
-    ultima_pos = 0
-
-    for match in re.finditer(pattern, texto_com_tags):
-        start = match.start()
-        end = match.end()
-        tag_len = end - start
-
-        # Adicionar texto antes da tag
-        texto_limpo += texto_com_tags[ultima_pos:start]
-
-        # Mapear posições
-        for i in range(ultima_pos, start):
-            mapa_posicoes[i] = i - offset
-
-        # Atualizar offset e posição
-        offset += tag_len
-        ultima_pos = end
-
-    # Adicionar texto final
-    texto_limpo += texto_com_tags[ultima_pos:]
-    for i in range(ultima_pos, len(texto_com_tags)):
-        mapa_posicoes[i] = i - offset
-
-    return texto_limpo, mapa_posicoes
-
-
-def _extrair_tags_standalone(texto: str) -> list[dict]:
-    """Extrai tags do texto."""
-    import re
-
-    pattern = r"\{\{TAG-([^}]+)\}\}"
-    tags = []
-    for match in re.finditer(pattern, texto):
-        tag_nome = match.group(1)
-        if not any(t["nome"] == tag_nome for t in tags):
-            tags.append({"nome": tag_nome})
-
-    return tags
-
-
-def _extrair_conteudo_tag_standalone(
-    tag_nome: str, texto_com_tags: str, texto_limpo: str, mapa_posicoes: dict
-) -> dict | None:
-    """Extrai conteúdo entre tags de abertura e fechamento."""
-    import re
-
-    # Procurar marcações de abertura e fechamento
-    pattern_abertura = re.escape(f"{{{{TAG-{tag_nome}}}}}")
-    pattern_fechamento = re.escape(f"{{{{/TAG-{tag_nome}}}}}")
-
-    match_abertura = re.search(pattern_abertura, texto_com_tags)
-    match_fechamento = re.search(pattern_fechamento, texto_com_tags)
-
-    if not match_abertura or not match_fechamento:
-        return None
-
-    # Posições no texto COM tags
-    pos_inicio_com_tags = match_abertura.end()
-    pos_fim_com_tags = match_fechamento.start()
-
-    # Converter para posições no texto limpo
-    pos_inicio_limpo = mapa_posicoes.get(pos_inicio_com_tags, 0)
-    pos_fim_limpo = mapa_posicoes.get(pos_fim_com_tags, len(texto_limpo))
-
-    # Extrair conteúdo do texto limpo
-    conteudo = texto_limpo[pos_inicio_limpo:pos_fim_limpo].strip()
-
-    return {
-        "conteudo": conteudo,
-        "posicao_inicial_texto": pos_inicio_limpo,
-        "posicao_final_texto": pos_fim_limpo,
-    }

@@ -327,7 +327,7 @@ if __name__ == "__main__":
 
 
 def processar_versao_com_tags(
-    arquivo_original_bytes: bytes,
+    arquivo_com_tags_bytes: bytes,
     arquivo_modificado_bytes: bytes,
     tags_modelo: list[dict],
 ) -> dict:
@@ -335,7 +335,7 @@ def processar_versao_com_tags(
     Processa versão localmente sem usar Directus (para testes).
 
     Args:
-        arquivo_original_bytes: Bytes do arquivo DOCX original
+        arquivo_com_tags_bytes: Bytes do arquivo DOCX do modelo COM tags
         arquivo_modificado_bytes: Bytes do arquivo DOCX modificado
         tags_modelo: Lista de tags do modelo com posições mapeadas
 
@@ -347,29 +347,40 @@ def processar_versao_com_tags(
 
     # Converter arquivos DOCX para texto
     with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as tmp:
-        tmp.write(arquivo_original_bytes)
-        tmp_original = tmp.name
+        tmp.write(arquivo_com_tags_bytes)
+        tmp_com_tags = tmp.name
 
     with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as tmp:
         tmp.write(arquivo_modificado_bytes)
         tmp_modificado = tmp.name
 
     try:
-        # Extrair texto
-        texto_original = convert_docx_to_text(tmp_original)
-        texto_modificado = convert_docx_to_text(tmp_modificado)
-
-        # Remover tags do texto original (se houver)
-        texto_original = re.sub(PATTERN_REMOVER_TAGS, "", texto_original)
-
-        print(f"📊 Texto original: {len(texto_original)} caracteres")
-        print(f"📊 Texto modificado: {len(texto_modificado)} caracteres")
+        # Extrair texto do arquivo COM tags
+        print("🔄 Convertendo arquivo_com_tags para texto...")
+        texto_com_tags = convert_docx_to_text(tmp_com_tags)
+        print(f"✓ Texto com tags: {len(texto_com_tags):,} caracteres")
+        
+        print("🔄 Convertendo arquivo_modificado para texto...")
+        texto_modificado_bruto = convert_docx_to_text(tmp_modificado)
+        print(f"✓ Texto modificado bruto: {len(texto_modificado_bruto):,} caracteres")
+        
+        # Remover tags de AMBOS os textos para alinhar coordenadas
+        # IMPORTANTE: arquivo_modificado pode ter herdado tags do modelo
+        print("🔄 Removendo tags do texto original...")
+        texto_original = re.sub(PATTERN_REMOVER_TAGS, "", texto_com_tags)
+        print(f"✓ Texto original limpo: {len(texto_original):,} caracteres")
+        
+        print("🔄 Removendo tags do texto modificado...")
+        texto_modificado = re.sub(PATTERN_REMOVER_TAGS, "", texto_modificado_bruto)
+        print(f"✓ Texto modificado limpo: {len(texto_modificado):,} caracteres")
 
         # Fazer diff
+        print("🔄 Fazendo diff entre textos...")
         modificacoes = _fazer_diff_standalone(texto_original, texto_modificado)
-        print(f"🔍 Encontradas {len(modificacoes)} modificações")
+        print(f"✓ Encontradas {len(modificacoes)} modificações")
 
         # Calcular posições e vincular com algoritmo híbrido
+        print("🔄 Preparando algoritmo de vinculação...")
         algoritmo = AlgoritmoHibrido()
 
         # Preparar tags no formato esperado pelo algoritmo
@@ -384,13 +395,12 @@ def processar_versao_com_tags(
                     "clausula_id": tag["clausula_id"],
                 }
             )
+        print(f"✓ {len(tags_data)} tags preparadas")
 
-        # Calcular posições das modificações
-        modificacoes_com_pos = algoritmo.calcular_posicoes(modificacoes, texto_original)
-
-        # Vincular com cláusulas
+        # Vincular com cláusulas (diff já calculou posições perfeitamente)
+        print(f"🔄 Vinculando {len(modificacoes)} modificações com {len(tags_data)} tags...")
         modificacoes_vinculadas = algoritmo.vincular_clausulas(
-            modificacoes_com_pos, tags_data, texto_original
+            modificacoes, tags_data, texto_original
         )
 
         total_vinculadas = len(
@@ -407,12 +417,12 @@ def processar_versao_com_tags(
 
     finally:
         # Limpar arquivos temporários
-        Path(tmp_original).unlink(missing_ok=True)
+        Path(tmp_com_tags).unlink(missing_ok=True)
         Path(tmp_modificado).unlink(missing_ok=True)
 
 
 def _fazer_diff_standalone(texto_original: str, texto_modificado: str) -> list[dict]:
-    """Faz diff entre dois textos e retorna modificações."""
+    """Faz diff entre dois textos e retorna modificações COM posições e tipo correto."""
     import difflib
 
     linhas_original = texto_original.splitlines(keepends=True)
@@ -420,31 +430,55 @@ def _fazer_diff_standalone(texto_original: str, texto_modificado: str) -> list[d
 
     matcher = difflib.SequenceMatcher(None, linhas_original, linhas_modificado)
     modificacoes = []
+    
+    # Rastrear posição atual no texto original
+    pos_original = 0
 
     for tag, i1, i2, j1, j2 in matcher.get_opcodes():
-        if tag == "replace":
+        if tag == "equal":
+            # Apenas avançar posição
+            for linha in linhas_original[i1:i2]:
+                pos_original += len(linha)
+        elif tag == "replace":
+            conteudo_original = "".join(linhas_original[i1:i2])
+            conteudo_modificado = "".join(linhas_modificado[j1:j2])
+            
             modificacoes.append(
                 {
-                    "categoria": "modificacao",
-                    "conteudo": "".join(linhas_original[i1:i2]),
-                    "alteracao": "".join(linhas_modificado[j1:j2]),
+                    "tipo": "ALTERACAO",  # Algoritmo espera uppercase
+                    "conteudo": {
+                        "original": conteudo_original,
+                        "novo": conteudo_modificado,
+                    },
+                    "posicao_inicio": pos_original,
+                    "posicao_fim": pos_original + len(conteudo_original),
                 }
             )
+            pos_original += len(conteudo_original)
         elif tag == "insert":
             modificacoes.append(
                 {
-                    "categoria": "adicao",
-                    "conteudo": "",
-                    "alteracao": "".join(linhas_modificado[j1:j2]),
+                    "tipo": "INSERCAO",  # Algoritmo espera uppercase
+                    "conteudo": {
+                        "novo": "".join(linhas_modificado[j1:j2]),
+                    },
+                    "posicao_inicio": pos_original,
+                    "posicao_fim": pos_original,
                 }
             )
         elif tag == "delete":
+            conteudo = "".join(linhas_original[i1:i2])
             modificacoes.append(
                 {
-                    "categoria": "remocao",
-                    "conteudo": "".join(linhas_original[i1:i2]),
+                    "tipo": "REMOCAO",  # Algoritmo espera uppercase
+                    "conteudo": {
+                        "original": conteudo,
+                    },
                     "alteracao": "",
+                    "posicao_inicio": pos_original,
+                    "posicao_fim": pos_original + len(conteudo),
                 }
             )
+            pos_original += len(conteudo)
 
     return modificacoes
