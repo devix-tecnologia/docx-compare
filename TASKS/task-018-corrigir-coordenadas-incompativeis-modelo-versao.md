@@ -39,7 +39,7 @@ Assignee: Sidarta Veloso
 ### ⏳ Em Progresso
 
 - **Validar taxa de vinculação final**: Precisa atingir ≥40% (atual: 34.3% sem fuzzy)
-- **Considerar alternativas**: 
+- **Considerar alternativas**:
   - Ajustar limiar para permitir fuzzy em mais casos
   - Otimizar AlgoritmoFuzzyAvancado (batch processing, cache)
   - Melhorar estratégia de overlap

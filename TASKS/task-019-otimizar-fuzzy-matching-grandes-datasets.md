@@ -21,11 +21,13 @@ O **AlgoritmoFuzzyAvancado** possui **complexidade O(n² × m)** que causa timeo
 ### Evidências
 
 **Caso Real (Task-018):**
+
 - Dataset: 67 modificações × 294 tags = **19,698 comparações**
 - Tempo: **>60 segundos** (timeout)
 - Solução atual: **Desabilitar fuzzy automaticamente** quando complexidade > 10,000
 
 **Impacto:**
+
 - Taxa de vinculação: **34.3%** (apenas overlap)
 - Meta: **≥40%** (não atingida)
 - **Perda de precisão:** Fuzzy não é usado em 65.7% das vinculações potenciais
@@ -40,6 +42,7 @@ AlgoritmoHibrido(
 ```
 
 **Casos que desabilitam fuzzy:**
+
 - ✅ 100 mods × 100 tags = 10,000 (limite)
 - ❌ 67 mods × 294 tags = 19,698 (desabilita)
 - ❌ 50 mods × 300 tags = 15,000 (desabilita)
@@ -67,14 +70,14 @@ Permitir uso de fuzzy matching em datasets grandes sem degradação de performan
 
 ```python
 def vincular_clausulas_batch(
-    self, 
-    modificacoes: list[dict], 
+    self,
+    modificacoes: list[dict],
     tags: list[dict],
     batch_size: int = 100
 ) -> list[dict]:
     """
     Processa em lotes de 100 comparações por vez.
-    
+
     Exemplo: 67 mods × 294 tags
     - Lote 1: mods 0-10 × todas tags (2,940 comparações)
     - Lote 2: mods 11-20 × todas tags (2,940 comparações)
@@ -84,11 +87,13 @@ def vincular_clausulas_batch(
 ```
 
 **Vantagens:**
+
 - ✅ Mantém algoritmo intacto
 - ✅ Fácil implementar
 - ✅ Permite progress feedback ao usuário
 
 **Estimativa:**
+
 - Complexidade: Mesma (O(n²)), mas com menor consumo de memória
 - Ganho: 0-20% (apenas organização)
 
@@ -100,7 +105,7 @@ def vincular_clausulas_batch(
 class FuzzyCacheado:
     def __init__(self):
         self._cache = {}  # {(texto1_hash, texto2_hash): score}
-    
+
     def calcular_score(self, texto1: str, texto2: str) -> float:
         key = (hash(texto1), hash(texto2))
         if key not in self._cache:
@@ -109,11 +114,13 @@ class FuzzyCacheado:
 ```
 
 **Vantagens:**
+
 - ✅ Evita cálculos redundantes
 - ✅ Útil quando mesma modificação aparece múltiplas vezes
 - ✅ Reutilizável entre execuções (persistir em disco)
 
 **Estimativa:**
+
 - Ganho: 30-50% se houver textos repetidos
 
 ### 3. Threshold Dinâmico Early Exit (Prioridade Média)
@@ -132,25 +139,27 @@ def buscar_melhor_tag_early_exit(
     """
     melhor_tag = None
     melhor_score = 0.0
-    
+
     for tag in tags:
         score = calcular_score(texto_busca, tag["texto"])
-        
+
         if score >= early_exit_threshold:
             return tag  # Encontrou match excelente, para aqui
-        
+
         if score > melhor_score and score >= threshold:
             melhor_score = score
             melhor_tag = tag
-    
+
     return melhor_tag
 ```
 
 **Vantagens:**
+
 - ✅ Reduz comparações quando há match claro
 - ✅ Não perde precisão (só para quando já achou)
 
 **Estimativa:**
+
 - Ganho: 20-40% em casos com bons matches
 
 ### 4. Índice Invertido + Pre-filtering (Prioridade Média)
@@ -164,15 +173,15 @@ class FuzzyComIndice:
     def __init__(self):
         self.vectorizer = TfidfVectorizer(ngram_range=(3, 3))
         self.tags_vectors = None
-    
+
     def indexar_tags(self, tags: list[dict]):
         """Cria índice TF-IDF de trigrams."""
         textos = [t["texto"] for t in tags]
         self.tags_vectors = self.vectorizer.fit_transform(textos)
-    
+
     def buscar_candidatas(
-        self, 
-        texto_busca: str, 
+        self,
+        texto_busca: str,
         top_k: int = 10
     ) -> list[dict]:
         """
@@ -186,11 +195,13 @@ class FuzzyComIndice:
 ```
 
 **Vantagens:**
+
 - ✅ Reduz de n comparações para top-k (ex: 10)
 - ✅ TF-IDF é muito rápido (vetorização)
 - ✅ Mantém precisão alta se top-k for suficiente
 
 **Estimativa:**
+
 - Complexidade: O(n × log k) onde k << n
 - Ganho: **70-90%** se k = 10
 
@@ -215,14 +226,17 @@ def vincular_paralelo(
 ```
 
 **Vantagens:**
+
 - ✅ Usa múltiplos cores CPU
 - ✅ Ganho linear com número de cores
 
 **Desvantagens:**
+
 - ⚠️ Overhead de threads
 - ⚠️ GIL do Python limita ganho real
 
 **Estimativa:**
+
 - Ganho: 2-3x com 4 cores (depende de I/O vs CPU-bound)
 
 ### 6. Substituir RapidFuzz por Algoritmo Aproximado (Prioridade Baixa)
@@ -235,14 +249,14 @@ from datasketch import MinHash, MinHashLSH
 class FuzzyAproximado:
     def __init__(self):
         self.lsh = MinHashLSH(threshold=0.85, num_perm=128)
-    
+
     def indexar(self, tags: list[dict]):
         for i, tag in enumerate(tags):
             m = MinHash(num_perm=128)
             for word in tag["texto"].split():
                 m.update(word.encode('utf8'))
             self.lsh.insert(f"tag_{i}", m)
-    
+
     def buscar(self, texto: str) -> list[str]:
         """Retorna IDs de tags similares em O(1) amortizado."""
         m = MinHash(num_perm=128)
@@ -252,14 +266,17 @@ class FuzzyAproximado:
 ```
 
 **Vantagens:**
+
 - ✅ O(1) lookup amortizado
 - ✅ Escalável para milhões de documentos
 
 **Desvantagens:**
+
 - ⚠️ Aproximado: pode perder matches
 - ⚠️ Requer tuning de threshold
 
 **Estimativa:**
+
 - Complexidade: O(n) (linear!)
 - Ganho: **90-95%** mas com perda de precisão
 
@@ -332,18 +349,18 @@ class FuzzyAproximado:
 def test_performance_dataset_grande():
     """Valida que fuzzy funciona em datasets grandes."""
     algoritmo = AlgoritmoHibrido(usar_fuzzy=True)
-    
+
     # Dataset: 100 mods × 500 tags = 50k comparações
     modificacoes = gerar_modificacoes(100)
     tags = gerar_tags(500)
-    
+
     inicio = time.time()
     resultado = algoritmo.vincular_clausulas(modificacoes, tags, texto_completo)
     tempo = time.time() - inicio
-    
+
     # Critério 1: Performance
     assert tempo <= 30, f"Tempo {tempo:.1f}s excedeu 30s"
-    
+
     # Critério 2: Taxa vinculação
     vinculadas = sum(1 for r in resultado if r.get("tag_vinculada"))
     taxa = vinculadas / len(modificacoes) * 100
@@ -353,11 +370,11 @@ def test_precisao_nao_degradou():
     """Valida que otimização não perdeu precisão."""
     algoritmo_completo = AlgoritmoHibrido(usar_fuzzy=True, otimizar=False)
     algoritmo_otimizado = AlgoritmoHibrido(usar_fuzzy=True, otimizar=True)
-    
+
     # Comparar resultados
     resultado_baseline = algoritmo_completo.vincular_clausulas(...)
     resultado_otimizado = algoritmo_otimizado.vincular_clausulas(...)
-    
+
     # Aceita até 5% de diferença
     diff = calcular_diferenca_vinculacao(resultado_baseline, resultado_otimizado)
     assert diff <= 5.0, f"Perda de {diff:.1f}% na precisão (limite: 5%)"
@@ -373,17 +390,17 @@ python versiona-ai/benchmark_fuzzy_otimizado.py
 # ================================================================================
 # BENCHMARK: Fuzzy Matching Otimizado
 # ================================================================================
-# 
+#
 # Dataset Pequeno (10 mods × 50 tags = 500 comp.)
 #   Tempo baseline: 1.2s
 #   Tempo otimizado: 0.3s
 #   Ganho: 75% ✅
-# 
+#
 # Dataset Médio (50 mods × 200 tags = 10k comp.)
 #   Tempo baseline: 28.5s
 #   Tempo otimizado: 3.2s
 #   Ganho: 88% ✅
-# 
+#
 # Dataset Grande (67 mods × 294 tags = 19,698 comp.)
 #   Tempo baseline: >60s (timeout)
 #   Tempo otimizado: 5.8s
@@ -415,10 +432,12 @@ python versiona-ai/benchmark_fuzzy_otimizado.py
 ### Trade-offs
 
 **Exatidão vs Performance:**
+
 - Índice TF-IDF: 70-90% ganho, ~0% perda precisão ✅ **Recomendado**
 - MinHash/LSH: 90-95% ganho, ~5-10% perda precisão ⚠️ Último recurso
 
 **Complexidade de Implementação:**
+
 - Cache: Trivial (1h) ✅
 - Early Exit: Fácil (2h) ✅
 - Batch: Fácil (4h) ✅
@@ -429,11 +448,13 @@ python versiona-ai/benchmark_fuzzy_otimizado.py
 ### Decisão Recomendada
 
 **Implementar primeiro:**
+
 1. Cache (quick win)
 2. Early Exit (quick win)
 3. TF-IDF Pre-filtering (maior impacto)
 
 **Expectativa realista:**
+
 - Ganho combinado: **80-90%** redução de tempo
 - Dataset 19,698 comp.: 60s → **6-12s** ✅
 - Taxa vinculação: 34.3% → **≥40%** ✅

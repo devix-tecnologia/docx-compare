@@ -1,6 +1,6 @@
 # Parametrização do Fuzzy Matching
 
-**Data:** 2026-06-03  
+**Data:** 2026-06-03
 **Autor:** Sistema de Otimização Contínua
 
 ## 📋 Visão Geral
@@ -10,11 +10,13 @@ O `AlgoritmoHibrido` agora suporta **parametrização inteligente do fuzzy match
 ## 🎯 Problema
 
 Fuzzy matching com `RapidFuzz` é **O(n² × m)** onde:
+
 - `n` = número de modificações
 - `m` = número de tags
 - Cada comparação calcula múltiplas métricas de similaridade
 
 **Exemplo real:**
+
 - 67 modificações × 294 tags = **19,698 comparações**
 - Tempo estimado: **>60 segundos** (timeout)
 
@@ -53,16 +55,16 @@ if usar_fuzzy is None:
 
 ### Antes da Parametrização
 
-| Dataset | Complexidade | Tempo | Status |
-|---------|-------------|-------|--------|
-| 67 mods × 294 tags | 19,698 | >60s | ⚠️ Timeout |
+| Dataset            | Complexidade | Tempo | Status     |
+| ------------------ | ------------ | ----- | ---------- |
+| 67 mods × 294 tags | 19,698       | >60s  | ⚠️ Timeout |
 
 ### Depois da Parametrização
 
-| Dataset | Complexidade | Fuzzy | Tempo | Taxa | Status |
-|---------|-------------|-------|-------|------|--------|
-| 67 mods × 294 tags | 19,698 | ❌ Auto-desabilitado | <30s | 34.3% | ✅ OK |
-| 5 mods × 10 tags | 50 | ✅ Auto-habilitado | <1s | 80%+ | ✅ OK |
+| Dataset            | Complexidade | Fuzzy                | Tempo | Taxa  | Status |
+| ------------------ | ------------ | -------------------- | ----- | ----- | ------ |
+| 67 mods × 294 tags | 19,698       | ❌ Auto-desabilitado | <30s  | 34.3% | ✅ OK  |
+| 5 mods × 10 tags   | 50           | ✅ Auto-habilitado   | <1s   | 80%+  | ✅ OK  |
 
 ## 🎛️ Configuração Recomendada
 
@@ -77,6 +79,7 @@ algoritmo = AlgoritmoHibrido(
 ```
 
 **Exemplos:**
+
 - ✅ 20 mods × 200 tags = 4,000 ← fuzzy habilitado
 - ❌ 30 mods × 200 tags = 6,000 ← fuzzy desabilitado
 
@@ -128,7 +131,7 @@ stats = algoritmo.obter_estatisticas()
    - Padrões estruturados: valores monetários, datas, IDs, CPF/CNPJ
    - Named groups para extração
 
-3. **Fuzzy** (lento, flexível) - *parametrizável*
+3. **Fuzzy** (lento, flexível) - _parametrizável_
    - Texto livre com variações ortográficas
    - Múltiplas métricas: ratio, partial_ratio, token_sort, token_set
    - **Desabilitado automaticamente** se complexidade > limiar
@@ -141,6 +144,7 @@ stats = algoritmo.obter_estatisticas()
 Se a vinculação estiver lenta:
 
 1. **Verificar complexidade:**
+
    ```python
    complexidade = len(modificacoes) * len(tags)
    print(f"Complexidade: {complexidade:,}")
@@ -148,6 +152,7 @@ Se a vinculação estiver lenta:
    ```
 
 2. **Analisar estatísticas:**
+
    ```python
    stats = algoritmo.obter_estatisticas()
    if stats["fuzzy"]["count"] > 1000:
