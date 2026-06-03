@@ -216,7 +216,11 @@ class AlgoritmoFuzzyAvancado(AlgoritmoVinculacao):
         for mod in modificacoes:
             texto_busca = UtilitariosVinculacao.extrair_texto_busca(mod)
 
-            # Buscar posição com fuzzy matching
+            # Buscar posição com fuzzy matching apenas se houver texto
+            if texto_busca is None:
+                resultado.append({**mod})
+                continue
+
             inicio, fim, score = self._buscar_posicao_com_sliding_window(
                 texto_busca, texto_completo
             )
@@ -272,13 +276,13 @@ class AlgoritmoFuzzyAvancado(AlgoritmoVinculacao):
             tag = None
 
             # 1. Tentar overlap se tem posição
-            if pos_inicio is not None:
+            if pos_inicio is not None and pos_fim is not None:
                 tag = UtilitariosVinculacao.buscar_tag_por_posicao(
                     pos_inicio, pos_fim, tags
                 )
 
             # 2. Se não achou, tentar fuzzy matching direto com tags
-            if tag is None:
+            if tag is None and texto_busca is not None:
                 melhor_tag = None
                 melhor_score = 0.0
                 threshold = self._calcular_threshold_dinamico(texto_busca)
