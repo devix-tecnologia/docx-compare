@@ -284,6 +284,44 @@ class FuzzyAproximado:
 
 ## 📊 Plano de Implementação
 
+### Sistema de Comparação Automática (NOVO)
+
+**Infraestrutura criada para comparar múltiplos algoritmos:**
+
+```
+versiona-ai/tests/
+├── algoritmos/
+│   ├── registry.py                    # Sistema de registro automático
+│   └── fuzzy/
+│       ├── __init__.py                # Auto-registro de algoritmos
+│       ├── algoritmo.py               # Baseline (fuzzy atual)
+│       ├── algoritmo_otimizado.py     # Com cache + TF-IDF + early exit
+│       ├── algoritmo_cache_only.py    # Variante: só cache (futuro)
+│       └── algoritmo_tfidf_only.py    # Variante: só TF-IDF (futuro)
+├── benchmark_fuzzy_runner.py          # Runner que executa todos e compara
+└── test_task_019_comparacao.py        # Testes automatizados A/B
+```
+
+**Como adicionar novo algoritmo:**
+
+1. Crie arquivo `versiona-ai/tests/algoritmos/fuzzy/algoritmo_meu.py`
+2. Herde de `AlgoritmoVinculacao` (interface comum)
+3. Importe no `__init__.py` e registre com `@register_algorithm`
+4. Execute: `python versiona-ai/tests/benchmark_fuzzy_runner.py`
+
+**Saída do benchmark:**
+
+```
+================================================================================
+📊 COMPARAÇÃO DE ALGORITMOS DE FUZZY MATCHING
+================================================================================
+Algoritmo            |  Tempo (s) | Taxa Vinc. |  Comparações | Economizadas |  Cache Hit | Early Exit
+----------------------------------------------------------------------------------------------------------------------------
+🥇 fuzzy_otimizado   |       4.82 |      42.1% |        1,340 |       18,358 |      73.5% |         23
+🥈 fuzzy             |      58.34 |      41.8% |       19,698 |            - |         - |          -
+================================================================================
+```
+
 ### Fase 1: Quick Wins (1-2 dias)
 
 1. ✅ **Batch Processing** (commit separado)
@@ -340,6 +378,32 @@ class FuzzyAproximado:
 ---
 
 ## 🧪 Validação
+
+### Sistema de Testes A/B Automatizados
+
+**Executar comparação:**
+
+```bash
+# Comparar todos os algoritmos registrados
+python versiona-ai/tests/benchmark_fuzzy_runner.py
+
+# Rodar testes automatizados
+pytest versiona-ai/tests/test_task_019_comparacao.py -v
+
+# Com dataset customizado
+from benchmark_fuzzy_runner import AlgorithmBenchmarkRunner
+runner = AlgorithmBenchmarkRunner()
+resultados = runner.compare_all(modificacoes, tags, texto_completo)
+runner.print_comparison_table()
+```
+
+**Testes incluídos:**
+
+- ✅ `test_todos_algoritmos_executam_sem_erro`: Valida que nenhum algoritmo lança exceção
+- ✅ `test_performance_dataset_medio`: Valida critérios de tempo (<30s para 10k comp.)
+- ✅ `test_taxa_vinculacao_aceitavel`: Valida taxa de vinculação mínima
+- ✅ `test_resultados_consistentes`: Valida que algoritmos não divergem drasticamente (±30%)
+- ✅ `test_benchmark_gera_ranking`: Valida ordenação por performance
 
 ### Teste de Regressão
 
