@@ -15,6 +15,7 @@ Uso:
     runner.print_comparison_table(resultados)
 """
 
+import signal
 import sys
 import time
 from dataclasses import dataclass
@@ -43,14 +44,27 @@ class BenchmarkResult:
     comparacoes_economizadas: int  # Se disponível via stats
     cache_hit_rate: float  # % se disponível
     early_exits: int  # Se disponível
+    status: str = "ok"  # "ok", "timeout", "error"
     erro_execucao: str | None = None
 
 
-class AlgorithmBenchmarkRunner:
-    """Runner para executar e comparar múltiplos algoritmos."""
+class TimeoutException(Exception):
+    """Exceção lançada quando algoritmo excede timeout."""
 
-    def __init__(self):
+    pass
+
+
+class AlgorithmBenchmarkRunner:
+    """Runner para executar e comparar múltiplos algoritmos de fuzzy matching."""
+
+    def __init__(self, timeout_segundos: int = 60):
+        """Inicializa runner.
+
+        Args:
+            timeout_segundos: Tempo máximo por algoritmo (padrão: 60s)
+        """
         self.resultados: list[BenchmarkResult] = []
+        self.timeout_segundos = timeout_segundos
 
     def _extract_stats(self, algoritmo: Any) -> dict:
         """Extrai estatísticas do algoritmo se disponível."""
@@ -65,6 +79,10 @@ class AlgorithmBenchmarkRunner:
             stats = algoritmo.get_stats()
 
         return stats
+
+    def _timeout_handler(self, signum, frame):
+        """Handler para timeout de algoritmo."""
+        raise TimeoutException("Algoritmo excedeu tempo limite")
 
     def run_single_algorithm(
         self,
@@ -98,10 +116,19 @@ class AlgorithmBenchmarkRunner:
                 else "Sem descrição"
             )
 
+            # Configura timeout (apenas em Unix/Linux/macOS)
+            if hasattr(signal, "SIGALRM"):
+                signal.signal(signal.SIGALRM, self._timeout_handler)
+                signal.alarm(self.timeout_segundos)
+
             # Executa com medição de tempo
             inicio = time.time()
             resultado = algoritmo.vincular_clausulas(modificacoes, tags, texto_completo)
             tempo_execucao = time.time() - inicio
+
+            # Cancela timeout
+            if hasattr(signal, "SIGALRM"):
+                signal.alarm(0)
 
             # Calcula taxa de vinculação
             total_mods = len(modificacoes)
@@ -135,10 +162,35 @@ class AlgorithmBenchmarkRunner:
                 comparacoes_economizadas=comparacoes_economizadas,
                 cache_hit_rate=cache_hit_rate,
                 early_exits=early_exits,
+                status="ok",
                 erro_execucao=None,
             )
 
+        except TimeoutException:
+            # Cancela timeout
+            if hasattr(signal, "SIGALRM"):
+                signal.alarm(0)
+
+            return BenchmarkResult(
+                algoritmo_nome=algoritmo_nome,
+                algoritmo_descricao=descricao if "descricao" in locals() else "TIMEOUT",
+                tempo_execucao_s=self.timeout_segundos,
+                taxa_vinculacao=0.0,
+                total_modificacoes=len(modificacoes),
+                modificacoes_vinculadas=0,
+                comparacoes_realizadas=0,
+                comparacoes_economizadas=0,
+                cache_hit_rate=0.0,
+                early_exits=0,
+                status="timeout",
+                erro_execucao=f"Timeout (>{self.timeout_segundos}s)",
+            )
+
         except Exception as e:
+            # Cancela timeout em caso de erro
+            if hasattr(signal, "SIGALRM"):
+                signal.alarm(0)
+
             return BenchmarkResult(
                 algoritmo_nome=algoritmo_nome,
                 algoritmo_descricao="ERRO",
@@ -150,6 +202,7 @@ class AlgorithmBenchmarkRunner:
                 comparacoes_economizadas=0,
                 cache_hit_rate=0.0,
                 early_exits=0,
+                status="error",
                 erro_execucao=str(e),
             )
 
@@ -187,7 +240,9 @@ class AlgorithmBenchmarkRunner:
 
             resultados.append(resultado)
 
-            if resultado.erro_execucao:
+            if resultado.status == "timeout":
+                print(f"⏱️ TIMEOUT (>{self.timeout_segundos}s) - INVIÁVEL")
+            elif resultado.status == "error":
                 print(f"❌ ERRO: {resultado.erro_execucao}")
             else:
                 print(
@@ -195,8 +250,14 @@ class AlgorithmBenchmarkRunner:
                     f"{resultado.taxa_vinculacao:.1f}% vinculação"
                 )
 
-        # Ordena por tempo de execução
-        self.resultados = sorted(resultados, key=lambda r: r.tempo_execucao_s)
+        # Ordena: status OK primeiro, depois por tempo
+        self.resultados = sorted(
+            resultados,
+            key=lambda r: (
+                r.status != "ok",  # OK primeiro
+                r.tempo_execucao_s,  # Menor tempo
+            ),
+        )
 
         return self.resultados
 
@@ -214,83 +275,100 @@ class AlgorithmBenchmarkRunner:
             print("Nenhum resultado para exibir.")
             return
 
-        print("\n" + "=" * 120)
+        print("\n" + "=" * 135)
         print("📊 COMPARAÇÃO DE ALGORITMOS DE FUZZY MATCHING")
-        print("=" * 120)
+        print("=" * 135)
 
-        # Header
+        # Header com coluna de Status
         print(
-            f"{'Algoritmo':<20} | {'Tempo (s)':>10} | {'Taxa Vinc.':>11} | "
+            f"{'Algoritmo':<20} | {'Status':>8} | {'Tempo (s)':>10} | {'Taxa Vinc.':>11} | "
             f"{'Comparações':>12} | {'Economizadas':>12} | {'Cache Hit':>10} | {'Early Exit':>11}"
         )
-        print("-" * 120)
+        print("-" * 135)
 
-        # Baseline para cálculo de ganho
-        baseline = resultados[0] if resultados else None
-
-        for i, r in enumerate(resultados):
-            # Calcula ganho vs baseline
-            if i == 0:
-                ganho_str = "baseline"
-            elif baseline and baseline.tempo_execucao_s > 0:
-                ganho_pct = (
-                    (baseline.tempo_execucao_s - r.tempo_execucao_s)
-                    / baseline.tempo_execucao_s
-                    * 100
-                )
-                ganho_str = f"↑{ganho_pct:+.1f}%"
+        rank = 0  # Contador de ranking para algoritmos OK
+        for r in resultados:
+            # Símbolo de status
+            if r.status == "timeout":
+                status_symbol = "⏱️"
+                emoji = "⏱️"
+            elif r.status == "error":
+                status_symbol = "❌"
+                emoji = "❌"
             else:
-                ganho_str = "N/A"
+                status_symbol = "✅"
+                # Emoji de ranking apenas para OK
+                if rank == 0:
+                    emoji = "🥇"
+                elif rank == 1:
+                    emoji = "🥈"
+                elif rank == 2:
+                    emoji = "🥉"
+                else:
+                    emoji = "  "
+                rank += 1
 
             # Formatação condicional
-            tempo_str = (
-                f"{r.tempo_execucao_s:10.2f}" if not r.erro_execucao else "      ERRO"
-            )
-            taxa_str = f"{r.taxa_vinculacao:10.1f}%"
-            comp_str = (
-                f"{r.comparacoes_realizadas:12,}"
-                if r.comparacoes_realizadas > 0
-                else "           -"
-            )
-            econ_str = (
-                f"{r.comparacoes_economizadas:12,}"
-                if r.comparacoes_economizadas > 0
-                else "           -"
-            )
-            cache_str = (
-                f"{r.cache_hit_rate:9.1f}%" if r.cache_hit_rate > 0 else "        -"
-            )
-            exits_str = f"{r.early_exits:11,}" if r.early_exits > 0 else "          -"
-
-            # Emoji de ranking
-            if i == 0:
-                emoji = "🥇"
-            elif i == 1:
-                emoji = "🥈"
-            elif i == 2:
-                emoji = "🥉"
+            if r.status != "ok":
+                tempo_str = f"{'TIMEOUT' if r.status == 'timeout' else 'ERRO':>10}"
+                taxa_str = f"{'N/A':>11}"
+                comp_str = f"{'N/A':>12}"
+                econ_str = f"{'N/A':>12}"
+                cache_str = f"{'N/A':>10}"
+                exits_str = f"{'N/A':>11}"
             else:
-                emoji = "  "
+                tempo_str = f"{r.tempo_execucao_s:10.2f}"
+                taxa_str = f"{r.taxa_vinculacao:10.1f}%"
+                comp_str = (
+                    f"{r.comparacoes_realizadas:12,}"
+                    if r.comparacoes_realizadas > 0
+                    else f"{'N/A':>12}"
+                )
+                econ_str = (
+                    f"{r.comparacoes_economizadas:12,}"
+                    if r.comparacoes_economizadas > 0
+                    else f"{'-':>12}"
+                )
+                cache_str = (
+                    f"{r.cache_hit_rate:9.1f}%"
+                    if r.cache_hit_rate > 0
+                    else f"{'-':>10}"
+                )
+                exits_str = (
+                    f"{r.early_exits:11,}" if r.early_exits > 0 else f"{'-':>11}"
+                )
 
             print(
-                f"{emoji} {r.algoritmo_nome:<17} | {tempo_str} | {taxa_str} | "
-                f"{comp_str} | {econ_str} | {cache_str} | {exits_str} | {ganho_str}"
+                f"{emoji} {r.algoritmo_nome:<17} | {status_symbol:>8} | {tempo_str} | {taxa_str} | "
+                f"{comp_str} | {econ_str} | {cache_str} | {exits_str}"
             )
 
-            if r.erro_execucao:
-                print(f"   └─> ❌ Erro: {r.erro_execucao}")
+        print("=" * 135)
 
-        print("=" * 120)
-
-        # Estatísticas finais
-        if len(resultados) > 1:
-            melhor = resultados[0]
+        # Estatísticas finais - algoritmos OK
+        vencedores = [r for r in resultados if r.status == "ok"]
+        if vencedores:
+            melhor = vencedores[0]
             print(f"\n🏆 Vencedor: {melhor.algoritmo_nome}")
             print(f"   Tempo: {melhor.tempo_execucao_s:.2f}s")
             print(f"   Taxa de vinculação: {melhor.taxa_vinculacao:.1f}%")
             print(
                 f"   Vinculadas: {melhor.modificacoes_vinculadas}/{melhor.total_modificacoes}"
             )
+
+        # Lista algoritmos inviáveis (timeout)
+        inviaveis = [r for r in resultados if r.status == "timeout"]
+        if inviaveis:
+            print(f"\n⏱️ Algoritmos INVIÁVEIS (timeout >{self.timeout_segundos}s):")
+            for r in inviaveis:
+                print(f"   - {r.algoritmo_nome}")
+
+        # Lista algoritmos com erro
+        erros = [r for r in resultados if r.status == "error"]
+        if erros:
+            print("\n❌ Algoritmos com ERRO:")
+            for r in erros:
+                print(f"   - {r.algoritmo_nome}: {r.erro_execucao}")
 
     def export_to_json(self, filepath: str):
         """Exporta resultados para JSON."""
@@ -300,6 +378,7 @@ class AlgorithmBenchmarkRunner:
             {
                 "algoritmo": r.algoritmo_nome,
                 "descricao": r.algoritmo_descricao,
+                "status": r.status,
                 "tempo_s": r.tempo_execucao_s,
                 "taxa_vinculacao": r.taxa_vinculacao,
                 "comparacoes": r.comparacoes_realizadas,
