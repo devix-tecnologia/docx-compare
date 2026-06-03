@@ -359,17 +359,17 @@ def processar_versao_com_tags(
         print("🔄 Convertendo arquivo_com_tags para texto...")
         texto_com_tags = convert_docx_to_text(tmp_com_tags)
         print(f"✓ Texto com tags: {len(texto_com_tags):,} caracteres")
-        
+
         print("🔄 Convertendo arquivo_modificado para texto...")
         texto_modificado_bruto = convert_docx_to_text(tmp_modificado)
         print(f"✓ Texto modificado bruto: {len(texto_modificado_bruto):,} caracteres")
-        
+
         # Remover tags de AMBOS os textos para alinhar coordenadas
         # IMPORTANTE: arquivo_modificado pode ter herdado tags do modelo
         print("🔄 Removendo tags do texto original...")
         texto_original = re.sub(PATTERN_REMOVER_TAGS, "", texto_com_tags)
         print(f"✓ Texto original limpo: {len(texto_original):,} caracteres")
-        
+
         print("🔄 Removendo tags do texto modificado...")
         texto_modificado = re.sub(PATTERN_REMOVER_TAGS, "", texto_modificado_bruto)
         print(f"✓ Texto modificado limpo: {len(texto_modificado):,} caracteres")
@@ -398,7 +398,9 @@ def processar_versao_com_tags(
         print(f"✓ {len(tags_data)} tags preparadas")
 
         # Vincular com cláusulas (diff já calculou posições perfeitamente)
-        print(f"🔄 Vinculando {len(modificacoes)} modificações com {len(tags_data)} tags...")
+        print(
+            f"🔄 Vinculando {len(modificacoes)} modificações com {len(tags_data)} tags..."
+        )
         modificacoes_vinculadas = algoritmo.vincular_clausulas(
             modificacoes, tags_data, texto_original
         )
@@ -430,7 +432,7 @@ def _fazer_diff_standalone(texto_original: str, texto_modificado: str) -> list[d
 
     matcher = difflib.SequenceMatcher(None, linhas_original, linhas_modificado)
     modificacoes = []
-    
+
     # Rastrear posição atual no texto original
     pos_original = 0
 
@@ -442,7 +444,7 @@ def _fazer_diff_standalone(texto_original: str, texto_modificado: str) -> list[d
         elif tag == "replace":
             conteudo_original = "".join(linhas_original[i1:i2])
             conteudo_modificado = "".join(linhas_modificado[j1:j2])
-            
+
             modificacoes.append(
                 {
                     "tipo": "ALTERACAO",  # Algoritmo espera uppercase

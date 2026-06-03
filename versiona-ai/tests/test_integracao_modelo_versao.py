@@ -116,29 +116,32 @@ def test_fluxo_completo_modelo_versao(
     print("\n" + "=" * 70)
     print("ETAPA 1: Carregando tags do modelo (pular processamento - usar JSON)")
     print("=" * 70)
-    
+
     # NOTA: Pulamos o processamento porque está travando.
     # TODO: Investigar loop infinito em _extrair_conteudo_entre_tags_core()
-    
+
     # Carregar tags já processadas do JSON
     import json
+
     tags_modelo_path = FIXTURE_DIR / "tags_modelo.json"
-    with open(tags_modelo_path, "r") as f:
+    with open(tags_modelo_path) as f:
         tags_modelo = json.load(f)
-    
+
     print(f"\n✓ Tags carregadas do JSON: {len(tags_modelo)}")
-    
+
     # Converter para formato esperado por processar_versao_com_tags
     tags_processadas = []
     for tag in tags_modelo:
-        tags_processadas.append({
-            "tag_nome": tag["tag_nome"],
-            "texto": tag.get("texto", ""),
-            "posicao_inicio": tag.get("posicao_inicio", 0),
-            "posicao_fim": tag.get("posicao_fim", 0),
-            "clausula_id": tag.get("clausula_id"),
-        })
-    
+        tags_processadas.append(
+            {
+                "tag_nome": tag["tag_nome"],
+                "texto": tag.get("texto", ""),
+                "posicao_inicio": tag.get("posicao_inicio", 0),
+                "posicao_fim": tag.get("posicao_fim", 0),
+                "clausula_id": tag.get("clausula_id"),
+            }
+        )
+
     print(f"✓ Tags processadas: {len(tags_processadas)}")
 
     # Validar tags processadas
@@ -255,43 +258,43 @@ def test_coordenadas_alinhadas(
 
     # ===== ETAPA 1: CARREGAR TAGS DO MODELO =====
     print("\n📦 ETAPA 1: Carregando tags do modelo")
-    
+
     # Carregar cláusulas existentes e arquivos
     with open(arquivo_com_tags, "rb") as f:
         arquivo_com_tags_bytes = f.read()
-    
+
     with open(arquivo_original, "rb") as f:
         arquivo_original_bytes = f.read()
-    
-    print(f"✓ Arquivos carregados")
+
+    print("✓ Arquivos carregados")
     print(f"  - arquivo_com_tags: {len(arquivo_com_tags_bytes):,} bytes")
     print(f"  - arquivo_original: {len(arquivo_original_bytes):,} bytes")
-    
+
     # Processar modelo usando função refatorada
     tags_processadas = processar_modelo_local(
         arquivo_com_tags_bytes=arquivo_com_tags_bytes,
         arquivo_original_bytes=arquivo_original_bytes,
         clausulas_existentes=clausulas_existentes,
     )
-    
+
     print(f"✓ Tags processadas: {len(tags_processadas)}")
 
     # ===== ETAPA 2: PROCESSAR VERSÃO =====
     print("\n📦 ETAPA 2: Processando versão modificada")
-    
+
     with open(arquivo_modificado, "rb") as f:
         arquivo_modificado_bytes = f.read()
 
     print(f"✓ Arquivo modificado carregado: {len(arquivo_modificado_bytes):,} bytes")
-    
+
     resultado = processar_versao_com_tags(
         arquivo_com_tags_bytes=arquivo_com_tags_bytes,
         arquivo_modificado_bytes=arquivo_modificado_bytes,
         tags_modelo=tags_processadas,
     )
-    
-    print(f"✓ processar_versao_com_tags completou")
-    
+
+    print("✓ processar_versao_com_tags completou")
+
     modificacoes = resultado["modificacoes"]
     modificacoes_vinculadas = [m for m in modificacoes if m.get("clausula_id")]
 

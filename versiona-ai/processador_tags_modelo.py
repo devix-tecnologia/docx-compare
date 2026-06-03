@@ -31,9 +31,7 @@ PATTERN_REMOVER_TAGS = (
 # ============================================================================
 
 
-def _analisar_diferencas_core(
-    texto_original: str, texto_modificado: str
-) -> list[dict]:
+def _analisar_diferencas_core(texto_original: str, texto_modificado: str) -> list[dict]:
     """
     Analisa diferenças entre os textos usando difflib.
     Função pura sem dependências externas.
@@ -129,9 +127,9 @@ def _extrair_tags_core(modificacoes: list[dict]) -> list[dict]:
                     pos_fim = match.end()
                     texto_completo = match.group(0)
 
-                    if tag_nome_normalizado not in tags_encontradas or len(
-                        texto
-                    ) > len(tags_encontradas[tag_nome_normalizado].get("contexto", "")):
+                    if tag_nome_normalizado not in tags_encontradas or len(texto) > len(
+                        tags_encontradas[tag_nome_normalizado].get("contexto", "")
+                    ):
                         linha_aproximada = texto[:pos_inicio].count("\n") + 1
 
                         tags_encontradas[tag_nome_normalizado] = {
@@ -139,9 +137,7 @@ def _extrair_tags_core(modificacoes: list[dict]) -> list[dict]:
                             "texto_completo": texto_completo,
                             "posicao_inicio": pos_inicio,
                             "posicao_fim": pos_fim,
-                            "contexto": texto[
-                                max(0, pos_inicio - 100) : pos_fim + 100
-                            ],
+                            "contexto": texto[max(0, pos_inicio - 100) : pos_fim + 100],
                             "fonte": fonte,
                             "modificacao_indice": idx,
                             "caminho_tag_inicio": f"modificacao_{idx}_linha_{linha_aproximada}_pos_{pos_inicio}",
@@ -155,7 +151,7 @@ def _remover_marcacoes_e_mapear_core(texto_com_tags: str) -> tuple[str, dict]:
     """
     Remove marcações {{TAG-X}} do texto e cria mapa de conversão de posições.
     Função pura sem dependências externas.
-    
+
     Returns:
         tuple[str, dict]: (texto_limpo, mapa_posicoes)
     """
@@ -195,53 +191,56 @@ def _extrair_conteudo_tag_core(
     """
     Extrai conteúdo entre tags de abertura e fechamento de UMA tag específica.
     Função pura sem dependências externas.
-    
+
     Args:
         tag_nome: Nome da tag (ex: "clausula_1" ou "1.2.3")
         texto_com_tags: Texto original com marcações
         texto_limpo: Texto sem marcações
         mapa_posicoes: Mapa de conversão {pos_com_tags: pos_limpa}
-    
+
     Returns:
         dict com conteudo, posicao_inicial_texto, posicao_final_texto ou None se não encontrar
     """
     # Tentar diferentes formatos de tag
     formatos = [
-        (f"{{{{TAG-{tag_nome}}}}}", f"{{{{/TAG-{tag_nome}}}}}"),  # {{TAG-X}} ... {{/TAG-X}}
+        (
+            f"{{{{TAG-{tag_nome}}}}}",
+            f"{{{{/TAG-{tag_nome}}}}}",
+        ),  # {{TAG-X}} ... {{/TAG-X}}
         (f"{{{{{tag_nome}}}}}", f"{{{{/{tag_nome}}}}}"),  # {{X}} ... {{/X}}
     ]
-    
+
     for formato_abertura, formato_fechamento in formatos:
         # Escapar para uso em regex
         pattern_abertura = re.escape(formato_abertura)
         pattern_fechamento = re.escape(formato_fechamento)
-        
+
         match_abertura = re.search(pattern_abertura, texto_com_tags, re.IGNORECASE)
         match_fechamento = re.search(pattern_fechamento, texto_com_tags, re.IGNORECASE)
-        
+
         if match_abertura and match_fechamento:
             # Posições no texto COM tags (após tag de abertura, antes tag de fechamento)
             pos_inicio_com_tags = match_abertura.end()
             pos_fim_com_tags = match_fechamento.start()
-            
+
             # Converter para posições no texto limpo
             pos_inicio_limpo = mapa_posicoes.get(pos_inicio_com_tags, 0)
             pos_fim_limpo = mapa_posicoes.get(pos_fim_com_tags, len(texto_limpo))
-            
+
             # Extrair conteúdo do texto limpo
             conteudo = texto_limpo[pos_inicio_limpo:pos_fim_limpo].strip()
-            
+
             # Remover numeração comum
             conteudo = re.sub(r"^\d+\.\s*", "", conteudo)
             conteudo = re.sub(r"^[a-z]\)\s*", "", conteudo)
             conteudo = re.sub(r"^\([a-z]\)\s*", "", conteudo)
-            
+
             return {
                 "conteudo": conteudo,
                 "posicao_inicial_texto": pos_inicio_limpo,
                 "posicao_final_texto": pos_fim_limpo,
             }
-    
+
     return None
 
 
@@ -498,8 +497,10 @@ class ProcessadorTagsModelo:
             texto_limpo, mapa_posicoes = self._remover_marcacoes_e_mapear(
                 texto_com_tags
             )
-        
-        return _extrair_conteudo_entre_tags_core(texto_com_tags, texto_limpo, mapa_posicoes)
+
+        return _extrair_conteudo_entre_tags_core(
+            texto_com_tags, texto_limpo, mapa_posicoes
+        )
 
     def _extrair_numero_nome_clausula(
         self, tag_nome: str, conteudo: str
@@ -988,7 +989,7 @@ def processar_modelo_local(
 ) -> list[dict]:
     """
     Processa modelo localmente sem usar Directus (para testes).
-    
+
     REPLICA EXATAMENTE O COMPORTAMENTO de ProcessadorTagsModelo.processar_modelo(),
     apenas recebendo arquivos como bytes ao invés de buscar do Directus.
 
@@ -1002,13 +1003,14 @@ def processar_modelo_local(
     """
     import tempfile
     from pathlib import Path
+
     from docx_utils import convert_docx_to_text
 
     # Salvar arquivos temporariamente
     with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as tmp:
         tmp.write(arquivo_com_tags_bytes)
         tmp_com_tags = tmp.name
-    
+
     with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as tmp:
         tmp.write(arquivo_original_bytes)
         tmp_original = tmp.name
@@ -1019,23 +1021,24 @@ def processar_modelo_local(
         texto_com_tags = convert_docx_to_text(tmp_com_tags)
         print("🔵 [2/6] Convertendo arquivo_original...")
         texto_original = convert_docx_to_text(tmp_original)
-        
+
         print(f"📊 Texto original: {len(texto_original)} caracteres")
         print(f"📊 Texto com tags: {len(texto_com_tags)} caracteres")
-        
+
         # 2. Analisar diferenças usando função core
         print("🔵 [3/6] Analisando diferenças...")
         modificacoes = _analisar_diferencas_core(texto_original, texto_com_tags)
         print(f"🔍 Encontradas {len(modificacoes)} modificações")
-        
+
         # 3. Extrair tags das diferenças usando função core
         print("🔵 [4/6] Extraindo tags...")
         tags_encontradas = _extrair_tags_core(modificacoes)
         tag_names = [tag["nome"] for tag in tags_encontradas]
-        print(f"🏷️  Extraídas {len(tags_encontradas)} tags únicas: {sorted(tag_names)[:10]}...")
-        
+        print(
+            f"🏷️  Extraídas {len(tags_encontradas)} tags únicas: {sorted(tag_names)[:10]}..."
+        )
+
         # 4. Remover marcações e mapear posições usando função core
-        print("🔵 [5/6] Removendo marcações e mapeando posições...")
         texto_limpo, mapa_posicoes = _remover_marcacoes_e_mapear_core(texto_com_tags)
         print(f"📊 Texto limpo: {len(texto_limpo)} caracteres")
         
@@ -1045,25 +1048,21 @@ def processar_modelo_local(
         }
         
         # 6. Para cada tag encontrada, extrair conteúdo individualmente
-        print(f"🔵 [6/6] Extraindo conteúdo de {len(tags_encontradas)} tags...")
         tags_processadas = []
         for idx, tag_info in enumerate(tags_encontradas):
-            if idx % 50 == 0:
-                print(f"   Processando tag {idx + 1}/{len(tags_encontradas)}...")
-            
             tag_nome = tag_info["nome"]
-            
+
             # Extrair conteúdo desta tag específica usando função core
             conteudo_data = _extrair_conteudo_tag_core(
                 tag_nome, texto_com_tags, texto_limpo, mapa_posicoes
             )
-            
+
             if not conteudo_data:
                 continue
-            
+
             # Vincular com cláusula existente
             clausula = clausulas_map.get(tag_nome)
-            
+
             tag_data = {
                 "tag_nome": tag_nome,
                 "texto": conteudo_data["conteudo"],
@@ -1072,7 +1071,7 @@ def processar_modelo_local(
                 "clausula_id": clausula["id"] if clausula else None,
             }
             tags_processadas.append(tag_data)
-        
+
         print(f"✨ {len(tags_processadas)} tags válidas com conteúdo")
         return tags_processadas
 
@@ -1080,4 +1079,3 @@ def processar_modelo_local(
         # Limpar arquivos temporários
         Path(tmp_com_tags).unlink(missing_ok=True)
         Path(tmp_original).unlink(missing_ok=True)
-
