@@ -498,9 +498,28 @@ class ProcessadorTagsModelo:
                 texto_com_tags
             )
 
-        return _extrair_conteudo_entre_tags_core(
-            texto_com_tags, texto_limpo, mapa_posicoes
-        )
+        # Extrair todas as tags de abertura do texto
+        tag_pattern = r"\{\{(?:TAG-)?([a-zA-Z_][a-zA-Z0-9_]*|\d+(?:\.\d+)*)\}\}"
+        tags_encontradas = set()
+
+        for match in re.finditer(tag_pattern, texto_com_tags, re.IGNORECASE):
+            tag_nome = match.group(1).strip()
+            # Normalizar nome
+            if re.match(r"^\d+(?:\.\d+)*$", tag_nome):
+                tags_encontradas.add(tag_nome)
+            else:
+                tags_encontradas.add(tag_nome.lower())
+
+        # Processar cada tag individualmente
+        resultado = {}
+        for tag_nome in tags_encontradas:
+            conteudo_data = _extrair_conteudo_tag_core(
+                tag_nome, texto_com_tags, texto_limpo, mapa_posicoes
+            )
+            if conteudo_data:
+                resultado[tag_nome] = conteudo_data
+
+        return resultado
 
     def _extrair_numero_nome_clausula(
         self, tag_nome: str, conteudo: str
@@ -1041,15 +1060,15 @@ def processar_modelo_local(
         # 4. Remover marcações e mapear posições usando função core
         texto_limpo, mapa_posicoes = _remover_marcacoes_e_mapear_core(texto_com_tags)
         print(f"📊 Texto limpo: {len(texto_limpo)} caracteres")
-        
+
         # 5. Criar mapa de cláusulas por nome/número para vinculação
         clausulas_map = {
             c.get("numero") or c.get("nome"): c for c in clausulas_existentes
         }
-        
+
         # 6. Para cada tag encontrada, extrair conteúdo individualmente
         tags_processadas = []
-        for idx, tag_info in enumerate(tags_encontradas):
+        for tag_info in tags_encontradas:
             tag_nome = tag_info["nome"]
 
             # Extrair conteúdo desta tag específica usando função core

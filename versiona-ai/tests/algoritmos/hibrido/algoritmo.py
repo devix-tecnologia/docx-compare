@@ -33,7 +33,7 @@ class AlgoritmoHibrido(AlgoritmoVinculacao):
     ):
         """
         Inicializa sub-algoritmos e estatísticas.
-        
+
         Args:
             usar_fuzzy: Se True, sempre usa fuzzy. Se False, nunca usa.
                        Se None (padrão), decide automaticamente baseado em complexidade.
@@ -202,15 +202,17 @@ class AlgoritmoHibrido(AlgoritmoVinculacao):
         num_modificacoes = len(modificacoes)
         num_tags = len(tags)
         complexidade = num_modificacoes * num_tags
-        
+
         usar_fuzzy_nesta_execucao = self._usar_fuzzy
         if usar_fuzzy_nesta_execucao is None:
             # Auto-detectar: desabilitar se complexidade > limiar
             usar_fuzzy_nesta_execucao = complexidade <= self._limiar_complexidade_fuzzy
             if not usar_fuzzy_nesta_execucao:
                 self._fuzzy_desabilitado_auto = True
-                print(f"⚠️  Fuzzy desabilitado automaticamente: {num_modificacoes} modificações × {num_tags} tags = {complexidade:,} comparações (limiar: {self._limiar_complexidade_fuzzy:,})")
-        
+                print(
+                    f"⚠️  Fuzzy desabilitado automaticamente: {num_modificacoes} modificações × {num_tags} tags = {complexidade:,} comparações (limiar: {self._limiar_complexidade_fuzzy:,})"
+                )
+
         # Primeiro, calcular posições (passando flag para controlar fuzzy lá também)
         mods_com_posicao = self.calcular_posicoes(
             modificacoes, texto_completo, usar_fuzzy_override=usar_fuzzy_nesta_execucao
