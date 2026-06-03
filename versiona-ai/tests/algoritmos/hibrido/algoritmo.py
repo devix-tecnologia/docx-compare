@@ -22,15 +22,33 @@ class AlgoritmoHibrido(AlgoritmoVinculacao):
     Algoritmo híbrido que combina estratégias em cascata:
     - Overlap: para modificações com posições conhecidas
     - Regex: para padrões estruturados (valores, datas, IDs)
-    - Fuzzy: para texto livre com variações
+    - Fuzzy: para texto livre com variações (parametrizável)
     - ML: (opcional) para paráfrases e semântica
     """
 
-    def __init__(self):
-        """Inicializa sub-algoritmos e estatísticas."""
+    def __init__(
+        self,
+        usar_fuzzy: bool | None = None,
+        limiar_complexidade_fuzzy: int = 10000,
+    ):
+        """
+        Inicializa sub-algoritmos e estatísticas.
+        
+        Args:
+            usar_fuzzy: Se True, sempre usa fuzzy. Se False, nunca usa.
+                       Se None (padrão), decide automaticamente baseado em complexidade.
+            limiar_complexidade_fuzzy: Limite de (modificações × tags) acima do qual
+                                      fuzzy é desabilitado automaticamente.
+                                      Padrão: 10.000 comparações.
+        """
         # Instanciar sub-algoritmos
         self._alg_regex = AlgoritmoRegex()
         self._alg_fuzzy = AlgoritmoFuzzyAvancado()
+
+        # Configuração de uso do fuzzy
+        self._usar_fuzzy = usar_fuzzy
+        self._limiar_complexidade_fuzzy = limiar_complexidade_fuzzy
+        self._fuzzy_desabilitado_auto = False  # Flag para rastreamento
 
         # Thresholds configuráveis
         self._thresholds = {
@@ -44,6 +62,7 @@ class AlgoritmoHibrido(AlgoritmoVinculacao):
             "overlap": 0,
             "regex": 0,
             "fuzzy": 0,
+            "fuzzy_desabilitado": 0,  # Quantas vezes fuzzy foi pulado
             "ml": 0,
             "nao_vinculada": 0,
         }
@@ -57,16 +76,29 @@ class AlgoritmoHibrido(AlgoritmoVinculacao):
         return "Combina overlap, regex, fuzzy e ML em cascata para máxima cobertura"
 
     def calcular_posicoes(
-        self, modificacoes: list[dict[str, Any]], texto_completo: str
+        self,
+        modificacoes: list[dict[str, Any]],
+        texto_completo: str,
+        usar_fuzzy_override: bool | None = None,
     ) -> list[dict[str, Any]]:
         """
         Calcula posições usando estratégias em cascata:
         1. Regex (rápido e preciso para padrões estruturados)
-        2. Fuzzy (busca aproximada para texto livre)
+        2. Fuzzy (busca aproximada para texto livre) - se habilitado
         3. Busca exata (fallback)
+
+        Args:
+            modificacoes: Lista de modificações
+            texto_completo: Texto completo
+            usar_fuzzy_override: Se fornecido, sobrescreve self._usar_fuzzy para esta chamada
 
         Retorna modificações com posicao_inicio, posicao_fim e _estrategia_posicao.
         """
+        # Decidir se usa fuzzy (com override ou default)
+        usar_fuzzy = (
+            usar_fuzzy_override if usar_fuzzy_override is not None else self._usar_fuzzy
+        )
+
         resultado = []
 
         for mod in modificacoes:
@@ -100,10 +132,10 @@ class AlgoritmoHibrido(AlgoritmoVinculacao):
                     )
                     estrategia_posicao = "regex"
             except Exception:
-                pass  # Regex pode falhar, continuar para fuzzy
+                pass  # Regex pode falhar, continuar
 
-            # 2. Se regex falhou, tentar FUZZY
-            if posicao is None:
+            # 2. Se regex falhou, tentar FUZZY (se habilitado explicitamente)
+            if posicao is None and usar_fuzzy is True:
                 try:
                     resultado_fuzzy = self._alg_fuzzy.calcular_posicoes(
                         [mod], texto_completo
@@ -160,14 +192,29 @@ class AlgoritmoHibrido(AlgoritmoVinculacao):
         1. Calcular posições (já usa regex → fuzzy internamente)
         2. OVERLAP: se tem posição válida, tentar buscar_tag_por_posicao
         3. REGEX: se overlap falhou mas regex achou posição, usar regex para vincular
-        4. FUZZY: se regex falhou, usar fuzzy
+        4. FUZZY: se regex falhou, usar fuzzy (se habilitado)
         5. ML: (opcional) último recurso para casos difíceis
         6. NONE: se tudo falhar
 
         Retorna modificações com tag_vinculada, _estrategia_usada e _score_vinculacao.
         """
-        # Primeiro, calcular posições
-        mods_com_posicao = self.calcular_posicoes(modificacoes, texto_completo)
+        # Decidir se usa fuzzy baseado em complexidade
+        num_modificacoes = len(modificacoes)
+        num_tags = len(tags)
+        complexidade = num_modificacoes * num_tags
+        
+        usar_fuzzy_nesta_execucao = self._usar_fuzzy
+        if usar_fuzzy_nesta_execucao is None:
+            # Auto-detectar: desabilitar se complexidade > limiar
+            usar_fuzzy_nesta_execucao = complexidade <= self._limiar_complexidade_fuzzy
+            if not usar_fuzzy_nesta_execucao:
+                self._fuzzy_desabilitado_auto = True
+                print(f"⚠️  Fuzzy desabilitado automaticamente: {num_modificacoes} modificações × {num_tags} tags = {complexidade:,} comparações (limiar: {self._limiar_complexidade_fuzzy:,})")
+        
+        # Primeiro, calcular posições (passando flag para controlar fuzzy lá também)
+        mods_com_posicao = self.calcular_posicoes(
+            modificacoes, texto_completo, usar_fuzzy_override=usar_fuzzy_nesta_execucao
+        )
 
         resultado = []
 
@@ -205,8 +252,8 @@ class AlgoritmoHibrido(AlgoritmoVinculacao):
                 except Exception:
                     pass
 
-            # 3. FUZZY: se regex falhou ou posição veio do fuzzy
-            if tag_vinculada is None:
+            # 3. FUZZY: se regex falhou ou posição veio do fuzzy (e se habilitado)
+            if tag_vinculada is None and usar_fuzzy_nesta_execucao:
                 try:
                     resultado_fuzzy = self._alg_fuzzy.vincular_clausulas(
                         [mod], tags, texto_completo
@@ -218,6 +265,8 @@ class AlgoritmoHibrido(AlgoritmoVinculacao):
                         self._stats["fuzzy"] += 1
                 except Exception:
                     pass
+            elif tag_vinculada is None and not usar_fuzzy_nesta_execucao:
+                self._stats["fuzzy_desabilitado"] += 1
 
             # 5. Nenhuma estratégia funcionou
             if tag_vinculada is None:
