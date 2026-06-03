@@ -29,16 +29,25 @@ Assignee: Sidarta Veloso
 3. **Formatação** (commit a9e2bbb):
    - Aplicado ruff format
 
+4. **Parametrização de Fuzzy** (commit 3e4674b):
+   - AlgoritmoHibrido aceita `usar_fuzzy` parametrizável
+   - Auto-detecção de complexidade: desabilita fuzzy se (mods × tags) > 10,000
+   - Performance validada: 67 mods × 294 tags completa em <30s (antes: timeout)
+   - Taxa vinculação: 34.3% usando apenas overlap (sem fuzzy)
+   - Documentação: `docs/FUZZY_PARAMETRIZACAO.md`
+
 ### ⏳ Em Progresso
 
-- **Problema identificado**: AlgoritmoHibrido trava ao vincular 294 tags com 67 modificações
-- **Bloqueador**: Precisa investigar/otimizar algoritmo de vinculação antes de validar coordenadas
+- **Validar taxa de vinculação final**: Precisa atingir ≥40% (atual: 34.3% sem fuzzy)
+- **Considerar alternativas**: 
+  - Ajustar limiar para permitir fuzzy em mais casos
+  - Otimizar AlgoritmoFuzzyAvancado (batch processing, cache)
+  - Melhorar estratégia de overlap
 
 ### ❌ Pendente
 
 - Teste automatizado pytest ainda não passa (trava durante execução)
 - Validação com dados reais (versão 8d8e89a8)
-- Confirmar taxa de vinculação ≥40%
 
 ---
 
