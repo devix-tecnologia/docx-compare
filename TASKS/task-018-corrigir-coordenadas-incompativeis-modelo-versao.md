@@ -8,10 +8,41 @@ Assignee: Sidarta Veloso
 **Versão de Teste:** 8d8e89a8-ba89-4e0e-846c-43e7ad058309
 **Modelo de Teste:** 48b43d38-76b4-47a2-93a4-4216ad57defc
 **Data Criação:** 2026-06-02
+**Última Atualização:** 2026-06-03
 
 ---
 
-## 📋 Problema
+## 🎯 Progresso
+
+### ✅ Completado
+
+1. **Refatoração DRY** (commit c800f47):
+   - Criadas funções core puras compartilhadas
+   - `_analisar_diferencas_core()`, `_extrair_tags_core()`, `_remover_marcacoes_e_mapear_core()`, `_extrair_conteudo_tag_core()`
+   - Eliminada duplicação entre `ProcessadorTagsModelo` e `processar_modelo_local()`
+   - Ambos usam mesma lógica DIFF
+
+2. **Correção de bug** (commit c800f47):
+   - Corrigido processamento tag-por-tag (estava processando todas de uma vez)
+   - Teste manual: 294 tags processadas com sucesso
+
+3. **Formatação** (commit a9e2bbb):
+   - Aplicado ruff format
+
+### ⏳ Em Progresso
+
+- **Problema identificado**: AlgoritmoHibrido trava ao vincular 294 tags com 67 modificações
+- **Bloqueador**: Precisa investigar/otimizar algoritmo de vinculação antes de validar coordenadas
+
+### ❌ Pendente
+
+- Teste automatizado pytest ainda não passa (trava durante execução)
+- Validação com dados reais (versão 8d8e89a8)
+- Confirmar taxa de vinculação ≥40%
+
+---
+
+## 📋 Problema Original
 
 O processamento de versões está resultando em **0% de vinculação** de modificações com cláusulas, mesmo usando o algoritmo híbrido otimizado que apresenta **98.8% de vinculação** nos testes isolados.
 
