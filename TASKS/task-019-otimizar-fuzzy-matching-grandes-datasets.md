@@ -302,6 +302,15 @@ versiona-ai/tests/
 └── test_task_019_comparacao.py        # Testes automatizados A/B
 ```
 
+**Timeout e Notação de Status:**
+
+Cada algoritmo tem **60 segundos** para completar. Algoritmos que excedem esse limite são marcados como **INVIÁVEIS** (⏱️).
+
+Status possíveis:
+- ✅ **OK**: Algoritmo completou com sucesso
+- ⏱️ **TIMEOUT**: Excedeu 60s - INVIÁVEL para datasets grandes
+- ❌ **ERROR**: Erro de execução (falha real)
+
 **Como adicionar novo algoritmo:**
 
 1. Crie arquivo `versiona-ai/tests/algoritmos/fuzzy/algoritmo_meu.py`
@@ -312,14 +321,31 @@ versiona-ai/tests/
 **Saída do benchmark:**
 
 ```
-================================================================================
+🏁 Executando 3 algoritmos...
+   Dataset: 67 mods × 294 tags
+
+⏱️  Testando 'fuzzy'... ⏱️ TIMEOUT (>60s) - INVIÁVEL
+⏱️  Testando 'fuzzy_cache'... ⏱️ TIMEOUT (>60s) - INVIÁVEL
+⏱️  Testando 'fuzzy_otimizado'... ✅ 4.82s | 42.1% vinculação
+
+===============================================================================
 📊 COMPARAÇÃO DE ALGORITMOS DE FUZZY MATCHING
-================================================================================
-Algoritmo            |  Tempo (s) | Taxa Vinc. |  Comparações | Economizadas |  Cache Hit | Early Exit
-----------------------------------------------------------------------------------------------------------------------------
-🥇 fuzzy_otimizado   |       4.82 |      42.1% |        1,340 |       18,358 |      73.5% |         23
-🥈 fuzzy             |      58.34 |      41.8% |       19,698 |            - |         - |          -
-================================================================================
+===============================================================================
+Algoritmo            |   Status |  Tempo (s) | Taxa Vinc. |  Comparações | ...
+-------------------------------------------------------------------------------
+🥇 fuzzy_otimizado   |       ✅ |       4.82 |      42.1% |        1,340 | ...
+⏱️ fuzzy             |       ⏱️ |    TIMEOUT |        N/A |          N/A | ...
+⏱️ fuzzy_cache       |       ⏱️ |    TIMEOUT |        N/A |          N/A | ...
+===============================================================================
+
+🏆 Vencedor: fuzzy_otimizado
+   Tempo: 4.82s
+   Taxa de vinculação: 42.1%
+   Vinculadas: 28/67
+
+⏱️ Algoritmos INVIÁVEIS (timeout >60s):
+   - fuzzy
+   - fuzzy_cache
 ```
 
 ### Fase 1: Quick Wins (1-2 dias)
