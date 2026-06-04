@@ -307,6 +307,7 @@ versiona-ai/tests/
 Cada algoritmo tem **60 segundos** para completar. Algoritmos que excedem esse limite são marcados como **INVIÁVEIS** (⏱️).
 
 Status possíveis:
+
 - ✅ **OK**: Algoritmo completou com sucesso
 - ⏱️ **TIMEOUT**: Excedeu 60s - INVIÁVEL para datasets grandes
 - ❌ **ERROR**: Erro de execução (falha real)

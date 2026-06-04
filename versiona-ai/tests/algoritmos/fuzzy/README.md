@@ -15,15 +15,15 @@ class MeuAlgoritmo(AlgoritmoVinculacao):
     @property
     def nome(self) -> str:
         return "meu_algo"
-    
+
     @property
     def descricao(self) -> str:
         return "Descrição breve da estratégia"
-    
+
     def calcular_posicoes(self, modificacoes, texto):
         # Calcula posicao_inicio/posicao_fim
         pass
-    
+
     def vincular_clausulas(self, modificacoes, tags, texto):
         # Retorna lista de dicts com 'tag_vinculada'
         pass
@@ -51,6 +51,7 @@ python versiona-ai/tests/benchmark_fuzzy_runner.py
 ```
 
 **Métricas coletadas:**
+
 - ⏱️ Tempo de execução
 - 📊 Taxa de vinculação (% modificações vinculadas)
 - 🔢 Número de comparações realizadas
@@ -74,73 +75,73 @@ class MeuAlgoritmo(AlgoritmoVinculacao):
     @property
     def nome(self) -> str:
         return "meu_algo"  # Nome único
-    
+
     @property
     def descricao(self) -> str:
         return "Estratégia X com otimização Y"
-    
+
     def __init__(self, parametro1=10, parametro2=True):
         self.parametro1 = parametro1
         self.parametro2 = parametro2
-        
+
         # Stats opcionais para benchmark
         self._stats = {
             "total_comparisons": 0,
             "cache_hits": 0,
             "early_exits": 0,
         }
-    
+
     def calcular_posicoes(self, modificacoes, texto_completo):
         """Implementa lógica de cálculo de posições."""
         resultado = []
-        
+
         for mod in modificacoes:
             # Sua lógica aqui
             texto_busca = UtilitariosVinculacao.extrair_texto_busca(mod)
-            
+
             # Calcula posição
             pos_inicio = self._buscar_posicao(texto_busca, texto_completo)
             pos_fim = pos_inicio + len(texto_busca)
-            
+
             resultado.append({
                 **mod,
                 "posicao_inicio": pos_inicio,
                 "posicao_fim": pos_fim,
             })
-        
+
         return resultado
-    
+
     def vincular_clausulas(self, modificacoes, tags, texto_completo):
         """Implementa lógica de vinculação."""
         # Primeiro calcula posições
         mods_com_posicao = self.calcular_posicoes(modificacoes, texto_completo)
-        
+
         resultado = []
-        
+
         for mod in mods_com_posicao:
             # Busca melhor tag
             melhor_tag = self._buscar_melhor_tag(mod, tags)
-            
+
             resultado.append({
                 **mod,
                 "tag_vinculada": melhor_tag,
             })
-        
+
         return resultado
-    
+
     def _buscar_posicao(self, texto, texto_completo):
         """Método auxiliar."""
         # Sua implementação
         return texto_completo.find(texto)
-    
+
     def _buscar_melhor_tag(self, mod, tags):
         """Método auxiliar."""
         # Sua implementação
         pos_inicio = mod.get("posicao_inicio")
-        
+
         if pos_inicio is None:
             return None
-        
+
         # Usa utilit ário comum
         return UtilitariosVinculacao.buscar_tag_por_posicao(
             pos_inicio, mod.get("posicao_fim"), tags
@@ -222,15 +223,15 @@ class MeuAlgoritmo(AlgoritmoVinculacao):
             "early_exits": 0,             # Saídas antecipadas
             "indexing_time": 0.0,         # Tempo de indexação
         }
-    
+
     def vincular_clausulas(self, modificacoes, tags, texto):
         # Atualiza stats durante execução
         self._stats["total_comparisons"] += 1
-        
+
         # ... sua lógica
-        
+
         return resultado
-    
+
     # OU implementar método
     def get_stats(self) -> dict:
         return {
@@ -250,6 +251,7 @@ pytest versiona-ai/tests/test_task_019_comparacao.py -v
 ```
 
 **Testes incluem:**
+
 - ✅ Execução sem erros
 - ✅ Performance aceitável (<30s para 10k comparações)
 - ✅ Taxa de vinculação > 0%
@@ -347,5 +349,5 @@ versiona-ai/tests/
 
 ---
 
-**Última atualização**: 2026-06-03  
+**Última atualização**: 2026-06-03
 **Autor**: Sistema de Otimização Contínua

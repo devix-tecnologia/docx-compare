@@ -44,9 +44,7 @@ def carregar_dataset_real():
         texto_busca = ""
         tipo = mod.get("tipo", "")
 
-        if tipo == "INSERCAO":
-            texto_busca = mod.get("conteudo", {}).get("novo", "")
-        elif tipo == "ALTERACAO":
+        if tipo == "INSERCAO" or tipo == "ALTERACAO":
             texto_busca = mod.get("conteudo", {}).get("novo", "")
         elif tipo == "REMOCAO":
             texto_busca = mod.get("conteudo", {}).get("original", "")
@@ -112,11 +110,13 @@ def main():
     print("📈 ANÁLISE TASK-018")
     print("=" * 80)
 
-    otimizado = next((r for r in resultados if r.algoritmo_nome == "fuzzy_otimizado"), None)
+    otimizado = next(
+        (r for r in resultados if r.algoritmo_nome == "fuzzy_otimizado"), None
+    )
     baseline = next((r for r in resultados if r.algoritmo_nome == "fuzzy"), None)
 
     if otimizado and otimizado.status == "ok":
-        print(f"\n✅ fuzzy_otimizado VIÁVEL:")
+        print("\n✅ fuzzy_otimizado VIÁVEL:")
         print(f"   Tempo: {otimizado.tempo_execucao_s:.2f}s")
         print(f"   Taxa vinculação: {otimizado.taxa_vinculacao:.1f}%")
         print(f"   Comparações: {otimizado.comparacoes_realizadas:,}")
@@ -128,23 +128,35 @@ def main():
         meta_taxa = 40.0  # ≥40% taxa vinculação (fixture real tem 41.8%)
 
         if otimizado.tempo_execucao_s <= meta_tempo:
-            print(f"\n   🎯 META PERFORMANCE: ✅ ({otimizado.tempo_execucao_s:.2f}s ≤ {meta_tempo}s)")
+            print(
+                f"\n   🎯 META PERFORMANCE: ✅ ({otimizado.tempo_execucao_s:.2f}s ≤ {meta_tempo}s)"
+            )
         else:
-            print(f"\n   ⚠️  META PERFORMANCE: ❌ ({otimizado.tempo_execucao_s:.2f}s > {meta_tempo}s)")
+            print(
+                f"\n   ⚠️  META PERFORMANCE: ❌ ({otimizado.tempo_execucao_s:.2f}s > {meta_tempo}s)"
+            )
 
         if otimizado.taxa_vinculacao >= meta_taxa:
-            print(f"   🎯 META PRECISÃO: ✅ ({otimizado.taxa_vinculacao:.1f}% ≥ {meta_taxa}%)")
+            print(
+                f"   🎯 META PRECISÃO: ✅ ({otimizado.taxa_vinculacao:.1f}% ≥ {meta_taxa}%)"
+            )
         else:
-            print(f"   ⚠️  META PRECISÃO: ❌ ({otimizado.taxa_vinculacao:.1f}% < {meta_taxa}%)")
+            print(
+                f"   ⚠️  META PRECISÃO: ❌ ({otimizado.taxa_vinculacao:.1f}% < {meta_taxa}%)"
+            )
 
     if baseline:
         if baseline.status == "timeout":
-            print(f"\n⏱️  fuzzy baseline: INVIÁVEL (timeout >60s)")
-            print(f"   Confirma problema original da task-018")
+            print("\n⏱️  fuzzy baseline: INVIÁVEL (timeout >60s)")
+            print("   Confirma problema original da task-018")
         else:
             print(f"\n✅ fuzzy baseline completou em {baseline.tempo_execucao_s:.2f}s")
             if otimizado and otimizado.status == "ok":
-                ganho = (baseline.tempo_execucao_s - otimizado.tempo_execucao_s) / baseline.tempo_execucao_s * 100
+                ganho = (
+                    (baseline.tempo_execucao_s - otimizado.tempo_execucao_s)
+                    / baseline.tempo_execucao_s
+                    * 100
+                )
                 print(f"   Ganho: {ganho:.1f}% mais rápido com otimização")
 
     print("\n" + "=" * 80)
