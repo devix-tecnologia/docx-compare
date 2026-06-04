@@ -4,7 +4,7 @@ Algoritmo Híbrido de Vinculação de Cláusulas
 Combina múltiplas estratégias em cascata para maximizar performance e cobertura:
 1. Overlap direto (se tem posições)
 2. Regex (padrões estruturados)
-3. Fuzzy (similaridade textual)
+3. Fuzzy (similaridade textual) - com versão otimizada disponível
 4. ML (semântica) - opcional
 
 Meta: Score ≥90, Taxa ≥95%, Precisão ≥95%
@@ -22,14 +22,17 @@ class AlgoritmoHibrido(AlgoritmoVinculacao):
     Algoritmo híbrido que combina estratégias em cascata:
     - Overlap: para modificações com posições conhecidas
     - Regex: para padrões estruturados (valores, datas, IDs)
-    - Fuzzy: para texto livre com variações (parametrizável)
+    - Fuzzy: para texto livre com variações (parametrizável + otimizado)
     - ML: (opcional) para paráfrases e semântica
     """
 
     def __init__(
         self,
         usar_fuzzy: bool | None = None,
-        limiar_complexidade_fuzzy: int = 10000,
+        limiar_complexidade_fuzzy: int = 50000,
+        usar_otimizado: bool = True,
+        prefilter_top_k: int = 50,
+        early_exit_threshold: float = 85.0,
     ):
         """
         Inicializa sub-algoritmos e estatísticas.
@@ -39,16 +42,34 @@ class AlgoritmoHibrido(AlgoritmoVinculacao):
                        Se None (padrão), decide automaticamente baseado em complexidade.
             limiar_complexidade_fuzzy: Limite de (modificações × tags) acima do qual
                                       fuzzy é desabilitado automaticamente.
-                                      Padrão: 10.000 comparações.
+                                      Padrão: 50.000 (com otimizado ativo).
+            usar_otimizado: Se True (PADRÃO), usa AlgoritmoFuzzyAvancadoOtimizado com cache,
+                          TF-IDF pre-filtering e early exit. Resolve timeout em datasets grandes.
+            prefilter_top_k: Número de candidatas após TF-IDF (padrão: 50)
+            early_exit_threshold: Score para parar busca (padrão: 85.0)
         """
         # Instanciar sub-algoritmos
         self._alg_regex = AlgoritmoRegex()
-        self._alg_fuzzy = AlgoritmoFuzzyAvancado()
+
+        # Fuzzy: escolhe versão normal ou otimizada
+        if usar_otimizado:
+            from algoritmos.fuzzy.algoritmo_otimizado import (
+                AlgoritmoFuzzyAvancadoOtimizado,
+            )
+
+            self._alg_fuzzy = AlgoritmoFuzzyAvancadoOtimizado(
+                prefilter_top_k=prefilter_top_k,
+                early_exit_threshold=early_exit_threshold,
+                use_cache=True,
+            )
+        else:
+            self._alg_fuzzy = AlgoritmoFuzzyAvancado()
 
         # Configuração de uso do fuzzy
         self._usar_fuzzy = usar_fuzzy
         self._limiar_complexidade_fuzzy = limiar_complexidade_fuzzy
         self._fuzzy_desabilitado_auto = False  # Flag para rastreamento
+        self._usar_otimizado = usar_otimizado
 
         # Thresholds configuráveis
         self._thresholds = {
@@ -134,8 +155,8 @@ class AlgoritmoHibrido(AlgoritmoVinculacao):
             except Exception:
                 pass  # Regex pode falhar, continuar
 
-            # 2. Se regex falhou, tentar FUZZY (se habilitado explicitamente)
-            if posicao is None and usar_fuzzy is True:
+            # 2. Se regex falhou, tentar FUZZY (se não explicitamente desabilitado)
+            if posicao is None and usar_fuzzy is not False:
                 try:
                     resultado_fuzzy = self._alg_fuzzy.calcular_posicoes(
                         [mod], texto_completo

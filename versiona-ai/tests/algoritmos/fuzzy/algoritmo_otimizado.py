@@ -10,7 +10,9 @@ Performance esperada: 80-90% redução de tempo vs baseline
 """
 
 import hashlib
+import re
 import time
+import unicodedata
 from typing import Any
 
 import numpy as np
@@ -41,16 +43,16 @@ class AlgoritmoFuzzyAvancadoOtimizado(AlgoritmoVinculacao):
 
     def __init__(
         self,
-        prefilter_top_k: int = 20,
-        early_exit_threshold: float = 95.0,
+        prefilter_top_k: int = 50,
+        early_exit_threshold: float = 85.0,
         use_cache: bool = True,
         cache_ttl: int = 3600,
         min_tags_for_index: int = 100,
     ):
         """
         Args:
-            prefilter_top_k: Número de candidatas após TF-IDF (padrão: 20)
-            early_exit_threshold: Score para parar busca (padrão: 95.0)
+            prefilter_top_k: Número de candidatas após TF-IDF (padrão: 50)
+            early_exit_threshold: Score para parar busca (padrão: 85.0)
             use_cache: Habilitar cache de similaridade (padrão: True)
             cache_ttl: Tempo de vida do cache em segundos (padrão: 3600)
             min_tags_for_index: Mínimo de tags para criar índice (padrão: 100)
@@ -273,12 +275,202 @@ class AlgoritmoFuzzyAvancadoOtimizado(AlgoritmoVinculacao):
         """
         Calcula posições usando fuzzy matching.
 
-        Nota: Esta implementação otimizada foca em vincular_clausulas.
-        Para calcular posições, usa a mesma lógica do AlgoritmoFuzzyAvancado.
+        Usa a implementação padrão do AlgoritmoFuzzyAvancado (sliding window).
+        As otimizações (cache, TF-IDF, early exit) são aplicadas em vincular_clausulas.
         """
-        # Mantém compatibilidade retornando modificações sem alteração
-        # (posições são calculadas por outros algoritmos no híbrido)
-        return modificacoes
+        resultado = []
+
+        for mod in modificacoes:
+            texto_busca = UtilitariosVinculacao.extrair_texto_busca(mod)
+
+            # Buscar posição com fuzzy matching apenas se houver texto
+            if texto_busca is None:
+                resultado.append({**mod})
+                continue
+
+            inicio, fim, score = self._buscar_posicao_com_sliding_window(
+                texto_busca, texto_completo
+            )
+
+            if inicio >= 0:
+                resultado.append(
+                    {
+                        **mod,
+                        "posicao_inicio": inicio,
+                        "posicao_fim": fim,
+                        "_fuzzy_score": score,
+                    }
+                )
+            else:
+                resultado.append(
+                    {
+                        **mod,
+                        "posicao_inicio": None,
+                        "posicao_fim": None,
+                        "_fuzzy_score": 0.0,
+                    }
+                )
+
+        return resultado
+
+    def _normalizar_texto(self, texto: str) -> str:
+        """
+        Normaliza texto removendo acentos, espaços extras e normalizando números.
+
+        Args:
+            texto: Texto a normalizar
+
+        Returns:
+            Texto normalizado
+        """
+        if not texto:
+            return ""
+
+        # Remover acentos
+        texto_sem_acento = unicodedata.normalize("NFKD", texto)
+        texto_sem_acento = "".join(
+            [c for c in texto_sem_acento if not unicodedata.combining(c)]
+        )
+
+        # Normalizar espaços múltiplos
+        texto_normalizado = re.sub(r"\s+", " ", texto_sem_acento)
+
+        # Normalizar números (remover formatação)
+        texto_normalizado = re.sub(
+            r"(\d)\.(\d{3})", r"\1\2", texto_normalizado
+        )  # 1.000 -> 1000
+        texto_normalizado = re.sub(
+            r"(\d),(\d{2})\b", r"\1.\2", texto_normalizado
+        )  # 10,50 -> 10.50
+
+        return texto_normalizado.strip().lower()
+
+    def _calcular_threshold_dinamico(self, texto: str) -> float:
+        """
+        Calcula threshold baseado no tamanho do texto.
+
+        Textos curtos precisam de threshold mais alto para evitar falsos positivos.
+
+        Args:
+            texto: Texto para análise
+
+        Returns:
+            Threshold entre 0 e 100
+        """
+        tamanho = len(texto)
+
+        if tamanho < 20:
+            return 90.0  # Muito curto: alta precisão
+        elif tamanho < 100:
+            return 85.0  # Médio: balanceado
+        else:
+            return 80.0  # Longo: mais flexível
+
+    def _calcular_score_composto(self, texto1: str, texto2: str) -> float:
+        """
+        Calcula score usando múltiplas métricas e retorna o máximo.
+
+        Args:
+            texto1: Primeiro texto
+            texto2: Segundo texto
+
+        Returns:
+            Score entre 0 e 100
+        """
+        if not texto1 or not texto2:
+            return 0.0
+
+        # Normalizar ambos os textos
+        t1_norm = self._normalizar_texto(texto1)
+        t2_norm = self._normalizar_texto(texto2)
+
+        if not t1_norm or not t2_norm:
+            return 0.0
+
+        # Calcular múltiplas métricas
+        scores = [
+            fuzz.ratio(t1_norm, t2_norm),
+            fuzz.partial_ratio(t1_norm, t2_norm),
+            fuzz.token_sort_ratio(t1_norm, t2_norm),
+            fuzz.token_set_ratio(t1_norm, t2_norm),
+        ]
+
+        # Retornar o melhor score
+        return max(scores)
+
+    def _buscar_posicao_com_sliding_window(
+        self, texto_busca: str, texto_completo: str, window_size: int | None = None
+    ) -> tuple[int, int, float]:
+        """
+        Busca a melhor posição usando sliding window com fuzzy matching.
+
+        Args:
+            texto_busca: Texto a buscar
+            texto_completo: Texto onde buscar
+            window_size: Tamanho da janela (None = tamanho do texto_busca * 1.5)
+
+        Returns:
+            Tupla (inicio, fim, score) ou (-1, -1, 0.0) se não encontrado
+        """
+        if not texto_busca or not texto_completo:
+            return (-1, -1, 0.0)
+
+        # Primeiro tentar match exato
+        texto_busca_norm = self._normalizar_texto(texto_busca)
+        texto_completo_norm = self._normalizar_texto(texto_completo)
+
+        pos_exata = texto_completo_norm.find(texto_busca_norm)
+        if pos_exata != -1:
+            # Encontrar posição no texto original
+            inicio = self._mapear_posicao_normalizada_para_original(
+                pos_exata, texto_completo
+            )
+            fim = inicio + len(texto_busca)
+            return (inicio, fim, 100.0)
+
+        # Se não encontrou exato, usar sliding window
+        if window_size is None:
+            window_size = int(len(texto_busca) * 1.5)
+
+        threshold = self._calcular_threshold_dinamico(texto_busca)
+        melhor_score = 0.0
+        melhor_posicao = (-1, -1)
+
+        # Deslizar janela pelo texto
+        for i in range(len(texto_completo) - window_size + 1):
+            janela = texto_completo[i : i + window_size]
+            score = self._calcular_score_composto(texto_busca, janela)
+
+            if score > melhor_score and score >= threshold:
+                melhor_score = score
+                melhor_posicao = (i, i + window_size)
+
+        if melhor_posicao[0] == -1:
+            return (-1, -1, 0.0)
+
+        return (melhor_posicao[0], melhor_posicao[1], melhor_score)
+
+    def _mapear_posicao_normalizada_para_original(
+        self, pos_norm: int, texto_original: str
+    ) -> int:
+        """
+        Mapeia posição no texto normalizado para o texto original.
+
+        Args:
+            pos_norm: Posição no texto normalizado
+            texto_original: Texto original
+
+        Returns:
+            Posição no texto original
+        """
+        contador = 0
+        for i, char in enumerate(texto_original):
+            char_norm = self._normalizar_texto(char)
+            if char_norm:
+                if contador == pos_norm:
+                    return i
+                contador += 1
+        return len(texto_original)
 
     def vincular_clausulas(
         self,
